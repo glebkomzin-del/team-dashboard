@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══ Synapse-inspired Design Tokens ═══ */
+@layer base {
+  /* Dark theme (default) */
+  :root {
+    --background: 228 14% 4.5%;
+    --foreground: 40 4% 90%;
+    --card: 225 12% 10%;
+    --card-foreground: 40 4% 90%;
+    --popover: 225 14% 8%;
+    --popover-foreground: 40 4% 90%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 10% 14%;
+    --secondary-foreground: 40 4% 90%;
+    --muted: 222 10% 14%;
+    --muted-foreground: 40 3% 60%;
+    --accent: 222 10% 16%;
+    --accent-foreground: 40 4% 90%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 0 0% 100% / 0.09;
+    --input: 0 0% 100% / 0.09;
+    --ring: 211 100% 50%;
+    --radius: 0.75rem;
+
+    /* Synapse custom tokens */
+    --syn-bg: #0B0C0F;
+    --syn-bg-elev: rgba(20,22,27,.78);
+    --syn-surface: rgba(26,28,34,.74);
+    --syn-surface-2: rgba(34,37,45,.72);
+    --syn-surface-3: rgba(45,49,59,.72);
+    --syn-hover: rgba(255,255,255,.065);
+    --syn-line: rgba(255,255,255,.09);
+    --syn-line-strong: rgba(255,255,255,.16);
+    --syn-text: #E6E5E1;
+    --syn-text-muted: #9B9A95;
+    --syn-text-faint: #6B6A66;
+    --syn-accent: #0A84FF;
+    --syn-accent-soft: rgba(10,132,255,.14);
+    --syn-accent-line: rgba(10,132,255,.28);
+    --syn-accent-strong: #45A3FF;
+    --syn-ok: #6FAE6A;
+    --syn-ok-soft: #1B2A1A;
+    --syn-warn: #E0A24A;
+    --syn-warn-soft: #2C2316;
+    --syn-danger: #D26B6B;
+    --syn-danger-soft: #2C1A1A;
+    --syn-info: #6FA3D3;
+    --syn-info-soft: #182230;
+    --syn-neutral-chip: #2A2D33;
+    --syn-quote-bg: rgba(10,132,255,.09);
+
+    color-scheme: dark;
+  }
+
+  /* Light theme */
+  .light {
+    --background: 240 5% 96%;
+    --foreground: 240 6% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 6% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 6% 10%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 95%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 95%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 95%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 211 100% 50%;
+
+    --syn-bg: #F5F5F7;
+    --syn-bg-elev: rgba(255,255,255,.74);
+    --syn-surface: rgba(255,255,255,.82);
+    --syn-surface-2: rgba(242,242,247,.82);
+    --syn-surface-3: rgba(229,229,234,.84);
+    --syn-hover: rgba(0,0,0,.045);
+    --syn-line: rgba(60,60,67,.13);
+    --syn-line-strong: rgba(60,60,67,.22);
+    --syn-text: #1D1D1F;
+    --syn-text-muted: rgba(60,60,67,.72);
+    --syn-text-faint: rgba(60,60,67,.48);
+    --syn-accent: #007AFF;
+    --syn-accent-soft: rgba(0,122,255,.10);
+    --syn-accent-line: rgba(0,122,255,.22);
+    --syn-accent-strong: #005ECF;
+    --syn-ok: #3E7A38;
+    --syn-ok-soft: #E6EFDE;
+    --syn-warn: #A66614;
+    --syn-warn-soft: #F6EAD0;
+    --syn-danger: #A23A3A;
+    --syn-danger-soft: #F5DCDC;
+    --syn-info: #2F6AA1;
+    --syn-info-soft: #DEE9F4;
+    --syn-neutral-chip: #E7E3D7;
+    --syn-quote-bg: rgba(0,122,255,.08);
+
+    color-scheme: light;
+  }
+
+  * {
+    border-color: var(--syn-line);
+  }
+  body {
+    background: var(--syn-bg);
+    color: var(--syn-text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ═══ Synapse Glass Effects ═══ */
+@layer utilities {
+  .glass-sidebar {
+    background: var(--syn-bg-elev);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  }
+  .glass-header {
+    background: var(--syn-bg-elev);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  }
+  .glass-card {
+    background: var(--syn-surface);
+    backdrop-filter: blur(18px) saturate(1.35);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 0 rgba(255,255,255,.05) inset;
+  }
+  .syn-surface-2 { background: var(--syn-surface-2); }
+  .syn-surface-3 { background: var(--syn-surface-3); }
+  .syn-hover:hover { background: var(--syn-hover); }
+  .syn-text { color: var(--syn-text); }
+  .syn-text-muted { color: var(--syn-text-muted); }
+  .syn-text-faint { color: var(--syn-text-faint); }
+  .syn-accent { color: var(--syn-accent); }
+  .syn-border { border-color: var(--syn-line); }
+  .syn-border-strong { border-color: var(--syn-line-strong); }
+
+  /* Source chip (Synapse design motif) */
+  .source-chip {
+    background: var(--syn-quote-bg);
+    border: 1px solid var(--syn-accent-line);
+    color: var(--syn-accent);
+    font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  }
+  .source-chip:hover {
+    background: var(--syn-accent-soft);
+    border-color: var(--syn-accent);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--syn-line-strong); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--syn-text-faint); }
+}
