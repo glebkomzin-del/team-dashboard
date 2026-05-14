@@ -148,6 +148,23 @@
   .syn-border { border-color: var(--syn-line); }
   .syn-border-strong { border-color: var(--syn-line-strong); }
 
+  /* Remove persistent focus ring on Select triggers after closing */
+  button[role="combobox"]:focus,
+  button[role="combobox"]:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: none !important;
+  }
+
+  /* Center all table headers and cells by default */
+  th, td {
+    text-align: center;
+  }
+  /* Title cell content stays left-aligned */
+  td.text-left {
+    text-align: left !important;
+  }
+
   /* Source chip (Synapse design motif) */
   .source-chip {
     background: var(--syn-quote-bg);
@@ -165,4 +182,13 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--syn-line-strong); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--syn-text-faint); }
+}
+
+/* ═══ Print Styles ═══ */
+@media print {
+  body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-view { position: static !important; overflow: visible !important; }
+  .print-view .print\:hidden { display: none !important; }
+  .print-view .hidden.print\:block { display: block !important; }
+  @page { margin: 12mm; size: landscape; }
 }
