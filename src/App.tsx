@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   fetchTeamMembers, fetchMeetings, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
-  fetchProjects, fetchDecisions, insertProject,
+  fetchProjects, insertProject,
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
   updateTodoFull, updateBlockerFull, updateOpenItemFull, updateMeetingFull,
@@ -20,11 +20,11 @@ import {
   triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
-  semanticSearch, triggerBackfillEmbeddings,
-  type DbTeamMember, type DbProject, type DbDecision, type SearchMatch
+  semanticSearchStream,
+  type DbTeamMember, type DbProject, type SearchMatch
 } from './supabase'
 
-type Page = 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'protokoll'
+type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll'
 type SortDir = 'asc' | 'desc' | null
 type ProjectView = 'table' | 'kanban' | 'gantt'
 type ActionTab = 'todos' | 'blocker' | 'open'
@@ -104,7 +104,7 @@ function SourceChip({ meeting, onClick }: { meeting: { id: string; title: string
   if (!meeting) return null
   return (
     <button onClick={onClick} className="source-chip inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] transition-colors" title={meeting.title}>
-      <span className="opacity-60">{'"'}</span><span className="truncate max-w-[140px]">{meeting.title}</span>
+      <span className="opacity-60">{'"'}</span><span className="truncate max-w-[120px]">{meeting.title}</span>
     </button>
   )
 }
@@ -188,7 +188,7 @@ export default function App() {
   return <Dashboard onLogout={async () => { await signOut() }} theme={theme} setTheme={setTheme} />
 }
 
-function LoginScreen({ theme, setTheme }: { theme: 'dark' | 'light'; setTheme: (t: 'dark' | 'light') => void }) {
+function LoginScreen(_props: { theme: 'dark' | 'light'; setTheme: (t: 'dark' | 'light') => void }) {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [error, setError] = useState('')
@@ -228,8 +228,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   // Hash routing with backward compat
   const getPageFromHash = (): Page => {
     const raw = window.location.hash.replace('#', '')
-    const map: Record<string, Page> = { dashboard: 'aktionen', notizen: 'sitzungen', protokoll: 'protokoll', projekte: 'projekte', ki: 'ki', sitzungen: 'sitzungen', aktionen: 'aktionen' }
-    return map[raw] || 'sitzungen'
+    const map: Record<string, Page> = { dashboard: 'uebersicht', uebersicht: 'uebersicht', notizen: 'sitzungen', protokoll: 'protokoll', projekte: 'projekte', ki: 'ki', textsuche: 'textsuche', sitzungen: 'sitzungen', aktionen: 'aktionen' }
+    return map[raw] || 'uebersicht'
   }
   const [page, setPageRaw] = useState<Page>(getPageFromHash)
   const setPage = (p: Page) => { setPageRaw(p); window.location.hash = p }
@@ -243,6 +243,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [refreshing, setRefreshing] = useState(false)
   const [nightlyActive, setNightlyActive] = useState(true)
   const [globalSearch, setGlobalSearch] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
   const [projectView, setProjectView] = useState<ProjectView>('table')
   const [actionTab, setActionTab] = useState<ActionTab>('todos')
 
@@ -253,10 +255,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [activity, setActivity] = useState<Activity[]>([])
   const [projects, setProjects] = useState<DbProject[]>([])
-  const [decisions, setDecisions] = useState<DbDecision[]>([])
 
   // Chat
-  const CHAT_STORAGE_KEY = 'tedi_chat_history'
+  const CHAT_STORAGE_KEY = 'mos_chat_history'
   const CHAT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
   const loadChatHistory = (): ChatMessage[] => {
     try {
@@ -272,7 +273,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(loadChatHistory)
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
-  const [backfillDone, setBackfillDone] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   // Filters
@@ -337,10 +337,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const loadData = useCallback(async () => {
     try {
       setError(null)
-      const [mems, mtgs, tds, blk, oi, act, prj, dec] = await Promise.all([
-        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects(), fetchDecisions()
+      const [mems, mtgs, tds, blk, oi, act, prj] = await Promise.all([
+        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects()
       ])
-      setMembers(mems); setProjects(prj); setDecisions(dec)
+      setMembers(mems); setProjects(prj)
       setMeetings(mtgs.map(m => ({ id: m.id, title: m.title, date: m.meeting_date?.split('T')[0] || '', topics: m.topics || [], participants: m.participants || [], summary: m.ai_summary || '', keyDecisions: m.key_decisions || [] })))
       setTodos(tds.map(t => ({ id: t.id, assignee: t.assignee || 'Nicht zugeordnet', title: t.title, description: t.description || '', status: t.status, priority: t.priority, dueDate: t.due_date, startDate: (t as any).start_date || null, durationDays: (t as any).duration_days || 1, dependsOn: (t as any).depends_on || [], meetingId: t.meeting_id, projectId: (t as any).project_id || null, createdAt: t.created_at?.split('T')[0] || '' })))
       setBlockers(blk.map(b => ({ id: b.id, reportedBy: b.reported_by || 'Nicht zugeordnet', title: b.title, description: b.description || '', status: b.status, meetingId: b.meeting_id, projectId: (b as any).project_id || null, createdAt: b.created_at?.split('T')[0] || '' })))
@@ -349,7 +349,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       const blkMap: Record<string, string> = {}; blk.forEach(b => { blkMap[b.id] = b.title })
       const oiMap: Record<string, string> = {}; oi.forEach(o => { oiMap[o.id] = o.title })
       const mtgMap: Record<string, string> = {}; mtgs.forEach(m => { mtgMap[m.id] = m.title })
-      const decMap: Record<string, string> = {}; dec.forEach(d => { decMap[d.id] = d.title })
+      const decMap: Record<string, string> = {}
       const prjMap: Record<string, string> = {}; prj.forEach(p => { prjMap[p.id] = p.name })
       setActivity(act.map(a => {
         let title = ''
@@ -367,6 +367,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
   useEffect(() => { loadData(); isNightlyJobActive().then(setNightlyActive).catch(() => {}) }, [loadData])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
+  useEffect(() => { if (page === 'ki') setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'auto' }), 100) }, [page])
   useEffect(() => {
     if (chatMessages.length === 0) return
     try {
@@ -395,20 +396,36 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleSaveProject = async (p: DbProject) => { if (p.id === '__new__') { setEditProject(null); try { const c = await insertProject({ name: p.name, description: p.description || undefined }); setProjects(prev => [...prev, c]) } catch { } } else { setProjects(prev => prev.map(x => x.id === p.id ? p : x)); setEditProject(null); try { await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status }) } catch { } } }
   const handleDeleteProject = async (p: DbProject) => { setProjects(prev => prev.filter(x => x.id !== p.id)); try { await deleteProjectDb(p.id) } catch { } }
 
+  const handleQuickStatusToggle = async (t: Todo) => {
+    const newStatus = t.status === 'done' ? 'open' : 'done'
+    setTodos(prev => prev.map(x => x.id === t.id ? { ...x, status: newStatus } : x))
+    try { await updateTodoStatus(t.id, newStatus); await logActivity('todo', t.id, 'status_changed', newStatus) } catch { setTodos(prev => prev.map(x => x.id === t.id ? { ...x, status: t.status } : x)) }
+  }
+
   // Chat
-  const handleChat = async () => {
-    if (!chatInput.trim() || chatLoading) return
-    const q = chatInput.trim(); setChatInput('')
+  const handleChat = async (overrideText?: string) => {
+    const text = overrideText || chatInput
+    if (!text.trim() || chatLoading) return
+    const q = text.trim(); setChatInput('')
     const updatedMessages = [...chatMessages, { role: 'user' as const, text: q, timestamp: Date.now() }]
     setChatMessages(updatedMessages)
     setChatLoading(true)
+    const history = updatedMessages.slice(-10).map(m => ({ role: m.role, text: m.text.slice(0, 500) }))
+    // Add empty assistant message that will be streamed into
+    const assistantMsg: ChatMessage = { role: 'assistant', text: '', timestamp: Date.now() }
+    setChatMessages(prev => [...prev, assistantMsg])
     try {
-      const history = updatedMessages.slice(-10).map(m => ({ role: m.role, text: m.text.slice(0, 500) }))
-      const result = await semanticSearch(q, history)
-      setChatMessages(prev => [...prev, { role: 'assistant', text: result.answer, matches: result.matches, timestamp: Date.now() }])
+      await semanticSearchStream(
+        q, history,
+        (matches) => { setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, matches }; } return msgs; }) },
+        (delta) => { setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, text: last.text + delta }; } return msgs; }) },
+        () => { setChatLoading(false) },
+        (err) => { setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, text: `Fehler: ${err}` }; } return msgs; }); setChatLoading(false) },
+      )
     } catch (e: any) {
-      setChatMessages(prev => [...prev, { role: 'assistant', text: `Fehler: ${e.message}. Stelle sicher, dass der OPENAI_API_KEY in den Supabase Edge Function Secrets gesetzt ist.`, timestamp: Date.now() }])
-    } finally { setChatLoading(false) }
+      setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, text: `Fehler: ${e.message}` }; } return msgs; })
+      setChatLoading(false)
+    }
   }
 
   const handleAblegen = async () => { await loadData() }
@@ -423,7 +440,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       case 'blocker': { const b = blockers.find(x => x.id === entityId); if (b) setViewBlocker(b); break }
       case 'open_item': { const o = openItems.find(x => x.id === entityId); if (o) setViewOpen(o); break }
       case 'meeting': { const m = meetings.find(x => x.id === entityId); if (m) setViewMeeting(m); break }
-      case 'decision': { const d = decisions.find(x => x.id === entityId); const mtg = d ? meetings.find(m => m.id === d.meeting_id) : null; if (mtg) setViewMeeting(mtg); break }
+      case 'decision': { break }
       case 'project': { const p = projects.find(x => x.id === entityId); if (p) setViewProject(p); break }
     }
   }
@@ -476,7 +493,31 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     return projectSort.col ? sortBy(r, projectSort.col, projectSort.dir) : r
   }, [projects, projectSearch, globalSearch, projectFilterStatus, projectSort.col, projectSort.dir])
 
-  const allParticipants = [...new Set(meetings.flatMap(m => m.participants))]
+  const searchResults = useMemo(() => {
+    const q = globalSearch.trim().toLowerCase()
+    if (!q) return { meetings: [] as Meeting[], todos: [] as Todo[], blockers: [] as Blocker[] }
+    const matchMeetings = meetings.filter(m => textMatch(m, q)).slice(0, 5)
+    const matchTodos = todos.filter(t => textMatch(t, q)).slice(0, 5)
+    const matchBlockers = blockers.filter(b => textMatch(b, q)).slice(0, 5)
+    return { meetings: matchMeetings, todos: matchTodos, blockers: matchBlockers }
+  }, [globalSearch, meetings, todos, blockers])
+
+  const searchResultsFull = useMemo(() => {
+    const q = globalSearch.trim().toLowerCase()
+    if (!q) return { meetings: [] as Meeting[], todos: [] as Todo[], blockers: [] as Blocker[], openItems: [] as OpenItem[] }
+    return {
+      meetings: meetings.filter(m => textMatch(m, q)),
+      todos: todos.filter(t => textMatch(t, q)),
+      blockers: blockers.filter(b => textMatch(b, q)),
+      openItems: openItems.filter(o => textMatch(o, q)),
+    }
+  }, [globalSearch, meetings, todos, blockers, openItems])
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   // Kanban helpers
   const kanbanColumns = ['open', 'in_progress', 'done'] as const
@@ -532,31 +573,30 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
   const projectTodos = (pid: string) => todos.filter(t => t.projectId === pid)
   const projectBlockers = (pid: string) => blockers.filter(b => b.projectId === pid)
-  const projectDecisions = (pid: string) => decisions.filter(d => d.project_id === pid)
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--syn-bg)' }}><div className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Lade Daten...</div></div>
   if (error && todos.length === 0) return <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--syn-bg)' }}><div className="text-sm" style={{ color: 'var(--syn-danger)' }}>Fehler: {error}</div></div>
 
   const navSections: { label: string; items: { key: Page; label: string; icon: string; count?: number }[] }[] = [
-    { label: 'MEETINGS', items: [
-      { key: 'sitzungen', label: 'Sitzungen', icon: '☰', count: meetings.length },
+    { label: 'HEUTE', items: [
+      { key: 'uebersicht', label: 'Command Center', icon: '⬡' },
+      { key: 'sitzungen', label: 'Meetings', icon: '☰', count: meetings.length },
+      { key: 'aktionen', label: 'Aktionen', icon: '✓', count: todos.filter(t => t.status !== 'done').length + blockers.filter(b => b.status === 'active').length },
     ]},
-    { label: 'AUFGABEN', items: [
-      { key: 'aktionen', label: 'Aktionen', icon: '◎', count: todos.filter(t => t.status !== 'done').length + blockers.filter(b => b.status === 'active').length },
-    ]},
-    { label: 'PLANUNG', items: [
+    { label: 'ARBEIT', items: [
       { key: 'projekte', label: 'Projekte', icon: '◈', count: projects.length },
     ]},
-    { label: 'ANALYSE', items: [
-      { key: 'ki', label: 'KI-Assistent', icon: '◉' },
-      { key: 'protokoll', label: 'Protokoll', icon: '⏱', count: filteredLog.length },
+    { label: 'INTELLIGENZ', items: [
+      { key: 'ki', label: 'AI-Suche', icon: '◉' },
+      { key: 'textsuche', label: 'Textsuche', icon: '⌕' },
+      { key: 'protokoll', label: 'Aktivität', icon: '⏱', count: filteredLog.length },
     ]},
   ]
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--syn-bg)', color: 'var(--syn-text)' }}>
       {/* ═══ SIDEBAR ═══ */}
-      <aside className={`${sidebarCollapsed ? 'w-14' : 'w-52'} glass-sidebar flex flex-col shrink-0 transition-all duration-200 sticky top-0 h-screen border-r border-[var(--syn-line)]`}>
+      <aside className={`${sidebarCollapsed ? 'w-14' : 'w-52'} glass-sidebar flex flex-col shrink-0 transition-all duration-200 sticky top-0 h-screen border-r border-[var(--syn-line)] overflow-hidden`}>
         <div className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'px-4'} h-14 border-b border-[var(--syn-line)]`}>
           <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: 'var(--syn-accent)' }}>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 1L16 5V13L9 17L2 13V5Z" stroke="white" strokeWidth="1.5" fill="none"/><circle cx="9" cy="9" r="2.5" fill="white"/></svg>
@@ -573,8 +613,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <button key={n.key} onClick={() => setPage(n.key)}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${page === n.key ? 'bg-[var(--syn-accent-soft)] text-[var(--syn-accent)]' : 'hover:bg-[var(--syn-hover)]'}`}
                     style={page !== n.key ? { color: 'var(--syn-text-muted)' } : {}}>
-                    <span className="text-base shrink-0">{n.icon}</span>
-                    {!sidebarCollapsed && <><span className="flex-1 text-left">{n.label}</span>{n.count != null && n.count > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{n.count}</span>}</>}
+                    <span className="text-base w-5 text-center shrink-0">{n.icon}</span>
+                    {!sidebarCollapsed && <><span className="flex-1 text-left whitespace-nowrap">{n.label}</span>{n.count != null && n.count > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{n.count}</span>}</>}
                   </button>
                 ))}
               </div>
@@ -583,10 +623,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         </nav>
         <div className="border-t border-[var(--syn-line)] py-3 px-2 space-y-1">
           <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-[var(--syn-hover)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>
-            <span className="text-base shrink-0">{sidebarCollapsed ? '❯' : '❮'}</span>{!sidebarCollapsed && <span>Einklappen</span>}
+            <span className="text-base w-5 text-center shrink-0">{sidebarCollapsed ? '❯' : '❮'}</span>{!sidebarCollapsed && <span className="whitespace-nowrap">Einklappen</span>}
           </button>
           <button onClick={onLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-[var(--syn-hover)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>
-            <span className="text-base shrink-0">{'⏻'}</span>{!sidebarCollapsed && <span>Abmelden</span>}
+            <span className="text-base w-5 text-center shrink-0">{'⏻'}</span>{!sidebarCollapsed && <span className="whitespace-nowrap">Abmelden</span>}
           </button>
         </div>
       </aside>
@@ -594,7 +634,40 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       {/* ═══ MAIN ═══ */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="glass-header border-b border-[var(--syn-line)] h-14 flex items-center px-6 gap-4 shrink-0 sticky top-0 z-20">
-          <Input placeholder="Suche überall..." value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} className="h-8 text-sm w-72 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+          <div ref={searchRef} className="relative">
+            <Input placeholder="Suche überall..." value={globalSearch} onChange={e => { setGlobalSearch(e.target.value); setSearchFocused(true) }} onFocus={() => setSearchFocused(true)} onKeyDown={e => { if (e.key === 'Enter' && globalSearch.trim()) { setSearchFocused(false); setPage('textsuche' as any) } if (e.key === 'Escape') setSearchFocused(false) }} className="h-8 text-sm w-72 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+            {searchFocused && globalSearch.trim() && (searchResults.meetings.length > 0 || searchResults.todos.length > 0 || searchResults.blockers.length > 0) && (
+              <div className="absolute top-full left-0 mt-1 w-96 glass-card rounded-xl border border-[var(--syn-line)] shadow-xl z-50 overflow-hidden max-h-[70vh] overflow-y-auto">
+                {searchResults.meetings.length > 0 && <div>
+                  <div className="px-3 py-2 text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--syn-text-faint)', background: 'var(--syn-surface-2)' }}>Meetings ({searchResults.meetings.length})</div>
+                  {searchResults.meetings.map(m => (
+                    <button key={m.id} onClick={() => { setSearchFocused(false); setViewMeeting(m) }} className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--syn-hover)] transition-colors flex items-center gap-2">
+                      <span className="text-xs shrink-0">☰</span><span className="truncate">{m.title}</span><span className="text-[10px] ml-auto shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{m.date}</span>
+                    </button>
+                  ))}
+                </div>}
+                {searchResults.todos.length > 0 && <div>
+                  <div className="px-3 py-2 text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--syn-text-faint)', background: 'var(--syn-surface-2)' }}>Todos ({searchResults.todos.length})</div>
+                  {searchResults.todos.map(t => (
+                    <button key={t.id} onClick={() => { setSearchFocused(false); setViewTodo(t) }} className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--syn-hover)] transition-colors flex items-center gap-2">
+                      <span className="text-xs shrink-0">✓</span><span className="truncate">{t.title}</span><Badge className={`text-[9px] shrink-0 ${PRI_STYLE[t.priority]}`}>{PRI_LABEL[t.priority]}</Badge>
+                    </button>
+                  ))}
+                </div>}
+                {searchResults.blockers.length > 0 && <div>
+                  <div className="px-3 py-2 text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--syn-text-faint)', background: 'var(--syn-surface-2)' }}>Blocker ({searchResults.blockers.length})</div>
+                  {searchResults.blockers.map(b => (
+                    <button key={b.id} onClick={() => { setSearchFocused(false); setViewBlocker(b) }} className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--syn-hover)] transition-colors flex items-center gap-2">
+                      <span className="text-xs shrink-0">⚠</span><span className="truncate">{b.title}</span><Badge className={`text-[9px] shrink-0 ${ST_STYLE[b.status]}`}>{ST_LABEL[b.status]}</Badge>
+                    </button>
+                  ))}
+                </div>}
+                <button onClick={() => { setSearchFocused(false); setPage('textsuche' as any) }} className="w-full px-3 py-2 text-xs text-center hover:bg-[var(--syn-hover)] transition-colors border-t border-[var(--syn-line)]" style={{ color: 'var(--syn-accent)' }}>
+                  Alle Ergebnisse anzeigen →
+                </button>
+              </div>
+            )}
+          </div>
           <div className="flex-1" />
           {error && <span className="text-xs text-[var(--syn-danger)]">{error}</span>}
           <Button size="sm" variant="outline" onClick={handleToggleNightly} className={`text-xs border-[var(--syn-line)] ${nightlyActive ? 'text-[var(--syn-text-muted)]' : 'text-[var(--syn-text-faint)]'}`}>{nightlyActive ? '☾ An' : '☾ Aus'}</Button>
@@ -605,11 +678,155 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
         <main className="flex-1 p-6 overflow-auto">
 
+          {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
+          {page === 'uebersicht' && (() => {
+            const reviewQueue = meetings.slice(0, 5)
+            const activeBlockersList = blockers.filter(b => b.status === 'active')
+            const recentDec = meetings.flatMap(m => m.keyDecisions.map(d => ({ text: d, meetingTitle: m.title, meetingDate: m.date, meetingId: m.id }))).slice(0, 8)
+            const now = new Date()
+            const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']
+            const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
+            const kw = (() => { const d = new Date(now); d.setHours(0,0,0,0); d.setDate(d.getDate()+3-(d.getDay()+6)%7); const w1 = new Date(d.getFullYear(),0,4); return 1+Math.round(((d.getTime()-w1.getTime())/86400000-3+(w1.getDay()+6)%7)/7) })()
+            const greeting = now.getHours() < 12 ? 'Guten Morgen' : now.getHours() < 18 ? 'Guten Tag' : 'Guten Abend'
+
+            return (
+              <div className="space-y-6">
+                {/* Page Head + Stats */}
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] font-medium tracking-widest uppercase" style={{ color: 'var(--syn-text-faint)' }}>
+                      {dayNames[now.getDay()]} · {now.getDate()}. {monthNames[now.getMonth()]} · KW {kw}
+                    </div>
+                    <h1 className="text-2xl font-semibold mt-1" style={{ color: 'var(--syn-text)' }}>{greeting}, Gleb.</h1>
+                  </div>
+                  <div className="glass-card rounded-xl border border-[var(--syn-line)] px-6 py-3 flex items-center gap-6 shrink-0">
+                    <div className="text-center"><div className="text-xl font-bold" style={{ color: 'var(--syn-accent)' }}>{meetings.length}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Meetings</div></div>
+                    <div className="w-px h-8" style={{ background: 'var(--syn-line)' }} />
+                    <div className="text-center"><div className="text-xl font-bold" style={{ color: 'var(--syn-warn)' }}>{todos.filter(t => t.status !== 'done').length}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Offene Todos</div></div>
+                    <div className="w-px h-8" style={{ background: 'var(--syn-line)' }} />
+                    <div className="text-center"><div className="text-xl font-bold" style={{ color: 'var(--syn-danger)' }}>{activeBlockersList.length}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Aktive Blocker</div></div>
+                  </div>
+                </div>
+
+                {/* AI Prompt */}
+                <div className="glass-card rounded-xl border border-[var(--syn-line)] p-5 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--syn-accent-soft)', color: 'var(--syn-accent)' }}>✦ AI</span>
+                    <span className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Stelle eine Frage über deine Meetings, Projekte oder Aufgaben.</span>
+                    <span className="flex-1" />
+                    <span className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Antwort mit Quellen</span>
+                  </div>
+                  <Textarea
+                    placeholder='Frage stellen...'
+                    className="text-sm bg-[var(--syn-surface-2)] border-[var(--syn-line)] min-h-[56px] resize-none"
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (chatInput.trim()) { const q = chatInput.trim(); setPage('ki'); setTimeout(() => handleChat(q), 200) } } }}
+                  />
+                  <div className="flex items-center flex-wrap gap-2">
+                    {['Welche Todos sind diese Woche fällig?', 'Fasse die letzten 3 Meetings zusammen', 'Welche Blocker sind gerade aktiv?'].map(q => (
+                      <button key={q} onClick={() => { setPage('ki'); setTimeout(() => handleChat(q), 200) }} className="text-[11px] px-3 py-1.5 rounded-lg border transition-colors hover:bg-[var(--syn-hover)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-text-muted)' }}>{q}</button>
+                    ))}
+                    <span className="flex-1" />
+                    <Button size="sm" onClick={() => { if (chatInput.trim()) { const q = chatInput.trim(); setPage('ki'); setTimeout(() => handleChat(q), 200) } }} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white text-xs gap-1.5">
+                      → Fragen
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 2x2 Grid: left 1/3 (Todos+Blocker), right 2/3 (Meetings+Entscheidungen), rows equal height */}
+                <div className="grid grid-cols-[1fr_2fr] grid-rows-[1fr_1fr] gap-5" style={{ gridAutoRows: '1fr' }}>
+                  {/* Top-left: Offene Todos */}
+                  <div className="glass-card rounded-xl border border-[var(--syn-line)] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--syn-line)] shrink-0">
+                      <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-warn)' }} /> Offene Todos</div>
+                      <button onClick={() => { setActionTab('todos'); setPage('aktionen'); window.scrollTo(0, 0) }} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Alle Todos →</button>
+                    </div>
+                    <div className="divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto">
+                      {todos.filter(t => t.status !== 'done').length === 0 && <div className="px-5 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Todos.</div>}
+                      {todos.filter(t => t.status !== 'done').sort((a, b) => (PRI_RANK[a.priority] ?? 9) - (PRI_RANK[b.priority] ?? 9)).slice(0, 10).map(t => (
+                        <div key={t.id} className="px-4 py-2.5 flex items-center gap-2.5 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer" onClick={() => setViewTodo(t)}>
+                          <button onClick={(e) => { e.stopPropagation(); handleQuickStatusToggle(t) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} />
+                          <div className="flex-1 min-w-0 text-sm truncate">{t.title}</div>
+                          <Badge className={`text-[8px] shrink-0 ${PRI_STYLE[t.priority]}`}>{PRI_LABEL[t.priority]?.charAt(0)}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top-right: Letzte Meetings */}
+                  <div className="glass-card rounded-xl border border-[var(--syn-line)] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--syn-line)] shrink-0">
+                      <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-accent)' }} /> Letzte Meetings</div>
+                      <button onClick={() => setPage('sitzungen')} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Alle Meetings →</button>
+                    </div>
+                    <div className="divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto">
+                      {reviewQueue.length === 0 && <div className="px-5 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings vorhanden.</div>}
+                      {reviewQueue.slice(0, 5).map(m => (
+                        <div key={m.id} className="px-5 py-3 flex items-start gap-3 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer" onClick={() => setViewMeeting(m)}>
+                          <span className="w-2 h-2 mt-1.5 rounded-full shrink-0" style={{ background: 'var(--syn-accent)' }} />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{m.title}</div>
+                            <div className="flex items-center gap-2 mt-0.5 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>
+                              <span>{m.date}</span>
+                              <span>{m.participants.slice(0, 3).join(', ')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bottom-left: Aktive Blocker */}
+                  <div className="glass-card rounded-xl border border-[var(--syn-line)] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--syn-line)] shrink-0">
+                      <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-danger)' }} /> Aktive Blocker</div>
+                      <button onClick={() => { setActionTab('blocker'); setPage('aktionen'); window.scrollTo(0, 0) }} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Alle Blocker →</button>
+                    </div>
+                    <div className="divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto">
+                      {activeBlockersList.length === 0 && <div className="px-5 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine aktiven Blocker.</div>}
+                      {activeBlockersList.slice(0, 10).map(b => (
+                        <div key={b.id} className="px-4 py-2.5 flex items-center gap-2.5 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer" onClick={() => setViewBlocker(b)}>
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-danger)' }} />
+                          <div className="flex-1 min-w-0 text-sm truncate">{b.title}</div>
+                          <span className="text-[10px] shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{b.reportedBy}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bottom-right: Letzte Entscheidungen */}
+                  <div className="glass-card rounded-xl border border-[var(--syn-line)] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--syn-line)] shrink-0">
+                      <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-info)' }} /> Letzte Entscheidungen</div>
+                      <button onClick={() => setPage('protokoll')} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Audit-Trail →</button>
+                    </div>
+                    <div className="divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto">
+                      {recentDec.length === 0 && <div className="px-5 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Entscheidungen.</div>}
+                      {recentDec.map((d, i) => (
+                        <div key={i} className="px-5 py-3 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer" onClick={() => { const m = meetings.find(mt => mt.id === d.meetingId); if (m) setViewMeeting(m) }}>
+                          <div className="flex items-center gap-2 text-[11px] mb-1" style={{ color: 'var(--syn-text-faint)' }}>
+                            <span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-accent)' }} />
+                            {d.meetingDate}
+                            <span className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'var(--syn-accent-soft)', color: 'var(--syn-accent)' }}>
+                              {d.meetingTitle}
+                            </span>
+                          </div>
+                          <div className="text-sm font-medium" style={{ color: 'var(--syn-text)' }}>{d.text}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* ═══ SITZUNGEN ═══ */}
           {page === 'sitzungen' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h2 className="text-base font-semibold">Sitzungen</h2>
+                <h2 className="text-base font-semibold">Meetings</h2>
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                   <Select value={noteFilterParticipant} onValueChange={setNoteFilterParticipant}><SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Teilnehmer</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
@@ -636,9 +853,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1 justify-end"><button onClick={() => setEditMeeting({...m})} className="text-xs hover:text-[var(--syn-accent)]" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => handleDeleteMeeting(m)} className="text-xs hover:text-[var(--syn-danger)]" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                   </TableRow>
                 ))}
-                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Sitzungen</TableCell></TableRow>}
+                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
               </TableBody></Table></CardContent></Card>
-              {meetings.length > 0 && <p className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} von {meetings.length} Sitzungen</p>}
+              {meetings.length > 0 && <p className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} von {meetings.length} Meetings</p>}
             </div>
           )}
 
@@ -676,7 +893,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[110px]" />
                     <SH label="Fällig" field="dueDate" sort={todoSort} onSort={todoSort.toggle} className="w-[110px]" />
                     <SH label="Status" field="status" sort={todoSort} onSort={todoSort.toggle} className="w-[110px]" />
-                    <TableHead className="w-[100px] text-xs">Quelle</TableHead>
+                    <TableHead className="w-[160px] text-xs">Quelle</TableHead>
                     {projects.length > 0 && <TableHead className="w-[120px] text-xs">Projekt</TableHead>}
                     <TableHead className="w-[80px]"></TableHead>
                   </TableRow></TableHeader><TableBody>
@@ -713,9 +930,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[140px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[110px]" />
-                    <TableHead className="w-[100px] text-xs">Quelle</TableHead>
-                    <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className="w-[110px]" />
-                    <TableHead className="w-[140px]"></TableHead>
+                    <TableHead className="w-[150px] text-xs">Quelle</TableHead>
+                    <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
+                    <TableHead className="w-[150px]"></TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredBlockers.map(b => (
                       <TableRow key={b.id} className={`text-sm border-[var(--syn-line)] ${b.status !== 'active' ? 'opacity-50' : ''} hover:bg-[var(--syn-hover)]`}>
@@ -750,9 +967,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[120px]" />
                     <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className="w-[140px]" />
                     <SH label="Status" field="status" sort={openSort} onSort={openSort.toggle} className="w-[110px]" />
-                    <TableHead className="w-[100px] text-xs">Quelle</TableHead>
-                    <SH label="Erstellt" field="createdAt" sort={openSort} onSort={openSort.toggle} className="w-[110px]" />
-                    <TableHead className="w-[140px]"></TableHead>
+                    <TableHead className="w-[150px] text-xs">Quelle</TableHead>
+                    <SH label="Erstellt" field="createdAt" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
+                    <TableHead className="w-[150px]"></TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredOpen.map(o => (
                       <TableRow key={o.id} className={`text-sm border-[var(--syn-line)] ${o.status === 'closed' ? 'opacity-40' : ''} hover:bg-[var(--syn-hover)]`}>
@@ -1052,6 +1269,73 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             </div>
           )}
 
+          {/* ═══ TEXTSUCHE ═══ */}
+          {page === 'textsuche' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-base font-semibold">Textsuche</h2>
+                <p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Volltextsuche über alle Dashboard-Daten{globalSearch.trim() ? ` — "${globalSearch.trim()}"` : ''}.</p>
+              </div>
+              {!globalSearch.trim() ? (
+                <div className="text-sm py-8 text-center" style={{ color: 'var(--syn-text-faint)' }}>Gib einen Suchbegriff in die Suchleiste oben ein.</div>
+              ) : (
+                <div className="space-y-6">
+                  {searchResultsFull.meetings.length > 0 && (
+                    <Card className="glass-card border-[var(--syn-line)] overflow-hidden">
+                      <div className="px-5 py-3 border-b border-[var(--syn-line)]"><span className="text-sm font-semibold">Meetings ({searchResultsFull.meetings.length})</span></div>
+                      <div className="divide-y divide-[var(--syn-line)]">{searchResultsFull.meetings.map(m => (
+                        <div key={m.id} className="px-5 py-3 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer flex items-center gap-3" onClick={() => setViewMeeting(m)}>
+                          <span className="text-xs">☰</span>
+                          <div className="flex-1 min-w-0"><div className="text-sm font-medium truncate">{m.title}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>{m.date} · {m.participants.slice(0, 3).join(', ')}</div></div>
+                        </div>
+                      ))}</div>
+                    </Card>
+                  )}
+                  {searchResultsFull.todos.length > 0 && (
+                    <Card className="glass-card border-[var(--syn-line)] overflow-hidden">
+                      <div className="px-5 py-3 border-b border-[var(--syn-line)]"><span className="text-sm font-semibold">Todos ({searchResultsFull.todos.length})</span></div>
+                      <div className="divide-y divide-[var(--syn-line)]">{searchResultsFull.todos.map(t => (
+                        <div key={t.id} className="px-5 py-3 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer flex items-center gap-3" onClick={() => setViewTodo(t)}>
+                          <span className="text-xs">✓</span>
+                          <div className="flex-1 min-w-0"><div className="text-sm font-medium truncate">{t.title}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>{t.assignee} · {t.dueDate || 'kein Datum'}</div></div>
+                          <Badge className={`text-[9px] ${PRI_STYLE[t.priority]}`}>{PRI_LABEL[t.priority]}</Badge>
+                          <Badge className={`text-[9px] ${ST_STYLE[t.status]}`}>{ST_LABEL[t.status]}</Badge>
+                        </div>
+                      ))}</div>
+                    </Card>
+                  )}
+                  {searchResultsFull.blockers.length > 0 && (
+                    <Card className="glass-card border-[var(--syn-line)] overflow-hidden">
+                      <div className="px-5 py-3 border-b border-[var(--syn-line)]"><span className="text-sm font-semibold">Blocker ({searchResultsFull.blockers.length})</span></div>
+                      <div className="divide-y divide-[var(--syn-line)]">{searchResultsFull.blockers.map(b => (
+                        <div key={b.id} className="px-5 py-3 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer flex items-center gap-3" onClick={() => setViewBlocker(b)}>
+                          <span className="text-xs">⚠</span>
+                          <div className="flex-1 min-w-0"><div className="text-sm font-medium truncate">{b.title}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>{b.reportedBy} · seit {b.createdAt}</div></div>
+                          <Badge className={`text-[9px] ${ST_STYLE[b.status]}`}>{ST_LABEL[b.status]}</Badge>
+                        </div>
+                      ))}</div>
+                    </Card>
+                  )}
+                  {searchResultsFull.openItems.length > 0 && (
+                    <Card className="glass-card border-[var(--syn-line)] overflow-hidden">
+                      <div className="px-5 py-3 border-b border-[var(--syn-line)]"><span className="text-sm font-semibold">Open Items ({searchResultsFull.openItems.length})</span></div>
+                      <div className="divide-y divide-[var(--syn-line)]">{searchResultsFull.openItems.map(o => (
+                        <div key={o.id} className="px-5 py-3 hover:bg-[var(--syn-hover)] transition-colors cursor-pointer flex items-center gap-3" onClick={() => setViewOpen(o)}>
+                          <span className="text-xs">{CAT_ICON[o.category] || '○'}</span>
+                          <div className="flex-1 min-w-0"><div className="text-sm font-medium truncate">{o.title}</div><div className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>{o.owner} · seit {o.createdAt}</div></div>
+                          <Badge className={`text-[9px] ${ST_STYLE[o.status]}`}>{ST_LABEL[o.status]}</Badge>
+                        </div>
+                      ))}</div>
+                    </Card>
+                  )}
+                  {searchResultsFull.meetings.length === 0 && searchResultsFull.todos.length === 0 && searchResultsFull.blockers.length === 0 && searchResultsFull.openItems.length === 0 && (
+                    <div className="text-sm py-8 text-center" style={{ color: 'var(--syn-text-faint)' }}>Keine Ergebnisse für "{globalSearch.trim()}".</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ═══ KI-ASSISTENT ═══ */}
           {page === 'ki' && (
             <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -1067,13 +1351,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <div className="text-3xl" style={{ color: 'var(--syn-accent)' }}>◉</div>
                           <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Stelle eine Frage zu deinen Dashboard-Daten.</p>
                           <div className="flex flex-wrap gap-2 justify-center">
-                            {['Welche Todos sind überfällig?', 'Was wurde im letzten Meeting entschieden?', 'Welche Blocker sind noch offen?', 'Zusammenfassung aller Projekte'].map((q, i) => (
-                              <button key={i} onClick={() => { setChatInput(q) }} className="text-xs px-3 py-1.5 rounded-full transition-colors border border-[var(--syn-line)] hover:border-[var(--syn-accent-line)] hover:bg-[var(--syn-accent-soft)]" style={{ color: 'var(--syn-text-muted)' }}>{q}</button>
+                            {['Welche Todos sind diese Woche fällig?', 'Fasse die letzten 3 Meetings zusammen', 'Welche Blocker sind gerade aktiv?', 'Welche Entscheidungen wurden zuletzt getroffen?'].map((q, i) => (
+                              <button key={i} onClick={() => handleChat(q)} className="text-xs px-3 py-1.5 rounded-full transition-colors border border-[var(--syn-line)] hover:border-[var(--syn-accent-line)] hover:bg-[var(--syn-accent-soft)]" style={{ color: 'var(--syn-text-muted)' }}>{q}</button>
                             ))}
                           </div>
                         </div>
                       )}
                       {chatMessages.map((msg, i) => {
+                        if (msg.role === 'assistant' && !msg.text && !msg.matches?.length) return null
                         const ts = msg.timestamp ? new Date(msg.timestamp) : null
                         const timeStr = ts ? `${String(ts.getDate()).padStart(2,'0')}.${String(ts.getMonth()+1).padStart(2,'0')}.${ts.getFullYear()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : null
                         return (
@@ -1096,13 +1381,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           </div>
                         </div>
                       )})}
-                      {chatLoading && <div className="flex justify-start"><div className="rounded-xl px-4 py-3 text-sm" style={{ background: 'var(--syn-surface-2)', color: 'var(--syn-text-muted)' }}>Denkt nach...</div></div>}
+                      {chatLoading && (!chatMessages.length || chatMessages[chatMessages.length - 1].role !== 'assistant' || !chatMessages[chatMessages.length - 1].text) && <div className="flex justify-start"><div className="rounded-xl px-4 py-3 text-sm" style={{ background: 'var(--syn-surface-2)', color: 'var(--syn-text-muted)' }}>Denkt nach...</div></div>}
                       <div ref={chatEndRef} />
                     </div>
                   </ScrollArea>
                   <div className="flex gap-2">
                     <Input placeholder="Frage stellen..." value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} className="flex-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" disabled={chatLoading} />
-                    <Button onClick={handleChat} disabled={chatLoading || !chatInput.trim()} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white">Senden</Button>
+                    <Button onClick={() => handleChat()} disabled={chatLoading || !chatInput.trim()} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white">Senden</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -1162,16 +1447,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 </div>
               ))}</div>
             </div></> })()}
-            {(() => { const pD = projectDecisions(viewProject.id); if (!pD.length) return null; return <><Separator className="bg-[var(--syn-line)]" /><div>
-              <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--syn-text-faint)' }}>Entscheidungen</h3>
-              <div className="space-y-1">{pD.map(d => (
-                <div key={d.id} className="flex items-center gap-2 text-sm">
-                  <Badge className={`text-[9px] ${ST_STYLE[d.status]}`}>{ST_LABEL[d.status]}</Badge>
-                  <span>{d.title}</span>
-                  {d.decided_by && <span className="text-xs ml-auto" style={{ color: 'var(--syn-text-faint)' }}>{d.decided_by}</span>}
-                </div>
-              ))}</div>
-            </div></> })()}
             <Separator className="bg-[var(--syn-line)]" />
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const p = viewProject!; setViewProject(null); setEditProject({...p}) }}>{'✎'} Bearbeiten</Button>
@@ -1195,7 +1470,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       <Dialog open={!!editOpen} onOpenChange={() => setEditOpen(null)}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editOpen?.id === '__new__' ? 'Neues Open Item' : 'Open Item bearbeiten'}</DialogTitle></DialogHeader>{editOpen && <div className="space-y-3 pt-2"><Input placeholder="Titel" value={editOpen.title} onChange={e => setEditOpen({...editOpen, title: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea placeholder="Beschreibung" value={editOpen.description} onChange={e => setEditOpen({...editOpen, description: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><div className="grid grid-cols-2 gap-3"><Select value={editOpen.owner} onValueChange={v => setEditOpen({...editOpen, owner: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select><Select value={editOpen.category} onValueChange={v => setEditOpen({...editOpen, category: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="general">General</SelectItem><SelectItem value="risk">Risk</SelectItem><SelectItem value="opportunity">Opportunity</SelectItem><SelectItem value="question">Question</SelectItem><SelectItem value="follow_up">Follow-up</SelectItem></SelectContent></Select></div><Select value={editOpen.status} onValueChange={v => setEditOpen({...editOpen, status: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editOpen.title.trim()} onClick={() => editOpen.id === '__new__' ? handleCreateOpen(editOpen) : handleSaveOpen(editOpen)}>{editOpen.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button></div>}</DialogContent></Dialog>
 
       {/* Edit Meeting */}
-      <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Sitzung bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-3 pt-2"><Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.topics.join(', ')} onChange={e => setEditMeeting({...editMeeting, topics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Themen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={4} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button></div>}</DialogContent></Dialog>
+      <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Meeting bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-3 pt-2"><Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.topics.join(', ')} onChange={e => setEditMeeting({...editMeeting, topics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Themen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={4} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button></div>}</DialogContent></Dialog>
 
       {/* Edit Project */}
       <Dialog open={!!editProject} onOpenChange={() => setEditProject(null)}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>{editProject && <div className="space-y-3 pt-2"><Input placeholder="Name" value={editProject.name} onChange={e => setEditProject({...editProject, name: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea placeholder="Beschreibung" value={editProject.description || ''} onChange={e => setEditProject({...editProject, description: e.target.value || null})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Select value={editProject.status} onValueChange={v => setEditProject({...editProject, status: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktiv</SelectItem><SelectItem value="completed">Abgeschlossen</SelectItem><SelectItem value="on_hold">Pausiert</SelectItem></SelectContent></Select><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editProject.name.trim()} onClick={() => handleSaveProject(editProject)}>{editProject.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button></div>}</DialogContent></Dialog>

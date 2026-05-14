@@ -280,6 +280,53 @@ export async function semanticSearch(query: string, history: { role: string; tex
   return data
 }
 
+export async function semanticSearchStream(
+  query: string,
+  history: { role: string; text: string }[] = [],
+  onMatches: (matches: SearchMatch[]) => void,
+  onDelta: (text: string) => void,
+  onDone: () => void,
+  onError: (err: string) => void,
+): Promise<void> {
+  console.log('[KI-Stream] Sending query:', query)
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/semantic-search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ query, match_threshold: 0.25, match_count: 10, history, stream: true }),
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    onError(`Search error: ${err}`)
+    return
+  }
+  const reader = res.body!.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      const data = line.slice(6).trim()
+      if (!data) continue
+      try {
+        const evt = JSON.parse(data)
+        if (evt.type === 'matches') onMatches(evt.matches || [])
+        else if (evt.type === 'delta') onDelta(evt.text)
+        else if (evt.type === 'done') onDone()
+        else if (evt.type === 'error') onError(evt.error)
+      } catch { /* skip */ }
+    }
+  }
+  onDone()
+}
+
 export async function triggerBackfillEmbeddings(): Promise<{ embedded: number; errors: number }> {
   const session = await getSession()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/backfill-embeddings`, {

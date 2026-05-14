@@ -1,13 +1,13 @@
 #!/bin/bash
 CSS=$(cat dist/assets/index-BcYVLrxo.css)
 JS=$(cat dist/assets/index-DFt0kg2p.js)
-cat > /sessions/youthful-dazzling-ride/mnt/outputs/tedi-dashboard-v9.html << HTMLEOF
+cat > /sessions/youthful-dazzling-ride/mnt/outputs/meeting-os-bundle.html << HTMLEOF
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TEDi Team Dashboard</title>
+<title>Meeting OS</title>
 <style>${CSS}</style>
 </head>
 <body>
@@ -16,4 +16,4 @@ cat > /sessions/youthful-dazzling-ride/mnt/outputs/tedi-dashboard-v9.html << HTM
 </body>
 </html>
 HTMLEOF
-echo "Done: tedi-dashboard-v9.html"
+echo "Done: meeting-os-bundle.html"
