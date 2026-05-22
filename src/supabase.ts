@@ -15,7 +15,7 @@ export interface DbTodo { id: string; assignee: string; assignee_id: string | nu
 export interface DbBlocker { id: string; reported_by: string; reported_by_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; resolved_at: string | null; resolution_note: string | null; created_at: string; updated_at: string }
 export interface DbOpenItem { id: string; owner: string; owner_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; category: string; status: string; closed_at: string | null; created_at: string; updated_at: string }
 export interface DbActivity { id: string; entity_type: string; entity_id: string; action: string; field_changed: string | null; old_value: string | null; new_value: string | null; changed_by: string | null; note: string | null; meeting_id: string | null; created_at: string }
-export interface DbProject { id: string; name: string; description: string | null; status: string; created_at: string; updated_at: string }
+export interface DbProject { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; owner: string | null; priority: string; created_at: string; updated_at: string }
 export interface DbDecision { id: string; meeting_id: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
 
 // ── API Functions ──
@@ -32,7 +32,7 @@ export async function fetchDecisions() {
   return data as DbDecision[]
 }
 
-export async function insertProject(fields: { name: string; description?: string }) {
+export async function insertProject(fields: { name: string; description?: string; start_date?: string; end_date?: string; owner?: string; priority?: string }) {
   const { data, error } = await supabase.from('projects').insert(fields).select().single()
   if (error) throw error
   return data as DbProject

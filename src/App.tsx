@@ -336,6 +336,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [editOpen, setEditOpen] = useState<OpenItem | null>(null)
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null)
   const [editProject, setEditProject] = useState<DbProject | null>(null)
+  const [projectInitTodos, setProjectInitTodos] = useState('')
   const [viewMeeting, setViewMeeting] = useState<Meeting | null>(null)
   const [viewTodo, setViewTodo] = useState<Todo | null>(null)
   const [viewBlocker, setViewBlocker] = useState<Blocker | null>(null)
@@ -440,7 +441,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleCreateTodo = async (t: Todo) => { setEditTodo(null); try { const c = await insertTodo({ title: t.title, description: t.description || undefined, assignee: t.assignee, priority: t.priority, due_date: t.dueDate || undefined } as any); setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: t.startDate, durationDays: t.durationDays, dependsOn: [], meetingId: null, projectId: t.projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev]); if (t.startDate || t.projectId || t.durationDays > 1) { await updateTodoFull(c.id, { start_date: t.startDate, duration_days: t.durationDays, project_id: t.projectId } as any) } } catch { } }
   const handleCreateBlocker = async (b: Blocker) => { setEditBlocker(null); try { const c = await insertBlocker({ title: b.title, description: b.description || undefined, reported_by: b.reportedBy }); setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
   const handleCreateOpen = async (o: OpenItem) => { setEditOpen(null); try { const c = await insertOpenItem({ title: o.title, description: o.description || undefined, owner: o.owner, category: o.category }); setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
-  const handleSaveProject = async (p: DbProject) => { if (p.id === '__new__') { setEditProject(null); try { const c = await insertProject({ name: p.name, description: p.description || undefined }); setProjects(prev => [...prev, c]) } catch { } } else { setProjects(prev => prev.map(x => x.id === p.id ? p : x)); setEditProject(null); try { await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status }) } catch { } } }
+  const handleSaveProject = async (p: DbProject, initTodoTitles?: string[]) => { if (p.id === '__new__') { setEditProject(null); try { const c = await insertProject({ name: p.name, description: p.description || undefined, start_date: p.start_date || undefined, end_date: p.end_date || undefined, owner: p.owner || undefined, priority: p.priority || 'medium' }); setProjects(prev => [...prev, c]); if (initTodoTitles && initTodoTitles.length > 0) { for (const title of initTodoTitles) { if (!title.trim()) continue; try { const t = await insertTodo({ title: title.trim(), assignee: p.owner || 'Nicht zugeordnet', priority: 'medium' } as any); await updateTodoFull(t.id, { project_id: c.id } as any); setTodos(prev => [{ id: t.id, assignee: p.owner || 'Nicht zugeordnet', title: t.title, description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: c.id, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch {} } } } catch { } } else { setProjects(prev => prev.map(x => x.id === p.id ? p : x)); setEditProject(null); try { await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status, start_date: p.start_date, end_date: p.end_date, owner: p.owner, priority: p.priority }) } catch { } } }
   const handleDeleteProject = async (p: DbProject) => { setProjects(prev => prev.filter(x => x.id !== p.id)); try { await deleteProjectDb(p.id) } catch { } }
 
   const handleQuickStatusToggle = async (t: Todo) => {
@@ -923,8 +924,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <TableRow key={m.id} className="text-sm cursor-pointer hover:bg-[var(--syn-hover)] border-[var(--syn-line)]" onClick={() => setViewMeeting(m)}>
                     <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{m.date}</TableCell>
                     <TableCell className="text-left font-medium">{m.title}</TableCell>
-                    <TableCell><div className="flex flex-wrap gap-1">{m.participants.slice(0, 3).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{p}</span>)}{m.participants.length > 3 && <span className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 3}</span>}</div></TableCell>
-                    <TableCell><div className="flex flex-wrap gap-1">{m.topics.slice(0, 2).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)]">{t}</Badge>)}{m.topics.length > 2 && <span className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 2}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-wrap gap-1">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-wrap gap-1">{m.topics.slice(0, 5).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)]">{t}</Badge>)}{m.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 5}</span>}</div></TableCell>
                     <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{m.keyDecisions.length > 0 ? <span className="font-medium">{m.keyDecisions.length}</span> : '—'}</TableCell>
                     <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                   </TableRow>
@@ -1074,7 +1075,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Projekte</h2>
-                  <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditProject({ id: '__new__', name: '', description: null, status: 'active', created_at: '', updated_at: '' } as DbProject)}>+ Neu</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditProject({ id: '__new__', name: '', description: null, status: 'active', start_date: null, end_date: null, owner: null, priority: 'medium', created_at: '', updated_at: '' } as DbProject)}>+ Neu</Button>
                 </div>
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
@@ -1781,34 +1782,70 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>Meeting bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-3 pt-2"><Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.topics.join(', ')} onChange={e => setEditMeeting({...editMeeting, topics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Themen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={4} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button></div>}</DialogContent></Dialog>
 
       {/* Edit Project */}
-      <Dialog open={!!editProject} onOpenChange={() => setEditProject(null)}><DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>{editProject && <div className="space-y-4 pt-2">
+      <Dialog open={!!editProject} onOpenChange={() => { setEditProject(null); setProjectInitTodos('') }}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>{editProject && <div className="space-y-4 pt-2">
         <div>
-          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektname</label>
+          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektname *</label>
           <Input placeholder="Name" value={editProject.name} onChange={e => setEditProject({...editProject, name: e.target.value})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
         </div>
         <div>
           <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Beschreibung</label>
-          <Textarea placeholder="Beschreibung (optional)" value={editProject.description || ''} onChange={e => setEditProject({...editProject, description: e.target.value || null})} rows={3} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+          <Textarea placeholder="Beschreibung (optional)" value={editProject.description || ''} onChange={e => setEditProject({...editProject, description: e.target.value || null})} rows={2} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Status</label>
+            <Select value={editProject.status} onValueChange={v => setEditProject({...editProject, status: v})}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Aktiv</SelectItem>
+                <SelectItem value="completed">Abgeschlossen</SelectItem>
+                <SelectItem value="on_hold">Pausiert</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Priorität</label>
+            <Select value={editProject.priority || 'medium'} onValueChange={v => setEditProject({...editProject, priority: v})}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="urgent">Dringend</SelectItem>
+                <SelectItem value="high">Hoch</SelectItem>
+                <SelectItem value="medium">Mittel</SelectItem>
+                <SelectItem value="low">Niedrig</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div>
-          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Status</label>
-          <Select value={editProject.status} onValueChange={v => setEditProject({...editProject, status: v})}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Verantwortlicher</label>
+          <Select value={editProject.owner || 'none'} onValueChange={v => setEditProject({...editProject, owner: v === 'none' ? null : v})}>
+            <SelectTrigger className="mt-1"><SelectValue placeholder="— Nicht zugeordnet" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="active">Aktiv</SelectItem>
-              <SelectItem value="completed">Abgeschlossen</SelectItem>
-              <SelectItem value="on_hold">Pausiert</SelectItem>
+              <SelectItem value="none">— Nicht zugeordnet</SelectItem>
+              {memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Startdatum</label>
+            <Input type="date" value={editProject.start_date || ''} onChange={e => setEditProject({...editProject, start_date: e.target.value || null})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+          </div>
+          <div>
+            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Enddatum</label>
+            <Input type="date" value={editProject.end_date || ''} onChange={e => setEditProject({...editProject, end_date: e.target.value || null})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+          </div>
+        </div>
+        {editProject.id === '__new__' && <div>
+          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Initiale Todos <span className="font-normal" style={{ color: 'var(--syn-text-faint)' }}>(eine pro Zeile, optional)</span></label>
+          <Textarea placeholder={"API-Doku fertigstellen\nStaging-Umgebung einrichten\nKick-off Meeting planen"} value={projectInitTodos} onChange={e => setProjectInitTodos(e.target.value)} rows={3} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm font-mono" />
+        </div>}
         {editProject.id !== '__new__' && (() => {
           const pT = projectTodos(editProject.id)
           const pB = projectBlockers(editProject.id)
           const done = pT.filter(t => t.status === 'done').length
           const inProgress = pT.filter(t => t.status === 'in_progress').length
-          const owners = [...new Set(pT.map(t => t.assignee).filter(a => a && a !== 'Nicht zugeordnet'))]
-          const starts = pT.map(t => t.startDate).filter(Boolean).sort()
-          const ends = pT.filter(t => t.startDate).map(t => addDays(t.startDate!, Math.max(t.durationDays - 1, 0))).sort()
+          const linkedMeetings = [...new Set(pT.map(t => t.meetingId).filter(Boolean))]
           if (!pT.length && !pB.length) return null
           return <>
             <Separator className="bg-[var(--syn-line)]" />
@@ -1829,15 +1866,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 </div>
               </div>
               {pB.filter(b => b.status === 'active').length > 0 && <div className="mt-2 text-xs" style={{ color: 'var(--syn-danger)' }}>⚠ {pB.filter(b => b.status === 'active').length} aktive Blocker</div>}
-              <div className="mt-2 space-y-1 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>
-                {owners.length > 0 && <div>Team: {owners.join(', ')}</div>}
-                {starts.length > 0 && <div>Zeitraum: {starts[0]} — {ends[ends.length - 1]}</div>}
-                <div>Erstellt: {editProject.created_at?.split('T')[0] || '—'}</div>
-              </div>
+              {linkedMeetings.length > 0 && <div className="mt-2 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Verknüpfte Meetings: {linkedMeetings.map(mid => getMeeting(mid)?.title || '').filter(Boolean).join(', ')}</div>}
+              <div className="mt-1 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Erstellt: {editProject.created_at?.split('T')[0] || '—'}</div>
             </div>
           </>
         })()}
-        <Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editProject.name.trim()} onClick={() => handleSaveProject(editProject)}>{editProject.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button>
+        <Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editProject.name.trim()} onClick={() => { const titles = projectInitTodos.split('\n').map(s => s.trim()).filter(Boolean); handleSaveProject(editProject, titles.length ? titles : undefined); setProjectInitTodos('') }}>{editProject.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button>
       </div>}</DialogContent></Dialog>
 
       {/* View Todo */}
