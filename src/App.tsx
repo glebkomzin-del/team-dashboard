@@ -506,14 +506,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     const p = item.payload
     try {
       if (item.entity_type === 'todo') {
-        const c = await insertTodo({ title: p.title, description: p.description, assignee: p.assignee || 'Nicht zugeordnet', priority: p.priority || 'medium', due_date: p.due_date || null })
-        setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+        const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const c = await insertTodo({ title: p.title, description: p.description, assignee: p.assignee || 'Nicht zugeordnet', priority: p.priority || 'medium', due_date: p.due_date || null, created_at: srcDate })
+        setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'blocker') {
-        const c = await insertBlocker({ title: p.title, description: p.description, reported_by: p.reported_by || 'Nicht zugeordnet' })
-        setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+        const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const c = await insertBlocker({ title: p.title, description: p.description, reported_by: p.reported_by || 'Nicht zugeordnet', created_at: srcDate })
+        setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'open_item') {
-        const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'general' })
-        setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+        const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'general', created_at: srcDate })
+        setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'meeting') {
         const c = await insertMeeting({ title: p.title, meeting_date: p.meeting_date, topics: (p.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')).filter(Boolean), participants: p.participants || [], ai_summary: p.ai_summary, key_decisions: p.key_decisions || [] })
         setMeetings(prev => [{ id: c.id, title: c.title, date: c.meeting_date?.split('T')[0] || '', topics: c.topics || [], participants: c.participants || [], summary: c.ai_summary || '', keyDecisions: c.key_decisions || [] }, ...prev])
@@ -1155,19 +1158,23 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <SH2 label="Priorität" className="w-[100px]" />
                       <SH2 label="Fällig" className="w-[100px]" />
                       <SH2 label="Status" className="w-[100px]" />
+                      <SH2 label="Erstellt" className="w-[100px]" />
+                      <SH2 label="Quelle" className="w-[140px]" />
                       <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.todos.map(item => { const p = item.payload; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' }; return (
+                      {ib.todos.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-left"><div className="flex items-center gap-2"><button onClick={e => { e.stopPropagation(); cycleTodoInbox(item) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(vt) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</div></div></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.assignee||'?'}/><span className="text-xs">{p.assignee||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${PRI_STYLE[p.priority]||''}`}>{PRI_LABEL[p.priority]||p.priority||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{p.due_date||'—'}</TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
+                          <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
+                          <TableCell className="overflow-hidden"><span className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'Make'}</span></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {ib.todos.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Todos</TableCell></TableRow>}
+                      {ib.todos.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Todos</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
@@ -1180,18 +1187,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
                       <SH2 label="Erstellt" className="w-[100px]" />
+                      <SH2 label="Quelle" className="w-[140px]" />
                       <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.blockers.map(item => { const p = item.payload; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: item.created_at?.split('T')[0]||'' }; return (
+                      {ib.blockers.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: srcDate }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewBlocker(vb) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
-                          <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{item.created_at?.split('T')[0]||'—'}</TableCell>
+                          <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
+                          <TableCell className="overflow-hidden"><span className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'Make'}</span></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {ib.blockers.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Blocker</TableCell></TableRow>}
+                      {ib.blockers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Blocker</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
@@ -1205,19 +1214,23 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <SH2 label="Kategorie" className="w-[100px]" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
+                      <SH2 label="Erstellt" className="w-[100px]" />
+                      <SH2 label="Quelle" className="w-[140px]" />
                       <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.open.map(item => { const p = item.payload; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'general', status: p.status||'open', meetingId: null, projectId: null, createdAt: item.created_at?.split('T')[0]||'' }; return (
+                      {ib.open.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'general', status: p.status||'open', meetingId: null, projectId: null, createdAt: srcDate }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-center">{CAT_ICON[p.category]||'○'}</TableCell>
                           <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewOpen(vo) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
                           <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[p.category]||p.category||'—'}</Badge></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
+                          <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
+                          <TableCell className="overflow-hidden"><span className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'Make'}</span></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {ib.open.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine offenen Punkte</TableCell></TableRow>}
+                      {ib.open.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine offenen Punkte</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}

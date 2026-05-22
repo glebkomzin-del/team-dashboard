@@ -154,13 +154,13 @@ export async function updateMeetingFull(id: string, fields: Partial<DbMeeting>) 
 }
 
 // Insert functions
-export async function insertTodo(fields: { title: string; description?: string; assignee: string; priority: string; due_date?: string | null }) {
+export async function insertTodo(fields: { title: string; description?: string; assignee: string; priority: string; due_date?: string | null; created_at?: string }) {
   const { data, error } = await supabase.from('todos').insert(fields).select().single()
   if (error) throw error
   return data as DbTodo
 }
 
-export async function insertBlocker(fields: { title: string; description?: string; reported_by: string }) {
+export async function insertBlocker(fields: { title: string; description?: string; reported_by: string; created_at?: string }) {
   const { data, error } = await supabase.from('blockers').insert(fields).select().single()
   if (error) throw error
   return data as DbBlocker
@@ -172,7 +172,7 @@ export async function insertMeeting(fields: { title: string; meeting_date: strin
   return data as DbMeeting
 }
 
-export async function insertOpenItem(fields: { title: string; description?: string; owner: string; category: string }) {
+export async function insertOpenItem(fields: { title: string; description?: string; owner: string; category: string; created_at?: string }) {
   const { data, error } = await supabase.from('open_items').insert(fields).select().single()
   if (error) throw error
   return data as DbOpenItem
