@@ -17,6 +17,7 @@ export interface DbOpenItem { id: string; owner: string; owner_id: string | null
 export interface DbActivity { id: string; entity_type: string; entity_id: string; action: string; field_changed: string | null; old_value: string | null; new_value: string | null; changed_by: string | null; note: string | null; meeting_id: string | null; created_at: string }
 export interface DbProject { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; owner: string | null; priority: string; created_at: string; updated_at: string }
 export interface DbDecision { id: string; meeting_id: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
+export interface DbInboxItem { id: string; entity_type: 'todo' | 'blocker' | 'open_item' | 'meeting' | 'decision'; payload: Record<string, any>; source: string; status: 'pending' | 'approved' | 'rejected'; created_at: string }
 
 // ── API Functions ──
 
@@ -256,6 +257,28 @@ export async function setProjectMeetings(projectId: string, meetingIds: string[]
     const { error } = await supabase.from('project_meetings').insert(rows)
     if (error) throw error
   }
+}
+
+// ── Inbox ──
+export async function fetchInboxItems() {
+  const { data, error } = await supabase.from('inbox_items').select('*').eq('status', 'pending').order('created_at', { ascending: false })
+  if (error) throw error
+  return data as DbInboxItem[]
+}
+
+export async function updateInboxItemPayload(id: string, payload: Record<string, any>) {
+  const { error } = await supabase.from('inbox_items').update({ payload }).eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteInboxItemDb(id: string) {
+  const { error } = await supabase.from('inbox_items').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function approveInboxItem(id: string, status: 'approved' | 'rejected') {
+  const { error } = await supabase.from('inbox_items').update({ status }).eq('id', id)
+  if (error) throw error
 }
 
 // ── Decisions CRUD ──

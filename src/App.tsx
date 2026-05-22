@@ -18,14 +18,16 @@ import {
   updateProjectFull, deleteProjectDb,
   fetchProjectMeetings, setProjectMeetings,
   insertTodo, insertBlocker, insertOpenItem,
+  insertDecision,
+  fetchInboxItems, updateInboxItemPayload, deleteInboxItemDb, approveInboxItem,
   triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
   semanticSearchStream,
-  type DbTeamMember, type DbProject, type SearchMatch
+  type DbTeamMember, type DbProject, type DbInboxItem, type SearchMatch
 } from './supabase'
 
-type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll'
+type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
 type SortDir = 'asc' | 'desc' | null
 type ProjectView = 'table' | 'kanban' | 'gantt'
 type ActionTab = 'todos' | 'blocker' | 'open'
@@ -249,7 +251,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   // Hash routing with backward compat
   const getPageFromHash = (): Page => {
     const raw = window.location.hash.replace('#', '')
-    const map: Record<string, Page> = { dashboard: 'uebersicht', uebersicht: 'uebersicht', notizen: 'sitzungen', protokoll: 'protokoll', projekte: 'projekte', ki: 'ki', textsuche: 'textsuche', sitzungen: 'sitzungen', aktionen: 'aktionen' }
+    const map: Record<string, Page> = { dashboard: 'uebersicht', uebersicht: 'uebersicht', notizen: 'sitzungen', protokoll: 'protokoll', projekte: 'projekte', ki: 'ki', textsuche: 'textsuche', sitzungen: 'sitzungen', aktionen: 'aktionen', inbox: 'inbox' }
     return map[raw] || 'uebersicht'
   }
   const [page, setPageRaw] = useState<Page>(getPageFromHash)
@@ -294,6 +296,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [activity, setActivity] = useState<Activity[]>([])
   const [projects, setProjects] = useState<DbProject[]>([])
   const projectIds = useMemo(() => projects.map(p => p.id), [projects])
+  const [inboxItems, setInboxItems] = useState<DbInboxItem[]>([])
+  const [inboxFilter, setInboxFilter] = useState<string>('all')
+  const [inboxEditing, setInboxEditing] = useState<string | null>(null)
+  const [inboxEditPayload, setInboxEditPayload] = useState<Record<string, any>>({})
 
   // Chat
   const CHAT_STORAGE_KEY = 'mos_chat_history'
@@ -410,9 +416,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const loadData = useCallback(async () => {
     try {
       setError(null)
-      const [mems, mtgs, tds, blk, oi, act, prj] = await Promise.all([
-        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects()
+      const [mems, mtgs, tds, blk, oi, act, prj, inbox] = await Promise.all([
+        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects(), fetchInboxItems()
       ])
+      setInboxItems(inbox)
       setMembers(mems); setProjects(prj)
       setMeetings(mtgs.map(m => ({ id: m.id, title: m.title, date: m.meeting_date?.split('T')[0] || '', topics: m.topics || [], participants: m.participants || [], summary: m.ai_summary || '', keyDecisions: m.key_decisions || [] })))
       setTodos(tds.map(t => ({ id: t.id, assignee: t.assignee || 'Nicht zugeordnet', title: t.title, description: t.description || '', status: t.status, priority: t.priority, dueDate: t.due_date, startDate: (t as any).start_date || null, durationDays: (t as any).duration_days || 1, dependsOn: (t as any).depends_on || [], meetingId: t.meeting_id, projectId: (t as any).project_id || null, createdAt: t.created_at?.split('T')[0] || '' })))
@@ -462,6 +469,36 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleDeleteOpen = async (o: OpenItem) => { setOpenItems(prev => prev.filter(x => x.id !== o.id)); try { await deleteOpenItemDb(o.id) } catch { } }
   const handleSaveOpen = async (o: OpenItem) => { setOpenItems(prev => prev.map(x => x.id === o.id ? o : x)); setEditOpen(null); try { await updateOpenItemFull(o.id, { title: o.title, description: o.description, owner: o.owner, category: o.category, status: o.status }) } catch { } }
   const handleDeleteMeeting = async (m: Meeting) => { setMeetings(prev => prev.filter(x => x.id !== m.id)); try { await deleteMeetingDb(m.id) } catch { } }
+
+  // ── Inbox handlers ──
+  const handleInboxApprove = async (item: DbInboxItem) => {
+    const p = item.payload
+    try {
+      if (item.entity_type === 'todo') {
+        const c = await insertTodo({ title: p.title, description: p.description, assignee: p.assignee || 'Nicht zugeordnet', priority: p.priority || 'medium', due_date: p.due_date || null })
+        setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+      } else if (item.entity_type === 'blocker') {
+        const c = await insertBlocker({ title: p.title, description: p.description, reported_by: p.reported_by || 'Nicht zugeordnet' })
+        setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+      } else if (item.entity_type === 'open_item') {
+        const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'general' })
+        setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+      } else if (item.entity_type === 'decision') {
+        await insertDecision({ title: p.title, description: p.description, decided_by: p.decided_by })
+      }
+      await approveInboxItem(item.id, 'approved')
+      setInboxItems(prev => prev.filter(x => x.id !== item.id))
+    } catch (e: any) { setError(e.message || 'Fehler beim Übernehmen') }
+  }
+  const handleInboxReject = async (id: string) => {
+    setInboxItems(prev => prev.filter(x => x.id !== id))
+    await deleteInboxItemDb(id).catch(() => {})
+  }
+  const handleInboxEditSave = async (item: DbInboxItem) => {
+    await updateInboxItemPayload(item.id, inboxEditPayload).catch(() => {})
+    setInboxItems(prev => prev.map(x => x.id === item.id ? { ...x, payload: inboxEditPayload } : x))
+    setInboxEditing(null)
+  }
 
   const handleBulkDeleteTodos = async () => { const ids = [...todoSelected]; setTodos(prev => prev.filter(x => !ids.includes(x.id))); setTodoSelected(new Set()); await Promise.all(ids.map(id => deleteTodoDb(id).catch(() => {}))) }
   const handleBulkDeleteBlockers = async () => { const ids = [...blockerSelected]; setBlockers(prev => prev.filter(x => !ids.includes(x.id))); setBlockerSelected(new Set()); await Promise.all(ids.map(id => deleteBlockerDb(id).catch(() => {}))) }
@@ -738,6 +775,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const navSections: { label: string; items: { key: Page; label: string; icon: string; count?: number }[] }[] = [
     { label: 'ÜBERBLICK', items: [
       { key: 'uebersicht', label: 'Command Center', icon: '⬡' },
+      { key: 'inbox', label: 'Inbox', icon: '⬇', count: inboxItems.length },
       { key: 'sitzungen', label: 'Meetings', icon: '☰', count: meetings.length },
       { key: 'aktionen', label: 'Aktionen', icon: '✓', count: todos.filter(t => t.status !== 'done').length + blockers.filter(b => b.status === 'active').length },
     ]},
@@ -984,6 +1022,139 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             )
           })()}
 
+          {/* ═══ INBOX ═══ */}
+          {page === 'inbox' && (() => {
+            const INBOX_TYPE_LABEL: Record<string, string> = { todo: 'Todo', blocker: 'Blocker', open_item: 'Offener Punkt', meeting: 'Meeting', decision: 'Entscheidung' }
+            const INBOX_TYPE_COLOR: Record<string, string> = { todo: 'var(--syn-warn)', blocker: 'var(--syn-danger)', open_item: 'var(--syn-info)', meeting: 'var(--syn-accent)', decision: 'var(--syn-ok)' }
+            const INBOX_TYPE_STYLE: Record<string, string> = { todo: 'bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]', blocker: 'bg-[var(--syn-danger-soft)] text-[var(--syn-danger)]', open_item: 'bg-[var(--syn-info-soft)] text-[var(--syn-info)]', meeting: 'bg-[var(--syn-accent-soft)] text-[var(--syn-accent)]', decision: 'bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]' }
+
+            const filtered = inboxFilter === 'all' ? inboxItems : inboxItems.filter(i => i.entity_type === inboxFilter)
+
+            const renderFields = (item: DbInboxItem, editing: boolean) => {
+              const p = editing ? inboxEditPayload : item.payload
+              const set = (k: string, v: string) => setInboxEditPayload(prev => ({ ...prev, [k]: v }))
+
+              const fieldCls = "text-xs bg-[var(--syn-surface-2)] border border-[var(--syn-line)] rounded px-2 py-1 w-full focus:outline-none focus:border-[var(--syn-accent)]"
+              const labelCls = "text-[10px] font-medium tracking-wide uppercase mb-0.5 block"
+              const ro = (val: string) => <span className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{val || '—'}</span>
+
+              if (item.entity_type === 'todo') return (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Titel</label>{editing ? <input className={fieldCls} value={p.title || ''} onChange={e => set('title', e.target.value)} /> : ro(p.title)}</div>
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Beschreibung</label>{editing ? <textarea className={fieldCls} rows={2} value={p.description || ''} onChange={e => set('description', e.target.value)} /> : ro(p.description)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Zuständig</label>{editing ? <input className={fieldCls} value={p.assignee || ''} onChange={e => set('assignee', e.target.value)} /> : ro(p.assignee)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Priorität</label>{editing ? <select className={fieldCls} value={p.priority || 'medium'} onChange={e => set('priority', e.target.value)}><option value="urgent">Dringend</option><option value="high">Hoch</option><option value="medium">Mittel</option><option value="low">Niedrig</option></select> : ro(PRI_LABEL[p.priority] || p.priority)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Fällig</label>{editing ? <input className={fieldCls} type="date" value={p.due_date || ''} onChange={e => set('due_date', e.target.value)} /> : ro(p.due_date)}</div>
+                </div>
+              )
+              if (item.entity_type === 'blocker') return (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Titel</label>{editing ? <input className={fieldCls} value={p.title || ''} onChange={e => set('title', e.target.value)} /> : ro(p.title)}</div>
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Beschreibung</label>{editing ? <textarea className={fieldCls} rows={2} value={p.description || ''} onChange={e => set('description', e.target.value)} /> : ro(p.description)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Zuständig</label>{editing ? <input className={fieldCls} value={p.reported_by || ''} onChange={e => set('reported_by', e.target.value)} /> : ro(p.reported_by)}</div>
+                </div>
+              )
+              if (item.entity_type === 'open_item') return (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Titel</label>{editing ? <input className={fieldCls} value={p.title || ''} onChange={e => set('title', e.target.value)} /> : ro(p.title)}</div>
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Beschreibung</label>{editing ? <textarea className={fieldCls} rows={2} value={p.description || ''} onChange={e => set('description', e.target.value)} /> : ro(p.description)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Zuständig</label>{editing ? <input className={fieldCls} value={p.owner || ''} onChange={e => set('owner', e.target.value)} /> : ro(p.owner)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Kategorie</label>{editing ? <select className={fieldCls} value={p.category || 'general'} onChange={e => set('category', e.target.value)}><option value="general">Allgemein</option><option value="risk">Risiko</option><option value="opportunity">Chance</option><option value="question">Frage</option><option value="follow_up">Nachverfolgung</option></select> : ro(CAT_LABEL[p.category] || p.category)}</div>
+                </div>
+              )
+              if (item.entity_type === 'meeting') return (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Titel</label>{editing ? <input className={fieldCls} value={p.title || ''} onChange={e => set('title', e.target.value)} /> : ro(p.title)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Datum</label>{editing ? <input className={fieldCls} type="date" value={p.meeting_date || ''} onChange={e => set('meeting_date', e.target.value)} /> : ro(p.meeting_date)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Teilnehmer</label>{ro((p.participants || []).join(', '))}</div>
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>KI-Zusammenfassung</label>{editing ? <textarea className={fieldCls} rows={3} value={p.ai_summary || ''} onChange={e => set('ai_summary', e.target.value)} /> : ro(p.ai_summary)}</div>
+                </div>
+              )
+              if (item.entity_type === 'decision') return (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Titel</label>{editing ? <input className={fieldCls} value={p.title || ''} onChange={e => set('title', e.target.value)} /> : ro(p.title)}</div>
+                  <div className="col-span-2"><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Beschreibung</label>{editing ? <textarea className={fieldCls} rows={2} value={p.description || ''} onChange={e => set('description', e.target.value)} /> : ro(p.description)}</div>
+                  <div><label className={labelCls} style={{ color: 'var(--syn-text-faint)' }}>Entschieden von</label>{editing ? <input className={fieldCls} value={p.decided_by || ''} onChange={e => set('decided_by', e.target.value)} /> : ro(p.decided_by)}</div>
+                </div>
+              )
+              return null
+            }
+
+            return (
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold">Inbox</h2>
+                    {inboxItems.length > 0 && <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--syn-warn-soft)', color: 'var(--syn-warn)' }}>{inboxItems.length} ausstehend</span>}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {(['all', 'todo', 'blocker', 'open_item', 'meeting', 'decision'] as const).map(type => (
+                      <button key={type} onClick={() => setInboxFilter(type)}
+                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${inboxFilter === type ? 'bg-[var(--syn-accent)] text-white border-[var(--syn-accent)]' : 'border-[var(--syn-line)] hover:bg-[var(--syn-hover)]'}`}
+                        style={inboxFilter !== type ? { color: 'var(--syn-text-muted)' } : {}}>
+                        {type === 'all' ? 'Alle' : INBOX_TYPE_LABEL[type]}
+                        {type !== 'all' && inboxItems.filter(i => i.entity_type === type).length > 0 && <span className="ml-1 opacity-70">({inboxItems.filter(i => i.entity_type === type).length})</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Subtitle */}
+                <p className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>
+                  Neue Einträge aus Make-Automatisierungen – prüfen, ggf. anpassen und mit <strong style={{ color: 'var(--syn-ok)' }}>Übernehmen</strong> freigeben oder ablehnen.
+                </p>
+
+                {/* Empty state */}
+                {filtered.length === 0 && (
+                  <div className="rounded-xl border border-[var(--syn-line)] py-16 flex flex-col items-center gap-3" style={{ background: 'var(--syn-surface)' }}>
+                    <div className="text-3xl opacity-30">⬇</div>
+                    <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine ausstehenden Einträge</p>
+                    <p className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Sobald Make ein Szenario ausführt, landen neue Einträge hier.</p>
+                  </div>
+                )}
+
+                {/* Cards */}
+                <div className="space-y-3">
+                  {filtered.map(item => {
+                    const isEditing = inboxEditing === item.id
+                    const dot = INBOX_TYPE_COLOR[item.entity_type] || 'var(--syn-accent)'
+                    const typeStyle = INBOX_TYPE_STYLE[item.entity_type] || ''
+                    const title = (isEditing ? inboxEditPayload : item.payload).title || '(kein Titel)'
+                    return (
+                      <div key={item.id} className="rounded-xl border border-[var(--syn-line)] p-4" style={{ background: 'var(--syn-surface)', borderLeftWidth: 3, borderLeftColor: dot }}>
+                        {/* Card header */}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge className={`text-[10px] leading-none py-0.5 px-2 ${typeStyle}`}>{INBOX_TYPE_LABEL[item.entity_type]}</Badge>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-faint)' }}>via Make</span>
+                            <span className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>{item.created_at.split('T')[0]}</span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {isEditing ? <>
+                              <button onClick={() => handleInboxEditSave(item)} className="text-xs px-3 py-1.5 rounded border font-medium transition-colors hover:bg-[var(--syn-ok)]/10" style={{ borderColor: 'var(--syn-ok)', color: 'var(--syn-ok)' }}>Speichern</button>
+                              <button onClick={() => setInboxEditing(null)} className="text-xs px-2 py-1.5 rounded border transition-colors hover:bg-[var(--syn-hover)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-text-faint)' }}>Abbrechen</button>
+                            </> : <>
+                              <button onClick={() => { setInboxEditing(item.id); setInboxEditPayload({ ...item.payload }) }} className="text-xs w-7 h-7 flex items-center justify-center rounded border transition-colors hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
+                              {item.entity_type !== 'meeting' && (
+                                <button onClick={() => handleInboxApprove(item)} className="text-xs px-3 py-1.5 rounded border font-medium transition-colors hover:bg-[var(--syn-ok)]/10" style={{ borderColor: 'var(--syn-ok)', color: 'var(--syn-ok)' }} title="Übernehmen">✓ Übernehmen</button>
+                              )}
+                              <button onClick={() => handleInboxReject(item.id)} className="text-xs w-7 h-7 flex items-center justify-center rounded border transition-colors hover:bg-[var(--syn-danger)]/10 hover:text-[var(--syn-danger)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-text-faint)' }} title="Ablehnen">✕</button>
+                            </>}
+                          </div>
+                        </div>
+                        {/* Title */}
+                        {!isEditing && <p className="mt-2 text-sm font-medium">{title}</p>}
+                        {/* Fields */}
+                        {renderFields(item, isEditing)}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* ═══ SITZUNGEN ═══ */}
           {page === 'sitzungen' && (
             <div className="space-y-4">
@@ -1055,7 +1226,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                    <TableHead className="w-10"></TableHead>
                     <SH label="Aufgabe" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
@@ -1068,8 +1238,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   </TableRow></TableHeader><TableBody>
                     {filteredTodos.map(t => { const overdue = t.dueDate && t.dueDate < today && t.status !== 'done'; return (
                       <TableRow key={t.id} className={`text-sm border-[var(--syn-line)] group select-none ${t.status === 'done' ? 'opacity-40' : ''} ${todoSelected.has(t.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })}>
-                        <TableCell className="pr-0" onClick={e => e.stopPropagation()}><button onClick={() => cycleTodo(t)} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /></TableCell>
-                        <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewTodo(t) }} className={`text-left hover:text-[var(--syn-accent)] ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</button>{t.description && <div className="text-xs truncate max-w-sm" style={{ color: 'var(--syn-text-faint)' }}>{t.description}</div>}</TableCell>
+                        <TableCell className="text-left"><div className="flex items-center gap-2"><button onClick={e => { e.stopPropagation(); cycleTodo(t) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(t) }} className={`text-left hover:text-[var(--syn-accent)] ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</button>{t.description && <div className="text-xs truncate max-w-sm" style={{ color: 'var(--syn-text-faint)' }}>{t.description}</div>}</div></div></TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={t.assignee} /><span className="text-xs">{t.assignee}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${PRI_STYLE[t.priority]}`}>{PRI_LABEL[t.priority] || t.priority}</Badge></TableCell>
                         <TableCell className={`text-xs ${overdue ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!overdue ? { color: 'var(--syn-text-muted)' } : {}}>{t.dueDate || '—'}{overdue && ' ❗'}</TableCell>
@@ -1080,7 +1249,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditTodo({...t})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: t.title, action: () => handleDeleteTodo(t) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${todoSelected.has(t.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={todoSelected.has(t.id)} onChange={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })} /></div></TableCell>
                       </TableRow>
                     )})}
-                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={projects.length > 0 ? 10 : 9} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
+                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={projects.length > 0 ? 9 : 8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
                 </section>
               )}
