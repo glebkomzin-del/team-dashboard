@@ -650,15 +650,15 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   if (error && todos.length === 0) return <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--syn-bg)' }}><div className="text-sm" style={{ color: 'var(--syn-danger)' }}>Fehler: {error}</div></div>
 
   const navSections: { label: string; items: { key: Page; label: string; icon: string; count?: number }[] }[] = [
-    { label: 'HEUTE', items: [
+    { label: 'ÜBERBLICK', items: [
       { key: 'uebersicht', label: 'Command Center', icon: '⬡' },
       { key: 'sitzungen', label: 'Meetings', icon: '☰', count: meetings.length },
       { key: 'aktionen', label: 'Aktionen', icon: '✓', count: todos.filter(t => t.status !== 'done').length + blockers.filter(b => b.status === 'active').length },
     ]},
-    { label: 'ARBEIT', items: [
+    { label: 'PLANUNG', items: [
       { key: 'projekte', label: 'Projekte', icon: '◈', count: projects.length },
     ]},
-    { label: 'INTELLIGENZ', items: [
+    { label: 'SUCHE', items: [
       { key: 'ki', label: 'AI-Suche', icon: '◉' },
       { key: 'textsuche', label: 'Textsuche', icon: '⌕' },
       { key: 'protokoll', label: 'Aktivität', icon: '⏱', count: filteredLog.length },
@@ -969,6 +969,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
                     <SH label="Fällig" field="dueDate" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
                     <SH label="Status" field="status" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
+                    <SH label="Erstellt" field="createdAt" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
                     <TableHead className="w-[140px] text-xs">Quelle</TableHead>
                     {projects.length > 0 && <TableHead className="w-[120px] text-xs">Projekt</TableHead>}
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
@@ -981,12 +982,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><Badge className={`text-[10px] ${PRI_STYLE[t.priority]}`}>{PRI_LABEL[t.priority] || t.priority}</Badge></TableCell>
                         <TableCell className={`text-xs ${overdue ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!overdue ? { color: 'var(--syn-text-muted)' } : {}}>{t.dueDate || '—'}{overdue && ' ❗'}</TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[t.status]}`}>{ST_LABEL[t.status]}</Badge></TableCell>
+                        <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{t.createdAt || '—'}</TableCell>
                         <TableCell className="overflow-hidden"><SourceChip meeting={getMeeting(t.meetingId) || null} onClick={() => { const m = getMeeting(t.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
                         {projects.length > 0 && <TableCell className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>{getProjectName(t.projectId) || '—'}</TableCell>}
                         <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditTodo({...t})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: t.title, action: () => handleDeleteTodo(t) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     )})}
-                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
+                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={10} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
                 </section>
               )}
