@@ -1129,23 +1129,21 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-accent)' }} /><h3 className="text-sm font-semibold">Meetings</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.meetings.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Datum" className="w-[100px]" />
-                      <TableHead className="w-[200px] text-xs text-left pl-3">Titel</TableHead>
-                      <SH2 label="Teilnehmer" className="w-[140px]" />
-                      <TableHead className="text-xs text-center">Themen</TableHead>
-                      <SH2 label="Entsch." className="w-[60px]" />
+                      <TableHead className="text-xs text-left pl-3">Titel</TableHead>
+                      <SH2 label="Teilnehmer" className="w-[180px]" />
+                      <SH2 label="Themen" className="w-[240px]" />
                       <SH2 label="Freigabe" className="w-[80px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.meetings.map(item => { const p = item.payload; const vm = { id: 'ib_'+item.id, title: p.title||'', date: p.meeting_date||'', topics: (p.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')), participants: p.participants||[], summary: p.ai_summary||'', keyDecisions: p.key_decisions||[] }; return (
                         <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{p.meeting_date||'—'}</TableCell>
                           <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(vm) }} className="text-left hover:text-[var(--syn-accent)] leading-snug">{p.title||'—'}</button></TableCell>
-                          <TableCell><div className="flex flex-col gap-0.5">{(p.participants||[]).slice(0,5).map((pt: string,i: number)=><span key={i} className="text-[10px] rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',padding:'1px 6px'}}>{pt}</span>)}{(p.participants||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-5}</span>}</div></TableCell>
+                          <TableCell><div className="flex flex-col gap-0.5">{(p.participants||[]).slice(0,5).map((pt: string,i: number)=><span key={i} className="text-[10px] rounded truncate block" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',padding:'1px 6px',maxWidth:'164px'}}>{pt}</span>)}{(p.participants||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-5}</span>}</div></TableCell>
                           <TableCell><div className="flex flex-col gap-0.5">{(p.topics||[]).slice(0,5).map((t: any,i: number)=><Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit" style={{padding:'1px 5px'}}>{shortTopic(t)}</Badge>)}{(p.topics||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.topics||[]).length-5}</span>}</div></TableCell>
-                          <TableCell className="text-xs text-center" style={{color:'var(--syn-text-muted)'}}>{(p.key_decisions||[]).length>0?<span className="font-medium text-[var(--syn-text)]">{(p.key_decisions||[]).length}</span>:'—'}</TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {ib.meetings.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Meetings</TableCell></TableRow>}
+                      {ib.meetings.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Meetings</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
@@ -1257,23 +1255,21 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                 <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className="w-[100px]" />
-                <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} className="w-[200px]" />
-                <TableHead className="w-[140px] text-xs text-center">Teilnehmer</TableHead>
-                <TableHead className="text-xs text-center">Themen</TableHead>
-                <TableHead className="w-[60px] text-xs text-center">Entsch.</TableHead>
+                <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
+                <TableHead className="w-[180px] text-xs text-center">Teilnehmer</TableHead>
+                <TableHead className="w-[260px] text-xs text-center">Themen</TableHead>
                 <TableHead className="w-[80px] text-xs text-center">Anpassen</TableHead>
               </TableRow></TableHeader><TableBody>
                 {filteredNotes.map(m => (
                   <TableRow key={m.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${meetingSelected.has(m.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })}>
                     <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{m.date}</TableCell>
                     <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(m) }} className="text-left hover:text-[var(--syn-accent)] leading-snug">{m.title}</button></TableCell>
-                    <TableCell><div className="flex flex-col gap-0.5">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] px-1.5 rounded whitespace-nowrap" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', padding: '1px 6px' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-col gap-0.5">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] rounded truncate block" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', padding: '1px 6px', maxWidth: '164px' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
                     <TableCell><div className="flex flex-col gap-0.5">{m.topics.slice(0, 5).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit" style={{ padding: '1px 5px' }}>{shortTopic(t)}</Badge>)}{m.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 5}</span>}</div></TableCell>
-                    <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{m.keyDecisions.length > 0 ? <span className="font-medium">{m.keyDecisions.length}</span> : '—'}</TableCell>
                     <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
                   </TableRow>
                 ))}
-                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
+                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
               </TableBody></Table></CardContent></Card>
               {meetings.length > 0 && <p className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} von {meetings.length} Meetings</p>}
             </div>
