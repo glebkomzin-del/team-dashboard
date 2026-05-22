@@ -100,6 +100,13 @@ function useSortState() {
 function SH({ label, field, sort, onSort, className }: { label: string; field: string; sort: { col: string | null; dir: SortDir }; onSort: (f: string) => void; className?: string }) {
   return <TableHead className={`cursor-pointer select-none hover:bg-[var(--syn-hover)] transition-colors ${className || ''}`} onClick={() => onSort(field)}><span className="flex items-center justify-center text-xs">{label}<SortIcon dir={sort.col === field ? sort.dir : null} /></span></TableHead>
 }
+function TrashIcon() {
+  return (
+    <svg width="13" height="14" viewBox="0 0 13 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 3.5h11M4.5 3.5v-1a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M3 3.5l.75 8h6.5l.75-8" />
+    </svg>
+  )
+}
 
 /* Source Chip — links back to originating meeting */
 // Soft project colors (no pinks, no neon)
@@ -898,7 +905,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           {todos.filter(t => t.status !== 'done').sort((a, b) => (PRI_RANK[a.priority] ?? 9) - (PRI_RANK[b.priority] ?? 9)).slice(0, 10).map(t => (
                             <div key={t.id} className={itemClass} onClick={() => setViewTodo(t)}>
                               <div className="flex items-center gap-2">
-                                <button onClick={(e) => { e.stopPropagation(); handleQuickStatusToggle(t) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} />
+                                <button onClick={(e) => { e.stopPropagation(); handleQuickStatusToggle(t) }} className={`w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center text-xs transition-colors ${t.status === 'done' ? 'bg-[var(--syn-ok)] border-[var(--syn-ok)] text-white' : t.status === 'in_progress' ? 'border-[var(--syn-info)] bg-[var(--syn-info-soft)]' : 'border-[var(--syn-line-strong)] hover:border-[var(--syn-accent)]'}`}>{t.status === 'done' ? '✓' : t.status === 'in_progress' ? '›' : ''}</button>
                                 <div className="flex-1 min-w-0 text-sm truncate">{t.title}</div>
                               </div>
                               <div className={subClass} style={{ color: 'var(--syn-text-faint)', paddingLeft: 24 }}>
@@ -981,7 +988,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {page === 'sitzungen' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h2 className="text-base font-semibold">Meetings</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold">Meetings</h2>
+                  {meetingSelected.size > 0 && <button onClick={handleBulkDeleteMeetings} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${meetingSelected.size} löschen`}><TrashIcon /></button>}
+                </div>
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                   <Select value={noteFilterParticipant} onValueChange={setNoteFilterParticipant}><SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Teilnehmer</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
@@ -991,7 +1001,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                <TableHead className="w-6"></TableHead>
                 <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className="w-[110px]" />
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
                 <TableHead className="w-[200px] text-xs text-center">Teilnehmer</TableHead>
@@ -1001,18 +1010,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               </TableRow></TableHeader><TableBody>
                 {filteredNotes.map(m => (
                   <TableRow key={m.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${meetingSelected.has(m.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })}>
-                    <TableCell className="pl-2 pr-0" onClick={e => e.stopPropagation()}><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></TableCell>
                     <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{m.date}</TableCell>
                     <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(m) }} className="text-left hover:text-[var(--syn-accent)]">{m.title}</button></TableCell>
                     <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{m.participants.slice(0, 2).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap overflow-hidden shrink-0" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', maxWidth: '88px', textOverflow: 'ellipsis' }}>{p}</span>)}{m.participants.length > 2 && <span className="text-[10px] font-medium shrink-0" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 2}</span>}</div></TableCell>
                     <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{m.topics.slice(0, 2).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap shrink-0 overflow-hidden" style={{ maxWidth: '88px', textOverflow: 'ellipsis' }}>{t}</Badge>)}{m.topics.length > 2 && <span className="text-[10px] font-medium shrink-0" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 2}</span>}</div></TableCell>
                     <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{m.keyDecisions.length > 0 ? <span className="font-medium">{m.keyDecisions.length}</span> : '—'}</TableCell>
-                    <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
                   </TableRow>
                 ))}
-                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
+                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
               </TableBody></Table></CardContent></Card>
-              {meetingSelected.size > 0 && <div className="flex items-center justify-end gap-2 text-xs" style={{ color: 'var(--syn-text-muted)' }}><span>{meetingSelected.size} ausgewählt</span><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={() => setMeetingSelected(new Set())} className="hover:underline">Aufheben</button><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={handleBulkDeleteMeetings} className="font-medium hover:underline" style={{ color: 'var(--syn-danger)' }}>Löschen</button></div>}
               {meetings.length > 0 && <p className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} von {meetings.length} Meetings</p>}
             </div>
           )}
@@ -1035,7 +1042,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {actionTab === 'todos' && (
                 <section>
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditTodo({ id: '__new__', assignee: 'Nicht zugeordnet', title: '', description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditTodo({ id: '__new__', assignee: 'Nicht zugeordnet', title: '', description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
+                      {todoSelected.size > 0 && <button onClick={handleBulkDeleteTodos} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${todoSelected.size} löschen`}><TrashIcon /></button>}
+                    </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={todoSearch} onChange={e => setTodoSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                       <Select value={todoFilterAssignee} onValueChange={setTodoFilterAssignee}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Mitglieder</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
@@ -1045,7 +1055,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                    <TableHead className="w-6"></TableHead>
                     <TableHead className="w-10"></TableHead>
                     <SH label="Aufgabe" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
@@ -1059,7 +1068,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   </TableRow></TableHeader><TableBody>
                     {filteredTodos.map(t => { const overdue = t.dueDate && t.dueDate < today && t.status !== 'done'; return (
                       <TableRow key={t.id} className={`text-sm border-[var(--syn-line)] group select-none ${t.status === 'done' ? 'opacity-40' : ''} ${todoSelected.has(t.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })}>
-                        <TableCell className="pl-2 pr-0" onClick={e => e.stopPropagation()}><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${todoSelected.has(t.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={todoSelected.has(t.id)} onChange={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })} /></TableCell>
                         <TableCell className="pr-0" onClick={e => e.stopPropagation()}><button onClick={() => cycleTodo(t)} className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs transition-colors ${t.status === 'done' ? 'bg-[var(--syn-ok)] border-[var(--syn-ok)] text-white' : t.status === 'in_progress' ? 'border-[var(--syn-info)] bg-[var(--syn-info-soft)]' : 'border-[var(--syn-line-strong)] hover:border-[var(--syn-accent)]'}`}>{t.status === 'done' ? '✓' : t.status === 'in_progress' ? '›' : ''}</button></TableCell>
                         <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewTodo(t) }} className={`text-left hover:text-[var(--syn-accent)] ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</button>{t.description && <div className="text-xs truncate max-w-sm" style={{ color: 'var(--syn-text-faint)' }}>{t.description}</div>}</TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={t.assignee} /><span className="text-xs">{t.assignee}</span></div></TableCell>
@@ -1069,12 +1077,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{t.createdAt || '—'}</TableCell>
                         <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}><SourceChip meeting={getMeeting(t.meetingId) || null} onClick={() => { const m = getMeeting(t.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
                         {projects.length > 0 && <TableCell className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>{getProjectName(t.projectId) || '—'}</TableCell>}
-                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditTodo({...t})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: t.title, action: () => handleDeleteTodo(t) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditTodo({...t})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: t.title, action: () => handleDeleteTodo(t) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${todoSelected.has(t.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={todoSelected.has(t.id)} onChange={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })} /></div></TableCell>
                       </TableRow>
                     )})}
-                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={projects.length > 0 ? 11 : 10} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
+                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={projects.length > 0 ? 10 : 9} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
-                  {todoSelected.size > 0 && <div className="flex items-center justify-end gap-2 text-xs" style={{ color: 'var(--syn-text-muted)' }}><span>{todoSelected.size} ausgewählt</span><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={() => setTodoSelected(new Set())} className="hover:underline">Aufheben</button><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={handleBulkDeleteTodos} className="font-medium hover:underline" style={{ color: 'var(--syn-danger)' }}>Löschen</button></div>}
                 </section>
               )}
 
@@ -1082,7 +1089,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {actionTab === 'blocker' && (
                 <section>
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditBlocker({ id: '__new__', reportedBy: 'Nicht zugeordnet', title: '', description: '', status: 'active', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditBlocker({ id: '__new__', reportedBy: 'Nicht zugeordnet', title: '', description: '', status: 'active', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
+                      {blockerSelected.size > 0 && <button onClick={handleBulkDeleteBlockers} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${blockerSelected.size} löschen`}><TrashIcon /></button>}
+                    </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={blockerSearch} onChange={e => setBlockerSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                       <Select value={blockerFilterAssignee} onValueChange={setBlockerFilterAssignee}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständige</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
@@ -1090,7 +1100,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                    <TableHead className="w-6"></TableHead>
                     <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
@@ -1100,18 +1109,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   </TableRow></TableHeader><TableBody>
                     {filteredBlockers.map(b => (
                       <TableRow key={b.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${b.status !== 'active' ? 'opacity-50' : ''} ${blockerSelected.has(b.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setBlockerSelected(prev => { const n = new Set(prev); n.has(b.id) ? n.delete(b.id) : n.add(b.id); return n })}>
-                        <TableCell className="pl-2 pr-0" onClick={e => e.stopPropagation()}><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${blockerSelected.has(b.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={blockerSelected.has(b.id)} onChange={() => setBlockerSelected(prev => { const n = new Set(prev); n.has(b.id) ? n.delete(b.id) : n.add(b.id); return n })} /></TableCell>
                         <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewBlocker(b) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{b.title}</button><div className="text-xs truncate max-w-md" style={{ color: 'var(--syn-text-faint)' }}>{b.description}</div></TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={b.reportedBy} /><span className="text-xs">{b.reportedBy}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[b.status]}`}>{ST_LABEL[b.status]}</Badge></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{b.createdAt}</TableCell>
                         <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}><SourceChip meeting={getMeeting(b.meetingId) || null} onClick={() => { const m = getMeeting(b.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
-                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditBlocker({...b})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: b.title, action: () => handleDeleteBlocker(b) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditBlocker({...b})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: b.title, action: () => handleDeleteBlocker(b) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${blockerSelected.has(b.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={blockerSelected.has(b.id)} onChange={() => setBlockerSelected(prev => { const n = new Set(prev); n.has(b.id) ? n.delete(b.id) : n.add(b.id); return n })} /></div></TableCell>
                       </TableRow>
                     ))}
-                    {filteredBlockers.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Blocker</TableCell></TableRow>}
+                    {filteredBlockers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Blocker</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
-                  {blockerSelected.size > 0 && <div className="flex items-center justify-end gap-2 text-xs" style={{ color: 'var(--syn-text-muted)' }}><span>{blockerSelected.size} ausgewählt</span><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={() => setBlockerSelected(new Set())} className="hover:underline">Aufheben</button><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={handleBulkDeleteBlockers} className="font-medium hover:underline" style={{ color: 'var(--syn-danger)' }}>Löschen</button></div>}
                 </section>
               )}
 
@@ -1119,7 +1126,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {actionTab === 'open' && (
                 <section>
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditOpen({ id: '__new__', owner: 'Nicht zugeordnet', title: '', description: '', category: 'general', status: 'open', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditOpen({ id: '__new__', owner: 'Nicht zugeordnet', title: '', description: '', category: 'general', status: 'open', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
+                      {openSelected.size > 0 && <button onClick={handleBulkDeleteOpen} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${openSelected.size} löschen`}><TrashIcon /></button>}
+                    </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={openSearch} onChange={e => setOpenSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                       <Select value={openFilterOwner} onValueChange={setOpenFilterOwner}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständige</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
@@ -1128,7 +1138,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                    <TableHead className="w-6"></TableHead>
                     <TableHead className="w-10"></TableHead>
                     <SH label="Item" field="title" sort={openSort} onSort={openSort.toggle} />
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
@@ -1140,7 +1149,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   </TableRow></TableHeader><TableBody>
                     {filteredOpen.map(o => (
                       <TableRow key={o.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${o.status === 'closed' ? 'opacity-40' : ''} ${openSelected.has(o.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setOpenSelected(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n })}>
-                        <TableCell className="pl-2 pr-0" onClick={e => e.stopPropagation()}><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${openSelected.has(o.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={openSelected.has(o.id)} onChange={() => setOpenSelected(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n })} /></TableCell>
                         <TableCell className="text-center">{CAT_ICON[o.category] || '○'}</TableCell>
                         <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewOpen(o) }} className="text-left hover:text-[var(--syn-accent)]">{o.title}</button><div className="text-xs truncate max-w-sm" style={{ color: 'var(--syn-text-faint)' }}>{o.description}</div></TableCell>
                         <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[o.category] || o.category}</Badge></TableCell>
@@ -1148,12 +1156,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[o.status]}`}>{ST_LABEL[o.status]}</Badge></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{o.createdAt}</TableCell>
                         <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}><SourceChip meeting={getMeeting(o.meetingId) || null} onClick={() => { const m = getMeeting(o.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
-                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditOpen({...o})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: o.title, action: () => handleDeleteOpen(o) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditOpen({...o})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: o.title, action: () => handleDeleteOpen(o) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${openSelected.has(o.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={openSelected.has(o.id)} onChange={() => setOpenSelected(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n })} /></div></TableCell>
                       </TableRow>
                     ))}
-                    {filteredOpen.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Punkte</TableCell></TableRow>}
+                    {filteredOpen.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Punkte</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
-                  {openSelected.size > 0 && <div className="flex items-center justify-end gap-2 text-xs" style={{ color: 'var(--syn-text-muted)' }}><span>{openSelected.size} ausgewählt</span><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={() => setOpenSelected(new Set())} className="hover:underline">Aufheben</button><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={handleBulkDeleteOpen} className="font-medium hover:underline" style={{ color: 'var(--syn-danger)' }}>Löschen</button></div>}
                 </section>
               )}
             </div>
@@ -1166,6 +1173,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Projekte</h2>
                   <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => handleOpenProjectDialog('__new__')}>+ Neu</Button>
+                  {projectSelected.size > 0 && <button onClick={handleBulkDeleteProjects} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${projectSelected.size} löschen`}><TrashIcon /></button>}
                 </div>
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
@@ -1186,7 +1194,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {projectView === 'table' && (
                 <div className="space-y-1">
                 <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                  <TableHead className="w-6"></TableHead>
                   <SH label="Projekt" field="name" sort={projectSort} onSort={projectSort.toggle} />
                   <SH label="Beschreibung" field="description" sort={projectSort} onSort={projectSort.toggle} />
                   <TableHead className="w-[80px] text-xs text-center">Todos</TableHead>
@@ -1198,18 +1205,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     const pTodos = projectTodos(p.id); const pBlockers = projectBlockers(p.id)
                     return (
                     <TableRow key={p.id} className={`text-sm cursor-pointer select-none group ${projectSelected.has(p.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} style={{ borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: getProjectColor(p.id, projectIds) }} onClick={() => setProjectSelected(prev => { const n = new Set(prev); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n })}>
-                      <TableCell className="pl-2 pr-0" onClick={e => e.stopPropagation()}><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${projectSelected.has(p.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={projectSelected.has(p.id)} onChange={() => setProjectSelected(prev => { const n = new Set(prev); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n })} /></TableCell>
                       <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewProject(p) }} className="text-left hover:text-[var(--syn-accent)]">{p.name}</button></TableCell>
                       <TableCell className="text-left text-xs truncate" style={{ color: 'var(--syn-text-muted)' }}>{p.description || '—'}</TableCell>
                       <TableCell className="text-xs text-center"><span className="font-medium">{pTodos.filter(t => t.status === 'done').length}</span><span style={{ color: 'var(--syn-text-faint)' }}>/{pTodos.length}</span></TableCell>
                       <TableCell className="text-xs text-center">{pBlockers.filter(b => b.status === 'active').length > 0 ? <span className="font-bold text-[var(--syn-danger)]">{pBlockers.filter(b => b.status === 'active').length} aktiv</span> : <span style={{ color: 'var(--syn-text-faint)' }}>0</span>}</TableCell>
                       <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status] || ''}`}>{ST_LABEL[p.status] || p.status}</Badge></TableCell>
-                      <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => handleOpenProjectDialog(p)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: p.name, action: () => handleDeleteProject(p) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                      <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => handleOpenProjectDialog(p)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: p.name, action: () => handleDeleteProject(p) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${projectSelected.has(p.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={projectSelected.has(p.id)} onChange={() => setProjectSelected(prev => { const n = new Set(prev); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n })} /></div></TableCell>
                     </TableRow>
                   )})}
-                  {filteredProjects.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Projekte</TableCell></TableRow>}
+                  {filteredProjects.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Projekte</TableCell></TableRow>}
                 </TableBody></Table></CardContent></Card>
-                {projectSelected.size > 0 && <div className="flex items-center justify-end gap-2 text-xs" style={{ color: 'var(--syn-text-muted)' }}><span>{projectSelected.size} ausgewählt</span><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={() => setProjectSelected(new Set())} className="hover:underline">Aufheben</button><span style={{ color: 'var(--syn-text-faint)' }}>—</span><button onClick={handleBulkDeleteProjects} className="font-medium hover:underline" style={{ color: 'var(--syn-danger)' }}>Löschen</button></div>}
                 </div>
               )}
 
