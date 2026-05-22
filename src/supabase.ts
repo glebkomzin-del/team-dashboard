@@ -166,6 +166,12 @@ export async function insertBlocker(fields: { title: string; description?: strin
   return data as DbBlocker
 }
 
+export async function insertMeeting(fields: { title: string; meeting_date: string; topics?: string[]; participants?: string[]; ai_summary?: string; key_decisions?: string[] }) {
+  const { data, error } = await supabase.from('meetings').insert(fields).select().single()
+  if (error) throw error
+  return data as DbMeeting
+}
+
 export async function insertOpenItem(fields: { title: string; description?: string; owner: string; category: string }) {
   const { data, error } = await supabase.from('open_items').insert(fields).select().single()
   if (error) throw error
