@@ -347,6 +347,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [projMeetingSearch, setProjMeetingSearch] = useState('')
   const [projLinkedMeetingIds, setProjLinkedMeetingIds] = useState<Set<string>>(new Set())
   const [projMeetingPickerOpen, setProjMeetingPickerOpen] = useState(false)
+  const [projTodoPickerOpen, setProjTodoPickerOpen] = useState(false)
   const [viewMeeting, setViewMeeting] = useState<Meeting | null>(null)
   const [viewTodo, setViewTodo] = useState<Todo | null>(null)
   const [viewBlocker, setViewBlocker] = useState<Blocker | null>(null)
@@ -494,7 +495,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       setProjLinkedTodoIds(new Set(todos.filter(t => t.projectId === p.id).map(t => t.id)))
       fetchProjectMeetings(p.id).then(ids => setProjLinkedMeetingIds(new Set(ids))).catch(() => {})
     }
-    setProjTodoQueue([]); setProjTodoNewForm(null); setProjTodoSearch(''); setProjMeetingSearch(''); setProjMeetingPickerOpen(false); setProjectInitTodos('')
+    setProjTodoQueue([]); setProjTodoNewForm(null); setProjTodoSearch(''); setProjTodoPickerOpen(false); setProjMeetingSearch(''); setProjMeetingPickerOpen(false); setProjectInitTodos('')
   }
   const handleDeleteProject = async (p: DbProject) => { setProjects(prev => prev.filter(x => x.id !== p.id)); try { await deleteProjectDb(p.id) } catch { } }
 
@@ -1035,8 +1036,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Fällig" field="dueDate" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
                     <SH label="Status" field="status" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
                     <SH label="Erstellt" field="createdAt" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
-                    {projects.length > 0 && <TableHead className="w-[120px] text-xs">Projekt</TableHead>}
+                    <TableHead className="w-[140px] text-xs text-center">Quelle</TableHead>
+                    {projects.length > 0 && <TableHead className="w-[120px] text-xs text-center">Projekt</TableHead>}
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredTodos.map(t => { const overdue = t.dueDate && t.dueDate < today && t.status !== 'done'; return (
@@ -1074,7 +1075,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
                     <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
+                    <TableHead className="w-[140px] text-xs text-center">Quelle</TableHead>
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredBlockers.map(b => (
@@ -1111,7 +1112,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
                     <SH label="Erstellt" field="createdAt" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
+                    <TableHead className="w-[140px] text-xs text-center">Quelle</TableHead>
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredOpen.map(o => (
@@ -1846,7 +1847,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>Meeting bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-3 pt-2"><Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.topics.join(', ')} onChange={e => setEditMeeting({...editMeeting, topics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Themen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={4} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button></div>}</DialogContent></Dialog>
 
       {/* Edit Project */}
-      <Dialog open={!!editProject} onOpenChange={() => { setEditProject(null); setProjTodoQueue([]); setProjTodoNewForm(null); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set()); setProjectInitTodos('') }}>
+      <Dialog open={!!editProject} onOpenChange={() => { setEditProject(null); setProjTodoQueue([]); setProjTodoNewForm(null); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set()); setProjTodoPickerOpen(false); setProjMeetingPickerOpen(false); setProjectInitTodos('') }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>
           {editProject && <div className="space-y-4 pt-2">
@@ -1953,26 +1954,38 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <Button size="sm" variant="outline" className="text-xs border-[var(--syn-line)] flex-1" onClick={() => setProjTodoNewForm({ id: '__new__', assignee: editProject.owner || 'Nicht zugeordnet', title: '', description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' })}>+ Todo erstellen</Button>
                 </div>
               )}
-              {/* Vorhandene Todos suchen & verknüpfen */}
-              <div>
-                <Input placeholder="Vorhandene Todos suchen…" value={projTodoSearch} onChange={e => setProjTodoSearch(e.target.value)} className="h-7 text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                {projTodoSearch.trim() && (() => {
-                  const q = projTodoSearch.toLowerCase()
-                  const available = todos.filter(t => t.title.toLowerCase().includes(q) && !projTodoQueue.some(() => false))
-                  return available.length > 0 ? (
-                    <div className="mt-1 max-h-32 overflow-y-auto rounded border" style={{ borderColor: 'var(--syn-line)', background: 'var(--syn-surface-2)' }}>
-                      {available.map(t => (
-                        <label key={t.id} className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-[var(--syn-hover)] text-xs">
+              {/* Toggle: Vorhandene Todos verknüpfen */}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Vorhandene verknüpfen</span>
+                <button onClick={() => setProjTodoPickerOpen(v => !v)} className="text-[10px] px-2 py-0.5 rounded border hover:bg-[var(--syn-hover)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-accent)' }}>
+                  {projTodoPickerOpen ? '▲ Schließen' : `▼ Verknüpfen${projLinkedTodoIds.size > 0 ? ` (${projLinkedTodoIds.size})` : ''}`}
+                </button>
+              </div>
+              {projTodoPickerOpen && (
+                <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--syn-line)' }}>
+                  <Input placeholder="Todos durchsuchen…" value={projTodoSearch} onChange={e => setProjTodoSearch(e.target.value)} className="h-8 text-xs border-0 border-b rounded-none bg-[var(--syn-surface-2)]" style={{ borderColor: 'var(--syn-line)' }} />
+                  {/* Header */}
+                  <div className="grid text-[10px] font-semibold px-3 py-1 uppercase tracking-wide" style={{ gridTemplateColumns: '20px 72px 1fr 80px', background: 'var(--syn-surface-2)', color: 'var(--syn-text-faint)', borderBottom: '1px solid var(--syn-line)' }}>
+                    <span />
+                    <span>Datum</span>
+                    <span>Name</span>
+                    <span>Owner</span>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {todos
+                      .filter(t => { const q = projTodoSearch.toLowerCase(); return !q || t.title.toLowerCase().includes(q) })
+                      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                      .map(t => (
+                        <label key={t.id} className="grid items-center px-3 py-1.5 cursor-pointer hover:bg-[var(--syn-hover)] border-b last:border-b-0 text-xs" style={{ gridTemplateColumns: '20px 72px 1fr 80px', borderColor: 'var(--syn-line)' }}>
                           <input type="checkbox" checked={projLinkedTodoIds.has(t.id)} onChange={e => { const s = new Set(projLinkedTodoIds); e.target.checked ? s.add(t.id) : s.delete(t.id); setProjLinkedTodoIds(s) }} className="rounded" />
-                          <span className="flex-1 truncate">{t.title}</span>
-                          <Badge className={`text-[9px] shrink-0 ${ST_STYLE[t.status]}`}>{ST_LABEL[t.status]}</Badge>
-                          {t.assignee !== 'Nicht zugeordnet' && <Av name={t.assignee} />}
+                          <span className="shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{t.createdAt || '—'}</span>
+                          <span className="truncate px-1">{t.title}</span>
+                          <span className="truncate text-[10px]" style={{ color: 'var(--syn-text-muted)' }}>{t.assignee !== 'Nicht zugeordnet' ? t.assignee : '—'}</span>
                         </label>
                       ))}
-                    </div>
-                  ) : <div className="text-[11px] mt-1" style={{ color: 'var(--syn-text-faint)' }}>Keine Treffer</div>
-                })()}
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ── Meetings verknüpfen ── */}
@@ -1980,35 +1993,43 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Meetings verknüpfen</label>
-                <button onClick={() => setProjMeetingPickerOpen(v => !v)} className="text-[10px] px-2 py-0.5 rounded border hover:bg-[var(--syn-hover)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-accent)' }}>{projMeetingPickerOpen ? '▲ Schließen' : `▼ Auswählen${projLinkedMeetingIds.size > 0 ? ` (${projLinkedMeetingIds.size})` : ''}`}</button>
+                <button onClick={() => setProjMeetingPickerOpen(v => !v)} className="text-[10px] px-2 py-0.5 rounded border hover:bg-[var(--syn-hover)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-accent)' }}>
+                  {projMeetingPickerOpen ? '▲ Schließen' : `▼ Auswählen${projLinkedMeetingIds.size > 0 ? ` (${projLinkedMeetingIds.size})` : ''}`}
+                </button>
               </div>
-              {/* Chips der ausgewählten Meetings */}
+              {/* Chips ausgewählter Meetings */}
               {projLinkedMeetingIds.size > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {Array.from(projLinkedMeetingIds).map(mid => {
                     const m = meetings.find(x => x.id === mid)
                     if (!m) return null
                     return <span key={mid} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'var(--syn-accent-soft)', color: 'var(--syn-accent)' }}>
-                      {m.date} · {m.title.length > 25 ? m.title.slice(0, 25) + '…' : m.title}
+                      {m.date} · {m.title.length > 22 ? m.title.slice(0, 22) + '…' : m.title}
                       <button onClick={() => { const s = new Set(projLinkedMeetingIds); s.delete(mid); setProjLinkedMeetingIds(s) }} className="hover:text-[var(--syn-danger)]">✕</button>
                     </span>
                   })}
                 </div>
               )}
               {projMeetingPickerOpen && (
-                <div className="rounded-lg border" style={{ borderColor: 'var(--syn-line)' }}>
+                <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--syn-line)' }}>
                   <Input placeholder="Meetings durchsuchen…" value={projMeetingSearch} onChange={e => setProjMeetingSearch(e.target.value)} className="h-8 text-xs border-0 border-b rounded-none bg-[var(--syn-surface-2)]" style={{ borderColor: 'var(--syn-line)' }} />
+                  {/* Header */}
+                  <div className="grid text-[10px] font-semibold px-3 py-1 uppercase tracking-wide" style={{ gridTemplateColumns: '20px 72px 1fr 120px', background: 'var(--syn-surface-2)', color: 'var(--syn-text-faint)', borderBottom: '1px solid var(--syn-line)' }}>
+                    <span />
+                    <span>Datum</span>
+                    <span>Name</span>
+                    <span>Themen</span>
+                  </div>
                   <div className="max-h-48 overflow-y-auto">
                     {meetings
                       .filter(m => { const q = projMeetingSearch.toLowerCase(); return !q || m.title.toLowerCase().includes(q) || m.date.includes(q) || m.topics.some(t => t.toLowerCase().includes(q)) })
                       .sort((a, b) => b.date.localeCompare(a.date))
                       .map(m => (
-                        <label key={m.id} className="flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-[var(--syn-hover)] border-b last:border-b-0" style={{ borderColor: 'var(--syn-line)' }}>
+                        <label key={m.id} className="grid items-center px-3 py-1.5 cursor-pointer hover:bg-[var(--syn-hover)] border-b last:border-b-0 text-xs" style={{ gridTemplateColumns: '20px 72px 1fr 120px', borderColor: 'var(--syn-line)' }}>
                           <input type="checkbox" checked={projLinkedMeetingIds.has(m.id)} onChange={e => { const s = new Set(projLinkedMeetingIds); e.target.checked ? s.add(m.id) : s.delete(m.id); setProjLinkedMeetingIds(s) }} className="mt-0.5 rounded" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2"><span className="text-xs font-medium truncate">{m.title}</span><span className="text-[10px] shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{m.date}</span></div>
-                            {m.topics.length > 0 && <div className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--syn-text-faint)' }}>{m.topics.slice(0, 5).join(' · ')}{m.topics.length > 5 ? ` +${m.topics.length - 5}` : ''}</div>}
-                          </div>
+                          <span className="shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{m.date}</span>
+                          <span className="truncate px-1 font-medium">{m.title}</span>
+                          <span className="truncate text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>{m.topics.slice(0, 3).join(', ')}{m.topics.length > 3 ? ` +${m.topics.length - 3}` : ''}</span>
                         </label>
                       ))}
                   </div>
