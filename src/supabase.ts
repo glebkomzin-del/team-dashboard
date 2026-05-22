@@ -241,6 +241,23 @@ export async function deleteProjectDb(id: string) {
   if (error) throw error
 }
 
+// ── Project–Meeting links ──
+export async function fetchProjectMeetings(projectId: string): Promise<string[]> {
+  const { data, error } = await supabase.from('project_meetings').select('meeting_id').eq('project_id', projectId)
+  if (error) throw error
+  return (data || []).map((r: any) => r.meeting_id)
+}
+
+export async function setProjectMeetings(projectId: string, meetingIds: string[]): Promise<void> {
+  // Replace all links for this project atomically
+  await supabase.from('project_meetings').delete().eq('project_id', projectId)
+  if (meetingIds.length > 0) {
+    const rows = meetingIds.map(mid => ({ project_id: projectId, meeting_id: mid }))
+    const { error } = await supabase.from('project_meetings').insert(rows)
+    if (error) throw error
+  }
+}
+
 // ── Decisions CRUD ──
 export async function updateDecisionFull(id: string, fields: Partial<DbDecision>) {
   const { error } = await supabase.from('decisions').update(fields).eq('id', id)

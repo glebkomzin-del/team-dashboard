@@ -16,6 +16,7 @@ import {
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
   updateTodoFull, updateBlockerFull, updateOpenItemFull, updateMeetingFull,
   updateProjectFull, deleteProjectDb,
+  fetchProjectMeetings, setProjectMeetings,
   insertTodo, insertBlocker, insertOpenItem,
   triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
@@ -336,7 +337,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [editOpen, setEditOpen] = useState<OpenItem | null>(null)
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null)
   const [editProject, setEditProject] = useState<DbProject | null>(null)
-  const [projectInitTodos, setProjectInitTodos] = useState('')
+  // projectInitTodos kept for reset calls
+  const [, setProjectInitTodos] = useState('')
+  // Project-dialog relations
+  const [projTodoQueue, setProjTodoQueue] = useState<Todo[]>([])
+  const [projTodoNewForm, setProjTodoNewForm] = useState<Todo | null>(null)
+  const [projTodoSearch, setProjTodoSearch] = useState('')
+  const [projLinkedTodoIds, setProjLinkedTodoIds] = useState<Set<string>>(new Set())
+  const [projMeetingSearch, setProjMeetingSearch] = useState('')
+  const [projLinkedMeetingIds, setProjLinkedMeetingIds] = useState<Set<string>>(new Set())
+  const [projMeetingPickerOpen, setProjMeetingPickerOpen] = useState(false)
   const [viewMeeting, setViewMeeting] = useState<Meeting | null>(null)
   const [viewTodo, setViewTodo] = useState<Todo | null>(null)
   const [viewBlocker, setViewBlocker] = useState<Blocker | null>(null)
@@ -441,7 +451,51 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleCreateTodo = async (t: Todo) => { setEditTodo(null); try { const c = await insertTodo({ title: t.title, description: t.description || undefined, assignee: t.assignee, priority: t.priority, due_date: t.dueDate || undefined } as any); setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: t.startDate, durationDays: t.durationDays, dependsOn: [], meetingId: null, projectId: t.projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev]); if (t.startDate || t.projectId || t.durationDays > 1) { await updateTodoFull(c.id, { start_date: t.startDate, duration_days: t.durationDays, project_id: t.projectId } as any) } } catch { } }
   const handleCreateBlocker = async (b: Blocker) => { setEditBlocker(null); try { const c = await insertBlocker({ title: b.title, description: b.description || undefined, reported_by: b.reportedBy }); setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
   const handleCreateOpen = async (o: OpenItem) => { setEditOpen(null); try { const c = await insertOpenItem({ title: o.title, description: o.description || undefined, owner: o.owner, category: o.category }); setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
-  const handleSaveProject = async (p: DbProject, initTodoTitles?: string[]) => { if (p.id === '__new__') { setEditProject(null); try { const c = await insertProject({ name: p.name, description: p.description || undefined, start_date: p.start_date || undefined, end_date: p.end_date || undefined, owner: p.owner || undefined, priority: p.priority || 'medium' }); setProjects(prev => [...prev, c]); if (initTodoTitles && initTodoTitles.length > 0) { for (const title of initTodoTitles) { if (!title.trim()) continue; try { const t = await insertTodo({ title: title.trim(), assignee: p.owner || 'Nicht zugeordnet', priority: 'medium' } as any); await updateTodoFull(t.id, { project_id: c.id } as any); setTodos(prev => [{ id: t.id, assignee: p.owner || 'Nicht zugeordnet', title: t.title, description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: c.id, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch {} } } } catch { } } else { setProjects(prev => prev.map(x => x.id === p.id ? p : x)); setEditProject(null); try { await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status, start_date: p.start_date, end_date: p.end_date, owner: p.owner, priority: p.priority }) } catch { } } }
+  const saveProjectRelations = async (projectId: string) => {
+    // Save meeting links
+    try { await setProjectMeetings(projectId, Array.from(projLinkedMeetingIds)) } catch {}
+    // Create new todos from queue
+    for (const td of projTodoQueue) {
+      try {
+        const c = await insertTodo({ title: td.title, description: td.description || undefined, assignee: td.assignee, priority: td.priority, due_date: td.dueDate || undefined } as any)
+        await updateTodoFull(c.id, { project_id: projectId, start_date: td.startDate, duration_days: td.durationDays } as any)
+        setTodos(prev => [{ ...td, id: c.id, projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
+      } catch {}
+    }
+    // Link selected existing todos (if not already linked)
+    for (const todoId of projLinkedTodoIds) {
+      const todo = todos.find(t => t.id === todoId)
+      if (todo && todo.projectId !== projectId) {
+        try { await updateTodoFull(todoId, { project_id: projectId } as any); setTodos(prev => prev.map(t => t.id === todoId ? { ...t, projectId } : t)) } catch {}
+      }
+    }
+    setProjTodoQueue([]); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set())
+  }
+  const handleSaveProject = async (p: DbProject) => {
+    if (p.id === '__new__') {
+      setEditProject(null)
+      try {
+        const c = await insertProject({ name: p.name, description: p.description || undefined, start_date: p.start_date || undefined, end_date: p.end_date || undefined, owner: p.owner || undefined, priority: p.priority || 'medium' })
+        setProjects(prev => [...prev, c])
+        await saveProjectRelations(c.id)
+      } catch {}
+    } else {
+      setProjects(prev => prev.map(x => x.id === p.id ? p : x)); setEditProject(null)
+      try { await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status, start_date: p.start_date, end_date: p.end_date, owner: p.owner, priority: p.priority }) } catch {}
+      await saveProjectRelations(p.id)
+    }
+  }
+  const handleOpenProjectDialog = (p: DbProject | '__new__') => {
+    if (p === '__new__') {
+      setEditProject({ id: '__new__', name: '', description: null, status: 'active', start_date: null, end_date: null, owner: null, priority: 'medium', created_at: '', updated_at: '' } as DbProject)
+      setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set())
+    } else {
+      setEditProject({...p})
+      setProjLinkedTodoIds(new Set(todos.filter(t => t.projectId === p.id).map(t => t.id)))
+      fetchProjectMeetings(p.id).then(ids => setProjLinkedMeetingIds(new Set(ids))).catch(() => {})
+    }
+    setProjTodoQueue([]); setProjTodoNewForm(null); setProjTodoSearch(''); setProjMeetingSearch(''); setProjMeetingPickerOpen(false); setProjectInitTodos('')
+  }
   const handleDeleteProject = async (p: DbProject) => { setProjects(prev => prev.filter(x => x.id !== p.id)); try { await deleteProjectDb(p.id) } catch { } }
 
   const handleQuickStatusToggle = async (t: Todo) => {
@@ -515,7 +569,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       case 'blocker': { const b = blockers.find(x => x.id === entityId); if (b) setEditBlocker({...b}); break }
       case 'open_item': { const o = openItems.find(x => x.id === entityId); if (o) setEditOpen({...o}); break }
       case 'meeting': { const m = meetings.find(x => x.id === entityId); if (m) setEditMeeting({...m}); break }
-      case 'project': { const p = projects.find(x => x.id === entityId); if (p) setEditProject({...p}); break }
+      case 'project': { const p = projects.find(x => x.id === entityId); if (p) handleOpenProjectDialog(p); break }
     }
   }
 
@@ -570,7 +624,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const searchResults = useMemo(() => {
     const q = globalSearch.trim().toLowerCase()
     if (!q) return { meetings: [] as Meeting[] }
-    const matchMeetings = meetings.filter(m => textMatch(m, q)).slice(0, 10)
+    const matchMeetings = meetings
+      .filter(m => !q || textMatch(m, q))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 10)
     return { meetings: matchMeetings }
   }, [globalSearch, meetings])
 
@@ -590,6 +647,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  // Clear global search when navigating away from Textsuche
+  const prevPageRef = useRef<Page>(page)
+  useEffect(() => {
+    if (prevPageRef.current === 'textsuche' && page !== 'textsuche') { setGlobalSearch(''); setSearchFocused(false) }
+    prevPageRef.current = page
+  }, [page])
 
   // Kanban helpers
   const kanbanColumns = ['open', 'in_progress', 'done'] as const
@@ -720,7 +784,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="absolute top-full left-0 mt-1 w-[430px] rounded-xl border border-[var(--syn-line)] shadow-xl z-50 overflow-hidden max-h-[70vh] overflow-y-auto" style={{ background: 'var(--syn-bg)' }}>
                 <div className="px-3 py-2 text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--syn-text-faint)', background: 'var(--syn-surface-2)' }}>Meetings ({searchResults.meetings.length})</div>
                 {searchResults.meetings.map(m => (
-                  <button key={m.id} onClick={() => { setSearchFocused(false); setViewMeeting(m) }} className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--syn-hover)] transition-colors flex items-center gap-2">
+                  <button key={m.id} onClick={() => { setGlobalSearch(''); setSearchFocused(false); setViewMeeting(m) }} className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--syn-hover)] transition-colors flex items-center gap-2">
                     <span className="text-xs shrink-0">☰</span><span className="truncate">{m.title}</span><span className="text-[10px] ml-auto shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{m.date}</span>
                   </button>
                 ))}
@@ -1009,8 +1073,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
                     <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
+                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredBlockers.map(b => (
@@ -1018,8 +1082,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell className="text-left"><button onClick={() => setViewBlocker(b)} className="text-left font-medium hover:text-[var(--syn-accent)]">{b.title}</button><div className="text-xs truncate max-w-md" style={{ color: 'var(--syn-text-faint)' }}>{b.description}</div></TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={b.reportedBy} /><span className="text-xs">{b.reportedBy}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[b.status]}`}>{ST_LABEL[b.status]}</Badge></TableCell>
-                        <TableCell className="overflow-hidden"><SourceChip meeting={getMeeting(b.meetingId) || null} onClick={() => { const m = getMeeting(b.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{b.createdAt}</TableCell>
+                        <TableCell className="overflow-hidden"><SourceChip meeting={getMeeting(b.meetingId) || null} onClick={() => { const m = getMeeting(b.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
                         <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditBlocker({...b})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: b.title, action: () => handleDeleteBlocker(b) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     ))}
@@ -1046,8 +1110,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
                     <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
                     <SH label="Erstellt" field="createdAt" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
+                    <TableHead className="w-[140px] text-xs">Quelle</TableHead>
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredOpen.map(o => (
@@ -1057,8 +1121,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[o.category] || o.category}</Badge></TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={o.owner} /><span className="text-xs">{o.owner}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[o.status]}`}>{ST_LABEL[o.status]}</Badge></TableCell>
-                        <TableCell className="overflow-hidden"><SourceChip meeting={getMeeting(o.meetingId) || null} onClick={() => { const m = getMeeting(o.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{o.createdAt}</TableCell>
+                        <TableCell className="overflow-hidden"><SourceChip meeting={getMeeting(o.meetingId) || null} onClick={() => { const m = getMeeting(o.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
                         <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditOpen({...o})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: o.title, action: () => handleDeleteOpen(o) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     ))}
@@ -1075,7 +1139,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Projekte</h2>
-                  <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditProject({ id: '__new__', name: '', description: null, status: 'active', start_date: null, end_date: null, owner: null, priority: 'medium', created_at: '', updated_at: '' } as DbProject)}>+ Neu</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => handleOpenProjectDialog('__new__')}>+ Neu</Button>
                 </div>
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
@@ -1111,7 +1175,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <TableCell className="text-xs"><span className="font-medium">{pTodos.filter(t => t.status === 'done').length}</span><span style={{ color: 'var(--syn-text-faint)' }}>/{pTodos.length}</span></TableCell>
                       <TableCell className="text-xs">{pBlockers.filter(b => b.status === 'active').length > 0 ? <span className="font-bold text-[var(--syn-danger)]">{pBlockers.filter(b => b.status === 'active').length} aktiv</span> : <span style={{ color: 'var(--syn-text-faint)' }}>0</span>}</TableCell>
                       <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status] || ''}`}>{ST_LABEL[p.status] || p.status}</Badge></TableCell>
-                      <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditProject({...p})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: p.name, action: () => handleDeleteProject(p) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                      <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => handleOpenProjectDialog(p)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: p.name, action: () => handleDeleteProject(p) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                     </TableRow>
                   )})}
                   {filteredProjects.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Projekte</TableCell></TableRow>}
@@ -1758,7 +1822,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             </div></> })()}
             <Separator className="bg-[var(--syn-line)]" />
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const p = viewProject!; setViewProject(null); setEditProject({...p}) }}>{'✎'} Bearbeiten</Button>
+              <Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const p = viewProject!; setViewProject(null); handleOpenProjectDialog(p) }}>{'✎'} Bearbeiten</Button>
               <Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewProject!.name, action: () => { handleDeleteProject(viewProject!); setViewProject(null) } })}>{'✕'} Löschen</Button>
               <div className="ml-auto flex gap-1">
                 <Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { setViewProject(null); setPage('projekte'); setProjectView('gantt') }}>{'▰'} Gantt</Button>
@@ -1782,97 +1846,200 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>Meeting bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-3 pt-2"><Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.topics.join(', ')} onChange={e => setEditMeeting({...editMeeting, topics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Themen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={4} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Input value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button></div>}</DialogContent></Dialog>
 
       {/* Edit Project */}
-      <Dialog open={!!editProject} onOpenChange={() => { setEditProject(null); setProjectInitTodos('') }}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>{editProject && <div className="space-y-4 pt-2">
-        <div>
-          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektname *</label>
-          <Input placeholder="Name" value={editProject.name} onChange={e => setEditProject({...editProject, name: e.target.value})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-        </div>
-        <div>
-          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Beschreibung</label>
-          <Textarea placeholder="Beschreibung (optional)" value={editProject.description || ''} onChange={e => setEditProject({...editProject, description: e.target.value || null})} rows={2} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Status</label>
-            <Select value={editProject.status} onValueChange={v => setEditProject({...editProject, status: v})}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Aktiv</SelectItem>
-                <SelectItem value="completed">Abgeschlossen</SelectItem>
-                <SelectItem value="on_hold">Pausiert</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Priorität</label>
-            <Select value={editProject.priority || 'medium'} onValueChange={v => setEditProject({...editProject, priority: v})}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="urgent">Dringend</SelectItem>
-                <SelectItem value="high">Hoch</SelectItem>
-                <SelectItem value="medium">Mittel</SelectItem>
-                <SelectItem value="low">Niedrig</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div>
-          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Verantwortlicher</label>
-          <Select value={editProject.owner || 'none'} onValueChange={v => setEditProject({...editProject, owner: v === 'none' ? null : v})}>
-            <SelectTrigger className="mt-1"><SelectValue placeholder="— Nicht zugeordnet" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">— Nicht zugeordnet</SelectItem>
-              {memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Startdatum</label>
-            <Input type="date" value={editProject.start_date || ''} onChange={e => setEditProject({...editProject, start_date: e.target.value || null})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-          </div>
-          <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Enddatum</label>
-            <Input type="date" value={editProject.end_date || ''} onChange={e => setEditProject({...editProject, end_date: e.target.value || null})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-          </div>
-        </div>
-        {editProject.id === '__new__' && <div>
-          <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Initiale Todos <span className="font-normal" style={{ color: 'var(--syn-text-faint)' }}>(eine pro Zeile, optional)</span></label>
-          <Textarea placeholder={"API-Doku fertigstellen\nStaging-Umgebung einrichten\nKick-off Meeting planen"} value={projectInitTodos} onChange={e => setProjectInitTodos(e.target.value)} rows={3} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm font-mono" />
-        </div>}
-        {editProject.id !== '__new__' && (() => {
-          const pT = projectTodos(editProject.id)
-          const pB = projectBlockers(editProject.id)
-          const done = pT.filter(t => t.status === 'done').length
-          const inProgress = pT.filter(t => t.status === 'in_progress').length
-          const linkedMeetings = [...new Set(pT.map(t => t.meetingId).filter(Boolean))]
-          if (!pT.length && !pB.length) return null
-          return <>
-            <Separator className="bg-[var(--syn-line)]" />
+      <Dialog open={!!editProject} onOpenChange={() => { setEditProject(null); setProjTodoQueue([]); setProjTodoNewForm(null); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set()); setProjectInitTodos('') }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>
+          {editProject && <div className="space-y-4 pt-2">
+            {/* ── Basis ── */}
             <div>
-              <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektübersicht</label>
-              <div className="grid grid-cols-3 gap-3 mt-2">
-                <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--syn-surface-2)' }}>
-                  <div className="text-lg font-bold" style={{ color: 'var(--syn-accent)' }}>{pT.length}</div>
-                  <div className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Todos</div>
-                </div>
-                <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--syn-surface-2)' }}>
-                  <div className="text-lg font-bold" style={{ color: 'var(--syn-ok)' }}>{done}</div>
-                  <div className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Erledigt</div>
-                </div>
-                <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--syn-surface-2)' }}>
-                  <div className="text-lg font-bold" style={{ color: 'var(--syn-info)' }}>{inProgress}</div>
-                  <div className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>In Arbeit</div>
-                </div>
-              </div>
-              {pB.filter(b => b.status === 'active').length > 0 && <div className="mt-2 text-xs" style={{ color: 'var(--syn-danger)' }}>⚠ {pB.filter(b => b.status === 'active').length} aktive Blocker</div>}
-              {linkedMeetings.length > 0 && <div className="mt-2 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Verknüpfte Meetings: {linkedMeetings.map(mid => getMeeting(mid)?.title || '').filter(Boolean).join(', ')}</div>}
-              <div className="mt-1 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Erstellt: {editProject.created_at?.split('T')[0] || '—'}</div>
+              <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektname *</label>
+              <Input placeholder="Name" value={editProject.name} onChange={e => setEditProject({...editProject, name: e.target.value})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
             </div>
-          </>
-        })()}
-        <Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editProject.name.trim()} onClick={() => { const titles = projectInitTodos.split('\n').map(s => s.trim()).filter(Boolean); handleSaveProject(editProject, titles.length ? titles : undefined); setProjectInitTodos('') }}>{editProject.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button>
-      </div>}</DialogContent></Dialog>
+            <div>
+              <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Beschreibung</label>
+              <Textarea placeholder="Beschreibung (optional)" value={editProject.description || ''} onChange={e => setEditProject({...editProject, description: e.target.value || null})} rows={2} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Status</label>
+                <Select value={editProject.status} onValueChange={v => setEditProject({...editProject, status: v})}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="active">Aktiv</SelectItem><SelectItem value="completed">Abgeschlossen</SelectItem><SelectItem value="on_hold">Pausiert</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Priorität</label>
+                <Select value={editProject.priority || 'medium'} onValueChange={v => setEditProject({...editProject, priority: v})}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="urgent">Dringend</SelectItem><SelectItem value="high">Hoch</SelectItem><SelectItem value="medium">Mittel</SelectItem><SelectItem value="low">Niedrig</SelectItem></SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Verantwortlicher</label>
+              <Select value={editProject.owner || 'none'} onValueChange={v => setEditProject({...editProject, owner: v === 'none' ? null : v})}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="— Nicht zugeordnet" /></SelectTrigger>
+                <SelectContent><SelectItem value="none">— Nicht zugeordnet</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Startdatum</label>
+                <Input type="date" value={editProject.start_date || ''} onChange={e => setEditProject({...editProject, start_date: e.target.value || null})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+              </div>
+              <div>
+                <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Enddatum</label>
+                <Input type="date" value={editProject.end_date || ''} onChange={e => setEditProject({...editProject, end_date: e.target.value || null})} className="mt-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+              </div>
+            </div>
+
+            {/* ── Todos ── */}
+            <Separator className="bg-[var(--syn-line)]" />
+            <div className="space-y-2">
+              <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Todos</label>
+              {/* Queue: neue Todos die beim Speichern erstellt werden */}
+              {projTodoQueue.map((td, i) => (
+                <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded" style={{ background: 'var(--syn-surface-2)' }}>
+                  <span className="text-xs flex-1 truncate">{td.title}</span>
+                  <Badge className={`text-[9px] shrink-0 ${PRI_STYLE[td.priority]}`}>{PRI_LABEL[td.priority]}</Badge>
+                  <Badge className={`text-[9px] shrink-0 ${ST_STYLE[td.status]}`}>{ST_LABEL[td.status]}</Badge>
+                  {td.assignee && td.assignee !== 'Nicht zugeordnet' && <Av name={td.assignee} />}
+                  <button onClick={() => setProjTodoQueue(prev => prev.filter((_, j) => j !== i))} className="text-xs w-5 h-5 flex items-center justify-center rounded hover:text-[var(--syn-danger)]" style={{ color: 'var(--syn-text-faint)' }}>✕</button>
+                </div>
+              ))}
+              {/* Bereits verknüpfte bestehende Todos (nur Anzeige, kein X zum Entverknüpfen hier) */}
+              {Array.from(projLinkedTodoIds).filter(id => !projTodoQueue.some(() => false) && todos.find(t => t.id === id)).map(id => {
+                const td = todos.find(t => t.id === id)!
+                return (
+                  <div key={id} className="flex items-center gap-2 px-2 py-1.5 rounded border" style={{ background: 'var(--syn-surface-2)', borderColor: 'var(--syn-accent-line)' }}>
+                    <span className="text-[10px] px-1 rounded" style={{ background: 'var(--syn-accent-soft)', color: 'var(--syn-accent)' }}>↗</span>
+                    <span className="text-xs flex-1 truncate">{td.title}</span>
+                    <Badge className={`text-[9px] shrink-0 ${ST_STYLE[td.status]}`}>{ST_LABEL[td.status]}</Badge>
+                    <button onClick={() => { const s = new Set(projLinkedTodoIds); s.delete(id); setProjLinkedTodoIds(s) }} className="text-xs w-5 h-5 flex items-center justify-center rounded hover:text-[var(--syn-danger)]" style={{ color: 'var(--syn-text-faint)' }}>✕</button>
+                  </div>
+                )
+              })}
+              {/* Inline-Form neues Todo */}
+              {projTodoNewForm !== null ? (
+                <div className="rounded-lg border p-3 space-y-2" style={{ borderColor: 'var(--syn-accent-line)', background: 'var(--syn-surface-2)' }}>
+                  <Input placeholder="Titel *" value={projTodoNewForm.title} onChange={e => setProjTodoNewForm({...projTodoNewForm, title: e.target.value})} className="bg-[var(--syn-surface-3)] border-[var(--syn-line)] text-sm" />
+                  <Textarea placeholder="Beschreibung" value={projTodoNewForm.description} onChange={e => setProjTodoNewForm({...projTodoNewForm, description: e.target.value})} rows={2} className="bg-[var(--syn-surface-3)] border-[var(--syn-line)] text-sm" />
+                  <div className="grid grid-cols-3 gap-2">
+                    <Select value={projTodoNewForm.assignee} onValueChange={v => setProjTodoNewForm({...projTodoNewForm, assignee: v})}>
+                      <SelectTrigger className="text-xs h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="Nicht zugeordnet">— Zuständig</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Select value={projTodoNewForm.priority} onValueChange={v => setProjTodoNewForm({...projTodoNewForm, priority: v})}>
+                      <SelectTrigger className="text-xs h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="urgent">Dringend</SelectItem><SelectItem value="high">Hoch</SelectItem><SelectItem value="medium">Mittel</SelectItem><SelectItem value="low">Niedrig</SelectItem></SelectContent>
+                    </Select>
+                    <Select value={projTodoNewForm.status} onValueChange={v => setProjTodoNewForm({...projTodoNewForm, status: v})}>
+                      <SelectTrigger className="text-xs h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div><label className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Fällig</label><Input type="date" value={projTodoNewForm.dueDate || ''} onChange={e => setProjTodoNewForm({...projTodoNewForm, dueDate: e.target.value || null})} className="h-8 text-xs bg-[var(--syn-surface-3)] border-[var(--syn-line)]" /></div>
+                    <div><label className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Start</label><Input type="date" value={projTodoNewForm.startDate || ''} onChange={e => setProjTodoNewForm({...projTodoNewForm, startDate: e.target.value || null})} className="h-8 text-xs bg-[var(--syn-surface-3)] border-[var(--syn-line)]" /></div>
+                    <div><label className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Dauer (Tage)</label><Input type="number" min={1} value={projTodoNewForm.durationDays} onChange={e => setProjTodoNewForm({...projTodoNewForm, durationDays: Math.max(1, parseInt(e.target.value) || 1)})} className="h-8 text-xs bg-[var(--syn-surface-3)] border-[var(--syn-line)]" /></div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" className="text-xs bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!projTodoNewForm.title.trim()} onClick={() => { setProjTodoQueue(prev => [...prev, {...projTodoNewForm}]); setProjTodoNewForm(null) }}>Hinzufügen</Button>
+                    <Button size="sm" variant="outline" className="text-xs border-[var(--syn-line)]" onClick={() => setProjTodoNewForm(null)}>Abbrechen</Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="text-xs border-[var(--syn-line)] flex-1" onClick={() => setProjTodoNewForm({ id: '__new__', assignee: editProject.owner || 'Nicht zugeordnet', title: '', description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' })}>+ Todo erstellen</Button>
+                </div>
+              )}
+              {/* Vorhandene Todos suchen & verknüpfen */}
+              <div>
+                <Input placeholder="Vorhandene Todos suchen…" value={projTodoSearch} onChange={e => setProjTodoSearch(e.target.value)} className="h-7 text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+                {projTodoSearch.trim() && (() => {
+                  const q = projTodoSearch.toLowerCase()
+                  const available = todos.filter(t => t.title.toLowerCase().includes(q) && !projTodoQueue.some(() => false))
+                  return available.length > 0 ? (
+                    <div className="mt-1 max-h-32 overflow-y-auto rounded border" style={{ borderColor: 'var(--syn-line)', background: 'var(--syn-surface-2)' }}>
+                      {available.map(t => (
+                        <label key={t.id} className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-[var(--syn-hover)] text-xs">
+                          <input type="checkbox" checked={projLinkedTodoIds.has(t.id)} onChange={e => { const s = new Set(projLinkedTodoIds); e.target.checked ? s.add(t.id) : s.delete(t.id); setProjLinkedTodoIds(s) }} className="rounded" />
+                          <span className="flex-1 truncate">{t.title}</span>
+                          <Badge className={`text-[9px] shrink-0 ${ST_STYLE[t.status]}`}>{ST_LABEL[t.status]}</Badge>
+                          {t.assignee !== 'Nicht zugeordnet' && <Av name={t.assignee} />}
+                        </label>
+                      ))}
+                    </div>
+                  ) : <div className="text-[11px] mt-1" style={{ color: 'var(--syn-text-faint)' }}>Keine Treffer</div>
+                })()}
+              </div>
+            </div>
+
+            {/* ── Meetings verknüpfen ── */}
+            <Separator className="bg-[var(--syn-line)]" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Meetings verknüpfen</label>
+                <button onClick={() => setProjMeetingPickerOpen(v => !v)} className="text-[10px] px-2 py-0.5 rounded border hover:bg-[var(--syn-hover)]" style={{ borderColor: 'var(--syn-line)', color: 'var(--syn-accent)' }}>{projMeetingPickerOpen ? '▲ Schließen' : `▼ Auswählen${projLinkedMeetingIds.size > 0 ? ` (${projLinkedMeetingIds.size})` : ''}`}</button>
+              </div>
+              {/* Chips der ausgewählten Meetings */}
+              {projLinkedMeetingIds.size > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {Array.from(projLinkedMeetingIds).map(mid => {
+                    const m = meetings.find(x => x.id === mid)
+                    if (!m) return null
+                    return <span key={mid} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'var(--syn-accent-soft)', color: 'var(--syn-accent)' }}>
+                      {m.date} · {m.title.length > 25 ? m.title.slice(0, 25) + '…' : m.title}
+                      <button onClick={() => { const s = new Set(projLinkedMeetingIds); s.delete(mid); setProjLinkedMeetingIds(s) }} className="hover:text-[var(--syn-danger)]">✕</button>
+                    </span>
+                  })}
+                </div>
+              )}
+              {projMeetingPickerOpen && (
+                <div className="rounded-lg border" style={{ borderColor: 'var(--syn-line)' }}>
+                  <Input placeholder="Meetings durchsuchen…" value={projMeetingSearch} onChange={e => setProjMeetingSearch(e.target.value)} className="h-8 text-xs border-0 border-b rounded-none bg-[var(--syn-surface-2)]" style={{ borderColor: 'var(--syn-line)' }} />
+                  <div className="max-h-48 overflow-y-auto">
+                    {meetings
+                      .filter(m => { const q = projMeetingSearch.toLowerCase(); return !q || m.title.toLowerCase().includes(q) || m.date.includes(q) || m.topics.some(t => t.toLowerCase().includes(q)) })
+                      .sort((a, b) => b.date.localeCompare(a.date))
+                      .map(m => (
+                        <label key={m.id} className="flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-[var(--syn-hover)] border-b last:border-b-0" style={{ borderColor: 'var(--syn-line)' }}>
+                          <input type="checkbox" checked={projLinkedMeetingIds.has(m.id)} onChange={e => { const s = new Set(projLinkedMeetingIds); e.target.checked ? s.add(m.id) : s.delete(m.id); setProjLinkedMeetingIds(s) }} className="mt-0.5 rounded" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2"><span className="text-xs font-medium truncate">{m.title}</span><span className="text-[10px] shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{m.date}</span></div>
+                            {m.topics.length > 0 && <div className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--syn-text-faint)' }}>{m.topics.slice(0, 5).join(' · ')}{m.topics.length > 5 ? ` +${m.topics.length - 5}` : ''}</div>}
+                          </div>
+                        </label>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── Projektübersicht (nur Edit) ── */}
+            {editProject.id !== '__new__' && (() => {
+              const pT = projectTodos(editProject.id)
+              const pB = projectBlockers(editProject.id)
+              if (!pT.length && !pB.length) return null
+              return <>
+                <Separator className="bg-[var(--syn-line)]" />
+                <div>
+                  <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektübersicht</label>
+                  <div className="grid grid-cols-3 gap-3 mt-2">
+                    <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--syn-surface-2)' }}><div className="text-lg font-bold" style={{ color: 'var(--syn-accent)' }}>{pT.length}</div><div className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Todos</div></div>
+                    <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--syn-surface-2)' }}><div className="text-lg font-bold" style={{ color: 'var(--syn-ok)' }}>{pT.filter(t => t.status === 'done').length}</div><div className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Erledigt</div></div>
+                    <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--syn-surface-2)' }}><div className="text-lg font-bold" style={{ color: 'var(--syn-info)' }}>{pT.filter(t => t.status === 'in_progress').length}</div><div className="text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>In Arbeit</div></div>
+                  </div>
+                  {pB.filter(b => b.status === 'active').length > 0 && <div className="mt-2 text-xs" style={{ color: 'var(--syn-danger)' }}>⚠ {pB.filter(b => b.status === 'active').length} aktive Blocker</div>}
+                  <div className="mt-1 text-[11px]" style={{ color: 'var(--syn-text-faint)' }}>Erstellt: {editProject.created_at?.split('T')[0] || '—'}</div>
+                </div>
+              </>
+            })()}
+
+            <Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editProject.name.trim()} onClick={() => handleSaveProject(editProject)}>{editProject.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button>
+          </div>}
+        </DialogContent>
+      </Dialog>
 
       {/* View Todo */}
       <Dialog open={!!viewTodo} onOpenChange={() => setViewTodo(null)}><DialogContent className="max-w-4xl">{viewTodo && <><DialogHeader className="text-left"><DialogTitle><div className="flex items-center gap-2">{viewTodo.title}<Badge variant="outline" className="text-[9px] border-[var(--syn-line)] shrink-0">Todo</Badge></div></DialogTitle></DialogHeader><div className="space-y-3 pt-2 text-left"><div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm"><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Zuständig</span><div className="flex items-center gap-1.5 mt-0.5"><Av name={viewTodo.assignee} /><span>{viewTodo.assignee}</span></div></div><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Priorität</span><div className="mt-0.5"><Badge className={`text-xs ${PRI_STYLE[viewTodo.priority]}`}>{PRI_LABEL[viewTodo.priority]}</Badge></div></div><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Status</span><div className="mt-0.5"><Badge className={`text-xs ${ST_STYLE[viewTodo.status]}`}>{ST_LABEL[viewTodo.status]}</Badge></div></div><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Dauer</span><div className="mt-0.5">{viewTodo.durationDays} Tag{viewTodo.durationDays !== 1 ? 'e' : ''}</div></div>{viewTodo.startDate && <div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Startdatum</span><div className="mt-0.5">{viewTodo.startDate}</div></div>}{viewTodo.startDate && <div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Enddatum</span><div className="mt-0.5">{addDays(viewTodo.startDate, Math.max(viewTodo.durationDays - 1, 0))}</div></div>}<div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Erstellt</span><div className="mt-0.5">{viewTodo.createdAt || '—'}</div></div>{getProjectName(viewTodo.projectId) && <div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Projekt</span><div className="mt-0.5 flex items-center gap-2"><span>{getProjectName(viewTodo.projectId)}</span><button onClick={() => { setViewTodo(null); setPage('projekte'); setProjectView('gantt') }} className="text-[10px] underline hover:text-[var(--syn-accent)]" style={{ color: 'var(--syn-text-muted)' }}>Gantt</button><button onClick={() => { setViewTodo(null); setPage('projekte'); setProjectView('kanban') }} className="text-[10px] underline hover:text-[var(--syn-accent)]" style={{ color: 'var(--syn-text-muted)' }}>Kanban</button></div></div>}</div>{viewTodo.description && <><Separator className="bg-[var(--syn-line)]" /><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Beschreibung</span><p className="text-sm mt-1 leading-relaxed whitespace-pre-wrap">{viewTodo.description}</p></div></>}{viewTodo.dependsOn.length > 0 && <><Separator className="bg-[var(--syn-line)]" /><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Abhängig von</span><div className="mt-1 space-y-1">{viewTodo.dependsOn.map(depId => { const dep = todos.find(t => t.id === depId); return dep ? <button key={depId} onClick={() => { setViewTodo(null); setTimeout(() => setViewTodo(dep), 100) }} className="block text-sm hover:text-[var(--syn-accent)]">{dep.title}</button> : null })}</div></div></>}{viewTodo.meetingId && getMeeting(viewTodo.meetingId) && <><Separator className="bg-[var(--syn-line)]" /><div><span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Meeting</span><div className="mt-0.5"><SourceChip meeting={getMeeting(viewTodo.meetingId)!} onClick={() => { setViewTodo(null); setViewMeeting(getMeeting(viewTodo.meetingId!)!) }} /></div></div></>}<Separator className="bg-[var(--syn-line)]" /><div className="flex gap-2"><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { setViewTodo(null); setEditTodo({...viewTodo}) }}>{'✎'} Bearbeiten</Button><Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewTodo.title, action: () => { handleDeleteTodo(viewTodo); setViewTodo(null) } })}>{'✕'} Löschen</Button></div></div></>}</DialogContent></Dialog>
