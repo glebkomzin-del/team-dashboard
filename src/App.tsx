@@ -103,9 +103,7 @@ function SH({ label, field, sort, onSort, className }: { label: string; field: s
   return <TableHead className={`cursor-pointer select-none hover:bg-[var(--syn-hover)] transition-colors ${className || ''}`} onClick={() => onSort(field)}><span className="flex items-center justify-center text-xs">{label}<SortIcon dir={sort.col === field ? sort.dir : null} /></span></TableHead>
 }
 function shortTopic(t: any): string {
-  const s = typeof t === 'object' && t !== null ? (t.name || '') : String(t || '')
-  const words = s.trim().split(/\s+/)
-  return words.length > 4 ? words.slice(0, 4).join(' ') + '…' : s
+  return typeof t === 'object' && t !== null ? (t.name || '') : String(t || '')
 }
 function TrashIcon() {
   return (
@@ -558,7 +556,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     } else if (item.entity_type === 'open_item') {
       setEditOpen({ id: 'inbox_' + item.id, owner: p.owner || 'Nicht zugeordnet', title: p.title || '', description: p.description || '', category: p.category || 'general', status: p.status || 'open', meetingId: null, projectId: null, createdAt: '' })
     } else if (item.entity_type === 'meeting') {
-      setEditMeeting({ id: 'inbox_' + item.id, title: p.title || '', date: p.meeting_date || '', topics: p.topics || [], participants: p.participants || [], summary: p.ai_summary || '', keyDecisions: p.key_decisions || [] })
+      setEditMeeting({ id: 'inbox_' + item.id, title: p.title || '', date: p.meeting_date || '', topics: (p.topics || []).map((t: any) => typeof t === 'object' && t !== null ? (t.name || '') : String(t || '')).filter(Boolean), participants: p.participants || [], summary: p.ai_summary || '', keyDecisions: p.key_decisions || [] })
     }
   }
 
@@ -1095,6 +1093,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ INBOX ═══ */}
           {page === 'inbox' && (() => {
             const ib = { meetings: inboxItems.filter(i => i.entity_type === 'meeting').slice(0,10), todos: inboxItems.filter(i => i.entity_type === 'todo').slice(0,10), blockers: inboxItems.filter(i => i.entity_type === 'blocker').slice(0,10), open: inboxItems.filter(i => i.entity_type === 'open_item').slice(0,10) }
+            // Map source filename → meeting vm (for Quelle column in todos/blockers/open_items)
+            const sourceFileMap = new Map<string, { id: string; title: string; date: string; topics: string[]; participants: string[]; summary: string; keyDecisions: string[] }>()
+            ib.meetings.forEach(mi => { if (mi.source) { const mp = mi.payload; sourceFileMap.set(mi.source, { id: 'ib_'+mi.id, title: mp.title||'', date: mp.meeting_date||'', topics: (mp.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')), participants: mp.participants||[], summary: mp.ai_summary||'', keyDecisions: mp.key_decisions||[] }) } })
             const FC = ({ item }: { item: DbInboxItem }) => (
               <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center">
                 <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
@@ -1134,12 +1135,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <SH2 label="Entsch." className="w-[80px]" />
                       <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.meetings.map(item => { const p = item.payload; const vm = { id: 'ib_'+item.id, title: p.title||'', date: p.meeting_date||'', topics: p.topics||[], participants: p.participants||[], summary: p.ai_summary||'', keyDecisions: p.key_decisions||[] }; return (
+                      {ib.meetings.map(item => { const p = item.payload; const vm = { id: 'ib_'+item.id, title: p.title||'', date: p.meeting_date||'', topics: (p.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')), participants: p.participants||[], summary: p.ai_summary||'', keyDecisions: p.key_decisions||[] }; return (
                         <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{p.meeting_date||'—'}</TableCell>
                           <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(vm) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button></TableCell>
-                          <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{(p.participants||[]).slice(0,2).map((pt: string,i: number)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap overflow-hidden shrink-0" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',maxWidth:'88px',textOverflow:'ellipsis'}}>{pt}</span>)}{(p.participants||[]).length>2&&<span className="text-[10px] font-medium shrink-0" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-2}</span>}</div></TableCell>
-                          <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{(p.topics||[]).slice(0,2).map((t: any,i: number)=><Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap shrink-0" style={{maxWidth:'100px',overflow:'hidden',textOverflow:'ellipsis'}}>{shortTopic(t)}</Badge>)}{(p.topics||[]).length>2&&<span className="text-[10px] font-medium shrink-0" style={{color:'var(--syn-text-faint)'}}>+{(p.topics||[]).length-2}</span>}</div></TableCell>
+                          <TableCell><div className="flex flex-col gap-0.5">{(p.participants||[]).slice(0,5).map((pt: string,i: number)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{pt}</span>)}{(p.participants||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-5}</span>}</div></TableCell>
+                          <TableCell><div className="flex flex-col gap-0.5">{(p.topics||[]).slice(0,5).map((t: any,i: number)=><Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)]">{shortTopic(t)}</Badge>)}{(p.topics||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.topics||[]).length-5}</span>}</div></TableCell>
                           <TableCell className="text-xs text-center" style={{color:'var(--syn-text-muted)'}}>{(p.key_decisions||[]).length>0?<span className="font-medium text-[var(--syn-text)]">{(p.key_decisions||[]).length}</span>:'—'}</TableCell>
                           <FC item={item} />
                         </TableRow>
@@ -1170,7 +1171,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{p.due_date||'—'}</TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden"><span className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'Make'}</span></TableCell>
+                          <TableCell className="overflow-hidden">{(() => { const sm = item.source ? sourceFileMap.get(item.source) : null; return sm ? <button onClick={e=>{e.stopPropagation();setViewMeeting(sm)}} className="text-[10px] px-1.5 py-0.5 rounded max-w-[120px] truncate block text-left hover:text-[var(--syn-accent)] transition-colors" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{sm.title||item.source}</button> : <span className="text-[10px] px-1.5 py-0.5 rounded block max-w-[120px] truncate" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'—'}</span> })()}</TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -1196,7 +1197,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden"><span className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'Make'}</span></TableCell>
+                          <TableCell className="overflow-hidden">{(() => { const sm = item.source ? sourceFileMap.get(item.source) : null; return sm ? <button onClick={e=>{e.stopPropagation();setViewMeeting(sm)}} className="text-[10px] px-1.5 py-0.5 rounded max-w-[120px] truncate block text-left hover:text-[var(--syn-accent)] transition-colors" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{sm.title||item.source}</button> : <span className="text-[10px] px-1.5 py-0.5 rounded block max-w-[120px] truncate" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'—'}</span> })()}</TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -1226,7 +1227,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden"><span className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'Make'}</span></TableCell>
+                          <TableCell className="overflow-hidden">{(() => { const sm = item.source ? sourceFileMap.get(item.source) : null; return sm ? <button onClick={e=>{e.stopPropagation();setViewMeeting(sm)}} className="text-[10px] px-1.5 py-0.5 rounded max-w-[120px] truncate block text-left hover:text-[var(--syn-accent)] transition-colors" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{sm.title||item.source}</button> : <span className="text-[10px] px-1.5 py-0.5 rounded block max-w-[120px] truncate" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)'}}>{item.source||'—'}</span> })()}</TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -1266,8 +1267,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <TableRow key={m.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${meetingSelected.has(m.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })}>
                     <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{m.date}</TableCell>
                     <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(m) }} className="text-left hover:text-[var(--syn-accent)]">{m.title}</button></TableCell>
-                    <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{m.participants.slice(0, 2).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap overflow-hidden shrink-0" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', maxWidth: '88px', textOverflow: 'ellipsis' }}>{p}</span>)}{m.participants.length > 2 && <span className="text-[10px] font-medium shrink-0" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 2}</span>}</div></TableCell>
-                    <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{m.topics.slice(0, 2).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap shrink-0" style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{shortTopic(t)}</Badge>)}{m.topics.length > 2 && <span className="text-[10px] font-medium shrink-0" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 2}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-col gap-0.5">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-col gap-0.5">{m.topics.slice(0, 5).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)]">{shortTopic(t)}</Badge>)}{m.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 5}</span>}</div></TableCell>
                     <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{m.keyDecisions.length > 0 ? <span className="font-medium">{m.keyDecisions.length}</span> : '—'}</TableCell>
                     <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
                   </TableRow>
@@ -2027,7 +2028,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         <DialogContent className="max-w-4xl max-h-[85vh]">{viewMeeting && <ScrollArea className="max-h-[75vh] pr-4">
           <DialogHeader className="pb-3"><DialogTitle>{viewMeeting.title}</DialogTitle><div className="flex items-center gap-3 text-xs mt-1" style={{ color: 'var(--syn-text-muted)' }}><span>{viewMeeting.date}</span><span>{'·'}</span><span>{viewMeeting.participants.length} Teilnehmer</span></div></DialogHeader>
           <div className="space-y-4 pt-2">
-            <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Themen</h3><div className="flex flex-wrap gap-1.5">{viewMeeting.topics.map((t, i) => <Badge key={i} variant="outline" className="border-[var(--syn-line)]">{t}</Badge>)}</div></div>
+            <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Themen</h3><div className="flex flex-wrap gap-1.5">{viewMeeting.topics.map((t, i) => <Badge key={i} variant="outline" className="border-[var(--syn-line)]">{shortTopic(t)}</Badge>)}</div></div>
             <Separator className="bg-[var(--syn-line)]" />
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Teilnehmer</h3><div className="flex flex-wrap gap-2">{viewMeeting.participants.map((p, i) => <span key={i} className="text-sm px-2.5 py-1 rounded" style={{ background: 'var(--syn-surface-3)' }}>{p}</span>)}</div></div>
             <Separator className="bg-[var(--syn-line)]" />
