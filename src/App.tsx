@@ -382,6 +382,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const ganttColDragRef = useRef<string | null>(null)
   const toggleField = (set: Set<string>, setFn: (s: Set<string>) => void, field: string) => { const n = new Set(set); if (n.has(field)) n.delete(field); else n.add(field); setFn(n) }
 
+  // Bulk-select sets
+  const [todoSelected, setTodoSelected] = useState<Set<string>>(new Set())
+  const [blockerSelected, setBlockerSelected] = useState<Set<string>>(new Set())
+  const [openSelected, setOpenSelected] = useState<Set<string>>(new Set())
+  const [meetingSelected, setMeetingSelected] = useState<Set<string>>(new Set())
+
   const memberNames = useMemo(() => {
     const names = members.map(m => m.name)
     return names.sort((a, b) => {
@@ -448,6 +454,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleDeleteOpen = async (o: OpenItem) => { setOpenItems(prev => prev.filter(x => x.id !== o.id)); try { await deleteOpenItemDb(o.id) } catch { } }
   const handleSaveOpen = async (o: OpenItem) => { setOpenItems(prev => prev.map(x => x.id === o.id ? o : x)); setEditOpen(null); try { await updateOpenItemFull(o.id, { title: o.title, description: o.description, owner: o.owner, category: o.category, status: o.status }) } catch { } }
   const handleDeleteMeeting = async (m: Meeting) => { setMeetings(prev => prev.filter(x => x.id !== m.id)); try { await deleteMeetingDb(m.id) } catch { } }
+
+  const handleBulkDeleteTodos = async () => { const ids = [...todoSelected]; setTodos(prev => prev.filter(x => !ids.includes(x.id))); setTodoSelected(new Set()); await Promise.all(ids.map(id => deleteTodoDb(id).catch(() => {}))) }
+  const handleBulkDeleteBlockers = async () => { const ids = [...blockerSelected]; setBlockers(prev => prev.filter(x => !ids.includes(x.id))); setBlockerSelected(new Set()); await Promise.all(ids.map(id => deleteBlockerDb(id).catch(() => {}))) }
+  const handleBulkDeleteOpen = async () => { const ids = [...openSelected]; setOpenItems(prev => prev.filter(x => !ids.includes(x.id))); setOpenSelected(new Set()); await Promise.all(ids.map(id => deleteOpenItemDb(id).catch(() => {}))) }
+  const handleBulkDeleteMeetings = async () => { const ids = [...meetingSelected]; setMeetings(prev => prev.filter(x => !ids.includes(x.id))); setMeetingSelected(new Set()); await Promise.all(ids.map(id => deleteMeetingDb(id).catch(() => {}))) }
   const handleSaveMeeting = async (m: Meeting) => { setMeetings(prev => prev.map(x => x.id === m.id ? m : x)); setEditMeeting(null); try { await updateMeetingFull(m.id, { title: m.title, meeting_date: m.date, topics: m.topics, participants: m.participants, ai_summary: m.summary, key_decisions: m.keyDecisions }) } catch { } }
   const handleCreateTodo = async (t: Todo) => { setEditTodo(null); try { const c = await insertTodo({ title: t.title, description: t.description || undefined, assignee: t.assignee, priority: t.priority, due_date: t.dueDate || undefined } as any); setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: t.startDate, durationDays: t.durationDays, dependsOn: [], meetingId: null, projectId: t.projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev]); if (t.startDate || t.projectId || t.durationDays > 1) { await updateTodoFull(c.id, { start_date: t.startDate, duration_days: t.durationDays, project_id: t.projectId } as any) } } catch { } }
   const handleCreateBlocker = async (b: Blocker) => { setEditBlocker(null); try { const c = await insertBlocker({ title: b.title, description: b.description || undefined, reported_by: b.reportedBy }); setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
@@ -978,6 +989,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                <TableHead className="w-8"></TableHead>
                 <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className="w-[110px]" />
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
                 <TableHead className="w-[200px] text-xs">Teilnehmer</TableHead>
@@ -986,17 +998,19 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
               </TableRow></TableHeader><TableBody>
                 {filteredNotes.map(m => (
-                  <TableRow key={m.id} className="text-sm cursor-pointer hover:bg-[var(--syn-hover)] border-[var(--syn-line)]" onClick={() => setViewMeeting(m)}>
+                  <TableRow key={m.id} className={`text-sm cursor-pointer border-[var(--syn-line)] group ${meetingSelected.has(m.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setViewMeeting(m)}>
+                    <TableCell className="pl-2 pr-0" onClick={e => e.stopPropagation()}><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></TableCell>
                     <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{m.date}</TableCell>
                     <TableCell className="text-left font-medium">{m.title}</TableCell>
-                    <TableCell><div className="flex flex-wrap gap-1">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
-                    <TableCell><div className="flex flex-wrap gap-1">{m.topics.slice(0, 5).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)]">{t}</Badge>)}{m.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 5}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{m.participants.slice(0, 2).map((p, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap overflow-hidden shrink-0" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', maxWidth: '88px', textOverflow: 'ellipsis' }}>{p}</span>)}{m.participants.length > 2 && <span className="text-[10px] font-medium shrink-0" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 2}</span>}</div></TableCell>
+                    <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{m.topics.slice(0, 2).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap shrink-0 overflow-hidden" style={{ maxWidth: '88px', textOverflow: 'ellipsis' }}>{t}</Badge>)}{m.topics.length > 2 && <span className="text-[10px] font-medium shrink-0" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 2}</span>}</div></TableCell>
                     <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{m.keyDecisions.length > 0 ? <span className="font-medium">{m.keyDecisions.length}</span> : '—'}</TableCell>
                     <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                   </TableRow>
                 ))}
-                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
+                {filteredNotes.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
               </TableBody></Table></CardContent></Card>
+              {meetingSelected.size > 0 && <div className="flex items-center justify-between px-3 py-2 rounded-lg border" style={{ borderColor: 'var(--syn-accent)', background: 'var(--syn-accent-soft, color-mix(in srgb, var(--syn-accent) 8%, transparent))' }}><span className="text-xs font-medium">{meetingSelected.size} ausgewählt</span><div className="flex items-center gap-2"><button onClick={() => setMeetingSelected(new Set())} className="text-xs px-3 py-1 rounded border border-[var(--syn-line)] hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-text-muted)' }}>Aufheben</button><button onClick={handleBulkDeleteMeetings} className="text-xs px-3 py-1 rounded border hover:opacity-80" style={{ color: 'var(--syn-danger)', borderColor: 'var(--syn-danger)' }}>Löschen</button></div></div>}
               {meetings.length > 0 && <p className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} von {meetings.length} Meetings</p>}
             </div>
           )}
@@ -1029,6 +1043,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <TableHead className="w-6"></TableHead>
                     <TableHead className="w-10"></TableHead>
                     <SH label="Aufgabe" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
@@ -1041,7 +1056,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredTodos.map(t => { const overdue = t.dueDate && t.dueDate < today && t.status !== 'done'; return (
-                      <TableRow key={t.id} className={`text-sm border-[var(--syn-line)] ${t.status === 'done' ? 'opacity-40' : ''} hover:bg-[var(--syn-hover)]`}>
+                      <TableRow key={t.id} className={`text-sm border-[var(--syn-line)] group ${t.status === 'done' ? 'opacity-40' : ''} ${todoSelected.has(t.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`}>
+                        <TableCell className="pl-2 pr-0"><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity ${todoSelected.has(t.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={todoSelected.has(t.id)} onChange={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })} /></TableCell>
                         <TableCell className="pr-0"><button onClick={() => cycleTodo(t)} className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs transition-colors ${t.status === 'done' ? 'bg-[var(--syn-ok)] border-[var(--syn-ok)] text-white' : t.status === 'in_progress' ? 'border-[var(--syn-info)] bg-[var(--syn-info-soft)]' : 'border-[var(--syn-line-strong)] hover:border-[var(--syn-accent)]'}`}>{t.status === 'done' ? '✓' : t.status === 'in_progress' ? '›' : ''}</button></TableCell>
                         <TableCell className="text-left"><button onClick={() => setViewTodo(t)} className={`text-left hover:text-[var(--syn-accent)] ${t.status === 'done' ? 'line-through' : ''}`}>{t.title}</button>{t.description && <div className="text-xs truncate max-w-sm" style={{ color: 'var(--syn-text-faint)' }}>{t.description}</div>}</TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={t.assignee} /><span className="text-xs">{t.assignee}</span></div></TableCell>
@@ -1054,8 +1070,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditTodo({...t})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: t.title, action: () => handleDeleteTodo(t) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     )})}
-                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={10} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
+                    {filteredTodos.length === 0 && <TableRow><TableCell colSpan={11} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
+                  {todoSelected.size > 0 && <div className="flex items-center justify-between px-3 py-2 rounded-lg border" style={{ borderColor: 'var(--syn-accent)', background: 'var(--syn-accent-soft, color-mix(in srgb, var(--syn-accent) 8%, transparent))' }}><span className="text-xs font-medium">{todoSelected.size} ausgewählt</span><div className="flex items-center gap-2"><button onClick={() => setTodoSelected(new Set())} className="text-xs px-3 py-1 rounded border border-[var(--syn-line)] hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-text-muted)' }}>Aufheben</button><button onClick={handleBulkDeleteTodos} className="text-xs px-3 py-1 rounded border hover:opacity-80" style={{ color: 'var(--syn-danger)', borderColor: 'var(--syn-danger)' }}>Löschen</button></div></div>}
                 </section>
               )}
 
@@ -1071,6 +1088,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <TableHead className="w-6"></TableHead>
                     <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
@@ -1079,7 +1097,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredBlockers.map(b => (
-                      <TableRow key={b.id} className={`text-sm border-[var(--syn-line)] ${b.status !== 'active' ? 'opacity-50' : ''} hover:bg-[var(--syn-hover)]`}>
+                      <TableRow key={b.id} className={`text-sm border-[var(--syn-line)] group ${b.status !== 'active' ? 'opacity-50' : ''} ${blockerSelected.has(b.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`}>
+                        <TableCell className="pl-2 pr-0"><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity ${blockerSelected.has(b.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={blockerSelected.has(b.id)} onChange={() => setBlockerSelected(prev => { const n = new Set(prev); n.has(b.id) ? n.delete(b.id) : n.add(b.id); return n })} /></TableCell>
                         <TableCell className="text-left"><button onClick={() => setViewBlocker(b)} className="text-left font-medium hover:text-[var(--syn-accent)]">{b.title}</button><div className="text-xs truncate max-w-md" style={{ color: 'var(--syn-text-faint)' }}>{b.description}</div></TableCell>
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={b.reportedBy} /><span className="text-xs">{b.reportedBy}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[b.status]}`}>{ST_LABEL[b.status]}</Badge></TableCell>
@@ -1088,8 +1107,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditBlocker({...b})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: b.title, action: () => handleDeleteBlocker(b) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     ))}
-                    {filteredBlockers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Blocker</TableCell></TableRow>}
+                    {filteredBlockers.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Blocker</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
+                  {blockerSelected.size > 0 && <div className="flex items-center justify-between px-3 py-2 rounded-lg border" style={{ borderColor: 'var(--syn-accent)', background: 'var(--syn-accent-soft, color-mix(in srgb, var(--syn-accent) 8%, transparent))' }}><span className="text-xs font-medium">{blockerSelected.size} ausgewählt</span><div className="flex items-center gap-2"><button onClick={() => setBlockerSelected(new Set())} className="text-xs px-3 py-1 rounded border border-[var(--syn-line)] hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-text-muted)' }}>Aufheben</button><button onClick={handleBulkDeleteBlockers} className="text-xs px-3 py-1 rounded border hover:opacity-80" style={{ color: 'var(--syn-danger)', borderColor: 'var(--syn-danger)' }}>Löschen</button></div></div>}
                 </section>
               )}
 
@@ -1106,6 +1126,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <TableHead className="w-6"></TableHead>
                     <TableHead className="w-10"></TableHead>
                     <SH label="Item" field="title" sort={openSort} onSort={openSort.toggle} />
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
@@ -1116,7 +1137,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredOpen.map(o => (
-                      <TableRow key={o.id} className={`text-sm border-[var(--syn-line)] ${o.status === 'closed' ? 'opacity-40' : ''} hover:bg-[var(--syn-hover)]`}>
+                      <TableRow key={o.id} className={`text-sm border-[var(--syn-line)] group ${o.status === 'closed' ? 'opacity-40' : ''} ${openSelected.has(o.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`}>
+                        <TableCell className="pl-2 pr-0"><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity ${openSelected.has(o.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={openSelected.has(o.id)} onChange={() => setOpenSelected(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n })} /></TableCell>
                         <TableCell className="text-center">{CAT_ICON[o.category] || '○'}</TableCell>
                         <TableCell className="text-left"><button onClick={() => setViewOpen(o)} className="text-left hover:text-[var(--syn-accent)]">{o.title}</button><div className="text-xs truncate max-w-sm" style={{ color: 'var(--syn-text-faint)' }}>{o.description}</div></TableCell>
                         <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[o.category] || o.category}</Badge></TableCell>
@@ -1127,8 +1149,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => setEditOpen({...o})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: o.title, action: () => handleDeleteOpen(o) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     ))}
-                    {filteredOpen.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Punkte</TableCell></TableRow>}
+                    {filteredOpen.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Punkte</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
+                  {openSelected.size > 0 && <div className="flex items-center justify-between px-3 py-2 rounded-lg border" style={{ borderColor: 'var(--syn-accent)', background: 'var(--syn-accent-soft, color-mix(in srgb, var(--syn-accent) 8%, transparent))' }}><span className="text-xs font-medium">{openSelected.size} ausgewählt</span><div className="flex items-center gap-2"><button onClick={() => setOpenSelected(new Set())} className="text-xs px-3 py-1 rounded border border-[var(--syn-line)] hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-text-muted)' }}>Aufheben</button><button onClick={handleBulkDeleteOpen} className="text-xs px-3 py-1 rounded border hover:opacity-80" style={{ color: 'var(--syn-danger)', borderColor: 'var(--syn-danger)' }}>Löschen</button></div></div>}
                 </section>
               )}
             </div>
