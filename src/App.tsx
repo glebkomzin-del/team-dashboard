@@ -297,6 +297,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [projects, setProjects] = useState<DbProject[]>([])
   const projectIds = useMemo(() => projects.map(p => p.id), [projects])
   const [inboxItems, setInboxItems] = useState<DbInboxItem[]>([])
+  const [inboxSelected, setInboxSelected] = useState<Set<string>>(new Set())
 
   const [inboxEditModeFor, setInboxEditModeFor] = useState<string | null>(null)
 
@@ -518,7 +519,26 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }
   const handleInboxReject = async (id: string) => {
     setInboxItems(prev => prev.filter(x => x.id !== id))
+    setInboxSelected(prev => { const n = new Set(prev); n.delete(id); return n })
     await deleteInboxItemDb(id).catch(() => {})
+  }
+  const handleBulkInboxReject = async () => {
+    const ids = Array.from(inboxSelected)
+    setInboxItems(prev => prev.filter(x => !inboxSelected.has(x.id)))
+    setInboxSelected(new Set())
+    await Promise.all(ids.map(id => deleteInboxItemDb(id).catch(() => {})))
+  }
+  const handleBulkInboxApprove = async () => {
+    const items = inboxItems.filter(x => inboxSelected.has(x.id))
+    setInboxSelected(new Set())
+    for (const item of items) await handleInboxApprove(item)
+  }
+  const cycleTodoInbox = (item: DbInboxItem) => {
+    const p = item.payload
+    const cycles: Record<string, string> = { open: 'in_progress', in_progress: 'done', done: 'open' }
+    const newPayload = { ...p, status: cycles[p.status || 'open'] || 'open' }
+    setInboxItems(prev => prev.map(x => x.id === item.id ? { ...x, payload: newPayload } : x))
+    updateInboxItemPayload(item.id, newPayload).catch(() => {})
   }
   const handleInboxEdit = (item: DbInboxItem) => {
     const p = item.payload
@@ -817,17 +837,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const navSections: { label: string; items: { key: Page; label: string; icon: string; count?: number }[] }[] = [
     { label: 'ÜBERBLICK', items: [
       { key: 'uebersicht', label: 'Command Center', icon: '⬡' },
-      { key: 'inbox', label: 'Inbox', icon: '⬇', count: inboxItems.length },
-      { key: 'sitzungen', label: 'Meetings', icon: '☰', count: meetings.length },
-      { key: 'aktionen', label: 'Aktionen', icon: '✓', count: todos.filter(t => t.status !== 'done').length + blockers.filter(b => b.status === 'active').length },
+      { key: 'inbox', label: 'Inbox', icon: '⬇' },
+      { key: 'sitzungen', label: 'Meetings', icon: '☰' },
+      { key: 'aktionen', label: 'Aktionen', icon: '✓' },
     ]},
     { label: 'PLANUNG', items: [
-      { key: 'projekte', label: 'Projekte', icon: '◈', count: projects.length },
+      { key: 'projekte', label: 'Projekte', icon: '◈' },
     ]},
     { label: 'SUCHE', items: [
       { key: 'ki', label: 'AI-Suche', icon: '◉' },
       { key: 'textsuche', label: 'Textsuche', icon: '⌕' },
-      { key: 'protokoll', label: 'Aktivität', icon: '⏱', count: filteredLog.length },
+      { key: 'protokoll', label: 'Aktivität', icon: '⏱' },
     ]},
   ]
 
@@ -1067,27 +1087,26 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ INBOX ═══ */}
           {page === 'inbox' && (() => {
             const ib = { meetings: inboxItems.filter(i => i.entity_type === 'meeting').slice(0,10), todos: inboxItems.filter(i => i.entity_type === 'todo').slice(0,10), blockers: inboxItems.filter(i => i.entity_type === 'blocker').slice(0,10), open: inboxItems.filter(i => i.entity_type === 'open_item').slice(0,10) }
-            const FreigabeCell = ({ item }: { item: DbInboxItem }) => (
-              <TableCell onClick={e => e.stopPropagation()}>
-                <div className="flex gap-1 items-center justify-center">
-                  <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
-                  <button onClick={() => handleInboxApprove(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-ok)]/10 transition-colors" style={{ color: 'var(--syn-ok)' }} title="Übernehmen">✓</button>
-                  <button onClick={() => handleInboxReject(item.id)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-danger)]/10 hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Ablehnen">✕</button>
-                </div>
-              </TableCell>
+            const FC = ({ item }: { item: DbInboxItem }) => (
+              <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center">
+                <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
+                <button onClick={() => handleInboxApprove(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-ok)]/10 transition-colors" style={{ color: 'var(--syn-ok)' }} title="Übernehmen">✓</button>
+                <button onClick={() => handleInboxReject(item.id)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Ablehnen">✕</button>
+                <input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${inboxSelected.has(item.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={inboxSelected.has(item.id)} onChange={() => setInboxSelected(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })} />
+              </div></TableCell>
             )
-            const SectionHeader = ({ dot, label, count }: { dot: string; label: string; count: number }) => (
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dot }} />
-                <h3 className="text-sm font-semibold">{label}</h3>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{count}</span>
-              </div>
-            )
+            const SH2 = ({ label, className }: { label: string; className?: string }) => <TableHead className={`text-xs text-center ${className||''}`}>{label}</TableHead>
+            const selRow = (id: string) => setInboxSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
             return (
               <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold">Inbox</h2>
-                  {inboxItems.length > 0 && <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--syn-warn-soft)', color: 'var(--syn-warn)' }}>{inboxItems.length} ausstehend</span>}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold">Inbox</h2>
+                    {inboxSelected.size > 0 && <>
+                      <button onClick={handleBulkInboxApprove} className="h-7 px-2 flex items-center gap-1 rounded border border-[var(--syn-ok)]/40 hover:bg-[var(--syn-ok)]/10 transition-colors text-xs" style={{ color: 'var(--syn-ok)' }}>✓ {inboxSelected.size} übernehmen</button>
+                      <button onClick={handleBulkInboxReject} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${inboxSelected.size} ablehnen`}><TrashIcon /></button>
+                    </>}
+                  </div>
                 </div>
                 {inboxItems.length === 0 && (
                   <div className="rounded-xl border border-[var(--syn-line)] py-14 flex flex-col items-center gap-2" style={{ background: 'var(--syn-surface)' }}>
@@ -1095,99 +1114,105 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <p className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>Sobald Make ein Szenario ausführt, landen neue Einträge hier.</p>
                   </div>
                 )}
-                {/* Meetings */}
+                {/* ── Meetings ── */}
                 {ib.meetings.length > 0 && (
                   <section>
-                    <SectionHeader dot="var(--syn-accent)" label="Meetings" count={ib.meetings.length} />
+                    <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-accent)' }} /><h3 className="text-sm font-semibold">Meetings</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.meetings.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <TableHead className="w-[110px] text-xs text-center">Datum</TableHead>
-                      <SH label="Titel" field="title" sort={{ col: null, dir: null }} onSort={() => {}} />
-                      <TableHead className="w-[200px] text-xs text-center">Teilnehmer</TableHead>
-                      <TableHead className="w-[200px] text-xs text-center">Themen</TableHead>
-                      <TableHead className="w-[70px] text-xs text-center">Entsch.</TableHead>
-                      <TableHead className="w-[110px] text-xs text-center">Freigabe</TableHead>
+                      <SH2 label="Datum" className="w-[110px]" />
+                      <TableHead className="text-xs text-left pl-3">Titel</TableHead>
+                      <SH2 label="Teilnehmer" className="w-[200px]" />
+                      <SH2 label="Themen" className="w-[200px]" />
+                      <SH2 label="Entsch." className="w-[80px]" />
+                      <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.meetings.map(item => { const p = item.payload; return (
-                        <TableRow key={item.id} className="text-sm border-[var(--syn-line)] hover:bg-[var(--syn-hover)]">
-                          <TableCell className="text-xs font-medium text-center" style={{ color: 'var(--syn-text-muted)' }}>{p.meeting_date || '—'}</TableCell>
-                          <TableCell className="text-left font-medium">{p.title || '—'}</TableCell>
-                          <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{(p.participants||[]).slice(0,2).map((pt: string,i: number)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',maxWidth:'88px',textOverflow:'ellipsis'}}>{pt}</span>)}{(p.participants||[]).length>2&&<span className="text-[10px] font-medium shrink-0" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-2}</span>}</div></TableCell>
-                          <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{(p.topics||[]).slice(0,2).map((t: string,i: number)=><Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap shrink-0 overflow-hidden" style={{maxWidth:'88px',textOverflow:'ellipsis'}}>{t}</Badge>)}{(p.topics||[]).length>2&&<span className="text-[10px] font-medium shrink-0" style={{color:'var(--syn-text-faint)'}}>+{(p.topics||[]).length-2}</span>}</div></TableCell>
-                          <TableCell className="text-xs text-center">{(p.key_decisions||[]).length>0?<span className="font-medium">{(p.key_decisions||[]).length}</span>:'—'}</TableCell>
-                          <FreigabeCell item={item} />
+                      {ib.meetings.map(item => { const p = item.payload; const vm = { id: 'ib_'+item.id, title: p.title||'', date: p.meeting_date||'', topics: p.topics||[], participants: p.participants||[], summary: p.ai_summary||'', keyDecisions: p.key_decisions||[] }; return (
+                        <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{p.meeting_date||'—'}</TableCell>
+                          <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(vm) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button></TableCell>
+                          <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{(p.participants||[]).slice(0,2).map((pt: string,i: number)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap overflow-hidden shrink-0" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',maxWidth:'88px',textOverflow:'ellipsis'}}>{pt}</span>)}{(p.participants||[]).length>2&&<span className="text-[10px] font-medium shrink-0" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-2}</span>}</div></TableCell>
+                          <TableCell><div className="flex flex-nowrap gap-1 items-center overflow-hidden">{(p.topics||[]).slice(0,2).map((t: any,i: number)=><Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap shrink-0 overflow-hidden" style={{maxWidth:'88px',textOverflow:'ellipsis'}}>{typeof t==='object'?t.name:t}</Badge>)}{(p.topics||[]).length>2&&<span className="text-[10px] font-medium shrink-0" style={{color:'var(--syn-text-faint)'}}>+{(p.topics||[]).length-2}</span>}</div></TableCell>
+                          <TableCell className="text-xs text-center" style={{color:'var(--syn-text-muted)'}}>{(p.key_decisions||[]).length>0?<span className="font-medium text-[var(--syn-text)]">{(p.key_decisions||[]).length}</span>:'—'}</TableCell>
+                          <FC item={item} />
                         </TableRow>
                       )})}
+                      {ib.meetings.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Meetings</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
-                {/* Todos */}
+                {/* ── Todos ── */}
                 {ib.todos.length > 0 && (
                   <section>
-                    <SectionHeader dot="var(--syn-warn)" label="Todos" count={ib.todos.length} />
+                    <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-warn)' }} /><h3 className="text-sm font-semibold">Todos</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.todos.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH label="Aufgabe" field="title" sort={{ col: null, dir: null }} onSort={() => {}} />
-                      <SH label="Zuständig" field="assignee" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[130px]" />
-                      <SH label="Priorität" field="priority" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[100px]" />
-                      <SH label="Fällig" field="due_date" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[100px]" />
-                      <SH label="Status" field="status" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[100px]" />
-                      <TableHead className="w-[110px] text-xs text-center">Freigabe</TableHead>
+                      <TableHead className="text-xs text-left pl-3">Aufgabe</TableHead>
+                      <SH2 label="Zuständig" className="w-[130px]" />
+                      <SH2 label="Priorität" className="w-[100px]" />
+                      <SH2 label="Fällig" className="w-[100px]" />
+                      <SH2 label="Status" className="w-[100px]" />
+                      <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.todos.map(item => { const p = item.payload; return (
-                        <TableRow key={item.id} className="text-sm border-[var(--syn-line)] hover:bg-[var(--syn-hover)]">
-                          <TableCell className="text-left"><span className="font-medium">{p.title||'—'}</span>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
+                      {ib.todos.map(item => { const p = item.payload; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' }; return (
+                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell className="text-left"><div className="flex items-center gap-2"><button onClick={e => { e.stopPropagation(); cycleTodoInbox(item) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(vt) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</div></div></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.assignee||'?'}/><span className="text-xs">{p.assignee||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${PRI_STYLE[p.priority]||''}`}>{PRI_LABEL[p.priority]||p.priority||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{p.due_date||'—'}</TableCell>
-                          <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status]||''}`}>{ST_LABEL[p.status]||p.status||'—'}</Badge></TableCell>
-                          <FreigabeCell item={item} />
+                          <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
+                          <FC item={item} />
                         </TableRow>
                       )})}
+                      {ib.todos.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Todos</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
-                {/* Blocker */}
+                {/* ── Blocker ── */}
                 {ib.blockers.length > 0 && (
                   <section>
-                    <SectionHeader dot="var(--syn-danger)" label="Blocker" count={ib.blockers.length} />
+                    <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-danger)' }} /><h3 className="text-sm font-semibold">Blocker</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.blockers.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH label="Blocker" field="title" sort={{ col: null, dir: null }} onSort={() => {}} />
-                      <SH label="Zuständig" field="reported_by" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[130px]" />
-                      <SH label="Status" field="status" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[100px]" />
-                      <TableHead className="w-[110px] text-xs text-center">Freigabe</TableHead>
+                      <TableHead className="text-xs text-left pl-3">Blocker</TableHead>
+                      <SH2 label="Zuständig" className="w-[130px]" />
+                      <SH2 label="Status" className="w-[100px]" />
+                      <SH2 label="Erstellt" className="w-[100px]" />
+                      <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.blockers.map(item => { const p = item.payload; return (
-                        <TableRow key={item.id} className="text-sm border-[var(--syn-line)] hover:bg-[var(--syn-hover)]">
-                          <TableCell className="text-left"><span className="font-medium">{p.title||'—'}</span>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
+                      {ib.blockers.map(item => { const p = item.payload; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: item.created_at?.split('T')[0]||'' }; return (
+                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewBlocker(vb) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
-                          <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status]||''}`}>{ST_LABEL[p.status]||p.status||'—'}</Badge></TableCell>
-                          <FreigabeCell item={item} />
+                          <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
+                          <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{item.created_at?.split('T')[0]||'—'}</TableCell>
+                          <FC item={item} />
                         </TableRow>
                       )})}
+                      {ib.blockers.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Blocker</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
-                {/* Offene Punkte */}
+                {/* ── Offene Punkte ── */}
                 {ib.open.length > 0 && (
                   <section>
-                    <SectionHeader dot="var(--syn-info)" label="Offene Punkte" count={ib.open.length} />
+                    <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-info)' }} /><h3 className="text-sm font-semibold">Offene Punkte</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.open.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="w-10"></TableHead>
-                      <SH label="Item" field="title" sort={{ col: null, dir: null }} onSort={() => {}} />
-                      <SH label="Kategorie" field="category" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[100px]" />
-                      <SH label="Zuständig" field="owner" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[130px]" />
-                      <SH label="Status" field="status" sort={{ col: null, dir: null }} onSort={() => {}} className="w-[100px]" />
-                      <TableHead className="w-[110px] text-xs text-center">Freigabe</TableHead>
+                      <TableHead className="text-xs text-left pl-3">Item</TableHead>
+                      <SH2 label="Kategorie" className="w-[100px]" />
+                      <SH2 label="Zuständig" className="w-[130px]" />
+                      <SH2 label="Status" className="w-[100px]" />
+                      <SH2 label="Freigabe" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.open.map(item => { const p = item.payload; return (
-                        <TableRow key={item.id} className="text-sm border-[var(--syn-line)] hover:bg-[var(--syn-hover)]">
+                      {ib.open.map(item => { const p = item.payload; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'general', status: p.status||'open', meetingId: null, projectId: null, createdAt: item.created_at?.split('T')[0]||'' }; return (
+                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-center">{CAT_ICON[p.category]||'○'}</TableCell>
-                          <TableCell className="text-left"><span>{p.title||'—'}</span>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
+                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewOpen(vo) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</TableCell>
                           <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[p.category]||p.category||'—'}</Badge></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
-                          <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status]||''}`}>{ST_LABEL[p.status]||p.status||'—'}</Badge></TableCell>
-                          <FreigabeCell item={item} />
+                          <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
+                          <FC item={item} />
                         </TableRow>
                       )})}
+                      {ib.open.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine offenen Punkte</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
