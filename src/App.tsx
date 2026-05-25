@@ -638,7 +638,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     const updatedMessages = [...chatMessages, { role: 'user' as const, text: q, timestamp: Date.now() }]
     setChatMessages(updatedMessages)
     setChatLoading(true)
-    const history = updatedMessages.slice(-10).map(m => ({ role: m.role, text: m.text.slice(0, 500) }))
+    // Lücke 5 fix: letzte 3 Messages vollständig (max 2000 Zeichen), ältere komprimiert
+    const historyWindow = updatedMessages.slice(-10)
+    const history = historyWindow.map((m, i, arr) => ({
+      role: m.role,
+      text: i >= arr.length - 3 ? m.text.slice(0, 2000) : m.text.slice(0, 200),
+    }))
     // Add empty assistant message that will be streamed into
     const assistantMsg: ChatMessage = { role: 'assistant', text: '', timestamp: Date.now() }
     setChatMessages(prev => [...prev, assistantMsg])
