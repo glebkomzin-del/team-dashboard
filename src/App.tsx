@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
-  fetchTeamMembers, fetchMeetings, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
+  fetchTeamMembers, fetchMeetings, fetchMeetingRawTranscript, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
   fetchProjects, insertProject,
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
@@ -23,8 +23,8 @@ import {
   triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
-  semanticSearchStream,
-  type DbTeamMember, type DbProject, type DbInboxItem, type SearchMatch
+  askMemory,
+  type DbTeamMember, type DbProject, type DbInboxItem, type SearchMatch, type AskMemoryMeetingSource
 } from './supabase'
 
 type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
@@ -158,9 +158,13 @@ function renderMarkdown(text: string) {
   }
 
   const applyInline = (s: string): any => {
-    const parts = s.split(/\*\*(.+?)\*\*/g)
+    const parts = s.split(/(\*\*.+?\*\*|\*[^*\n]+?\*)/g)
     if (parts.length === 1) return s
-    return parts.map((p, i) => i % 2 === 1 ? <strong key={i} className="font-semibold">{p}</strong> : p)
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+      if (part.startsWith('*') && part.endsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>
+      return part
+    })
   }
 
   for (const line of lines) {
@@ -192,7 +196,7 @@ interface Blocker { id: string; reportedBy: string; title: string; description: 
 interface OpenItem { id: string; owner: string; title: string; description: string; category: string; status: string; meetingId: string | null; projectId: string | null; createdAt: string }
 interface Meeting { id: string; title: string; date: string; topics: string[]; participants: string[]; summary: string; keyDecisions: string[] }
 interface Activity { id: string; entityType: string; entityId: string; entityTitle: string; action: string; field: string | null; oldValue: string | null; newValue: string | null; meetingId: string | null; timestamp: string }
-interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; timestamp?: number }
+interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; timestamp?: number }
 
 export default function App() {
   const [session, setSession] = useState<any>(null)
@@ -365,6 +369,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [projMeetingPickerOpen, setProjMeetingPickerOpen] = useState(false)
   const [projTodoPickerOpen, setProjTodoPickerOpen] = useState(false)
   const [viewMeeting, setViewMeeting] = useState<Meeting | null>(null)
+  const [rawTranscript, setRawTranscript] = useState<string | null>(null)
+  const [rawTranscriptLoaded, setRawTranscriptLoaded] = useState(false)
+  const [rawTranscriptOpen, setRawTranscriptOpen] = useState(false)
+  const [rawTranscriptLoading, setRawTranscriptLoading] = useState(false)
+  const [rawTranscriptError, setRawTranscriptError] = useState<string | null>(null)
   const [viewTodo, setViewTodo] = useState<Todo | null>(null)
   const [viewBlocker, setViewBlocker] = useState<Blocker | null>(null)
   const [viewOpen, setViewOpen] = useState<OpenItem | null>(null)
@@ -644,22 +653,43 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       role: m.role,
       text: i >= arr.length - 3 ? m.text.slice(0, 2000) : m.text.slice(0, 200),
     }))
-    // Add empty assistant message that will be streamed into
-    const assistantMsg: ChatMessage = { role: 'assistant', text: '', timestamp: Date.now() }
-    setChatMessages(prev => [...prev, assistantMsg])
     try {
-      await semanticSearchStream(
-        q, history,
-        (matches) => { setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, matches }; } return msgs; }) },
-        (delta) => { setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, text: last.text + delta }; } return msgs; }) },
-        () => { setChatLoading(false) },
-        (err) => { setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, text: `Fehler: ${err}` }; } return msgs; }); setChatLoading(false) },
-      )
-    } catch (e: any) {
-      setChatMessages(prev => { const msgs = [...prev]; const last = msgs[msgs.length - 1]; if (last.role === 'assistant') { msgs[msgs.length - 1] = { ...last, text: `Fehler: ${e.message}` }; } return msgs; })
-      setChatLoading(false)
-    }
+      const result = await askMemory(q, history)
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        text: result.answer,
+        sources: result.sources.meetings,
+        mode: result.retrieval.mode,
+        timestamp: Date.now(),
+      }])
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      setChatMessages(prev => [...prev, { role: 'assistant', text: `Fehler: ${message}`, timestamp: Date.now() }])
+    } finally { setChatLoading(false) }
   }
+
+  const handleRawTranscript = async () => {
+    if (!viewMeeting || rawTranscriptLoading) return
+    if (rawTranscriptOpen) { setRawTranscriptOpen(false); return }
+    setRawTranscriptOpen(true)
+    if (rawTranscriptLoaded) return
+    setRawTranscriptLoading(true)
+    setRawTranscriptError(null)
+    try {
+      setRawTranscript(await fetchMeetingRawTranscript(viewMeeting.id))
+      setRawTranscriptLoaded(true)
+    } catch (error: unknown) {
+      setRawTranscriptError(error instanceof Error ? error.message : 'Rohtranskript konnte nicht geladen werden.')
+    } finally { setRawTranscriptLoading(false) }
+  }
+
+  useEffect(() => {
+    setRawTranscript(null)
+    setRawTranscriptLoaded(false)
+    setRawTranscriptOpen(false)
+    setRawTranscriptLoading(false)
+    setRawTranscriptError(null)
+  }, [viewMeeting?.id])
 
   const handleAblegen = async () => { await loadData() }
   const handleRefresh = async () => { setRefreshing(true); try { if (MAKE_WEBHOOK_URL) { try { await triggerMakeWebhook() } catch { } await new Promise(r => setTimeout(r, 10000)) } await loadData() } catch (e: any) { setError(e.message) } finally { setRefreshing(false) } }
@@ -1967,7 +1997,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {page === 'ki' && (
             <div className="flex flex-col h-[calc(100vh-8rem)]">
               <div className="mb-4">
-                <h2 className="text-base font-semibold">KI-Assistent</h2><p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Semantische Suche über alle Dashboard-Daten — Einträge werden automatisch indexiert.</p>
+                <h2 className="text-base font-semibold">KI-Assistent</h2><p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Memory-Antworten aus Meeting-Zusammenfassungen mit verlinkten Quellen.</p>
               </div>
               <Card className="glass-card border-[var(--syn-line)] flex-1 flex flex-col min-h-0">
                 <CardContent className="flex-1 flex flex-col p-4 min-h-0">
@@ -2005,6 +2035,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                                 ))}
                               </div>
                             )}
+                            {msg.sources && msg.sources.length > 0 && (
+                              <div className="mt-3 pt-2 border-t border-[var(--syn-line)] space-y-1">
+                                <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Notizen ({msg.sources.length})</p>
+                                {msg.sources.map((source) => {
+                                  const meeting = getMeeting(source.id)
+                                  return (
+                                    <button key={source.id} disabled={!meeting} onClick={() => meeting && setViewMeeting(meeting)} className="w-full text-left text-xs flex items-center gap-2 rounded px-2 py-1 transition-colors enabled:hover:bg-[var(--syn-hover)] enabled:hover:text-[var(--syn-accent)] disabled:opacity-50" style={{ color: 'var(--syn-text-muted)' }}>
+                                      <span className="shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{source.date}</span>
+                                      <span className="truncate">{source.title}</span>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )})}
@@ -2034,6 +2078,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Teilnehmer</h3><div className="flex flex-wrap gap-2">{viewMeeting.participants.map((p, i) => <span key={i} className="text-sm px-2.5 py-1 rounded" style={{ background: 'var(--syn-surface-3)' }}>{p}</span>)}</div></div>
             <Separator className="bg-[var(--syn-line)]" />
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Zusammenfassung</h3>{viewMeeting.summary ? <div className="text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewMeeting.summary) }} /> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Zusammenfassung.</p>}</div>
+            <Separator className="bg-[var(--syn-line)]" />
+            <div>
+              <div className="flex items-center justify-between gap-3"><h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Rohtranskript</h3><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={handleRawTranscript}>{rawTranscriptOpen ? 'Ausblenden' : 'Anzeigen'}</Button></div>
+              {rawTranscriptOpen && <div className="mt-2 max-h-[45vh] overflow-y-auto rounded-lg border border-[var(--syn-line)] p-3" style={{ background: 'var(--syn-surface-2)' }}>
+                {rawTranscriptLoading ? <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Rohtranskript wird geladen…</p> : rawTranscriptError ? <p className="text-sm text-[var(--syn-danger)]">{rawTranscriptError}</p> : rawTranscript ? <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed">{rawTranscript}</pre> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Kein Rohtranskript hinterlegt.</p>}
+              </div>}
+            </div>
             {viewMeeting.keyDecisions.length > 0 && <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Entscheidungen</h3><div className="space-y-1.5">{viewMeeting.keyDecisions.map((d, i) => <div key={i} className="flex items-start gap-2 text-sm"><span style={{ color: 'var(--syn-ok)' }} className="mt-0.5">{'✓'}</span>{d}</div>)}</div></div></>}
             {(() => { const rel = todos.filter(t => t.meetingId === viewMeeting.id); if (!rel.length) return null; return <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Todos</h3><ul className="space-y-1 list-disc list-inside">{rel.map(t => <li key={t.id} className="text-sm"><button onClick={() => { setViewMeeting(null); setViewTodo(t) }} className="hover:text-[var(--syn-accent)]">{t.title}</button><span className="text-xs ml-2" style={{ color: 'var(--syn-text-faint)' }}>({t.assignee})</span></li>)}</ul></div></> })()}
             <Separator className="bg-[var(--syn-line)]" />

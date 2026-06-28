@@ -10,7 +10,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // ── Types matching DB schema ──
 export interface DbTeamMember { id: string; name: string; member_type: string; email: string | null }
-export interface DbMeeting { id: string; title: string; meeting_date: string; topics: string[] | null; participants: string[] | null; transcript_url: string | null; ai_summary: string | null; key_decisions: string[] | null; source_file: string | null; created_at: string }
+export interface DbMeeting { id: string; title: string; meeting_date: string; topics: string[] | null; participants: string[] | null; transcript_url: string | null; ai_summary: string | null; key_decisions: string[] | null; source_file: string | null; raw_transcript?: string | null; created_at: string }
 export interface DbTodo { id: string; assignee: string; assignee_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; priority: string; due_date: string | null; completed_at: string | null; created_at: string; updated_at: string }
 export interface DbBlocker { id: string; reported_by: string; reported_by_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; resolved_at: string | null; resolution_note: string | null; created_at: string; updated_at: string }
 export interface DbOpenItem { id: string; owner: string; owner_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; category: string; status: string; closed_at: string | null; created_at: string; updated_at: string }
@@ -57,9 +57,23 @@ export async function fetchTeamMembers() {
 }
 
 export async function fetchMeetings() {
-  const { data, error } = await supabase.from('meetings').select('*').order('meeting_date', { ascending: false })
+  const { data, error } = await supabase
+    .from('meetings')
+    .select('id,title,meeting_date,topics,participants,transcript_url,ai_summary,key_decisions,source_file,created_at')
+    .order('meeting_date', { ascending: false })
   if (error) throw error
   return data as DbMeeting[]
+}
+
+export async function fetchMeetingRawTranscript(meetingId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('meetings')
+    .select('raw_transcript')
+    .eq('id', meetingId)
+    .maybeSingle()
+  if (error) throw error
+  const transcript = data?.raw_transcript?.trim()
+  return transcript || null
 }
 
 export async function fetchTodos() {
@@ -304,6 +318,73 @@ export interface SearchMatch {
 export interface SearchResult {
   answer: string
   matches: SearchMatch[]
+}
+
+export interface AskMemoryMeetingSource {
+  id: string
+  date: string
+  title: string
+  participants: string[]
+}
+
+export interface AskMemoryChunkSource {
+  id: string
+  meeting_id: string
+  speaker: string | null
+  meeting_date: string
+  excerpt: string
+  fused_score: number
+}
+
+export interface AskMemoryItemSource {
+  entity_type: string
+  id: string
+  title: string
+  description: string | null
+  status: string | null
+  meeting_id: string | null
+  meeting_date: string | null
+  created_at: string | null
+  closed_ts: string | null
+}
+
+export interface AskMemoryResult {
+  answer: string
+  sources: {
+    meetings: AskMemoryMeetingSource[]
+    chunks: AskMemoryChunkSource[]
+    items?: AskMemoryItemSource[]
+  }
+  retrieval: {
+    mode: string
+    [key: string]: unknown
+  }
+  model: string
+  usage: Record<string, unknown>
+  cache: Record<string, unknown>
+  scaling_notice?: string
+}
+
+export async function askMemory(question: string, history: { role: string; text: string }[] = []): Promise<AskMemoryResult> {
+  console.log('[Ask Memory] Sending question:', question, '| History:', history.length)
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ question, history }),
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Ask Memory error: ${err}`)
+  }
+  const data = await res.json() as AskMemoryResult
+  if (typeof data.answer !== 'string' || !Array.isArray(data.sources?.meetings) || typeof data.retrieval?.mode !== 'string') {
+    throw new Error('Ask Memory returned an unexpected response shape')
+  }
+  console.log('[Ask Memory] Result:', data.answer.slice(0, 100), '| Sources:', data.sources.meetings.length, '| Mode:', data.retrieval.mode)
+  return data
 }
 
 export async function semanticSearch(query: string, history: { role: string; text: string }[] = []): Promise<SearchResult> {
