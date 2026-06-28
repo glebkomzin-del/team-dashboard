@@ -11,6 +11,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 // ── Types matching DB schema ──
 export interface DbTeamMember { id: string; name: string; member_type: string; email: string | null }
 export interface DbMeeting { id: string; title: string; meeting_date: string; topics: string[] | null; participants: string[] | null; transcript_url: string | null; ai_summary: string | null; key_decisions: string[] | null; source_file: string | null; raw_transcript?: string | null; created_at: string }
+export interface DbMeetingTopic { id: string; meeting_id: string; name: string; summary: string; sequence: number; created_at: string | null }
 export interface DbTodo { id: string; assignee: string; assignee_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; priority: string; due_date: string | null; completed_at: string | null; created_at: string; updated_at: string }
 export interface DbBlocker { id: string; reported_by: string; reported_by_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; resolved_at: string | null; resolution_note: string | null; created_at: string; updated_at: string }
 export interface DbOpenItem { id: string; owner: string; owner_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; category: string; status: string; closed_at: string | null; created_at: string; updated_at: string }
@@ -18,6 +19,7 @@ export interface DbActivity { id: string; entity_type: string; entity_id: string
 export interface DbProject { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; owner: string | null; priority: string; created_at: string; updated_at: string }
 export interface DbDecision { id: string; meeting_id: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
 export interface DbInboxItem { id: string; entity_type: 'todo' | 'blocker' | 'open_item' | 'meeting' | 'decision'; payload: Record<string, any>; source: string; status: 'pending' | 'approved' | 'rejected'; created_at: string }
+export interface TableCounts { meetings: number; todos: number; blockers: number; openItems: number; inbox: number }
 
 // ── API Functions ──
 
@@ -74,6 +76,35 @@ export async function fetchMeetingRawTranscript(meetingId: string): Promise<stri
   if (error) throw error
   const transcript = data?.raw_transcript?.trim()
   return transcript || null
+}
+
+export async function fetchMeetingTopics(meetingId: string): Promise<DbMeetingTopic[]> {
+  const { data, error } = await supabase
+    .from('meeting_topics')
+    .select('id,meeting_id,name,summary,sequence,created_at')
+    .eq('meeting_id', meetingId)
+    .order('sequence', { ascending: true })
+  if (error) throw error
+  return data as DbMeetingTopic[]
+}
+
+export async function fetchTableCounts(): Promise<TableCounts> {
+  const [meetings, todos, blockers, openItems, inbox] = await Promise.all([
+    supabase.from('meetings').select('id', { count: 'exact', head: true }),
+    supabase.from('todos').select('id', { count: 'exact', head: true }),
+    supabase.from('blockers').select('id', { count: 'exact', head: true }),
+    supabase.from('open_items').select('id', { count: 'exact', head: true }),
+    supabase.from('inbox_items').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+  ])
+  const failed = [meetings, todos, blockers, openItems, inbox].find(result => result.error)
+  if (failed?.error) throw failed.error
+  return {
+    meetings: meetings.count ?? 0,
+    todos: todos.count ?? 0,
+    blockers: blockers.count ?? 0,
+    openItems: openItems.count ?? 0,
+    inbox: inbox.count ?? 0,
+  }
 }
 
 export async function fetchTodos() {

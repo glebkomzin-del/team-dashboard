@@ -10,21 +10,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
-  fetchTeamMembers, fetchMeetings, fetchMeetingRawTranscript, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
+  fetchTeamMembers, fetchMeetings, fetchMeetingRawTranscript, fetchMeetingTopics, fetchTableCounts, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
   fetchProjects, insertProject,
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
   updateTodoFull, updateBlockerFull, updateOpenItemFull, updateMeetingFull,
   updateProjectFull, deleteProjectDb,
   fetchProjectMeetings, setProjectMeetings,
-  insertTodo, insertBlocker, insertOpenItem, insertMeeting,
+  insertTodo, insertBlocker, insertOpenItem, supabase,
 
   fetchInboxItems, updateInboxItemPayload, deleteInboxItemDb, approveInboxItem,
   triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
   askMemory,
-  type DbTeamMember, type DbProject, type DbInboxItem, type SearchMatch, type AskMemoryMeetingSource
+  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource
 } from './supabase'
 
 type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
@@ -194,7 +194,54 @@ function renderMarkdown(text: string) {
 interface Todo { id: string; assignee: string; title: string; description: string; status: string; priority: string; dueDate: string | null; startDate: string | null; durationDays: number; dependsOn: string[]; meetingId: string | null; projectId: string | null; createdAt: string }
 interface Blocker { id: string; reportedBy: string; title: string; description: string; status: string; meetingId: string | null; projectId: string | null; createdAt: string }
 interface OpenItem { id: string; owner: string; title: string; description: string; category: string; status: string; meetingId: string | null; projectId: string | null; createdAt: string }
-interface Meeting { id: string; title: string; date: string; topics: string[]; participants: string[]; summary: string; keyDecisions: string[] }
+interface MeetingTopicDetail { name: string; summary: string; sequence: number }
+interface Meeting {
+  id: string
+  title: string
+  date: string
+  topics: string[]
+  participants: string[]
+  summary: string
+  keyDecisions: string[]
+  sourceKind?: 'promoted' | 'pending'
+  pendingRawTranscript?: string | null
+  topicDetails?: MeetingTopicDetail[]
+}
+
+function normalizeTopicDetails(topics: unknown): MeetingTopicDetail[] {
+  if (!Array.isArray(topics)) return []
+  return topics
+    .map((topic, index) => {
+      if (typeof topic === 'object' && topic !== null) {
+        const value = topic as Record<string, unknown>
+        return {
+          name: String(value.name || '').trim(),
+          summary: String(value.summary || '').trim(),
+          sequence: Number.isFinite(Number(value.sequence)) ? Number(value.sequence) : index + 1,
+        }
+      }
+      return { name: String(topic || '').trim(), summary: '', sequence: index + 1 }
+    })
+    .filter(topic => topic.name)
+    .sort((a, b) => a.sequence - b.sequence)
+}
+
+function inboxMeetingView(item: DbInboxItem): Meeting {
+  const payload = item.payload || {}
+  const topicDetails = normalizeTopicDetails(payload.topics)
+  return {
+    id: `inbox_${item.id}`,
+    title: payload.title || '',
+    date: payload.meeting_date || '',
+    topics: topicDetails.map(topic => topic.name),
+    participants: payload.participants || [],
+    summary: payload.ai_summary || '',
+    keyDecisions: payload.key_decisions || [],
+    sourceKind: 'pending',
+    pendingRawTranscript: typeof payload.raw_transcript === 'string' ? payload.raw_transcript : null,
+    topicDetails,
+  }
+}
 interface Activity { id: string; entityType: string; entityId: string; entityTitle: string; action: string; field: string | null; oldValue: string | null; newValue: string | null; meetingId: string | null; timestamp: string }
 interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; timestamp?: number }
 
@@ -304,6 +351,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [projects, setProjects] = useState<DbProject[]>([])
   const projectIds = useMemo(() => projects.map(p => p.id), [projects])
   const [inboxItems, setInboxItems] = useState<DbInboxItem[]>([])
+  const [tableCounts, setTableCounts] = useState<TableCounts>({ meetings: 0, todos: 0, blockers: 0, openItems: 0, inbox: 0 })
   const [inboxSelected, setInboxSelected] = useState<Set<string>>(new Set())
 
   const [inboxEditModeFor, setInboxEditModeFor] = useState<string | null>(null)
@@ -374,6 +422,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [rawTranscriptOpen, setRawTranscriptOpen] = useState(false)
   const [rawTranscriptLoading, setRawTranscriptLoading] = useState(false)
   const [rawTranscriptError, setRawTranscriptError] = useState<string | null>(null)
+  const [meetingTopicDetails, setMeetingTopicDetails] = useState<MeetingTopicDetail[]>([])
+  const [meetingTopicsLoading, setMeetingTopicsLoading] = useState(false)
+  const [meetingTopicsError, setMeetingTopicsError] = useState<string | null>(null)
   const [viewTodo, setViewTodo] = useState<Todo | null>(null)
   const [viewBlocker, setViewBlocker] = useState<Blocker | null>(null)
   const [viewOpen, setViewOpen] = useState<OpenItem | null>(null)
@@ -428,12 +479,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const loadData = useCallback(async () => {
     try {
       setError(null)
-      const [mems, mtgs, tds, blk, oi, act, prj, inbox] = await Promise.all([
-        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects(), fetchInboxItems()
+      const [mems, mtgs, tds, blk, oi, act, prj, inbox, counts] = await Promise.all([
+        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects(), fetchInboxItems(), fetchTableCounts()
       ])
       setInboxItems(inbox)
+      setTableCounts(counts)
       setMembers(mems); setProjects(prj)
-      setMeetings(mtgs.map(m => ({ id: m.id, title: m.title, date: m.meeting_date?.split('T')[0] || '', topics: m.topics || [], participants: m.participants || [], summary: m.ai_summary || '', keyDecisions: m.key_decisions || [] })))
+      setMeetings(mtgs.map(m => ({ id: m.id, title: m.title, date: m.meeting_date?.split('T')[0] || '', topics: m.topics || [], participants: m.participants || [], summary: m.ai_summary || '', keyDecisions: m.key_decisions || [], sourceKind: 'promoted' as const })))
       setTodos(tds.map(t => ({ id: t.id, assignee: t.assignee || 'Nicht zugeordnet', title: t.title, description: t.description || '', status: t.status, priority: t.priority, dueDate: t.due_date, startDate: (t as any).start_date || null, durationDays: (t as any).duration_days || 1, dependsOn: (t as any).depends_on || [], meetingId: t.meeting_id, projectId: (t as any).project_id || null, createdAt: t.created_at?.split('T')[0] || '' })))
       setBlockers(blk.map(b => ({ id: b.id, reportedBy: b.reported_by || 'Nicht zugeordnet', title: b.title, description: b.description || '', status: b.status, meetingId: b.meeting_id, projectId: (b as any).project_id || null, createdAt: b.created_at?.split('T')[0] || '' })))
       setOpenItems(oi.map(o => ({ id: o.id, owner: o.owner || 'Nicht zugeordnet', title: o.title, description: o.description || '', category: o.category, status: o.status, meetingId: o.meeting_id, projectId: (o as any).project_id || null, createdAt: o.created_at?.split('T')[0] || '' })))
@@ -458,6 +510,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }, [])
 
   useEffect(() => { loadData(); isNightlyJobActive().then(setNightlyActive).catch(() => {}) }, [loadData])
+  useEffect(() => {
+    if (loading) return
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      fetchTableCounts().then(counts => { if (!cancelled) setTableCounts(counts) }).catch(() => {})
+    }, 150)
+    return () => { cancelled = true; window.clearTimeout(timer) }
+  }, [loading, meetings.length, todos.length, blockers.length, openItems.length, inboxItems.length])
   // Reset inbox edit mode whenever any edit modal closes
   useEffect(() => { if (!editTodo && !editBlocker && !editOpen && !editMeeting) setInboxEditModeFor(null) }, [editTodo, editBlocker, editOpen, editMeeting])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
@@ -525,8 +585,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'general', created_at: srcDate })
         setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'meeting') {
-        const c = await insertMeeting({ title: p.title, meeting_date: p.meeting_date, topics: (p.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')).filter(Boolean), participants: p.participants || [], ai_summary: p.ai_summary, key_decisions: p.key_decisions || [] })
-        setMeetings(prev => [{ id: c.id, title: c.title, date: c.meeting_date?.split('T')[0] || '', topics: c.topics || [], participants: c.participants || [], summary: c.ai_summary || '', keyDecisions: c.key_decisions || [] }, ...prev])
+        const { data: meetingId, error: promoteError } = await supabase.rpc('promote_inbox_meeting', { p_inbox_id: item.id })
+        if (promoteError) throw promoteError
+        if (!meetingId) throw new Error('Meeting-Promotion hat keine Meeting-ID zurückgegeben')
+
+        const { data: c, error: meetingError } = await supabase
+          .from('meetings')
+          .select('id,title,meeting_date,topics,participants,ai_summary,key_decisions')
+          .eq('id', meetingId)
+          .single()
+        if (meetingError) throw meetingError
+
+        setMeetings(prev => [{ id: c.id, title: c.title, date: c.meeting_date?.split('T')[0] || '', topics: c.topics || [], participants: c.participants || [], summary: c.ai_summary || '', keyDecisions: c.key_decisions || [], sourceKind: 'promoted' }, ...prev.filter(m => m.id !== c.id)])
+        setInboxItems(prev => prev.filter(x => x.id !== item.id))
+        return
       }
       await approveInboxItem(item.id, 'approved')
       setInboxItems(prev => prev.filter(x => x.id !== item.id))
@@ -670,13 +742,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
   const handleRawTranscript = async () => {
     if (!viewMeeting || rawTranscriptLoading) return
-    if (rawTranscriptOpen) { setRawTranscriptOpen(false); return }
     setRawTranscriptOpen(true)
     if (rawTranscriptLoaded) return
     setRawTranscriptLoading(true)
     setRawTranscriptError(null)
     try {
-      setRawTranscript(await fetchMeetingRawTranscript(viewMeeting.id))
+      if (viewMeeting.sourceKind === 'pending') {
+        setRawTranscript(viewMeeting.pendingRawTranscript?.trim() || null)
+      } else {
+        setRawTranscript(await fetchMeetingRawTranscript(viewMeeting.id))
+      }
       setRawTranscriptLoaded(true)
     } catch (error: unknown) {
       setRawTranscriptError(error instanceof Error ? error.message : 'Rohtranskript konnte nicht geladen werden.')
@@ -690,6 +765,28 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     setRawTranscriptLoading(false)
     setRawTranscriptError(null)
   }, [viewMeeting?.id])
+
+  useEffect(() => {
+    let cancelled = false
+    setMeetingTopicDetails([])
+    setMeetingTopicsError(null)
+    if (!viewMeeting) return () => { cancelled = true }
+    if (viewMeeting.sourceKind === 'pending') {
+      setMeetingTopicDetails(viewMeeting.topicDetails || [])
+      setMeetingTopicsLoading(false)
+      return () => { cancelled = true }
+    }
+    setMeetingTopicsLoading(true)
+    fetchMeetingTopics(viewMeeting.id)
+      .then((topics: DbMeetingTopic[]) => {
+        if (!cancelled) setMeetingTopicDetails(topics.map(topic => ({ name: topic.name, summary: topic.summary || '', sequence: topic.sequence })))
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setMeetingTopicsError(error instanceof Error ? error.message : 'Teil-Summaries konnten nicht geladen werden.')
+      })
+      .finally(() => { if (!cancelled) setMeetingTopicsLoading(false) })
+    return () => { cancelled = true }
+  }, [viewMeeting?.id, viewMeeting?.sourceKind])
 
   const handleAblegen = async () => { await loadData() }
   const handleRefresh = async () => { setRefreshing(true); try { if (MAKE_WEBHOOK_URL) { try { await triggerMakeWebhook() } catch { } await new Promise(r => setTimeout(r, 10000)) } await loadData() } catch (e: any) { setError(e.message) } finally { setRefreshing(false) } }
@@ -968,9 +1065,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
           {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
           {page === 'uebersicht' && (() => {
-            const reviewQueue = meetings.slice(0, 10)
+            const reviewQueue = meetings
             const activeBlockersList = blockers.filter(b => b.status === 'active')
-            const recentDec = meetings.flatMap(m => m.keyDecisions.map(d => ({ text: d, meetingTitle: m.title, meetingDate: m.date, meetingId: m.id }))).slice(0, 10)
+            const recentDec = meetings.flatMap(m => m.keyDecisions.map(d => ({ text: d, meetingTitle: m.title, meetingDate: m.date, meetingId: m.id })))
             const now = new Date()
             const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']
             const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
@@ -1043,7 +1140,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         </div>
                         <div className={listClass} style={{ minHeight: 0 }}>
                           {todos.filter(t => t.status !== 'done').length === 0 && <div className="px-4 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Todos.</div>}
-                          {todos.filter(t => t.status !== 'done').sort((a, b) => (PRI_RANK[a.priority] ?? 9) - (PRI_RANK[b.priority] ?? 9)).slice(0, 10).map(t => (
+                          {todos.filter(t => t.status !== 'done').sort((a, b) => (PRI_RANK[a.priority] ?? 9) - (PRI_RANK[b.priority] ?? 9)).map(t => (
                             <div key={t.id} className={itemClass} onClick={() => setViewTodo(t)}>
                               <div className="flex items-center gap-2">
                                 <button onClick={(e) => { e.stopPropagation(); handleQuickStatusToggle(t) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} />
@@ -1087,7 +1184,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         </div>
                         <div className={listClass} style={{ minHeight: 0 }}>
                           {activeBlockersList.length === 0 && <div className="px-4 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine aktiven Blocker.</div>}
-                          {activeBlockersList.slice(0, 10).map(b => (
+                          {activeBlockersList.map(b => (
                             <div key={b.id} className={itemClass} onClick={() => setViewBlocker(b)}>
                               <div className="text-sm truncate">{b.title}</div>
                               <div className={subClass} style={{ color: 'var(--syn-text-faint)' }}>
@@ -1127,10 +1224,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
           {/* ═══ INBOX ═══ */}
           {page === 'inbox' && (() => {
-            const ib = { meetings: inboxItems.filter(i => i.entity_type === 'meeting').slice(0,10), todos: inboxItems.filter(i => i.entity_type === 'todo').slice(0,10), blockers: inboxItems.filter(i => i.entity_type === 'blocker').slice(0,10), open: inboxItems.filter(i => i.entity_type === 'open_item').slice(0,10) }
+            const ib = { meetings: inboxItems.filter(i => i.entity_type === 'meeting'), todos: inboxItems.filter(i => i.entity_type === 'todo'), blockers: inboxItems.filter(i => i.entity_type === 'blocker'), open: inboxItems.filter(i => i.entity_type === 'open_item') }
             // Map source filename → meeting vm (for Quelle column in todos/blockers/open_items)
-            const sourceFileMap = new Map<string, { id: string; title: string; date: string; topics: string[]; participants: string[]; summary: string; keyDecisions: string[] }>()
-            ib.meetings.forEach(mi => { if (mi.source) { const mp = mi.payload; sourceFileMap.set(mi.source, { id: 'ib_'+mi.id, title: mp.title||'', date: mp.meeting_date||'', topics: (mp.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')), participants: mp.participants||[], summary: mp.ai_summary||'', keyDecisions: mp.key_decisions||[] }) } })
+            const sourceFileMap = new Map<string, Meeting>()
+            ib.meetings.forEach(item => { if (item.source) sourceFileMap.set(item.source, inboxMeetingView(item)) })
             const FC = ({ item }: { item: DbInboxItem }) => (
               <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center">
                 <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
@@ -1145,7 +1242,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-semibold">Inbox</h2>
+                    <h2 className="text-base font-semibold">Inbox <span data-testid="inbox-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({inboxItems.length} von {tableCounts.inbox})</span></h2>
                     {inboxSelected.size > 0 && <>
                       <button onClick={handleBulkInboxApprove} className="h-7 px-2 flex items-center gap-1 rounded border border-[var(--syn-ok)]/40 hover:bg-[var(--syn-ok)]/10 transition-colors text-xs" style={{ color: 'var(--syn-ok)' }}>✓ {inboxSelected.size} übernehmen</button>
                       <button onClick={handleBulkInboxReject} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${inboxSelected.size} ablehnen`}><TrashIcon /></button>
@@ -1162,19 +1259,19 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 {ib.meetings.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-accent)' }} /><h3 className="text-sm font-semibold">Meetings</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.meetings.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Datum" className="w-[100px]" />
                       <TableHead className="text-xs text-left pl-3">Titel</TableHead>
                       <SH2 label="Teilnehmer" className="w-[180px]" />
-                      <SH2 label="Themen" className="w-[240px]" />
+                      <SH2 label="Themen & Teil-Summaries" className="w-[360px]" />
                       <SH2 label="Freigabe" className="w-[80px]" />
                     </TableRow></TableHeader><TableBody>
-                      {ib.meetings.map(item => { const p = item.payload; const vm = { id: 'ib_'+item.id, title: p.title||'', date: p.meeting_date||'', topics: (p.topics||[]).map((t:any)=>typeof t==='object'&&t!==null?(t.name||''):String(t||'')), participants: p.participants||[], summary: p.ai_summary||'', keyDecisions: p.key_decisions||[] }; return (
+                      {ib.meetings.map(item => { const p = item.payload; const vm = inboxMeetingView(item); return (
                         <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{p.meeting_date||'—'}</TableCell>
                           <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(vm) }} className="text-left hover:text-[var(--syn-accent)] leading-snug">{p.title||'—'}</button></TableCell>
                           <TableCell><div className="flex flex-col gap-0.5">{(p.participants||[]).slice(0,5).map((pt: string,i: number)=><span key={i} className="text-[10px] rounded truncate block" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',padding:'1px 6px',maxWidth:'164px'}}>{pt}</span>)}{(p.participants||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-5}</span>}</div></TableCell>
-                          <TableCell><div className="flex flex-col gap-0.5">{(p.topics||[]).slice(0,5).map((t: any,i: number)=><Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit" style={{padding:'1px 5px'}}>{shortTopic(t)}</Badge>)}{(p.topics||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.topics||[]).length-5}</span>}</div></TableCell>
+                          <TableCell><div data-testid="inbox-topic-summaries" className="space-y-2 py-1">{vm.topicDetails?.map(topic => <div key={`${topic.sequence}-${topic.name}`} className="rounded-md border border-[var(--syn-line)] px-2 py-1.5 text-left" style={{ background: 'var(--syn-surface-2)' }}><div className="text-[10px] font-semibold">{topic.sequence}. {topic.name}</div>{topic.summary ? <p className="mt-0.5 text-[10px] leading-relaxed" style={{ color: 'var(--syn-text-muted)' }}>{topic.summary}</p> : <p className="mt-0.5 text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summary.</p>}</div>)}</div></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -1186,7 +1283,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 {ib.todos.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-warn)' }} /><h3 className="text-sm font-semibold">Todos</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.todos.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="text-xs text-left pl-3">Aufgabe</TableHead>
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Priorität" className="w-[100px]" />
@@ -1216,7 +1313,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 {ib.blockers.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-danger)' }} /><h3 className="text-sm font-semibold">Blocker</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.blockers.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="text-xs text-left pl-3">Blocker</TableHead>
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
@@ -1242,7 +1339,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 {ib.open.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-info)' }} /><h3 className="text-sm font-semibold">Offene Punkte</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.open.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="w-10"></TableHead>
                       <TableHead className="text-xs text-left pl-3">Item</TableHead>
                       <SH2 label="Kategorie" className="w-[100px]" />
@@ -1277,7 +1374,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold">Meetings</h2>
+                  <h2 className="text-base font-semibold">Meetings <span data-testid="meetings-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({tableCounts.meetings})</span></h2>
                   {meetingSelected.size > 0 && <button onClick={handleBulkDeleteMeetings} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${meetingSelected.size} löschen`}><TrashIcon /></button>}
                 </div>
                 <div className="flex items-center gap-2">
@@ -1288,7 +1385,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   {(noteFilterDateFrom || noteFilterDateTo) && <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setNoteFilterDateFrom(''); setNoteFilterDateTo('') }}>{'✕'}</Button>}
                 </div>
               </div>
-              <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+              <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-220px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                 <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className="w-[100px]" />
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
                 <TableHead className="w-[180px] text-xs text-center">Teilnehmer</TableHead>
@@ -1306,7 +1403,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 ))}
                 {filteredNotes.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
               </TableBody></Table></CardContent></Card>
-              {meetings.length > 0 && <p className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} von {meetings.length} Meetings</p>}
+              {tableCounts.meetings > 0 && <p data-testid="meetings-visible-count" className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} angezeigt · {tableCounts.meetings} in der Datenbank</p>}
             </div>
           )}
 
@@ -1316,7 +1413,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="flex items-center gap-4">
                 <h2 className="text-base font-semibold">Aktionen</h2>
                 <div className="flex border border-[var(--syn-line)] rounded-lg overflow-hidden">
-                  {([['todos', 'Todos', todos.filter(t => t.status !== 'done').length], ['blocker', 'Blocker', blockers.filter(b => b.status === 'active').length], ['open', 'Offene Punkte', openItems.filter(o => o.status !== 'closed').length]] as [ActionTab, string, number][]).map(([k, l, c]) => (
+                  {([['todos', 'Todos', tableCounts.todos], ['blocker', 'Blocker', tableCounts.blockers], ['open', 'Offene Punkte', tableCounts.openItems]] as [ActionTab, string, number][]).map(([k, l, c]) => (
                     <button key={k} onClick={() => setActionTab(k)} className={`px-4 py-1.5 text-xs transition-colors ${actionTab === k ? 'bg-[var(--syn-accent)] text-white' : 'hover:bg-[var(--syn-hover)]'}`} style={actionTab !== k ? { color: 'var(--syn-text-muted)' } : {}}>
                       {l} {c > 0 && <span className="ml-1 opacity-70">({c})</span>}
                     </button>
@@ -1340,7 +1437,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-250px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Aufgabe" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
@@ -1366,6 +1463,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     )})}
                     {filteredTodos.length === 0 && <TableRow><TableCell colSpan={projects.length > 0 ? 9 : 8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
+                  <p data-testid="todos-visible-count" className="text-xs text-center mt-2" style={{ color: 'var(--syn-text-faint)' }}>{filteredTodos.length} angezeigt · {tableCounts.todos} in der Datenbank</p>
                 </section>
               )}
 
@@ -1383,7 +1481,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-250px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
@@ -1403,6 +1501,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     ))}
                     {filteredBlockers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Blocker</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
+                  <p data-testid="blockers-visible-count" className="text-xs text-center mt-2" style={{ color: 'var(--syn-text-faint)' }}>{filteredBlockers.length} angezeigt · {tableCounts.blockers} in der Datenbank</p>
                 </section>
               )}
 
@@ -1421,7 +1520,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className="h-8 text-xs w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="general">Allgemein</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="opportunity">Chance</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="follow_up">Nachverfolgung</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-250px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <TableHead className="w-10"></TableHead>
                     <SH label="Item" field="title" sort={openSort} onSort={openSort.toggle} />
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
@@ -1445,6 +1544,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     ))}
                     {filteredOpen.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Punkte</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
+                  <p data-testid="open-items-visible-count" className="text-xs text-center mt-2" style={{ color: 'var(--syn-text-faint)' }}>{filteredOpen.length} angezeigt · {tableCounts.openItems} in der Datenbank</p>
                 </section>
               )}
             </div>
@@ -2079,11 +2179,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <Separator className="bg-[var(--syn-line)]" />
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Zusammenfassung</h3>{viewMeeting.summary ? <div className="text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewMeeting.summary) }} /> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Zusammenfassung.</p>}</div>
             <Separator className="bg-[var(--syn-line)]" />
+            <div data-testid="meeting-topic-details">
+              <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--syn-text-faint)' }}>Teil-Summaries</h3>
+              {meetingTopicsLoading ? <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Teil-Summaries werden geladen…</p> : meetingTopicsError ? <p className="text-sm text-[var(--syn-danger)]">{meetingTopicsError}</p> : meetingTopicDetails.length > 0 ? <div className="space-y-2">{meetingTopicDetails.map(topic => <div data-testid="meeting-topic-summary" key={`${topic.sequence}-${topic.name}`} className="rounded-lg border border-[var(--syn-line)] p-3" style={{ background: 'var(--syn-surface-2)' }}><div className="text-sm font-semibold">{topic.sequence}. {topic.name}</div>{topic.summary ? <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--syn-text-muted)' }}>{topic.summary}</p> : <p className="mt-1 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summary hinterlegt.</p>}</div>)}</div> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summaries hinterlegt.</p>}
+            </div>
+            <Separator className="bg-[var(--syn-line)]" />
             <div>
-              <div className="flex items-center justify-between gap-3"><h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Rohtranskript</h3><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={handleRawTranscript}>{rawTranscriptOpen ? 'Ausblenden' : 'Anzeigen'}</Button></div>
-              {rawTranscriptOpen && <div className="mt-2 max-h-[45vh] overflow-y-auto rounded-lg border border-[var(--syn-line)] p-3" style={{ background: 'var(--syn-surface-2)' }}>
-                {rawTranscriptLoading ? <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Rohtranskript wird geladen…</p> : rawTranscriptError ? <p className="text-sm text-[var(--syn-danger)]">{rawTranscriptError}</p> : rawTranscript ? <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed">{rawTranscript}</pre> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Kein Rohtranskript hinterlegt.</p>}
-              </div>}
+              <div className="flex items-center justify-between gap-3"><div><h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Rohtranskript</h3><p className="mt-1 text-xs" style={{ color: 'var(--syn-text-faint)' }}>Wird erst beim Öffnen vollständig geladen.</p></div><Button data-testid="open-full-transcript" variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={handleRawTranscript}>Vollständig öffnen</Button></div>
             </div>
             {viewMeeting.keyDecisions.length > 0 && <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Entscheidungen</h3><div className="space-y-1.5">{viewMeeting.keyDecisions.map((d, i) => <div key={i} className="flex items-start gap-2 text-sm"><span style={{ color: 'var(--syn-ok)' }} className="mt-0.5">{'✓'}</span>{d}</div>)}</div></div></>}
             {(() => { const rel = todos.filter(t => t.meetingId === viewMeeting.id); if (!rel.length) return null; return <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Todos</h3><ul className="space-y-1 list-disc list-inside">{rel.map(t => <li key={t.id} className="text-sm"><button onClick={() => { setViewMeeting(null); setViewTodo(t) }} className="hover:text-[var(--syn-accent)]">{t.title}</button><span className="text-xs ml-2" style={{ color: 'var(--syn-text-faint)' }}>({t.assignee})</span></li>)}</ul></div></> })()}
@@ -2091,6 +2193,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div className="flex gap-2"><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const m = viewMeeting; setViewMeeting(null); setEditMeeting({...m}) }}>{'✎'} Bearbeiten</Button><Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewMeeting.title, action: () => { handleDeleteMeeting(viewMeeting); setViewMeeting(null) } })}>{'✕'} Löschen</Button></div>
           </div>
         </ScrollArea>}</DialogContent>
+      </Dialog>
+
+      {/* Full raw transcript viewer */}
+      <Dialog open={rawTranscriptOpen} onOpenChange={setRawTranscriptOpen}>
+        <DialogContent className="max-w-5xl h-[88vh] flex flex-col overflow-hidden">
+          <DialogHeader className="shrink-0"><DialogTitle>Rohtranskript{viewMeeting?.title ? ` · ${viewMeeting.title}` : ''}</DialogTitle></DialogHeader>
+          <div data-testid="raw-transcript-full-view" className="flex-1 min-h-0 overflow-y-auto rounded-lg border border-[var(--syn-line)] p-4" style={{ background: 'var(--syn-surface-2)' }}>
+            {rawTranscriptLoading ? <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Rohtranskript wird geladen…</p> : rawTranscriptError ? <p className="text-sm text-[var(--syn-danger)]">{rawTranscriptError}</p> : rawTranscript ? <pre data-testid="raw-transcript-content" className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed">{rawTranscript}</pre> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Kein Rohtranskript hinterlegt.</p>}
+          </div>
+        </DialogContent>
       </Dialog>
 
       {/* View Project Detail */}
