@@ -744,8 +744,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     const updatedMessages = [...chatMessages, { role: 'user' as const, text: q, timestamp: Date.now() }]
     setChatMessages(updatedMessages)
     setChatLoading(true)
-    // Lücke 5 fix: letzte 3 Messages vollständig (max 2000 Zeichen), ältere komprimiert
-    const historyWindow = updatedMessages.slice(-10)
+    // Nur die 10 vorherigen Messages senden; die aktuelle Frage steckt separat in `question`.
+    const historyWindow = chatMessages.slice(-10)
     const history = historyWindow.map((m, i, arr) => ({
       role: m.role,
       text: i >= arr.length - 3 ? m.text.slice(0, 2000) : m.text.slice(0, 200),
