@@ -396,6 +396,24 @@ export interface AskMemoryResult {
   scaling_notice?: string
 }
 
+export interface AskMemoryStreamMetadata {
+  retrieval: {
+    mode: string
+    [key: string]: unknown
+  }
+  model: string
+  usage: Record<string, unknown>
+  cache: Record<string, unknown>
+  scaling_notice?: string
+}
+
+export interface AskMemoryStreamHandlers {
+  onMetadata?: (metadata: AskMemoryStreamMetadata) => void
+  onDelta?: (text: string) => void
+  onSources?: (sources: AskMemoryResult['sources']) => void
+  onDone?: (done: { usage?: Record<string, unknown>; cache?: Record<string, unknown> }) => void
+}
+
 export async function askMemory(question: string, history: { role: string; text: string }[] = []): Promise<AskMemoryResult> {
   console.log('[Ask Memory] Sending question:', question, '| History:', history.length)
   const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
@@ -416,6 +434,54 @@ export async function askMemory(question: string, history: { role: string; text:
   }
   console.log('[Ask Memory] Result:', data.answer.slice(0, 100), '| Sources:', data.sources.meetings.length, '| Mode:', data.retrieval.mode)
   return data
+}
+
+export async function askMemoryStream(question: string, history: { role: string; text: string }[] = [], handlers: AskMemoryStreamHandlers = {}): Promise<void> {
+  console.log('[Ask Memory Stream] Sending question:', question, '| History:', history.length)
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ question, history, stream: true }),
+  })
+  if (!res.ok || !res.body) {
+    const err = await res.text().catch(() => '')
+    throw new Error(`Ask Memory stream error: ${err || res.statusText}`)
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  const handleEvent = (raw: string) => {
+    const event = raw.split(/\r?\n/).find(line => line.startsWith('event:'))?.slice('event:'.length).trim()
+    const dataText = raw.split(/\r?\n/)
+      .filter(line => line.startsWith('data:'))
+      .map(line => line.slice('data:'.length).trimStart())
+      .join('\n')
+    if (!event || !dataText) return
+    const data = JSON.parse(dataText)
+    if (event === 'metadata') handlers.onMetadata?.(data as AskMemoryStreamMetadata)
+    else if (event === 'delta') handlers.onDelta?.(typeof data.text === 'string' ? data.text : '')
+    else if (event === 'sources') handlers.onSources?.(data as AskMemoryResult['sources'])
+    else if (event === 'done') handlers.onDone?.(data)
+    else if (event === 'error') throw new Error(typeof data.error === 'string' ? data.error : 'Ask Memory stream failed')
+  }
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const events = buffer.split(/\r?\n\r?\n/)
+    buffer = events.pop() || ''
+    for (const raw of events) {
+      if (raw.trim()) handleEvent(raw)
+    }
+  }
+  buffer += decoder.decode()
+  if (buffer.trim()) handleEvent(buffer)
 }
 
 export async function semanticSearch(query: string, history: { role: string; text: string }[] = []): Promise<SearchResult> {

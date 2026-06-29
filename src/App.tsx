@@ -23,7 +23,7 @@ import {
   triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
-  askMemory,
+  askMemory, askMemoryStream,
   type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource
 } from './supabase'
 
@@ -399,6 +399,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const chatScrollRef = useRef<HTMLDivElement>(null)
+  const [chatAutoFollow, setChatAutoFollow] = useState(true)
+  const [showChatScrollButton, setShowChatScrollButton] = useState(false)
 
   // Filters
   const [todoSearch, setTodoSearch] = useState('')
@@ -545,8 +548,22 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }, [loading, meetings.length, todos.length, blockers.length, openItems.length, inboxItems.length])
   // Reset inbox edit mode whenever any edit modal closes
   useEffect(() => { if (!editTodo && !editBlocker && !editOpen && !editMeeting) setInboxEditModeFor(null) }, [editTodo, editBlocker, editOpen, editMeeting])
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
-  useEffect(() => { if (page === 'ki') setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'auto' }), 100) }, [page])
+  const scrollChatToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    chatEndRef.current?.scrollIntoView({ behavior })
+  }, [])
+  const handleChatScroll = useCallback(() => {
+    const el = chatScrollRef.current
+    if (!el) return
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+    setChatAutoFollow(atBottom)
+    setShowChatScrollButton(!atBottom)
+  }, [])
+  useEffect(() => {
+    if (chatAutoFollow) scrollChatToBottom('smooth')
+  }, [chatMessages, chatLoading, chatAutoFollow, scrollChatToBottom])
+  useEffect(() => {
+    if (page === 'ki') setTimeout(() => scrollChatToBottom('auto'), 100)
+  }, [page, scrollChatToBottom])
   useEffect(() => {
     if (chatMessages.length === 0) return
     try {
@@ -742,28 +759,53 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     if (!text.trim() || chatLoading) return
     const q = text.trim(); setChatInput('')
     const updatedMessages = [...chatMessages, { role: 'user' as const, text: q, timestamp: Date.now() }]
-    setChatMessages(updatedMessages)
+    const assistantTimestamp = Date.now() + 1
+    setChatMessages([...updatedMessages, { role: 'assistant', text: '', sources: [], timestamp: assistantTimestamp }])
     setChatLoading(true)
+    setChatAutoFollow(true)
+    setShowChatScrollButton(false)
     // Nur die 10 vorherigen Messages senden; die aktuelle Frage steckt separat in `question`.
     const historyWindow = chatMessages.slice(-10)
     const history = historyWindow.map((m, i, arr) => ({
       role: m.role,
       text: i >= arr.length - 3 ? m.text.slice(0, 2000) : m.text.slice(0, 200),
     }))
+    const updateAssistant = (patch: Partial<ChatMessage> | ((message: ChatMessage) => Partial<ChatMessage>)) => {
+      setChatMessages(prev => prev.map(msg => {
+        if (msg.timestamp !== assistantTimestamp) return msg
+        const nextPatch = typeof patch === 'function' ? patch(msg) : patch
+        return { ...msg, ...nextPatch }
+      }))
+    }
     try {
-      const result = await askMemory(q, history)
-      setChatMessages(prev => [...prev, {
-        role: 'assistant',
-        text: result.answer,
-        sources: result.sources.meetings,
-        mode: result.retrieval.mode,
-        scalingNotice: result.scaling_notice?.trim() || undefined,
-        timestamp: Date.now(),
-      }])
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error)
-      setChatMessages(prev => [...prev, { role: 'assistant', text: `Fehler: ${message}`, timestamp: Date.now() }])
-    } finally { setChatLoading(false) }
+      await askMemoryStream(q, history, {
+        onMetadata: metadata => updateAssistant({
+          mode: metadata.retrieval.mode,
+          scalingNotice: metadata.scaling_notice?.trim() || undefined,
+        }),
+        onDelta: delta => updateAssistant(msg => ({ text: `${msg.text}${delta}` })),
+        onSources: sources => updateAssistant({ sources: sources.meetings }),
+      })
+    } catch (streamError: unknown) {
+      try {
+        const result = await askMemory(q, history)
+        updateAssistant({
+          text: result.answer,
+          sources: result.sources.meetings,
+          mode: result.retrieval.mode,
+          scalingNotice: result.scaling_notice?.trim() || undefined,
+        })
+      } catch (fallbackError: unknown) {
+        const message = fallbackError instanceof Error
+          ? fallbackError.message
+          : streamError instanceof Error
+            ? streamError.message
+            : String(fallbackError || streamError)
+        updateAssistant({ text: `Fehler: ${message}` })
+      }
+    } finally {
+      setChatLoading(false)
+    }
   }
 
   const handleRawTranscript = async () => {
@@ -2130,8 +2172,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               </div>
               <Card className="glass-card border-[var(--syn-line)] flex-1 flex flex-col min-h-0">
                 <CardContent className="flex-1 flex flex-col p-4 min-h-0">
-                  <ScrollArea className="flex-1 mb-4">
-                    <div className="space-y-4 pr-2">
+                  <div className="relative flex-1 min-h-0 mb-4">
+                    <div ref={chatScrollRef} onScroll={handleChatScroll} className="h-full overflow-y-auto pr-2">
+                      <div className="space-y-4">
                       {chatMessages.length === 0 && (
                         <div className="text-center py-12 space-y-3">
                           <div className="text-3xl" style={{ color: 'var(--syn-accent)' }}>◉</div>
@@ -2188,8 +2231,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       )})}
                       {chatLoading && (!chatMessages.length || chatMessages[chatMessages.length - 1].role !== 'assistant' || !chatMessages[chatMessages.length - 1].text) && <div className="flex justify-start"><div className="rounded-xl px-4 py-3 text-sm" style={{ background: 'var(--syn-surface-2)', color: 'var(--syn-text-muted)' }}>Denkt nach...</div></div>}
                       <div ref={chatEndRef} />
+                      </div>
                     </div>
-                  </ScrollArea>
+                    {showChatScrollButton && (
+                      <Button data-testid="chat-scroll-bottom" size="sm" className="absolute bottom-3 right-4 h-8 rounded-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white shadow-lg text-xs" onClick={() => { setChatAutoFollow(true); setShowChatScrollButton(false); scrollChatToBottom('smooth') }}>
+                        ↓ Zum Ende
+                      </Button>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Input placeholder="Frage stellen..." value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} className="flex-1 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" disabled={chatLoading} />
                     <Button onClick={() => handleChat()} disabled={chatLoading || !chatInput.trim()} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white">Senden</Button>
