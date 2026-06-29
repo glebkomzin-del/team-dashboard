@@ -67,6 +67,31 @@ const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved', 'compl
 function Av({ name }: { name: string }) {
   return <div className="w-6 h-6 rounded-full bg-[var(--syn-accent-soft)] text-[var(--syn-accent)] flex items-center justify-center text-[10px] font-bold shrink-0 border border-[var(--syn-accent-line)]">{name.split(' ').map(n => n[0]).join('')}</div>
 }
+
+function TenRowTableViewport({ testId, rowCount, children }: { testId: string; rowCount: number; children: React.ReactNode }) {
+  const viewportRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport) return
+
+    const fitTenRows = () => {
+      const header = viewport.querySelector('thead')
+      const rows = Array.from(viewport.querySelectorAll('tbody tr')).slice(0, 10)
+      const height = (header?.getBoundingClientRect().height ?? 0)
+        + rows.reduce((sum, row) => sum + row.getBoundingClientRect().height, 0)
+      viewport.style.maxHeight = `${Math.ceil(height)}px`
+    }
+
+    fitTenRows()
+    const observer = new ResizeObserver(fitTenRows)
+    const table = viewport.querySelector('table')
+    if (table) observer.observe(table)
+    return () => observer.disconnect()
+  }, [rowCount])
+
+  return <CardContent ref={viewportRef} data-testid={testId} className="p-0 overflow-y-auto">{children}</CardContent>
+}
 function SortIcon({ dir }: { dir: SortDir }) {
   if (!dir) return <span className="text-[var(--syn-text-faint)] ml-1">{'↕'}</span>
   return <span className="ml-1 text-[var(--syn-accent)]">{dir === 'asc' ? '↑' : '↓'}</span>
@@ -1065,9 +1090,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
           {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
           {page === 'uebersicht' && (() => {
-            const reviewQueue = meetings
-            const activeBlockersList = blockers.filter(b => b.status === 'active')
-            const recentDec = meetings.flatMap(m => m.keyDecisions.map(d => ({ text: d, meetingTitle: m.title, meetingDate: m.date, meetingId: m.id })))
+            const reviewQueue = meetings.slice(0, 10)
+            const activeBlockersList = blockers.filter(b => b.status === 'active').slice(0, 10)
+            const recentDec = meetings.flatMap(m => m.keyDecisions.map(d => ({ text: d, meetingTitle: m.title, meetingDate: m.date, meetingId: m.id }))).slice(0, 10)
             const now = new Date()
             const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']
             const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
@@ -1126,7 +1151,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 <div className="grid grid-cols-[1fr_2fr] gap-5">
                   {(() => {
                     const cardClass = "rounded-xl border border-[var(--syn-line)] overflow-hidden flex flex-col"
-                    const cardStyle = { background: 'var(--syn-surface)', height: 290 }
+                    const cardStyle = { background: 'var(--syn-surface)', height: 562 }
                     const headerClass = "flex items-center justify-between px-4 h-10 border-b border-[var(--syn-line)] shrink-0"
                     const listClass = "divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto"
                     const itemClass = "px-4 h-[52px] flex flex-col justify-center hover:bg-[var(--syn-hover)] transition-colors cursor-pointer"
@@ -1138,9 +1163,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-warn)' }} /> Offene Todos</div>
                           <button onClick={() => { setActionTab('todos'); setPage('aktionen'); window.scrollTo(0, 0) }} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Alle Todos →</button>
                         </div>
-                        <div className={listClass} style={{ minHeight: 0 }}>
+                        <div data-testid="command-todos-list" className={listClass} style={{ minHeight: 0 }}>
                           {todos.filter(t => t.status !== 'done').length === 0 && <div className="px-4 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Todos.</div>}
-                          {todos.filter(t => t.status !== 'done').sort((a, b) => (PRI_RANK[a.priority] ?? 9) - (PRI_RANK[b.priority] ?? 9)).map(t => (
+                          {todos.filter(t => t.status !== 'done').sort((a, b) => (PRI_RANK[a.priority] ?? 9) - (PRI_RANK[b.priority] ?? 9)).slice(0, 10).map(t => (
                             <div key={t.id} className={itemClass} onClick={() => setViewTodo(t)}>
                               <div className="flex items-center gap-2">
                                 <button onClick={(e) => { e.stopPropagation(); handleQuickStatusToggle(t) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} />
@@ -1162,14 +1187,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-accent)' }} /> Letzte Meetings</div>
                           <button onClick={() => setPage('sitzungen')} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Alle Meetings →</button>
                         </div>
-                        <div className={listClass} style={{ minHeight: 0 }}>
+                        <div data-testid="command-meetings-list" className={listClass} style={{ minHeight: 0 }}>
                           {reviewQueue.length === 0 && <div className="px-4 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings vorhanden.</div>}
                           {reviewQueue.map(m => (
                             <div key={m.id} className={itemClass} onClick={() => setViewMeeting(m)}>
                               <div className="text-sm font-medium truncate">{m.title}</div>
-                              <div className={subClass} style={{ color: 'var(--syn-text-faint)' }}>
+                              <div className={`${subClass} overflow-hidden`} style={{ color: 'var(--syn-text-faint)' }}>
                                 <span>{m.date}</span>
-                                <span>· {m.participants.slice(0, 3).join(', ')}</span>
+                                <div data-testid="command-meeting-topic-pills" className="flex items-center gap-1 min-w-0 overflow-hidden">
+                                  {m.topics.slice(0, 3).map((topic, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit shrink-0" style={{ padding: '1px 5px' }}>{shortTopic(topic)}</Badge>)}
+                                  {m.topics.length > 3 && <span className="text-[10px] shrink-0">+{m.topics.length - 3}</span>}
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -1182,7 +1210,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-danger)' }} /> Aktive Blocker</div>
                           <button onClick={() => { setActionTab('blocker'); setPage('aktionen'); window.scrollTo(0, 0) }} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Alle Blocker →</button>
                         </div>
-                        <div className={listClass} style={{ minHeight: 0 }}>
+                        <div data-testid="command-blockers-list" className={listClass} style={{ minHeight: 0 }}>
                           {activeBlockersList.length === 0 && <div className="px-4 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine aktiven Blocker.</div>}
                           {activeBlockersList.map(b => (
                             <div key={b.id} className={itemClass} onClick={() => setViewBlocker(b)}>
@@ -1202,7 +1230,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <div className="flex items-center gap-2 text-sm font-semibold"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--syn-info)' }} /> Letzte Entscheidungen</div>
                           <button onClick={() => setPage('protokoll')} className="text-[11px] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>Audit-Trail →</button>
                         </div>
-                        <div className={listClass} style={{ minHeight: 0 }}>
+                        <div data-testid="command-decisions-list" className={listClass} style={{ minHeight: 0 }}>
                           {recentDec.length === 0 && <div className="px-4 py-4 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Entscheidungen.</div>}
                           {recentDec.map((d, i) => (
                             <div key={i} className={itemClass} onClick={() => { const m = meetings.find(mt => mt.id === d.meetingId); if (m) setViewMeeting(m) }}>
@@ -1259,11 +1287,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 {ib.meetings.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-accent)' }} /><h3 className="text-sm font-semibold">Meetings</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.meetings.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-meetings-scroll" rowCount={ib.meetings.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Datum" className="w-[100px]" />
                       <TableHead className="text-xs text-left pl-3">Titel</TableHead>
                       <SH2 label="Teilnehmer" className="w-[180px]" />
-                      <SH2 label="Themen & Teil-Summaries" className="w-[360px]" />
+                      <SH2 label="Themen" className="w-[240px]" />
                       <SH2 label="Freigabe" className="w-[80px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.meetings.map(item => { const p = item.payload; const vm = inboxMeetingView(item); return (
@@ -1271,19 +1299,19 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>{p.meeting_date||'—'}</TableCell>
                           <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(vm) }} className="text-left hover:text-[var(--syn-accent)] leading-snug">{p.title||'—'}</button></TableCell>
                           <TableCell><div className="flex flex-col gap-0.5">{(p.participants||[]).slice(0,5).map((pt: string,i: number)=><span key={i} className="text-[10px] rounded truncate block" style={{background:'var(--syn-surface-3)',color:'var(--syn-text-muted)',padding:'1px 6px',maxWidth:'164px'}}>{pt}</span>)}{(p.participants||[]).length>5&&<span className="text-[10px] font-medium" style={{color:'var(--syn-text-faint)'}}>+{(p.participants||[]).length-5}</span>}</div></TableCell>
-                          <TableCell><div data-testid="inbox-topic-summaries" className="space-y-2 py-1">{vm.topicDetails?.map(topic => <div key={`${topic.sequence}-${topic.name}`} className="rounded-md border border-[var(--syn-line)] px-2 py-1.5 text-left" style={{ background: 'var(--syn-surface-2)' }}><div className="text-[10px] font-semibold">{topic.sequence}. {topic.name}</div>{topic.summary ? <p className="mt-0.5 text-[10px] leading-relaxed" style={{ color: 'var(--syn-text-muted)' }}>{topic.summary}</p> : <p className="mt-0.5 text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summary.</p>}</div>)}</div></TableCell>
+                          <TableCell><div data-testid="inbox-topic-pills" className="flex flex-col gap-0.5">{vm.topics.slice(0, 5).map((topic, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit" style={{ padding: '1px 5px' }}>{shortTopic(topic)}</Badge>)}{vm.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{vm.topics.length - 5}</span>}</div></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
                       {ib.meetings.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Meetings</TableCell></TableRow>}
-                    </TableBody></Table></CardContent></Card>
+                    </TableBody></Table></TenRowTableViewport></Card>
                   </section>
                 )}
                 {/* ── Todos ── */}
                 {ib.todos.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-warn)' }} /><h3 className="text-sm font-semibold">Todos</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.todos.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-todos-scroll" rowCount={ib.todos.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="text-xs text-left pl-3">Aufgabe</TableHead>
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Priorität" className="w-[100px]" />
@@ -1306,14 +1334,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         </TableRow>
                       )})}
                       {ib.todos.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Todos</TableCell></TableRow>}
-                    </TableBody></Table></CardContent></Card>
+                    </TableBody></Table></TenRowTableViewport></Card>
                   </section>
                 )}
                 {/* ── Blocker ── */}
                 {ib.blockers.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-danger)' }} /><h3 className="text-sm font-semibold">Blocker</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.blockers.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-blockers-scroll" rowCount={ib.blockers.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="text-xs text-left pl-3">Blocker</TableHead>
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
@@ -1332,14 +1360,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         </TableRow>
                       )})}
                       {ib.blockers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Blocker</TableCell></TableRow>}
-                    </TableBody></Table></CardContent></Card>
+                    </TableBody></Table></TenRowTableViewport></Card>
                   </section>
                 )}
                 {/* ── Offene Punkte ── */}
                 {ib.open.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-info)' }} /><h3 className="text-sm font-semibold">Offene Punkte</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.open.length}</span></div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0 max-h-[55vh] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-open-scroll" rowCount={ib.open.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="w-10"></TableHead>
                       <TableHead className="text-xs text-left pl-3">Item</TableHead>
                       <SH2 label="Kategorie" className="w-[100px]" />
@@ -1362,7 +1390,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         </TableRow>
                       )})}
                       {ib.open.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine offenen Punkte</TableCell></TableRow>}
-                    </TableBody></Table></CardContent></Card>
+                    </TableBody></Table></TenRowTableViewport></Card>
                   </section>
                 )}
               </div>
@@ -2180,8 +2208,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Zusammenfassung</h3>{viewMeeting.summary ? <div className="text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewMeeting.summary) }} /> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Zusammenfassung.</p>}</div>
             <Separator className="bg-[var(--syn-line)]" />
             <div data-testid="meeting-topic-details">
-              <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--syn-text-faint)' }}>Teil-Summaries</h3>
-              {meetingTopicsLoading ? <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Teil-Summaries werden geladen…</p> : meetingTopicsError ? <p className="text-sm text-[var(--syn-danger)]">{meetingTopicsError}</p> : meetingTopicDetails.length > 0 ? <div className="space-y-2">{meetingTopicDetails.map(topic => <div data-testid="meeting-topic-summary" key={`${topic.sequence}-${topic.name}`} className="rounded-lg border border-[var(--syn-line)] p-3" style={{ background: 'var(--syn-surface-2)' }}><div className="text-sm font-semibold">{topic.sequence}. {topic.name}</div>{topic.summary ? <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--syn-text-muted)' }}>{topic.summary}</p> : <p className="mt-1 text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summary hinterlegt.</p>}</div>)}</div> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summaries hinterlegt.</p>}
+              <div className="mb-3 text-sm" style={{ color: 'var(--syn-text-faint)' }}>--- Themen ---</div>
+              {meetingTopicsLoading ? <p className="text-sm" style={{ color: 'var(--syn-text-muted)' }}>Themen werden geladen…</p> : meetingTopicsError ? <p className="text-sm text-[var(--syn-danger)]">{meetingTopicsError}</p> : meetingTopicDetails.length > 0 ? <div className="space-y-4">{meetingTopicDetails.map(topic => <div data-testid="meeting-topic-summary" key={`${topic.sequence}-${topic.name}`} className="text-sm leading-relaxed"><strong>{topic.name}</strong>{topic.summary ? <><br /><span style={{ color: 'var(--syn-text-muted)' }}>{topic.summary}</span></> : <><br /><span style={{ color: 'var(--syn-text-faint)' }}>Keine Teil-Summary hinterlegt.</span></>}</div>)}</div> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Themen-Summaries hinterlegt.</p>}
             </div>
             <Separator className="bg-[var(--syn-line)]" />
             <div>
