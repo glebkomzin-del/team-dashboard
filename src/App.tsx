@@ -268,7 +268,7 @@ function inboxMeetingView(item: DbInboxItem): Meeting {
   }
 }
 interface Activity { id: string; entityType: string; entityId: string; entityTitle: string; action: string; field: string | null; oldValue: string | null; newValue: string | null; meetingId: string | null; timestamp: string }
-interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; timestamp?: number }
+interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; scalingNotice?: string; timestamp?: number }
 
 export default function App() {
   const [session, setSession] = useState<any>(null)
@@ -757,6 +757,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         text: result.answer,
         sources: result.sources.meetings,
         mode: result.retrieval.mode,
+        scalingNotice: result.scaling_notice?.trim() || undefined,
         timestamp: Date.now(),
       }])
     } catch (error: unknown) {
@@ -2150,6 +2151,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                           <div className={`max-w-[75%] rounded-xl px-4 py-3 ${msg.role === 'user' ? 'bg-[var(--syn-accent)] text-white' : ''}`} style={msg.role === 'assistant' ? { background: 'var(--syn-surface-2)', color: 'var(--syn-text)' } : {}}>
                             {timeStr && <div className="text-[10px] mb-1" style={{ color: msg.role === 'user' ? 'rgba(255,255,255,.6)' : 'var(--syn-text-faint)' }}>{timeStr}</div>}
+                            {msg.role === 'assistant' && msg.scalingNotice && (
+                              <div data-testid="scaling-notice-banner" className="mb-3 rounded-lg border px-3 py-2 text-xs leading-relaxed" style={{ borderColor: 'var(--syn-warn)', background: 'var(--syn-warn-soft)', color: 'var(--syn-text)' }}>
+                                <span className="font-semibold">Systemhinweis:</span> {msg.scalingNotice}
+                              </div>
+                            )}
                             {msg.role === 'assistant' ? renderMarkdown(msg.text) : <p className="text-sm whitespace-pre-wrap">{msg.text}</p>}
                             {msg.matches && msg.matches.length > 0 && (
                               <div className="mt-3 pt-2 border-t border-[var(--syn-line)] space-y-1">
@@ -2201,8 +2207,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         <DialogContent className="max-w-4xl max-h-[85vh]">{viewMeeting && <ScrollArea className="max-h-[75vh] pr-4">
           <DialogHeader className="pb-3"><DialogTitle>{viewMeeting.title}</DialogTitle><div className="flex items-center gap-3 text-xs mt-1" style={{ color: 'var(--syn-text-muted)' }}><span>{viewMeeting.date}</span><span>{'·'}</span><span>{viewMeeting.participants.length} Teilnehmer</span></div></DialogHeader>
           <div className="space-y-4 pt-2">
-            <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Themen</h3><div className="flex flex-wrap gap-1.5">{viewMeeting.topics.map((t, i) => <Badge key={i} variant="outline" className="border-[var(--syn-line)]">{shortTopic(t)}</Badge>)}</div></div>
-            <Separator className="bg-[var(--syn-line)]" />
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Teilnehmer</h3><div className="flex flex-wrap gap-2">{viewMeeting.participants.map((p, i) => <span key={i} className="text-sm px-2.5 py-1 rounded" style={{ background: 'var(--syn-surface-3)' }}>{p}</span>)}</div></div>
             <Separator className="bg-[var(--syn-line)]" />
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Zusammenfassung</h3>{viewMeeting.summary ? <div className="text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewMeeting.summary) }} /> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Zusammenfassung.</p>}</div>
