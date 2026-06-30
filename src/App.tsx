@@ -498,6 +498,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [blockerSelected, setBlockerSelected] = useState<Set<string>>(new Set())
   const [openSelected, setOpenSelected] = useState<Set<string>>(new Set())
   const [meetingSelected, setMeetingSelected] = useState<Set<string>>(new Set())
+  const [logSelected, setLogSelected] = useState<Set<string>>(new Set())
   const [projectSelected, setProjectSelected] = useState<Set<string>>(new Set())
 
   const memberNames = useMemo(() => {
@@ -698,6 +699,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleBulkDeleteBlockers = async () => { const ids = [...blockerSelected]; setBlockers(prev => prev.filter(x => !ids.includes(x.id))); setBlockerSelected(new Set()); await Promise.all(ids.map(id => deleteBlockerDb(id).catch(() => {}))) }
   const handleBulkDeleteOpen = async () => { const ids = [...openSelected]; setOpenItems(prev => prev.filter(x => !ids.includes(x.id))); setOpenSelected(new Set()); await Promise.all(ids.map(id => deleteOpenItemDb(id).catch(() => {}))) }
   const handleBulkDeleteMeetings = async () => { const ids = [...meetingSelected]; setMeetings(prev => prev.filter(x => !ids.includes(x.id))); setMeetingSelected(new Set()); await Promise.all(ids.map(id => deleteMeetingDb(id).catch(() => {}))) }
+  const handleBulkDeleteActivity = async () => { const ids = [...logSelected]; setActivity(prev => prev.filter(x => !ids.includes(x.id))); setLogSelected(new Set()); await Promise.all(ids.map(id => deleteActivityLogDb(id).catch(() => {}))) }
   const handleBulkDeleteProjects = async () => { const ids = [...projectSelected]; setProjects(prev => prev.filter(x => !ids.includes(x.id))); setProjectSelected(new Set()); await Promise.all(ids.map(id => deleteProjectDb(id).catch(() => {}))) }
   const handleSaveMeeting = async (m: Meeting) => {
     if (inboxEditModeFor) {
@@ -2067,7 +2069,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h2 className="text-base font-semibold">Protokoll</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold">Protokoll</h2>
+                    {logSelected.size > 0 && <button onClick={handleBulkDeleteActivity} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${logSelected.size} löschen`}><TrashIcon /></button>}
+                  </div>
                   <p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Endgültige Statusänderungen: Erledigt, Beschlossen, Gelöst, Geschlossen</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2084,17 +2089,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Aktion" field="action" sort={logSort} onSort={logSort.toggle} className="w-[130px]" />
                     <TableHead className="w-[100px] text-xs">Vorher</TableHead>
                     <TableHead className="w-[120px] text-xs">Nachher</TableHead>
-                    <TableHead className="w-[90px] text-xs text-center">Anpassen</TableHead>
+                    <TableHead className="w-[80px] text-xs text-center">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredLog.map(a => (
-                      <TableRow key={a.id} className="text-sm hover:bg-[var(--syn-hover)] border-[var(--syn-line)]">
+                      <TableRow key={a.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${logSelected.has(a.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setLogSelected(prev => { const n = new Set(prev); n.has(a.id) ? n.delete(a.id) : n.add(a.id); return n })}>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{new Date(a.timestamp).toLocaleString('de-DE')}</TableCell>
                         <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{TYPE_LABEL[a.entityType] || a.entityType}</Badge></TableCell>
-                        <TableCell className="text-left"><button onClick={() => openSourceEntity(a.entityType, a.entityId)} className="font-medium text-left hover:text-[var(--syn-accent)]">{a.entityTitle}</button></TableCell>
+                        <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); openSourceEntity(a.entityType, a.entityId) }} className="font-medium text-left hover:text-[var(--syn-accent)]">{a.entityTitle}</button></TableCell>
                         <TableCell className="text-xs">{a.action === 'status_changed' ? <span>Status geändert</span> : ACTION_LABEL[a.action] || a.action}</TableCell>
                         <TableCell>{a.action === 'status_changed' && a.oldValue ? <Badge className={`text-[9px] ${ST_STYLE[a.oldValue] || ''}`}>{ST_LABEL[a.oldValue] || a.oldValue}</Badge> : <span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>—</span>}</TableCell>
                         <TableCell>{a.action === 'status_changed' && a.newValue ? <Badge className={`text-[9px] ${ST_STYLE[a.newValue] || ''}`}>{ST_LABEL[a.newValue] || a.newValue}</Badge> : <span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>—</span>}</TableCell>
-                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => editSourceEntity(a.entityType, a.entityId)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: `Protokoll-Eintrag: ${a.entityTitle}`, action: () => handleDeleteActivity(a) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
+                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => editSourceEntity(a.entityType, a.entityId)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: `Protokoll-Eintrag: ${a.entityTitle}`, action: () => handleDeleteActivity(a) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${logSelected.has(a.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={logSelected.has(a.id)} onChange={() => setLogSelected(prev => { const n = new Set(prev); n.has(a.id) ? n.delete(a.id) : n.add(a.id); return n })} /></div></TableCell>
                       </TableRow>
                     ))}
                   </TableBody></Table>
