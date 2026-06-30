@@ -14,6 +14,7 @@ import {
   fetchProjects, insertProject,
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
+  deleteActivityLogDb,
   updateTodoFull, updateBlockerFull, updateOpenItemFull, updateMeetingFull,
   updateProjectFull, deleteProjectDb,
   fetchProjectMeetings, setProjectMeetings,
@@ -249,6 +250,12 @@ function normalizeTopicDetails(topics: unknown): MeetingTopicDetail[] {
     })
     .filter(topic => topic.name)
     .sort((a, b) => a.sequence - b.sequence)
+}
+
+function stripEmbeddedTopicsFromSummary(summary: string): string {
+  const marker = summary.search(/(?:<br\s*\/?>\s*)*---\s*Themen\s*---/i)
+  if (marker === -1) return summary
+  return summary.slice(0, marker).replace(/(?:<br\s*\/?>|\s)+$/gi, '').trim()
 }
 
 function inboxMeetingView(item: DbInboxItem): Meeting {
@@ -609,6 +616,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     setOpenItems(prev => prev.map(x => x.id === o.id ? o : x)); setEditOpen(null); try { await updateOpenItemFull(o.id, { title: o.title, description: o.description, owner: o.owner, category: o.category, status: o.status }) } catch { }
   }
   const handleDeleteMeeting = async (m: Meeting) => { setMeetings(prev => prev.filter(x => x.id !== m.id)); try { await deleteMeetingDb(m.id) } catch { } }
+  const handleDeleteActivity = async (a: Activity) => {
+    setActivity(prev => prev.filter(x => x.id !== a.id))
+    try { await deleteActivityLogDb(a.id) } catch { loadData().catch(() => {}) }
+  }
 
   // ── Inbox handlers ──
   const handleInboxApprove = async (item: DbInboxItem) => {
@@ -1474,7 +1485,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 ))}
                 {filteredNotes.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
               </TableBody></Table></CardContent></Card>
-              {tableCounts.meetings > 0 && <p data-testid="meetings-visible-count" className="text-xs text-center" style={{ color: 'var(--syn-text-faint)' }}>{filteredNotes.length} angezeigt · {tableCounts.meetings} in der Datenbank</p>}
             </div>
           )}
 
@@ -1534,7 +1544,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     )})}
                     {filteredTodos.length === 0 && <TableRow><TableCell colSpan={projects.length > 0 ? 9 : 8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
-                  <p data-testid="todos-visible-count" className="text-xs text-center mt-2" style={{ color: 'var(--syn-text-faint)' }}>{filteredTodos.length} angezeigt · {tableCounts.todos} in der Datenbank</p>
                 </section>
               )}
 
@@ -1572,7 +1581,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     ))}
                     {filteredBlockers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Blocker</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
-                  <p data-testid="blockers-visible-count" className="text-xs text-center mt-2" style={{ color: 'var(--syn-text-faint)' }}>{filteredBlockers.length} angezeigt · {tableCounts.blockers} in der Datenbank</p>
                 </section>
               )}
 
@@ -1615,7 +1623,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     ))}
                     {filteredOpen.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine offenen Punkte</TableCell></TableRow>}
                   </TableBody></Table></CardContent></Card>
-                  <p data-testid="open-items-visible-count" className="text-xs text-center mt-2" style={{ color: 'var(--syn-text-faint)' }}>{filteredOpen.length} angezeigt · {tableCounts.openItems} in der Datenbank</p>
                 </section>
               )}
             </div>
@@ -2077,7 +2084,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Aktion" field="action" sort={logSort} onSort={logSort.toggle} className="w-[130px]" />
                     <TableHead className="w-[100px] text-xs">Vorher</TableHead>
                     <TableHead className="w-[120px] text-xs">Nachher</TableHead>
-                    <TableHead className="w-[90px] text-xs">Anpassen</TableHead>
+                    <TableHead className="w-[90px] text-xs text-center">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredLog.map(a => (
                       <TableRow key={a.id} className="text-sm hover:bg-[var(--syn-hover)] border-[var(--syn-line)]">
@@ -2087,7 +2094,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell className="text-xs">{a.action === 'status_changed' ? <span>Status geändert</span> : ACTION_LABEL[a.action] || a.action}</TableCell>
                         <TableCell>{a.action === 'status_changed' && a.oldValue ? <Badge className={`text-[9px] ${ST_STYLE[a.oldValue] || ''}`}>{ST_LABEL[a.oldValue] || a.oldValue}</Badge> : <span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>—</span>}</TableCell>
                         <TableCell>{a.action === 'status_changed' && a.newValue ? <Badge className={`text-[9px] ${ST_STYLE[a.newValue] || ''}`}>{ST_LABEL[a.newValue] || a.newValue}</Badge> : <span className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>—</span>}</TableCell>
-                        <TableCell><div className="flex gap-2 items-center justify-center"><button onClick={() => editSourceEntity(a.entityType, a.entityId)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button></div></TableCell>
+                        <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => editSourceEntity(a.entityType, a.entityId)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: `Protokoll-Eintrag: ${a.entityTitle}`, action: () => handleDeleteActivity(a) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button></div></TableCell>
                       </TableRow>
                     ))}
                   </TableBody></Table>
@@ -2258,7 +2265,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           <div className="space-y-4 pt-2">
             <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Teilnehmer</h3><div className="flex flex-wrap gap-2">{viewMeeting.participants.map((p, i) => <span key={i} className="text-sm px-2.5 py-1 rounded" style={{ background: 'var(--syn-surface-3)' }}>{p}</span>)}</div></div>
             <Separator className="bg-[var(--syn-line)]" />
-            <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Zusammenfassung</h3>{viewMeeting.summary ? <div className="text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewMeeting.summary) }} /> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Zusammenfassung.</p>}</div>
+            <div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Zusammenfassung</h3>{stripEmbeddedTopicsFromSummary(viewMeeting.summary) ? <div className="text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripEmbeddedTopicsFromSummary(viewMeeting.summary)) }} /> : <p className="text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Zusammenfassung.</p>}</div>
             <Separator className="bg-[var(--syn-line)]" />
             <div data-testid="meeting-topic-details">
               <div className="mb-3 text-sm" style={{ color: 'var(--syn-text-faint)' }}>--- Themen ---</div>

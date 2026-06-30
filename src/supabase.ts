@@ -131,6 +131,11 @@ export async function fetchActivityLog() {
   return data as DbActivity[]
 }
 
+export async function deleteActivityLogDb(id: string) {
+  const { error } = await supabase.from('activity_log').delete().eq('id', id)
+  if (error) throw error
+}
+
 // Upsert functions for "Ablegen"
 export async function upsertTodo(todo: Partial<DbTodo>) {
   const { error } = await supabase.from('todos').upsert(todo)
