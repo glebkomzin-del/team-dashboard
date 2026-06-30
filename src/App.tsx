@@ -61,7 +61,7 @@ const ST_LABEL: Record<string, string> = { open: 'Offen', in_progress: 'In Arbei
 const ACTION_LABEL: Record<string, string> = { status_changed: 'Status geändert', created: 'Erstellt', updated: 'Bearbeitet', deleted: 'Gelöscht', reassigned: 'Zugewiesen' }
 const TYPE_LABEL: Record<string, string> = { todo: 'Todo', blocker: 'Blocker', open_item: 'Offener Punkt', meeting: 'Meeting', decision: 'Entscheidung', project: 'Projekt', activity: 'Änderung' }
 const CAT_LABEL: Record<string, string> = { decision: 'Entscheidung', question: 'Frage', risk: 'Risiko', info: 'Information', general: 'Allgemein', opportunity: 'Chance', follow_up: 'Nachverfolgung' }
-const CAT_ICON: Record<string, string> = { decision: '◉', question: '?', risk: '▲', info: '○', general: '○', opportunity: '◆', follow_up: '↩' }
+const CAT_ICON: Record<string, string> = { decision: '◉', question: '?', risk: '▲', info: 'ⓘ', general: '○', opportunity: '◆', follow_up: '↩' }
 const MEMBER_ORDER = ['Gleb', 'Niko', 'Mathias', 'Jan Philipp', 'Extern', 'Nicht zugeordnet']
 const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved', 'completed'])
 
@@ -126,7 +126,7 @@ function useSortState() {
   return { col, dir, toggle }
 }
 function SH({ label, field, sort, onSort, className }: { label: string; field: string; sort: { col: string | null; dir: SortDir }; onSort: (f: string) => void; className?: string }) {
-  return <TableHead className={`cursor-pointer select-none hover:bg-[var(--syn-hover)] transition-colors ${className || ''}`} onClick={() => onSort(field)}><span className="flex items-center justify-center text-xs">{label}<SortIcon dir={sort.col === field ? sort.dir : null} /></span></TableHead>
+  return <TableHead className={`text-xs text-center cursor-pointer select-none hover:bg-[var(--syn-hover)] transition-colors ${className || ''}`} onClick={() => onSort(field)}><span className="flex items-center justify-center">{label}<SortIcon dir={sort.col === field ? sort.dir : null} /></span></TableHead>
 }
 function shortTopic(t: any): string {
   return typeof t === 'object' && t !== null ? (t.name || '') : String(t || '')
@@ -1345,7 +1345,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-accent)' }} /><h3 className="text-sm font-semibold">Meetings</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.meetings.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-meetings-scroll" rowCount={ib.meetings.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Datum" className="w-[100px]" />
-                      <TableHead className="text-xs text-left pl-3">Titel</TableHead>
+                      <SH2 label="Titel" />
                       <SH2 label="Teilnehmer" className="w-[180px]" />
                       <SH2 label="Themen" className="w-[260px]" />
                       <SH2 label="Anpassen" className="w-[130px]" />
@@ -1368,7 +1368,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-warn)' }} /><h3 className="text-sm font-semibold">Todos</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.todos.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-todos-scroll" rowCount={ib.todos.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <TableHead className="text-xs text-left pl-3">Aufgabe</TableHead>
+                      <SH2 label="Aufgabe" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Priorität" className="w-[100px]" />
                       <SH2 label="Fällig" className="w-[100px]" />
@@ -1400,7 +1400,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <section>
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-danger)' }} /><h3 className="text-sm font-semibold">Blocker</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.blockers.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-blockers-scroll" rowCount={ib.blockers.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <TableHead className="text-xs text-left pl-3">Blocker</TableHead>
+                      <SH2 label="Blocker" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
                       <SH2 label="Erstellt" className="w-[100px]" />
@@ -1427,7 +1427,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--syn-info)' }} /><h3 className="text-sm font-semibold">Offene Punkte</h3><span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)' }}>{ib.open.length}</span></div>
                     <Card className="glass-card border-[var(--syn-line)]"><TenRowTableViewport testId="inbox-open-scroll" rowCount={ib.open.length}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="w-10"></TableHead>
-                      <TableHead className="text-xs text-left pl-3">Item</TableHead>
+                      <SH2 label="Item" />
                       <SH2 label="Kategorie" className="w-[100px]" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
@@ -2089,8 +2089,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <SH label="Typ" field="entityType" sort={logSort} onSort={logSort.toggle} className="w-[110px]" />
                     <SH label="Element" field="entityTitle" sort={logSort} onSort={logSort.toggle} />
                     <SH label="Aktion" field="action" sort={logSort} onSort={logSort.toggle} className="w-[130px]" />
-                    <TableHead className="w-[100px] text-xs">Vorher</TableHead>
-                    <TableHead className="w-[120px] text-xs">Nachher</TableHead>
+                    <TableHead className="w-[100px] text-xs text-center">Vorher</TableHead>
+                    <TableHead className="w-[120px] text-xs text-center">Nachher</TableHead>
                     <TableHead className="w-[80px] text-xs text-center">Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredLog.map(a => (
