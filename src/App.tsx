@@ -1325,12 +1325,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             return (
               <div className="space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-h-7">
                     <h2 className="text-base font-semibold">Inbox <span data-testid="inbox-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({inboxItems.length} von {tableCounts.inbox})</span></h2>
-                    {inboxSelected.size > 0 && <>
-                      <button onClick={handleBulkInboxApprove} className="h-7 px-2 flex items-center gap-1 rounded border border-[var(--syn-ok)]/40 hover:bg-[var(--syn-ok)]/10 transition-colors text-xs" style={{ color: 'var(--syn-ok)' }}>✓ {inboxSelected.size} übernehmen</button>
+                    <div className={`h-7 flex items-center gap-2 transition-opacity ${inboxSelected.size > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} aria-hidden={inboxSelected.size === 0}>
+                      <button onClick={handleBulkInboxApprove} className="h-7 w-32 px-2 flex items-center justify-center gap-1 rounded border border-[var(--syn-ok)]/40 hover:bg-[var(--syn-ok)]/10 transition-colors text-xs" style={{ color: 'var(--syn-ok)' }}>✓ {inboxSelected.size} übernehmen</button>
                       <button onClick={handleBulkInboxReject} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${inboxSelected.size} ablehnen`}><TrashIcon /></button>
-                    </>}
+                    </div>
                   </div>
                 </div>
                 {inboxItems.length === 0 && (
@@ -2069,9 +2069,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-h-7">
                     <h2 className="text-base font-semibold">Protokoll</h2>
-                    {logSelected.size > 0 && <button onClick={handleBulkDeleteActivity} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${logSelected.size} löschen`}><TrashIcon /></button>}
+                    <button onClick={handleBulkDeleteActivity} className={`h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors ${logSelected.size > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ color: 'var(--syn-danger)' }} title={`${logSelected.size} löschen`} aria-hidden={logSelected.size === 0}><TrashIcon /></button>
                   </div>
                   <p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Endgültige Statusänderungen: Erledigt, Beschlossen, Gelöst, Geschlossen</p>
                 </div>
