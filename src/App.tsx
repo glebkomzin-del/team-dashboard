@@ -109,10 +109,6 @@ const rangeToPresetKey = (from?: string, to?: string): DatePresetKey | undefined
   return undefined
 }
 
-function DateRangeIcon() {
-  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M7 3v3M17 3v3M4 9h16M5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5Z" /></svg>
-}
-
 function Av({ name }: { name: string }) {
   return <div className="w-6 h-6 rounded-full bg-[var(--syn-accent-soft)] text-[var(--syn-accent)] flex items-center justify-center text-[10px] font-bold shrink-0 border border-[var(--syn-accent-line)]">{name.split(' ').map(n => n[0]).join('')}</div>
 }
@@ -1561,12 +1557,19 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   {(() => {
                     const activePreset = rangeToPresetKey(noteFilterDateFrom, noteFilterDateTo)
                     const hasFilter = Boolean(noteFilterDateFrom || noteFilterDateTo)
+                    // Kompaktes Label: bei benutzerdefinierten Zeiträumen im gleichen Jahr ohne Jahreszahl
+                    const compactDate = (v: string) => {
+                      const d = parseLocalDate(v)!
+                      return d.getFullYear() === new Date().getFullYear()
+                        ? d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+                        : formatShortDate(d)
+                    }
                     const triggerLabel = activePreset
                       ? MEETING_DATE_PRESETS.find(p => p.key === activePreset)!.label
                       : noteFilterDateFrom && noteFilterDateTo
-                        ? `${formatShortDate(parseLocalDate(noteFilterDateFrom)!)} – ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`
-                        : noteFilterDateFrom ? `Ab ${formatShortDate(parseLocalDate(noteFilterDateFrom)!)}`
-                          : noteFilterDateTo ? `Bis ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`
+                        ? `${compactDate(noteFilterDateFrom)} – ${compactDate(noteFilterDateTo)}`
+                        : noteFilterDateFrom ? `Ab ${compactDate(noteFilterDateFrom)}`
+                          : noteFilterDateTo ? `Bis ${compactDate(noteFilterDateTo)}`
                             : 'Zeitraum'
                     const resetFilter = () => { setNoteFilterDateFrom(''); setNoteFilterDateTo(''); setNoteDateDraft(undefined) }
                     const applyPreset = (key: DatePresetKey) => {
@@ -1580,11 +1583,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     if (open) { setNoteDateFilterView('list'); setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }
                   }}>
                     <PopoverTrigger asChild>
-                      <button data-testid="meeting-date-filter" className={`h-8 rounded-md border px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors ${hasFilter ? 'border-[var(--syn-accent)]/60 bg-[var(--syn-accent-soft)]' : 'border-[var(--syn-line)] bg-[var(--syn-surface-2)]'}`}>
-                        <DateRangeIcon />
-                        <span className="truncate text-left max-w-[160px]">{triggerLabel}</span>
-                        {hasFilter && <span role="button" aria-label="Datumsfilter zurücksetzen" className="shrink-0 rounded px-1 text-[var(--syn-text-faint)] hover:text-[var(--syn-text)]" onClick={event => { event.stopPropagation(); resetFilter() }}>×</span>}
-                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+                      <button data-testid="meeting-date-filter" className="h-8 w-[160px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
+                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${hasFilter ? 'bg-[var(--syn-accent)]' : 'bg-transparent'}`} />
+                        <span className="truncate text-left flex-1">{triggerLabel}</span>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
                       </button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-auto p-0 overflow-hidden border-[var(--syn-line)] bg-[var(--syn-bg)]">
