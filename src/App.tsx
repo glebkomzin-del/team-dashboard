@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import type { DateRange } from 'react-day-picker'
+import { de } from 'date-fns/locale'
 import {
   fetchTeamMembers, fetchMeetings, fetchMeetingRawTranscript, fetchMeetingTopics, fetchTableCounts, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
   fetchProjects, insertProject,
@@ -70,6 +74,16 @@ const CAT_LABEL: Record<string, string> = { decision: 'Entscheidung', question: 
 const CAT_ICON: Record<string, string> = { decision: '◉', question: '?', risk: '▲', info: 'ⓘ', general: '○', opportunity: '◆', follow_up: '↩' }
 const MEMBER_ORDER = ['Gleb', 'Niko', 'Mathias', 'Jan Philipp', 'Extern', 'Nicht zugeordnet']
 const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved', 'completed'])
+
+const parseLocalDate = (value: string) => value ? new Date(`${value}T00:00:00`) : undefined
+const toLocalDateValue = (date?: Date) => date
+  ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  : ''
+const formatShortDate = (date: Date) => date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+function DateRangeIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M7 3v3M17 3v3M4 9h16M5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5Z" /></svg>
+}
 
 function Av({ name }: { name: string }) {
   return <div className="w-6 h-6 rounded-full bg-[var(--syn-accent-soft)] text-[var(--syn-accent)] flex items-center justify-center text-[10px] font-bold shrink-0 border border-[var(--syn-accent-line)]">{name.split(' ').map(n => n[0]).join('')}</div>
@@ -436,6 +450,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [noteFilterParticipant, setNoteFilterParticipant] = useState('all')
   const [noteFilterDateFrom, setNoteFilterDateFrom] = useState('')
   const [noteFilterDateTo, setNoteFilterDateTo] = useState('')
+  const [noteDateFilterOpen, setNoteDateFilterOpen] = useState(false)
+  const [noteDateDraft, setNoteDateDraft] = useState<DateRange | undefined>()
   const [logFilterType, setLogFilterType] = useState('all')
   const projectFilterStatus = 'all'
   const todoSort = useSortState(); const blockerSort = useSortState(); const openSort = useSortState()
@@ -922,7 +938,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
   const kanbanTodosMemo = useMemo(() => {
     const priOrd: Record<string, number> = { urgent: 0, critical: 0, high: 1, medium: 2, low: 3 }
-    let result = [...todos]
+    const validProjectIds = new Set(projects.map(project => project.id))
+    let result = todos.filter(todo => Boolean(todo.projectId) && validProjectIds.has(todo.projectId!))
     if (kanbanFilterProject !== 'all') result = result.filter(t => t.projectId === kanbanFilterProject)
     if (kanbanFilterAssignee !== 'all') result = result.filter(t => t.assignee === kanbanFilterAssignee)
     result.sort((a, b) => {
@@ -1187,7 +1204,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--syn-hover)] transition-colors text-sm" title="Theme wechseln">{theme === 'dark' ? '☀' : '☾'}</button>
         </header>
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main data-testid="main-content" className="flex-1 px-6 pt-6 pb-6 overflow-auto">
 
           {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
           {page === 'uebersicht' && (() => {
@@ -1511,9 +1528,42 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                   <Select value={noteFilterParticipant} onValueChange={setNoteFilterParticipant}><SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Teilnehmer</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
-                  <Input type="date" value={noteFilterDateFrom} onChange={e => setNoteFilterDateFrom(e.target.value)} className="h-8 text-xs w-[140px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" placeholder="Von" />
-                  <Input type="date" value={noteFilterDateTo} onChange={e => setNoteFilterDateTo(e.target.value)} className="h-8 text-xs w-[140px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" placeholder="Bis" />
-                  {(noteFilterDateFrom || noteFilterDateTo) && <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setNoteFilterDateFrom(''); setNoteFilterDateTo('') }}>{'✕'}</Button>}
+                  <Popover open={noteDateFilterOpen} onOpenChange={open => {
+                    setNoteDateFilterOpen(open)
+                    if (open) setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined)
+                  }}>
+                    <PopoverTrigger asChild>
+                      <button data-testid="meeting-date-filter" className="h-8 w-[300px] min-w-[300px] max-w-[300px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 overflow-hidden hover:bg-[var(--syn-hover)] transition-colors">
+                        <DateRangeIcon />
+                        <span className="truncate text-left flex-1">
+                          {noteFilterDateFrom && noteFilterDateTo
+                            ? `${formatShortDate(parseLocalDate(noteFilterDateFrom)!)} – ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`
+                            : noteFilterDateFrom ? `Ab ${formatShortDate(parseLocalDate(noteFilterDateFrom)!)}`
+                              : noteFilterDateTo ? `Bis ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}` : 'Zeitraum'}
+                        </span>
+                        {(noteFilterDateFrom || noteFilterDateTo) && <span role="button" aria-label="Datumsfilter zurücksetzen" className="shrink-0 rounded px-1 text-[var(--syn-text-faint)] hover:text-[var(--syn-text)]" onClick={event => { event.stopPropagation(); setNoteFilterDateFrom(''); setNoteFilterDateTo(''); setNoteDateDraft(undefined) }}>×</span>}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-auto p-0 overflow-hidden border-[var(--syn-line)] bg-[var(--syn-bg)]">
+                      <div className="flex border-b border-[var(--syn-line)]">
+                        <div className="w-[152px] p-3 border-r border-[var(--syn-line)] space-y-1">
+                          {[
+                            ['Letzte 7 Tage', 7], ['Letzte 30 Tage', 30]
+                          ].map(([label, days]) => <Button key={String(label)} variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { const to = new Date(); const from = new Date(to.getFullYear(), to.getMonth(), to.getDate() - Number(days) + 1); setNoteDateDraft({ from, to }) }}>{label}</Button>)}
+                          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { const today = new Date(); setNoteDateDraft({ from: new Date(today.getFullYear(), today.getMonth(), 1), to: new Date(today.getFullYear(), today.getMonth() + 1, 0) }) }}>Dieser Monat</Button>
+                          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { const today = new Date(); setNoteDateDraft({ from: new Date(today.getFullYear(), today.getMonth() - 1, 1), to: new Date(today.getFullYear(), today.getMonth(), 0) }) }}>Letzter Monat</Button>
+                          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => setNoteDateDraft(undefined)}>Alle Zeiträume</Button>
+                        </div>
+                        <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from} />
+                      </div>
+                      <div className="flex items-center justify-between gap-4 px-4 py-3">
+                        <span className="text-xs text-[var(--syn-text-muted)] truncate">
+                          {noteDateDraft?.from ? `${formatShortDate(noteDateDraft.from)}${noteDateDraft.to ? ` – ${formatShortDate(noteDateDraft.to)}` : ''}` : 'Alle Meetings'}
+                        </span>
+                        <Button size="sm" className="h-8 bg-[var(--syn-accent)] text-white" onClick={() => { setNoteFilterDateFrom(toLocalDateValue(noteDateDraft?.from)); setNoteFilterDateTo(toLocalDateValue(noteDateDraft?.to)); setNoteDateFilterOpen(false) }}>Übernehmen</Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-152px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -2231,7 +2281,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
           {/* ═══ KI-ASSISTENT ═══ */}
           {page === 'ki' && (
-            <div className="flex flex-col h-[calc(100vh-8rem)]">
+            <div className="flex flex-col h-[calc(100vh-104px)]">
               <div className="mb-4">
                 <h2 className="text-base font-semibold">KI-Assistent</h2><p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Memory-Antworten aus Meeting-Zusammenfassungen mit verlinkten Quellen.</p>
               </div>
