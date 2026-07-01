@@ -81,6 +81,34 @@ const toLocalDateValue = (date?: Date) => date
   : ''
 const formatShortDate = (date: Date) => date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
+// ── Datums-Presets für den Meeting-Filter ──────────────────────────────────
+type DatePresetKey = '7d' | '30d' | 'thisMonth' | 'lastMonth'
+const MEETING_DATE_PRESETS: { key: DatePresetKey; label: string }[] = [
+  { key: '7d', label: 'Letzte 7 Tage' },
+  { key: '30d', label: 'Letzte 30 Tage' },
+  { key: 'thisMonth', label: 'Dieser Monat' },
+  { key: 'lastMonth', label: 'Letzter Monat' },
+]
+// Berechnet den {from, to}-Zeitraum für ein relatives Preset (heute-basiert).
+const presetToRange = (key: DatePresetKey): { from: Date; to: Date } => {
+  const today = new Date()
+  switch (key) {
+    case '7d':       return { from: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6),  to: today }
+    case '30d':      return { from: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29), to: today }
+    case 'thisMonth':return { from: new Date(today.getFullYear(), today.getMonth(), 1),                     to: new Date(today.getFullYear(), today.getMonth() + 1, 0) }
+    case 'lastMonth':return { from: new Date(today.getFullYear(), today.getMonth() - 1, 1),                 to: new Date(today.getFullYear(), today.getMonth(), 0) }
+  }
+}
+// Erkennt, ob ein {from,to}-Zeitraum exakt einem Preset entspricht.
+const rangeToPresetKey = (from?: string, to?: string): DatePresetKey | undefined => {
+  if (!from || !to) return undefined
+  for (const p of MEETING_DATE_PRESETS) {
+    const r = presetToRange(p.key)
+    if (toLocalDateValue(r.from) === from && toLocalDateValue(r.to) === to) return p.key
+  }
+  return undefined
+}
+
 function DateRangeIcon() {
   return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M7 3v3M17 3v3M4 9h16M5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5Z" /></svg>
 }
@@ -452,6 +480,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [noteFilterDateTo, setNoteFilterDateTo] = useState('')
   const [noteDateFilterOpen, setNoteDateFilterOpen] = useState(false)
   const [noteDateDraft, setNoteDateDraft] = useState<DateRange | undefined>()
+  // 'list' = Preset-Auswahl, 'custom' = Kalender für benutzerdefinierten Zeitraum
+  const [noteDateFilterView, setNoteDateFilterView] = useState<'list' | 'custom'>('list')
   const [logFilterType, setLogFilterType] = useState('all')
   const projectFilterStatus = 'all'
   const todoSort = useSortState(); const blockerSort = useSortState(); const openSort = useSortState()
@@ -1528,42 +1558,77 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
                   <Select value={noteFilterParticipant} onValueChange={setNoteFilterParticipant}><SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Teilnehmer</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                  {(() => {
+                    const activePreset = rangeToPresetKey(noteFilterDateFrom, noteFilterDateTo)
+                    const hasFilter = Boolean(noteFilterDateFrom || noteFilterDateTo)
+                    const triggerLabel = activePreset
+                      ? MEETING_DATE_PRESETS.find(p => p.key === activePreset)!.label
+                      : noteFilterDateFrom && noteFilterDateTo
+                        ? `${formatShortDate(parseLocalDate(noteFilterDateFrom)!)} – ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`
+                        : noteFilterDateFrom ? `Ab ${formatShortDate(parseLocalDate(noteFilterDateFrom)!)}`
+                          : noteFilterDateTo ? `Bis ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`
+                            : 'Zeitraum'
+                    const resetFilter = () => { setNoteFilterDateFrom(''); setNoteFilterDateTo(''); setNoteDateDraft(undefined) }
+                    const applyPreset = (key: DatePresetKey) => {
+                      const r = presetToRange(key)
+                      setNoteFilterDateFrom(toLocalDateValue(r.from)); setNoteFilterDateTo(toLocalDateValue(r.to))
+                      setNoteDateFilterOpen(false)
+                    }
+                    return (
                   <Popover open={noteDateFilterOpen} onOpenChange={open => {
                     setNoteDateFilterOpen(open)
-                    if (open) setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined)
+                    if (open) { setNoteDateFilterView('list'); setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }
                   }}>
                     <PopoverTrigger asChild>
-                      <button data-testid="meeting-date-filter" className="h-8 w-[300px] min-w-[300px] max-w-[300px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 overflow-hidden hover:bg-[var(--syn-hover)] transition-colors">
+                      <button data-testid="meeting-date-filter" className={`h-8 rounded-md border px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors ${hasFilter ? 'border-[var(--syn-accent)]/60 bg-[var(--syn-accent-soft)]' : 'border-[var(--syn-line)] bg-[var(--syn-surface-2)]'}`}>
                         <DateRangeIcon />
-                        <span className="truncate text-left flex-1">
-                          {noteFilterDateFrom && noteFilterDateTo
-                            ? `${formatShortDate(parseLocalDate(noteFilterDateFrom)!)} – ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`
-                            : noteFilterDateFrom ? `Ab ${formatShortDate(parseLocalDate(noteFilterDateFrom)!)}`
-                              : noteFilterDateTo ? `Bis ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}` : 'Zeitraum'}
-                        </span>
-                        {(noteFilterDateFrom || noteFilterDateTo) && <span role="button" aria-label="Datumsfilter zurücksetzen" className="shrink-0 rounded px-1 text-[var(--syn-text-faint)] hover:text-[var(--syn-text)]" onClick={event => { event.stopPropagation(); setNoteFilterDateFrom(''); setNoteFilterDateTo(''); setNoteDateDraft(undefined) }}>×</span>}
+                        <span className="truncate text-left max-w-[160px]">{triggerLabel}</span>
+                        {hasFilter && <span role="button" aria-label="Datumsfilter zurücksetzen" className="shrink-0 rounded px-1 text-[var(--syn-text-faint)] hover:text-[var(--syn-text)]" onClick={event => { event.stopPropagation(); resetFilter() }}>×</span>}
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
                       </button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-auto p-0 overflow-hidden border-[var(--syn-line)] bg-[var(--syn-bg)]">
-                      <div className="flex border-b border-[var(--syn-line)]">
-                        <div className="w-[152px] p-3 border-r border-[var(--syn-line)] space-y-1">
-                          {[
-                            ['Letzte 7 Tage', 7], ['Letzte 30 Tage', 30]
-                          ].map(([label, days]) => <Button key={String(label)} variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { const to = new Date(); const from = new Date(to.getFullYear(), to.getMonth(), to.getDate() - Number(days) + 1); setNoteDateDraft({ from, to }) }}>{label}</Button>)}
-                          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { const today = new Date(); setNoteDateDraft({ from: new Date(today.getFullYear(), today.getMonth(), 1), to: new Date(today.getFullYear(), today.getMonth() + 1, 0) }) }}>Dieser Monat</Button>
-                          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { const today = new Date(); setNoteDateDraft({ from: new Date(today.getFullYear(), today.getMonth() - 1, 1), to: new Date(today.getFullYear(), today.getMonth(), 0) }) }}>Letzter Monat</Button>
-                          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => setNoteDateDraft(undefined)}>Alle Zeiträume</Button>
+                      {noteDateFilterView === 'list' ? (
+                        <div className="w-[188px] p-1.5 space-y-0.5">
+                          {MEETING_DATE_PRESETS.map(p => (
+                            <button key={p.key} onClick={() => applyPreset(p.key)} className={`w-full text-left text-xs px-2.5 py-1.5 rounded transition-colors ${activePreset === p.key ? 'bg-[var(--syn-accent)] text-white' : 'hover:bg-[var(--syn-hover)]'}`}>{p.label}</button>
+                          ))}
+                          <div className="h-px my-1 bg-[var(--syn-line)]" />
+                          <button onClick={() => { setNoteDateFilterView('custom'); setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }} className="w-full text-left text-xs px-2.5 py-1.5 rounded hover:bg-[var(--syn-hover)] flex items-center justify-between" style={{ color: 'var(--syn-text-muted)' }}>
+                            <span>Benutzerdefiniert</span>
+                            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+                          </button>
+                          {hasFilter && !activePreset && (
+                            <div className="text-[10px] px-2.5 pt-1 truncate" style={{ color: 'var(--syn-text-faint)' }}>
+                              {noteFilterDateFrom && noteFilterDateTo ? `${formatShortDate(parseLocalDate(noteFilterDateFrom)!)} – ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}` : noteFilterDateFrom ? `Ab ${formatShortDate(parseLocalDate(noteFilterDateFrom)!)}` : `Bis ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`}
+                            </div>
+                          )}
+                          {hasFilter && (
+                            <button onClick={() => { resetFilter(); setNoteDateFilterOpen(false) }} className="w-full text-left text-xs px-2.5 py-1.5 rounded hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-danger)' }}>Alle Zeiträume</button>
+                          )}
                         </div>
-                        <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from} />
-                      </div>
-                      <div className="flex items-center justify-between gap-4 px-4 py-3">
-                        <span className="text-xs text-[var(--syn-text-muted)] truncate">
-                          {noteDateDraft?.from ? `${formatShortDate(noteDateDraft.from)}${noteDateDraft.to ? ` – ${formatShortDate(noteDateDraft.to)}` : ''}` : 'Alle Meetings'}
-                        </span>
-                        <Button size="sm" className="h-8 bg-[var(--syn-accent)] text-white" onClick={() => { setNoteFilterDateFrom(toLocalDateValue(noteDateDraft?.from)); setNoteFilterDateTo(toLocalDateValue(noteDateDraft?.to)); setNoteDateFilterOpen(false) }}>Übernehmen</Button>
-                      </div>
+                      ) : (
+                        <div className="w-auto">
+                          <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--syn-line)]">
+                            <button onClick={() => setNoteDateFilterView('list')} className="flex items-center gap-1 text-xs hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-muted)' }}>
+                              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
+                              Zurück
+                            </button>
+                            <span className="text-xs font-medium ml-auto">Zeitraum wählen</span>
+                          </div>
+                          <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from} />
+                          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-[var(--syn-line)]">
+                            <span className="text-xs text-[var(--syn-text-muted)] truncate">
+                              {noteDateDraft?.from ? `${formatShortDate(noteDateDraft.from)}${noteDateDraft.to ? ` – ${formatShortDate(noteDateDraft.to)}` : ''}` : 'Alle Meetings'}
+                            </span>
+                            <Button size="sm" className="h-8 bg-[var(--syn-accent)] text-white" onClick={() => { setNoteFilterDateFrom(toLocalDateValue(noteDateDraft?.from)); setNoteFilterDateTo(toLocalDateValue(noteDateDraft?.to)); setNoteDateFilterOpen(false) }}>Übernehmen</Button>
+                          </div>
+                        </div>
+                      )}
                     </PopoverContent>
                   </Popover>
+                    )
+                  })()}
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-152px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
