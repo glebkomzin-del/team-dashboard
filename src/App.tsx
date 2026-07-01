@@ -15,6 +15,7 @@ import type { DateRange } from 'react-day-picker'
 import { de } from 'date-fns/locale'
 import {
   fetchTeamMembers, fetchMeetings, fetchMeetingRawTranscript, fetchMeetingTopics, fetchTableCounts, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
+  fetchMemoryMetrics,
   fetchProjects, insertProject,
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
@@ -29,7 +30,7 @@ import {
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
   askMemory, askMemoryStream,
-  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource
+  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource, type DbMemoryMetric
 } from './supabase'
 
 type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
@@ -80,6 +81,23 @@ const toLocalDateValue = (date?: Date) => date
   ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
   : ''
 const formatShortDate = (date: Date) => date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+// ── KI-Kostenberechnung (Frontend, identisch zur Backend-Logik) ─────────────
+const CHAT_PRICING: Record<string, { input: number; output: number; cacheWrite: number; cacheRead: number }> = {
+  'claude-sonnet-4-6': { input: 3.0, output: 15.0, cacheWrite: 3.75, cacheRead: 0.3 },
+  'claude-sonnet-4-20250514': { input: 3.0, output: 15.0, cacheWrite: 3.75, cacheRead: 0.3 },
+}
+const CHAT_DEFAULT_PRICING = CHAT_PRICING['claude-sonnet-4-6']
+const computeChatCost = (model: string | undefined, inputTokens: number, outputTokens: number, cacheWrite: number, cacheRead: number): number => {
+  const p = (model && CHAT_PRICING[model]) || CHAT_DEFAULT_PRICING
+  const M = 1_000_000
+  return (inputTokens / M) * p.input
+    + (outputTokens / M) * p.output
+    + (cacheWrite / M) * p.cacheWrite
+    + (cacheRead / M) * p.cacheRead
+}
+const formatCost = (usd: number) => usd < 0.01 ? `$${usd.toFixed(4)}` : `$${usd.toFixed(2)}`
+const formatTokens = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k` : String(n)
 
 // ── Datums-Presets für den Meeting-Filter ──────────────────────────────────
 type DatePresetKey = '7d' | '30d' | 'thisMonth' | 'lastMonth'
@@ -319,7 +337,7 @@ function inboxMeetingView(item: DbInboxItem): Meeting {
   }
 }
 interface Activity { id: string; entityType: string; entityId: string; entityTitle: string; action: string; field: string | null; oldValue: string | null; newValue: string | null; meetingId: string | null; timestamp: string }
-interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; scalingNotice?: string; timestamp?: number }
+interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; scalingNotice?: string; timestamp?: number; tokens?: { input: number; output: number }; model?: string; costUsd?: number }
 
 export default function App() {
   const [session, setSession] = useState<any>(null)
@@ -454,6 +472,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [chatAutoFollow, setChatAutoFollow] = useState(true)
   const [showChatScrollButton, setShowChatScrollButton] = useState(false)
   const [expandedChatSources, setExpandedChatSources] = useState<Set<number>>(new Set())
+  // KI-Kosten-Tracker
+  const [memoryMetrics, setMemoryMetrics] = useState<DbMemoryMetric[]>([])
+  const [metricsMonth, setMetricsMonth] = useState<string>(() => new Date().toISOString().slice(0, 7))
+  const [metricsOpen, setMetricsOpen] = useState(false)
 
   // Filters
   const [todoSearch, setTodoSearch] = useState('')
@@ -594,6 +616,31 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       }))
     } catch (e: any) { setError(e.message || 'Fehler beim Laden') } finally { setLoading(false) }
   }, [])
+
+  // KI-Kosten: Metriken laden (beim Mount + nach jeder Chat-Antwort)
+  const refreshMemoryMetrics = useCallback(async () => {
+    try { setMemoryMetrics(await fetchMemoryMetrics()) } catch { /* stillgestillt */ }
+  }, [])
+  useEffect(() => { refreshMemoryMetrics() }, [refreshMemoryMetrics])
+
+  // Monats-Aggregation der KI-Kosten aus memory_metrics
+  const MONTH_LABELS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
+  const metricsByMonth = useMemo(() => {
+    const map = new Map<string, { count: number; input: number; output: number; cost: number }>()
+    for (const m of memoryMetrics) {
+      const month = (m.created_at || '').slice(0, 7)
+      if (!month) continue
+      const cur = map.get(month) || { count: 0, input: 0, output: 0, cost: 0 }
+      cur.count += 1
+      cur.input += Number(m.uncached_input_tokens || 0) + Number(m.cache_write_tokens || 0) + Number(m.cache_read_tokens || 0)
+      cur.output += Number(m.output_tokens || 0)
+      cur.cost += Number(m.cost_usd || 0)
+      map.set(month, cur)
+    }
+    return map
+  }, [memoryMetrics])
+  const availableMonths = useMemo(() => Array.from(metricsByMonth.keys()).sort().reverse(), [metricsByMonth])
+  const currentMonthStats = metricsByMonth.get(metricsMonth)
 
   useEffect(() => { loadData(); isNightlyJobActive().then(setNightlyActive).catch(() => {}) }, [loadData])
   useEffect(() => {
@@ -882,19 +929,46 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         onMetadata: metadata => updateAssistant({
           mode: metadata.retrieval.mode,
           scalingNotice: metadata.scaling_notice?.trim() || undefined,
+          model: metadata.model,
+          tokens: {
+            input: Number(metadata.cache?.total_input_tokens ?? metadata.usage?.input_tokens ?? 0),
+            output: Number(metadata.usage?.output_tokens ?? 0),
+          },
         }),
         onDelta: delta => updateAssistant(msg => ({ text: `${msg.text}${delta}` })),
         onSources: sources => updateAssistant({ sources: sources.meetings }),
+        onDone: done => {
+          // done-Event enthält die vollständige usage (inkl. Output-Token).
+          const outputTokens = Number(done.usage?.output_tokens ?? 0)
+          const inputTokens = Number(done.cache?.total_input_tokens ?? done.usage?.input_tokens ?? 0)
+          const cacheWrite = Number(done.cache?.cache_creation_input_tokens ?? 0)
+          const cacheRead = Number(done.cache?.cache_read_input_tokens ?? 0)
+          updateAssistant(msg => ({
+            tokens: { input: inputTokens, output: outputTokens || msg.tokens?.output || 0 },
+            costUsd: computeChatCost(msg.model, inputTokens, outputTokens, cacheWrite, cacheRead),
+          }))
+          // Metriken neu laden, damit der Monats-Tracker aktuell ist.
+          refreshMemoryMetrics()
+        },
       })
     } catch (streamError: unknown) {
       try {
         const result = await askMemory(q, history)
+        const usage = result.usage ?? {}
+        const inputTokens = Number(result.cache?.total_input_tokens ?? usage.input_tokens ?? 0)
+        const outputTokens = Number(usage.output_tokens ?? 0)
         updateAssistant({
           text: result.answer,
           sources: result.sources.meetings,
           mode: result.retrieval.mode,
           scalingNotice: result.scaling_notice?.trim() || undefined,
+          model: result.model,
+          tokens: { input: inputTokens, output: outputTokens },
+          costUsd: computeChatCost(result.model, inputTokens, outputTokens,
+            Number(result.cache?.cache_creation_input_tokens ?? 0),
+            Number(result.cache?.cache_read_input_tokens ?? 0)),
         })
+        refreshMemoryMetrics()
       } catch (fallbackError: unknown) {
         const message = fallbackError instanceof Error
           ? fallbackError.message
@@ -2349,8 +2423,39 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ KI-ASSISTENT ═══ */}
           {page === 'ki' && (
             <div className="flex flex-col h-[calc(100vh-104px)]">
-              <div className="mb-4">
-                <h2 className="text-base font-semibold">KI-Assistent</h2><p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Memory-Antworten aus Meeting-Zusammenfassungen mit verlinkten Quellen.</p>
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold">KI-Assistent</h2><p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Memory-Antworten aus Meeting-Zusammenfassungen mit verlinkten Quellen.</p>
+                </div>
+                {availableMonths.length > 0 && (
+                  <div className="relative shrink-0">
+                    <button onClick={() => setMetricsOpen(o => !o)} className="h-8 px-3 rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--syn-accent)' }} />
+                      <span className="truncate">{MONTH_LABELS[Number(metricsMonth.slice(5, 7)) - 1]?.slice(0, 3) || metricsMonth}: {currentMonthStats ? formatCost(currentMonthStats.cost) : '$0,00'}</span>
+                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    {metricsOpen && (
+                      <div className="absolute right-0 top-9 z-20 w-[240px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-bg)] shadow-lg p-2 space-y-2">
+                        <div className="flex items-center gap-1.5">
+                          <select value={metricsMonth} onChange={e => setMetricsMonth(e.target.value)} className="h-7 flex-1 rounded border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs px-2">
+                            {availableMonths.map(mo => <option key={mo} value={mo}>{MONTH_LABELS[Number(mo.slice(5, 7)) - 1]} {mo.slice(0, 4)}</option>)}
+                          </select>
+                        </div>
+                        {currentMonthStats ? (
+                          <div className="space-y-1 px-1 py-1 text-xs">
+                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Fragen</span><span className="font-medium">{currentMonthStats.count}</span></div>
+                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Input-Token</span><span className="font-medium">{formatTokens(currentMonthStats.input)}</span></div>
+                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Output-Token</span><span className="font-medium">{formatTokens(currentMonthStats.output)}</span></div>
+                            <div className="h-px my-1" style={{ background: 'var(--syn-line)' }} />
+                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Gesamtkosten</span><span className="font-semibold" style={{ color: 'var(--syn-accent)' }}>{formatCost(currentMonthStats.cost)}</span></div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-center py-2" style={{ color: 'var(--syn-text-faint)' }}>Keine Daten für diesen Monat</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <Card className="glass-card border-[var(--syn-line)] flex-1 flex flex-col min-h-0">
                 <CardContent className="flex-1 flex flex-col p-4 min-h-0">
@@ -2382,6 +2487,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                               </div>
                             )}
                             {msg.role === 'assistant' ? renderMarkdown(msg.text) : <p className="text-sm whitespace-pre-wrap">{msg.text}</p>}
+                            {msg.role === 'assistant' && msg.tokens && (
+                              <div className="mt-2 flex items-center gap-2 text-[10px]" style={{ color: 'var(--syn-text-faint)' }}>
+                                <span className="truncate">{msg.model?.replace('claude-', '').replace('-20250514', '') || 'KI'}</span>
+                                <span>·</span>
+                                <span title="Input-Token (inkl. Cache)">↗ {formatTokens(msg.tokens.input)}</span>
+                                <span>·</span>
+                                <span title="Output-Token">↘ {formatTokens(msg.tokens.output)}</span>
+                                {typeof msg.costUsd === 'number' && msg.costUsd > 0 && (<><span>·</span><span title="Kosten">{formatCost(msg.costUsd)}</span></>)}
+                              </div>
+                            )}
                             {msg.matches && msg.matches.length > 0 && (
                               <div className="mt-3 pt-2 border-t border-[var(--syn-line)] space-y-1">
                                 <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Quellen ({msg.matches.length})</p>

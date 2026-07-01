@@ -19,6 +19,7 @@ export interface DbActivity { id: string; entity_type: string; entity_id: string
 export interface DbProject { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; owner: string | null; priority: string; created_at: string; updated_at: string }
 export interface DbDecision { id: string; meeting_id: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
 export interface DbInboxItem { id: string; entity_type: 'todo' | 'blocker' | 'open_item' | 'meeting' | 'decision'; payload: Record<string, any>; source: string; status: 'pending' | 'approved' | 'rejected'; created_at: string }
+export interface DbMemoryMetric { id: number; created_at: string; meeting_count: number; summary_block_tokens: number; cache_write_tokens: number; cache_read_tokens: number; retrieval_mode: string; output_tokens: number; uncached_input_tokens: number; model: string | null; cost_usd: number }
 export interface TableCounts { meetings: number; todos: number; blockers: number; openItems: number; inbox: number }
 
 // ── API Functions ──
@@ -111,6 +112,12 @@ export async function fetchTodos() {
   const { data, error } = await supabase.from('todos').select('*').order('created_at', { ascending: false })
   if (error) throw error
   return data as DbTodo[]
+}
+
+export async function fetchMemoryMetrics() {
+  const { data, error } = await supabase.from('memory_metrics').select('*').order('created_at', { ascending: false })
+  if (error) throw error
+  return data as DbMemoryMetric[]
 }
 
 export async function fetchBlockers() {
