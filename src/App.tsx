@@ -1692,7 +1692,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                             </button>
                             <span className="text-xs font-medium ml-auto">Zeitraum wählen</span>
                           </div>
-                          <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from} />
+                          <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from}
+                            className="[--cell-size:1.75rem] p-2 text-xs"
+                            classNames={{
+                              months: 'gap-3',
+                              month: 'gap-2',
+                              caption_label: 'text-xs',
+                              weekday: 'text-[0.7rem]',
+                              week: 'mt-1',
+                            }}
+                          />
                           <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-[var(--syn-line)]">
                             <span className="text-xs text-[var(--syn-text-muted)] truncate">
                               {noteDateDraft?.from ? `${formatShortDate(noteDateDraft.from)}${noteDateDraft.to ? ` – ${formatShortDate(noteDateDraft.to)}` : ''}` : 'Alle Meetings'}
