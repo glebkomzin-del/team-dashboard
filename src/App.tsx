@@ -34,6 +34,11 @@ type ProjectView = 'table' | 'kanban' | 'gantt'
 type ActionTab = 'todos' | 'blocker' | 'open'
 
 const PRI_LABEL: Record<string, string> = { urgent: 'Dringend', high: 'Hoch', medium: 'Mittel', low: 'Niedrig' }
+const mutationErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error && error.message) return error.message
+  if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') return error.message
+  return fallback
+}
 const PRI_RANK: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
 const PRI_STYLE: Record<string, string> = {
   urgent: 'bg-[var(--syn-danger)] text-white',
@@ -53,11 +58,12 @@ const ST_STYLE: Record<string, string> = {
   closed: 'bg-[var(--syn-surface-2)] text-[var(--syn-text-faint)]',
   approved: 'bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]',
   pending: 'bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]',
+  paused: 'bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]',
   rejected: 'bg-[var(--syn-danger-soft)] text-[var(--syn-danger)]',
   completed: 'bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]',
   on_hold: 'bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]',
 }
-const ST_LABEL: Record<string, string> = { open: 'Offen', in_progress: 'In Arbeit', done: 'Erledigt', cancelled: 'Abgebr.', active: 'Aktiv', resolved: 'Gelöst', escalated: 'Eskaliert', watching: 'Beobachten', closed: 'Geschlossen', approved: 'Genehmigt', pending: 'Ausstehend', rejected: 'Abgelehnt', completed: 'Abgeschlossen', on_hold: 'Pausiert' }
+const ST_LABEL: Record<string, string> = { open: 'Offen', in_progress: 'In Arbeit', done: 'Erledigt', cancelled: 'Abgebr.', active: 'Aktiv', resolved: 'Gelöst', escalated: 'Eskaliert', watching: 'Beobachten', closed: 'Geschlossen', approved: 'Genehmigt', pending: 'Ausstehend', rejected: 'Abgelehnt', completed: 'Abgeschlossen', paused: 'Pausiert', on_hold: 'Pausiert' }
 const ACTION_LABEL: Record<string, string> = { status_changed: 'Status geändert', created: 'Erstellt', updated: 'Bearbeitet', deleted: 'Gelöscht', reassigned: 'Zugewiesen' }
 const TYPE_LABEL: Record<string, string> = { todo: 'Todo', blocker: 'Blocker', open_item: 'Offener Punkt', meeting: 'Meeting', decision: 'Entscheidung', project: 'Projekt', activity: 'Änderung' }
 const CAT_LABEL: Record<string, string> = { decision: 'Entscheidung', question: 'Frage', risk: 'Risiko', info: 'Information', general: 'Allgemein', opportunity: 'Chance', follow_up: 'Nachverfolgung' }
@@ -409,6 +415,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const [chatAutoFollow, setChatAutoFollow] = useState(true)
   const [showChatScrollButton, setShowChatScrollButton] = useState(false)
+  const [expandedChatSources, setExpandedChatSources] = useState<Set<number>>(new Set())
 
   // Filters
   const [todoSearch, setTodoSearch] = useState('')
@@ -440,6 +447,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [editOpen, setEditOpen] = useState<OpenItem | null>(null)
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null)
   const [editProject, setEditProject] = useState<DbProject | null>(null)
+  const [projectMutationError, setProjectMutationError] = useState<string | null>(null)
   // projectInitTodos kept for reset calls
   const [, setProjectInitTodos] = useState('')
   // Project-dialog relations
@@ -700,7 +708,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleBulkDeleteOpen = async () => { const ids = [...openSelected]; setOpenItems(prev => prev.filter(x => !ids.includes(x.id))); setOpenSelected(new Set()); await Promise.all(ids.map(id => deleteOpenItemDb(id).catch(() => {}))) }
   const handleBulkDeleteMeetings = async () => { const ids = [...meetingSelected]; setMeetings(prev => prev.filter(x => !ids.includes(x.id))); setMeetingSelected(new Set()); await Promise.all(ids.map(id => deleteMeetingDb(id).catch(() => {}))) }
   const handleBulkDeleteActivity = async () => { const ids = [...logSelected]; setActivity(prev => prev.filter(x => !ids.includes(x.id))); setLogSelected(new Set()); await Promise.all(ids.map(id => deleteActivityLogDb(id).catch(() => {}))) }
-  const handleBulkDeleteProjects = async () => { const ids = [...projectSelected]; setProjects(prev => prev.filter(x => !ids.includes(x.id))); setProjectSelected(new Set()); await Promise.all(ids.map(id => deleteProjectDb(id).catch(() => {}))) }
+  const handleBulkDeleteProjects = async () => {
+    const ids = [...projectSelected]
+    setProjectMutationError(null)
+    const results = await Promise.allSettled(ids.map(id => deleteProjectDb(id)))
+    const deletedIds = ids.filter((_, index) => results[index].status === 'fulfilled')
+    const failed = results.filter(result => result.status === 'rejected') as PromiseRejectedResult[]
+    setProjects(prev => prev.filter(project => !deletedIds.includes(project.id)))
+    setProjectSelected(new Set(ids.filter(id => !deletedIds.includes(id))))
+    if (failed.length > 0) {
+      const firstReason = mutationErrorMessage(failed[0].reason, 'Unbekannter Datenbankfehler')
+      setProjectMutationError(`${failed.length} Projekt(e) konnten nicht gelöscht werden: ${firstReason}`)
+      await loadData()
+    }
+  }
   const handleSaveMeeting = async (m: Meeting) => {
     if (inboxEditModeFor) {
       const payload = { title: m.title, meeting_date: m.date, topics: m.topics, participants: m.participants, ai_summary: m.summary, key_decisions: m.keyDecisions }
@@ -714,51 +735,75 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleCreateBlocker = async (b: Blocker) => { setEditBlocker(null); try { const c = await insertBlocker({ title: b.title, description: b.description || undefined, reported_by: b.reportedBy }); setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
   const handleCreateOpen = async (o: OpenItem) => { setEditOpen(null); try { const c = await insertOpenItem({ title: o.title, description: o.description || undefined, owner: o.owner, category: o.category }); setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
   const saveProjectRelations = async (projectId: string) => {
-    // Save meeting links
-    try { await setProjectMeetings(projectId, Array.from(projLinkedMeetingIds)) } catch {}
+    await setProjectMeetings(projectId, Array.from(projLinkedMeetingIds))
     // Create new todos from queue
     for (const td of projTodoQueue) {
-      try {
-        const c = await insertTodo({ title: td.title, description: td.description || undefined, assignee: td.assignee, priority: td.priority, due_date: td.dueDate || undefined } as any)
-        await updateTodoFull(c.id, { project_id: projectId, start_date: td.startDate, duration_days: td.durationDays } as any)
-        setTodos(prev => [{ ...td, id: c.id, projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev])
-      } catch {}
+      const c = await insertTodo({ title: td.title, description: td.description || undefined, assignee: td.assignee, priority: td.priority, due_date: td.dueDate || undefined } as any)
+      await updateTodoFull(c.id, { project_id: projectId, start_date: td.startDate, duration_days: td.durationDays } as any)
     }
-    // Link selected existing todos (if not already linked)
+    // Remove links that were deselected in the project dialog.
+    for (const todo of todos.filter(todo => todo.projectId === projectId && !projLinkedTodoIds.has(todo.id))) {
+      await updateTodoFull(todo.id, { project_id: null } as any)
+    }
+    // Link selected existing todos (if not already linked).
     for (const todoId of projLinkedTodoIds) {
       const todo = todos.find(t => t.id === todoId)
       if (todo && todo.projectId !== projectId) {
-        try { await updateTodoFull(todoId, { project_id: projectId } as any); setTodos(prev => prev.map(t => t.id === todoId ? { ...t, projectId } : t)) } catch {}
+        await updateTodoFull(todoId, { project_id: projectId } as any)
       }
     }
-    setProjTodoQueue([]); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set())
   }
   const handleSaveProject = async (p: DbProject) => {
+    setProjectMutationError(null)
     if (p.id === '__new__') {
-      setEditProject(null)
       try {
         const c = await insertProject({ name: p.name, description: p.description || undefined, start_date: p.start_date || undefined, end_date: p.end_date || undefined, owner: p.owner || undefined, priority: p.priority || 'medium' })
-        setProjects(prev => [...prev, c])
         await saveProjectRelations(c.id)
-      } catch {}
+        await loadData()
+        setEditProject(null)
+        setProjTodoQueue([]); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set())
+      } catch (error) {
+        setProjectMutationError(mutationErrorMessage(error, 'Projekt konnte nicht erstellt werden.'))
+        await loadData()
+      }
     } else {
-      setProjects(prev => prev.map(x => x.id === p.id ? p : x)); setEditProject(null)
-      try { await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status, start_date: p.start_date, end_date: p.end_date, owner: p.owner, priority: p.priority }) } catch {}
-      await saveProjectRelations(p.id)
+      try {
+        await updateProjectFull(p.id, { name: p.name, description: p.description, status: p.status, start_date: p.start_date, end_date: p.end_date, owner: p.owner, priority: p.priority })
+        await saveProjectRelations(p.id)
+        await loadData()
+        setEditProject(null)
+        setProjTodoQueue([]); setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set())
+      } catch (error) {
+        setProjectMutationError(mutationErrorMessage(error, 'Projekt konnte nicht gespeichert werden.'))
+        await loadData()
+      }
     }
   }
   const handleOpenProjectDialog = (p: DbProject | '__new__') => {
+    setProjectMutationError(null)
     if (p === '__new__') {
       setEditProject({ id: '__new__', name: '', description: null, status: 'active', start_date: null, end_date: null, owner: null, priority: 'medium', created_at: '', updated_at: '' } as DbProject)
       setProjLinkedTodoIds(new Set()); setProjLinkedMeetingIds(new Set())
     } else {
       setEditProject({...p})
       setProjLinkedTodoIds(new Set(todos.filter(t => t.projectId === p.id).map(t => t.id)))
-      fetchProjectMeetings(p.id).then(ids => setProjLinkedMeetingIds(new Set(ids))).catch(() => {})
+      fetchProjectMeetings(p.id).then(ids => setProjLinkedMeetingIds(new Set(ids))).catch(error => {
+        setProjectMutationError(mutationErrorMessage(error, 'Meeting-Verknüpfungen konnten nicht geladen werden.'))
+      })
     }
     setProjTodoQueue([]); setProjTodoNewForm(null); setProjTodoSearch(''); setProjTodoPickerOpen(false); setProjMeetingSearch(''); setProjMeetingPickerOpen(false); setProjectInitTodos('')
   }
-  const handleDeleteProject = async (p: DbProject) => { setProjects(prev => prev.filter(x => x.id !== p.id)); try { await deleteProjectDb(p.id) } catch { } }
+  const handleDeleteProject = async (p: DbProject) => {
+    setProjectMutationError(null)
+    try {
+      await deleteProjectDb(p.id)
+      setProjects(prev => prev.filter(x => x.id !== p.id))
+      if (viewProject?.id === p.id) setViewProject(null)
+    } catch (error) {
+      setProjectMutationError(mutationErrorMessage(error, 'Projekt konnte nicht gelöscht werden.'))
+      await loadData()
+    }
+  }
 
   const handleQuickStatusToggle = async (t: Todo) => {
     const newStatus = t.status === 'done' ? 'open' : 'done'
@@ -1326,7 +1371,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2 min-h-7">
-                    <h2 className="text-base font-semibold">Inbox <span data-testid="inbox-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({inboxItems.length} von {tableCounts.inbox})</span></h2>
+                    <h2 className="text-base font-semibold">Inbox <span data-testid="inbox-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({tableCounts.inbox})</span></h2>
                     <div className={`h-7 flex items-center gap-2 transition-opacity ${inboxSelected.size > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} aria-hidden={inboxSelected.size === 0}>
                       <button onClick={handleBulkInboxApprove} className="h-7 w-32 px-2 flex items-center justify-center gap-1 rounded border border-[var(--syn-ok)]/40 hover:bg-[var(--syn-ok)]/10 transition-colors text-xs" style={{ color: 'var(--syn-ok)' }}>✓ {inboxSelected.size} übernehmen</button>
                       <button onClick={handleBulkInboxReject} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${inboxSelected.size} ablehnen`}><TrashIcon /></button>
@@ -1471,7 +1516,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   {(noteFilterDateFrom || noteFilterDateTo) && <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setNoteFilterDateFrom(''); setNoteFilterDateTo('') }}>{'✕'}</Button>}
                 </div>
               </div>
-              <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-220px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+              <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-152px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                 <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className="w-[100px]" />
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
                 <TableHead className="w-[180px] text-xs text-center">Teilnehmer</TableHead>
@@ -1522,7 +1567,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-250px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Aufgabe" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
@@ -1565,7 +1610,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-250px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
@@ -1603,7 +1648,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className="h-8 text-xs w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-250px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <TableHead className="w-10"></TableHead>
                     <SH label="Item" field="title" sort={openSort} onSort={openSort.toggle} />
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
@@ -1655,6 +1700,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   )}
                 </div>
               </div>
+
+              {projectMutationError && (
+                <div role="alert" className="rounded-lg border border-[var(--syn-danger)]/30 bg-[var(--syn-danger-soft)] px-3 py-2 text-xs text-[var(--syn-danger)]">
+                  {projectMutationError}
+                </div>
+              )}
 
               {/* TABLE VIEW */}
               {projectView === 'table' && (
@@ -2228,8 +2279,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                             )}
                             {msg.sources && msg.sources.length > 0 && (
                               <div className="mt-3 pt-2 border-t border-[var(--syn-line)] space-y-1">
-                                <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Notizen ({msg.sources.length})</p>
-                                {msg.sources.map((source) => {
+                                <button data-testid="chat-sources-toggle" type="button" aria-expanded={expandedChatSources.has(i)} onClick={() => setExpandedChatSources(previous => { const next = new Set(previous); next.has(i) ? next.delete(i) : next.add(i); return next })} className="w-full flex items-center justify-between rounded px-1 py-1 text-[10px] uppercase tracking-wide hover:bg-[var(--syn-hover)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>
+                                  <span>Notizen ({msg.sources.length})</span><span aria-hidden="true">{expandedChatSources.has(i) ? '▴' : '▾'}</span>
+                                </button>
+                                {expandedChatSources.has(i) && msg.sources.map((source) => {
                                   const meeting = getMeeting(source.id)
                                   return (
                                     <button key={source.id} disabled={!meeting} onClick={() => meeting && setViewMeeting(meeting)} className="w-full text-left text-xs flex items-center gap-2 rounded px-2 py-1 transition-colors enabled:hover:bg-[var(--syn-hover)] enabled:hover:text-[var(--syn-accent)] disabled:opacity-50" style={{ color: 'var(--syn-text-muted)' }}>
@@ -2391,22 +2444,22 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       <Dialog open={!!editOpen} onOpenChange={() => setEditOpen(null)}><DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>{editOpen?.id === '__new__' ? 'Neuer offener Punkt' : 'Offenen Punkt bearbeiten'}</DialogTitle></DialogHeader>{editOpen && <div className="space-y-3 pt-2"><Input placeholder="Titel" value={editOpen.title} onChange={e => setEditOpen({...editOpen, title: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><Textarea placeholder="Beschreibung" value={editOpen.description} onChange={e => setEditOpen({...editOpen, description: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /><div className="grid grid-cols-2 gap-3"><Select value={editOpen.owner} onValueChange={v => setEditOpen({...editOpen, owner: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select><Select value={editOpen.category} onValueChange={v => setEditOpen({...editOpen, category: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select></div><Select value={editOpen.status} onValueChange={v => setEditOpen({...editOpen, status: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select><Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" disabled={!editOpen.title.trim()} onClick={() => editOpen.id === '__new__' ? handleCreateOpen(editOpen) : handleSaveOpen(editOpen)}>{editOpen.id === '__new__' ? 'Erstellen' : 'Speichern'}</Button></div>}</DialogContent></Dialog>
 
       {/* Edit Meeting */}
-      <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Meeting bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-3 pt-2">
-        <Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-        <Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+      <Dialog open={!!editMeeting} onOpenChange={() => setEditMeeting(null)}><DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Meeting bearbeiten</DialogTitle></DialogHeader>{editMeeting && <div className="space-y-4 pt-2">
+        <Input value={editMeeting.title} onChange={e => setEditMeeting({...editMeeting, title: e.target.value})} placeholder="Titel" className="h-11 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+        <Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="h-11 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
         <div className="space-y-1.5">
           <div className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Themen</div>
           {editMeeting.topics.map((t, i) => (
             <div key={i} className="flex gap-1">
-              <Input value={t} onChange={e => { const ts = [...editMeeting.topics]; ts[i] = e.target.value; setEditMeeting({...editMeeting, topics: ts}) }} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)] h-7 text-xs flex-1" placeholder={`Thema ${i+1}`} />
-              <button onClick={() => setEditMeeting({...editMeeting, topics: editMeeting.topics.filter((_,j) => j !== i)})} className="w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors text-sm shrink-0" style={{color:'var(--syn-text-faint)'}}>✕</button>
+              <Input value={t} onChange={e => { const ts = [...editMeeting.topics]; ts[i] = e.target.value; setEditMeeting({...editMeeting, topics: ts}) }} className="h-10 bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm flex-1" placeholder={`Thema ${i+1}`} />
+              <button onClick={() => setEditMeeting({...editMeeting, topics: editMeeting.topics.filter((_,j) => j !== i)})} className="w-10 h-10 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors text-sm shrink-0" style={{color:'var(--syn-text-faint)'}}>✕</button>
             </div>
           ))}
           <button onClick={() => setEditMeeting({...editMeeting, topics: [...editMeeting.topics, '']})} className="text-xs px-2 py-1 rounded border border-dashed border-[var(--syn-line)] hover:border-[var(--syn-accent)] hover:text-[var(--syn-accent)] transition-colors w-full" style={{color:'var(--syn-text-faint)'}}>+ Thema hinzufügen</button>
         </div>
-        <Input value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-        <Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={4} className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-        <Input value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" className="bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Teilnehmer</label><Textarea value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" rows={3} className="min-h-[88px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /></div>
+        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Zusammenfassung</label><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={10} className="min-h-[260px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)] leading-relaxed" /></div>
+        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Entscheidungen</label><Textarea value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" rows={5} className="min-h-[140px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /></div>
         <Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button>
       </div>}</DialogContent></Dialog>
 
@@ -2415,6 +2468,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editProject?.id === '__new__' ? 'Neues Projekt' : 'Projekt bearbeiten'}</DialogTitle></DialogHeader>
           {editProject && <div className="space-y-4 pt-2">
+            {projectMutationError && (
+              <div role="alert" className="rounded-lg border border-[var(--syn-danger)]/30 bg-[var(--syn-danger-soft)] px-3 py-2 text-xs text-[var(--syn-danger)]">
+                {projectMutationError}
+              </div>
+            )}
             {/* ── Basis ── */}
             <div>
               <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Projektname *</label>
@@ -2429,7 +2487,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 <label className="text-xs font-medium" style={{ color: 'var(--syn-text-muted)' }}>Status</label>
                 <Select value={editProject.status} onValueChange={v => setEditProject({...editProject, status: v})}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="active">Aktiv</SelectItem><SelectItem value="completed">Abgeschlossen</SelectItem><SelectItem value="on_hold">Pausiert</SelectItem></SelectContent>
+                  <SelectContent><SelectItem value="active">Aktiv</SelectItem><SelectItem value="completed">Abgeschlossen</SelectItem><SelectItem value="paused">Pausiert</SelectItem></SelectContent>
                 </Select>
               </div>
               <div>

@@ -289,13 +289,15 @@ export async function triggerMakeWebhook() {
 
 // ── Projects CRUD ──
 export async function updateProjectFull(id: string, fields: Partial<DbProject>) {
-  const { error } = await supabase.from('projects').update(fields).eq('id', id)
+  const { data, error } = await supabase.from('projects').update(fields).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('Projekt konnte nicht gespeichert werden: kein Datensatz wurde geändert.')
 }
 
 export async function deleteProjectDb(id: string) {
-  const { error } = await supabase.from('projects').delete().eq('id', id)
+  const { data, error } = await supabase.from('projects').delete().eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('Projekt konnte nicht gelöscht werden: kein Datensatz wurde entfernt.')
 }
 
 // ── Project–Meeting links ──
@@ -306,8 +308,8 @@ export async function fetchProjectMeetings(projectId: string): Promise<string[]>
 }
 
 export async function setProjectMeetings(projectId: string, meetingIds: string[]): Promise<void> {
-  // Replace all links for this project atomically
-  await supabase.from('project_meetings').delete().eq('project_id', projectId)
+  const { error: deleteError } = await supabase.from('project_meetings').delete().eq('project_id', projectId)
+  if (deleteError) throw deleteError
   if (meetingIds.length > 0) {
     const rows = meetingIds.map(mid => ({ project_id: projectId, meeting_id: mid }))
     const { error } = await supabase.from('project_meetings').insert(rows)
