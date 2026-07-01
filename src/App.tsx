@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { MultiSelectFilter } from '@/components/MultiSelectFilter'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { DateRange } from 'react-day-picker'
@@ -417,12 +418,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     return () => window.removeEventListener('beforeunload', saveScroll)
   }, [])
   const [loading, setLoading] = useState(true)
-  // Restore scroll position after data finishes loading
+  // Restore scroll position after data finishes loading.
+  // Auf der KI-Seite überspringen wir die Saved-Position und scrollen nach unten,
+  // damit die letzte Antwort sichtbar ist (statt einer veralteten Position).
   useEffect(() => {
     if (!loading && !scrollRestored.current) {
       scrollRestored.current = true
-      const saved = sessionStorage.getItem('mos_scrollY')
-      if (saved) { const y = parseInt(saved, 10); requestAnimationFrame(() => window.scrollTo(0, y)) }
+      const hash = window.location.hash.replace('#', '')
+      if (hash === 'ki') {
+        // KI-Seite: nach unten scrollen (neueste Antwort sichtbar)
+        requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight))
+      } else {
+        const saved = sessionStorage.getItem('mos_scrollY')
+        if (saved) { const y = parseInt(saved, 10); requestAnimationFrame(() => window.scrollTo(0, y)) }
+      }
     }
   }, [loading])
   const [error, setError] = useState<string | null>(null)
@@ -480,20 +489,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   // Filters
   const [todoSearch, setTodoSearch] = useState('')
   const [blockerSearch, setBlockerSearch] = useState('')
-  const [blockerFilterAssignee, setBlockerFilterAssignee] = useState('all')
+  const [blockerFilterAssignee, setBlockerFilterAssignee] = useState<string[]>([])
   const [blockerFilterStatus, setBlockerFilterStatus] = useState('all')
   const [openSearch, setOpenSearch] = useState('')
-  const [openFilterOwner, setOpenFilterOwner] = useState('all')
+  const [openFilterOwner, setOpenFilterOwner] = useState<string[]>([])
   const [openFilterStatus, setOpenFilterStatus] = useState('all')
   const [openFilterCategory, setOpenFilterCategory] = useState('all')
   const [noteSearch, setNoteSearch] = useState('')
   const [logSearch, setLogSearch] = useState('')
   const [projectSearch, setProjectSearch] = useState('')
-  const [todoFilterAssignee, setTodoFilterAssignee] = useState('all')
+  const [todoFilterAssignee, setTodoFilterAssignee] = useState<string[]>([])
   const [todoFilterDue, setTodoFilterDue] = useState('all')
   const [todoFilterStatus, setTodoFilterStatus] = useState('all')
   const [todoFilterProject, setTodoFilterProject] = useState('all')
-  const [noteFilterParticipant, setNoteFilterParticipant] = useState('all')
+  const [noteFilterParticipant, setNoteFilterParticipant] = useState<string[]>([])
   const [noteFilterDateFrom, setNoteFilterDateFrom] = useState('')
   const [noteFilterDateTo, setNoteFilterDateTo] = useState('')
   const [noteDateFilterOpen, setNoteDateFilterOpen] = useState(false)
@@ -665,7 +674,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     if (chatAutoFollow) scrollChatToBottom('smooth')
   }, [chatMessages, chatLoading, chatAutoFollow, scrollChatToBottom])
   useEffect(() => {
-    if (page === 'ki') setTimeout(() => scrollChatToBottom('auto'), 100)
+    if (page === 'ki') setTimeout(() => scrollChatToBottom('auto'), 300)
   }, [page, scrollChatToBottom])
   useEffect(() => {
     if (chatMessages.length === 0) return
@@ -929,7 +938,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           scalingNotice: metadata.scaling_notice?.trim() || undefined,
           model: metadata.model,
           tokens: {
-            input: Number(metadata.cache?.total_input_tokens ?? metadata.usage?.input_tokens ?? 0),
+            input: Number(metadata.cache?.uncached_input_tokens ?? metadata.usage?.input_tokens ?? 0),
             output: Number(metadata.usage?.output_tokens ?? 0),
           },
         }),
@@ -937,12 +946,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         onSources: sources => updateAssistant({ sources: sources.meetings }),
         onDone: done => {
           // done-Event enthält die vollständige usage (inkl. Output-Token).
+          // inputTokens = NUR uncached (cacheWrite/cacheRead werden separat berechnet).
           const outputTokens = Number(done.usage?.output_tokens ?? 0)
-          const inputTokens = Number(done.cache?.total_input_tokens ?? done.usage?.input_tokens ?? 0)
+          const inputTokens = Number(done.cache?.uncached_input_tokens ?? done.usage?.input_tokens ?? 0)
           const cacheWrite = Number(done.cache?.cache_creation_input_tokens ?? 0)
           const cacheRead = Number(done.cache?.cache_read_input_tokens ?? 0)
           updateAssistant(msg => ({
-            tokens: { input: inputTokens, output: outputTokens || msg.tokens?.output || 0 },
+            tokens: { input: inputTokens + cacheWrite + cacheRead, output: outputTokens || msg.tokens?.output || 0 },
             costUsd: computeChatCost(msg.model, inputTokens, outputTokens, cacheWrite, cacheRead),
           }))
           // Metriken neu laden, damit der Monats-Tracker aktuell ist.
@@ -953,7 +963,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       try {
         const result = await askMemory(q, history)
         const usage = result.usage ?? {}
-        const inputTokens = Number(result.cache?.total_input_tokens ?? usage.input_tokens ?? 0)
+        const inputTokens = Number(result.cache?.uncached_input_tokens ?? usage.input_tokens ?? 0)
+        const cacheWrite = Number(result.cache?.cache_creation_input_tokens ?? 0)
+        const cacheRead = Number(result.cache?.cache_read_input_tokens ?? 0)
         const outputTokens = Number(usage.output_tokens ?? 0)
         updateAssistant({
           text: result.answer,
@@ -961,10 +973,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           mode: result.retrieval.mode,
           scalingNotice: result.scaling_notice?.trim() || undefined,
           model: result.model,
-          tokens: { input: inputTokens, output: outputTokens },
-          costUsd: computeChatCost(result.model, inputTokens, outputTokens,
-            Number(result.cache?.cache_creation_input_tokens ?? 0),
-            Number(result.cache?.cache_read_input_tokens ?? 0)),
+          tokens: { input: inputTokens + cacheWrite + cacheRead, output: outputTokens },
+          costUsd: computeChatCost(result.model, inputTokens, outputTokens, cacheWrite, cacheRead),
         })
         refreshMemoryMetrics()
       } catch (fallbackError: unknown) {
@@ -1075,7 +1085,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   // Filtered data — identical logic
   const filteredTodos = useMemo(() => {
     let r = todos.filter(t => textMatch(t, todoSearch || globalSearch))
-    if (todoFilterAssignee !== 'all') r = r.filter(t => t.assignee === todoFilterAssignee)
+    if (todoFilterAssignee.length > 0) r = r.filter(t => todoFilterAssignee.includes(t.assignee))
     if (todoFilterStatus !== 'all') r = r.filter(t => t.status === todoFilterStatus)
     if (todoFilterProject !== 'all') r = r.filter(t => t.projectId === todoFilterProject)
     if (todoFilterDue === 'overdue') r = r.filter(t => t.dueDate && t.dueDate < today && t.status !== 'done')
@@ -1085,20 +1095,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }, [todos, todoSearch, globalSearch, todoFilterAssignee, todoFilterDue, todoFilterStatus, todoFilterProject, todoSort.col, todoSort.dir, today])
   const filteredBlockers = useMemo(() => {
     let r = blockers.filter(b => textMatch(b, blockerSearch || globalSearch))
-    if (blockerFilterAssignee !== 'all') r = r.filter(b => b.reportedBy === blockerFilterAssignee)
+    if (blockerFilterAssignee.length > 0) r = r.filter(b => blockerFilterAssignee.includes(b.reportedBy))
     if (blockerFilterStatus !== 'all') r = r.filter(b => b.status === blockerFilterStatus)
     return blockerSort.col ? sortBy(r, blockerSort.col, blockerSort.dir) : r
   }, [blockers, blockerSearch, globalSearch, blockerFilterAssignee, blockerFilterStatus, blockerSort.col, blockerSort.dir])
   const filteredOpen = useMemo(() => {
     let r = openItems.filter(o => textMatch(o, openSearch || globalSearch))
-    if (openFilterOwner !== 'all') r = r.filter(o => o.owner === openFilterOwner)
+    if (openFilterOwner.length > 0) r = r.filter(o => openFilterOwner.includes(o.owner))
     if (openFilterStatus !== 'all') r = r.filter(o => o.status === openFilterStatus)
     if (openFilterCategory !== 'all') r = r.filter(o => o.category === openFilterCategory)
     return openSort.col ? sortBy(r, openSort.col, openSort.dir) : r
   }, [openItems, openSearch, globalSearch, openFilterOwner, openFilterStatus, openFilterCategory, openSort.col, openSort.dir])
   const filteredNotes = useMemo(() => {
     let r = meetings.filter(m => textMatch(m, noteSearch || globalSearch))
-    if (noteFilterParticipant !== 'all') r = r.filter(m => m.participants.some(p => p.includes(noteFilterParticipant)))
+    if (noteFilterParticipant.length > 0) r = r.filter(m => m.participants.some(p => noteFilterParticipant.includes(p)))
     if (noteFilterDateFrom) r = r.filter(m => m.date >= noteFilterDateFrom)
     if (noteFilterDateTo) r = r.filter(m => m.date <= noteFilterDateTo)
     return noteSort.col ? sortBy(r, noteSort.col, noteSort.dir) : r.sort((a, b) => b.date.localeCompare(a.date))
@@ -1625,7 +1635,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                 </div>
                 <div className="flex items-center gap-2">
                   <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                  <Select value={noteFilterParticipant} onValueChange={setNoteFilterParticipant}><SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Teilnehmer</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                  <MultiSelectFilter selected={noteFilterParticipant} onChange={setNoteFilterParticipant} options={memberNames} allLabel="Alle Teilnehmer" testId="meeting-participant-filter" />
                   {(() => {
                     const activePreset = rangeToPresetKey(noteFilterDateFrom, noteFilterDateTo)
                     const hasFilter = Boolean(noteFilterDateFrom || noteFilterDateTo)
@@ -1737,7 +1747,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={todoSearch} onChange={e => setTodoSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <Select value={todoFilterAssignee} onValueChange={setTodoFilterAssignee}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Mitglieder</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                      <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Alle Mitglieder" triggerWidth="w-[140px]" />
                       <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
                       <Select value={todoFilterStatus} onValueChange={setTodoFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent></Select>
                       {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
@@ -1782,7 +1792,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={blockerSearch} onChange={e => setBlockerSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <Select value={blockerFilterAssignee} onValueChange={setBlockerFilterAssignee}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständige</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                      <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Alle Zuständige" triggerWidth="w-[140px]" />
                       <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                     </div>
                   </div>
@@ -1819,7 +1829,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={openSearch} onChange={e => setOpenSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <Select value={openFilterOwner} onValueChange={setOpenFilterOwner}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständige</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                      <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Alle Zuständige" triggerWidth="w-[140px]" />
                       <Select value={openFilterStatus} onValueChange={setOpenFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select>
                       <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className="h-8 text-xs w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                     </div>
@@ -2413,33 +2423,33 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   <h2 className="text-base font-semibold">KI-Assistent</h2><p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Memory-Antworten aus Meeting-Zusammenfassungen mit verlinkten Quellen.</p>
                 </div>
                 {availableMonths.length > 0 && (
-                  <div className="relative shrink-0">
-                    <button onClick={() => setMetricsOpen(o => !o)} className="h-8 px-3 rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--syn-accent)' }} />
-                      <span className="truncate">{MONTH_LABELS[Number(metricsMonth.slice(5, 7)) - 1]?.slice(0, 3) || metricsMonth}: {currentMonthStats ? formatCost(currentMonthStats.cost) : '$0,00'}</span>
-                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
-                    </button>
-                    {metricsOpen && (
-                      <div className="absolute right-0 top-9 z-20 w-[240px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-bg)] shadow-lg p-2 space-y-2">
-                        <div className="flex items-center gap-1.5">
-                          <select value={metricsMonth} onChange={e => setMetricsMonth(e.target.value)} className="h-7 flex-1 rounded border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs px-2">
-                            {availableMonths.map(mo => <option key={mo} value={mo}>{MONTH_LABELS[Number(mo.slice(5, 7)) - 1]} {mo.slice(0, 4)}</option>)}
-                          </select>
-                        </div>
-                        {currentMonthStats ? (
-                          <div className="space-y-1 px-1 py-1 text-xs">
-                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Fragen</span><span className="font-medium">{currentMonthStats.count}</span></div>
-                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Input-Token</span><span className="font-medium">{formatTokens(currentMonthStats.input)}</span></div>
-                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Output-Token</span><span className="font-medium">{formatTokens(currentMonthStats.output)}</span></div>
-                            <div className="h-px my-1" style={{ background: 'var(--syn-line)' }} />
-                            <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Gesamtkosten</span><span className="font-semibold" style={{ color: 'var(--syn-accent)' }}>{formatCost(currentMonthStats.cost)}</span></div>
-                          </div>
-                        ) : (
-                          <p className="text-xs text-center py-2" style={{ color: 'var(--syn-text-faint)' }}>Keine Daten für diesen Monat</p>
-                        )}
+                  <Popover open={metricsOpen} onOpenChange={setMetricsOpen}>
+                    <PopoverTrigger asChild>
+                      <button className="h-8 px-3 rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--syn-accent)' }} />
+                        <span className="truncate">{MONTH_LABELS[Number(metricsMonth.slice(5, 7)) - 1]?.slice(0, 3) || metricsMonth}: {currentMonthStats ? formatCost(currentMonthStats.cost) : '$0,00'}</span>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-[240px] p-2 space-y-2 border-[var(--syn-line)] bg-[var(--syn-bg)]">
+                      <div className="flex items-center gap-1.5">
+                        <select value={metricsMonth} onChange={e => setMetricsMonth(e.target.value)} className="h-7 flex-1 rounded border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs px-2">
+                          {availableMonths.map(mo => <option key={mo} value={mo}>{MONTH_LABELS[Number(mo.slice(5, 7)) - 1]} {mo.slice(0, 4)}</option>)}
+                        </select>
                       </div>
-                    )}
-                  </div>
+                      {currentMonthStats ? (
+                        <div className="space-y-1 px-1 py-1 text-xs">
+                          <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Fragen</span><span className="font-medium">{currentMonthStats.count}</span></div>
+                          <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Input-Token</span><span className="font-medium">{formatTokens(currentMonthStats.input)}</span></div>
+                          <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Output-Token</span><span className="font-medium">{formatTokens(currentMonthStats.output)}</span></div>
+                          <div className="h-px my-1" style={{ background: 'var(--syn-line)' }} />
+                          <div className="flex justify-between"><span style={{ color: 'var(--syn-text-muted)' }}>Gesamtkosten</span><span className="font-semibold" style={{ color: 'var(--syn-accent)' }}>{formatCost(currentMonthStats.cost)}</span></div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-center py-2" style={{ color: 'var(--syn-text-faint)' }}>Keine Daten für diesen Monat</p>
+                      )}
+                    </PopoverContent>
+                  </Popover>
                 )}
               </div>
               <Card className="glass-card border-[var(--syn-line)] flex-1 flex flex-col min-h-0">
