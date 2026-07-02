@@ -75,6 +75,9 @@ const CAT_LABEL: Record<string, string> = { decision: 'Entscheidung', question: 
 const CAT_ICON: Record<string, string> = { decision: '◉', question: '?', risk: '▲', info: 'ⓘ', general: '○', opportunity: '◆', follow_up: '↩' }
 const MEMBER_ORDER = ['Gleb', 'Niko', 'Mathias', 'Jan Philipp', 'Extern', 'Nicht zugeordnet']
 const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved', 'completed'])
+const FILTER_INPUT_CLASS = 'h-8 w-[160px] text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]'
+const FILTER_TRIGGER_CLASS = 'h-8 w-[160px] text-xs'
+const FILTER_BAR_CLASS = 'flex items-center justify-start gap-2 flex-wrap'
 
 const parseLocalDate = (value: string) => value ? new Date(`${value}T00:00:00`) : undefined
 const toLocalDateValue = (date?: Date) => date
@@ -547,7 +550,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [viewOpen, setViewOpen] = useState<OpenItem | null>(null)
   const [viewProject, setViewProject] = useState<DbProject | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<{ label: string; action: () => void } | null>(null)
-  const [printView, setPrintView] = useState<'kanban' | 'gantt' | null>(null)
+  const [printView, setPrintView] = useState<'table' | 'kanban' | 'gantt' | null>(null)
   const [ganttVisibleCols, setGanttVisibleCols] = useState<string[]>(['project', 'title', 'assignee', 'priority'])
   const [ganttColDropOpen, setGanttColDropOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsedRaw] = useState(() => sessionStorage.getItem('mos_sidebar') === '1')
@@ -1632,14 +1635,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ SITZUNGEN ═══ */}
           {page === 'sitzungen' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center justify-start flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Meetings <span data-testid="meetings-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({tableCounts.meetings})</span></h2>
                   {meetingSelected.size > 0 && <button onClick={handleBulkDeleteMeetings} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${meetingSelected.size} löschen`}><TrashIcon /></button>}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                  <MultiSelectFilter selected={noteFilterParticipant} onChange={setNoteFilterParticipant} options={memberNames} allLabel="Alle Teilnehmer" testId="meeting-participant-filter" />
+                <div className={FILTER_BAR_CLASS}>
+                  <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
+                  <MultiSelectFilter selected={noteFilterParticipant} onChange={setNoteFilterParticipant} options={memberNames} allLabel="Alle Teilnehmer" testId="meeting-participant-filter" triggerWidth="w-[160px]" />
                   {(() => {
                     const activePreset = rangeToPresetKey(noteFilterDateFrom, noteFilterDateTo)
                     const hasFilter = Boolean(noteFilterDateFrom || noteFilterDateTo)
@@ -1787,17 +1790,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {/* TODOS TAB */}
               {actionTab === 'todos' && (
                 <section>
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center justify-start mb-3 flex-wrap gap-3">
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditTodo({ id: '__new__', assignee: 'Nicht zugeordnet', title: '', description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
                       {todoSelected.size > 0 && <button onClick={handleBulkDeleteTodos} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${todoSelected.size} löschen`}><TrashIcon /></button>}
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Input placeholder="Suche..." value={todoSearch} onChange={e => setTodoSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[140px]" />
-                      <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
-                      <Select value={todoFilterStatus} onValueChange={setTodoFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent></Select>
-                      {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
+                    <div className={FILTER_BAR_CLASS}>
+                      <Input placeholder="Suche..." value={todoSearch} onChange={e => setTodoSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
+                      <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[160px]" />
+                      {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
+                      <Select value={todoFilterStatus} onValueChange={setTodoFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent></Select>
+                      <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -1832,15 +1835,15 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {/* BLOCKER TAB */}
               {actionTab === 'blocker' && (
                 <section>
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center justify-start mb-3 flex-wrap gap-3">
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditBlocker({ id: '__new__', reportedBy: 'Nicht zugeordnet', title: '', description: '', status: 'active', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
                       {blockerSelected.size > 0 && <button onClick={handleBulkDeleteBlockers} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${blockerSelected.size} löschen`}><TrashIcon /></button>}
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Input placeholder="Suche..." value={blockerSearch} onChange={e => setBlockerSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[140px]" />
-                      <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
+                    <div className={FILTER_BAR_CLASS}>
+                      <Input placeholder="Suche..." value={blockerSearch} onChange={e => setBlockerSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
+                      <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[160px]" />
+                      <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -1869,16 +1872,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {/* OPEN ITEMS TAB */}
               {actionTab === 'open' && (
                 <section>
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center justify-start mb-3 flex-wrap gap-3">
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditOpen({ id: '__new__', owner: 'Nicht zugeordnet', title: '', description: '', category: 'info', status: 'open', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
                       {openSelected.size > 0 && <button onClick={handleBulkDeleteOpen} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${openSelected.size} löschen`}><TrashIcon /></button>}
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Input placeholder="Suche..." value={openSearch} onChange={e => setOpenSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Zuständig" triggerWidth="w-[140px]" />
-                      <Select value={openFilterStatus} onValueChange={setOpenFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select>
-                      <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className="h-8 text-xs w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
+                    <div className={FILTER_BAR_CLASS}>
+                      <Input placeholder="Suche..." value={openSearch} onChange={e => setOpenSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
+                      <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Zuständig" triggerWidth="w-[160px]" />
+                      <Select value={openFilterStatus} onValueChange={setOpenFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select>
+                      <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -1913,14 +1916,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ PROJEKTE ═══ */}
           {page === 'projekte' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center justify-start flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Projekte</h2>
                   <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => handleOpenProjectDialog('__new__')}>+ Neu</Button>
                   {projectSelected.size > 0 && <button onClick={handleBulkDeleteProjects} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${projectSelected.size} löschen`}><TrashIcon /></button>}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input placeholder="Suche..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
+                <div className={FILTER_BAR_CLASS}>
+                  <Input placeholder="Suche..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
                   <div className="flex border border-[var(--syn-line)] rounded-lg overflow-hidden">
                     {(['table', 'kanban', 'gantt'] as ProjectView[]).map(v => (
                       <button key={v} onClick={() => setProjectView(v)} className={`px-3 py-1.5 text-xs transition-colors ${projectView === v ? 'bg-[var(--syn-accent)] text-white' : 'hover:bg-[var(--syn-hover)]'}`} style={projectView !== v ? { color: 'var(--syn-text-muted)' } : {}}>
@@ -1928,9 +1931,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                       </button>
                     ))}
                   </div>
-                  {(projectView === 'kanban' || projectView === 'gantt') && (
-                    <Button size="sm" variant="outline" className="h-8 text-xs border-[var(--syn-line)] gap-1" onClick={() => setPrintView(projectView as 'kanban' | 'gantt')}>Drucken</Button>
-                  )}
+                  <Button size="sm" variant="outline" className="h-8 text-xs border-[var(--syn-line)] gap-1" onClick={() => setPrintView(projectView)}>Drucken</Button>
                 </div>
               </div>
 
@@ -1991,17 +1992,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
                 return (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Select value={kanbanFilterProject} onValueChange={setKanbanFilterProject}><SelectTrigger className="h-7 text-[10px] w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
-                    <Select value={kanbanFilterAssignee} onValueChange={setKanbanFilterAssignee}><SelectTrigger className="h-7 text-[10px] w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständig</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
-                    <Select value={kanbanGroupBy} onValueChange={v => setKanbanGroupBy(v as KanbanGroupBy)}><SelectTrigger className="h-7 text-[10px] w-[130px]"><SelectValue /></SelectTrigger><SelectContent>
+                  <div className={FILTER_BAR_CLASS}>
+                    <Select value={kanbanFilterProject} onValueChange={setKanbanFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
+                    <Select value={kanbanFilterAssignee} onValueChange={setKanbanFilterAssignee}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständigen</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                    <Select value={kanbanGroupBy} onValueChange={v => setKanbanGroupBy(v as KanbanGroupBy)}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent>
                       <SelectItem value="none">Keine Gruppe</SelectItem>
                       <SelectItem value="project">Gruppe: Projekt</SelectItem>
                       <SelectItem value="assignee">Gruppe: Zuständig</SelectItem>
                     </SelectContent></Select>
-                    <div className="flex items-center h-7 rounded border border-[var(--syn-line)] overflow-hidden">
+                    <div className="flex items-center h-8 w-[160px] rounded border border-[var(--syn-line)] overflow-hidden">
                       <button onClick={() => setKanbanSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="h-full px-1.5 text-[10px] hover:bg-[var(--syn-hover)] border-r border-[var(--syn-line)]" style={{ color: 'var(--syn-text-muted)' }}>{kanbanSortDir === 'asc' ? '↑' : '↓'}</button>
-                      <Select value={kanbanSortKey} onValueChange={v => setKanbanSortKey(v as any)}><SelectTrigger className="h-7 text-[10px] w-[100px] border-0"><SelectValue /></SelectTrigger><SelectContent>
+                      <Select value={kanbanSortKey} onValueChange={v => setKanbanSortKey(v as any)}><SelectTrigger className="h-8 text-xs flex-1 border-0"><SelectValue /></SelectTrigger><SelectContent>
                         <SelectItem value="start">Start</SelectItem><SelectItem value="assignee">Zuständig</SelectItem><SelectItem value="title">Titel</SelectItem><SelectItem value="priority">Priorität</SelectItem><SelectItem value="project">Projekt</SelectItem>
                       </SelectContent></Select>
                     </div>
@@ -2183,26 +2184,26 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   {ganttTodos.length === 0 && todos.filter(t => t.startDate).length === 0 ? (
                     <div className="py-12 text-center text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos mit Startdatum. Bearbeite Todos und setze ein Startdatum und Dauer.</div>
                   ) : (<>
-                    <div className="flex items-center gap-2 mb-3 flex-wrap">
-                      <div className="flex border border-[var(--syn-line)] rounded-lg overflow-hidden mr-2">
-                        {(['month','quarter','year'] as const).map(g => (
-                          <button key={g} onClick={() => setGanttGranularity(g)} className={`px-2.5 py-1 text-[10px] transition-colors ${ganttGranularity === g ? 'bg-[var(--syn-accent)] text-white' : 'hover:bg-[var(--syn-hover)]'}`} style={ganttGranularity !== g ? { color: 'var(--syn-text-muted)' } : {}}>
-                            {g === 'month' ? 'Monat' : g === 'quarter' ? 'Quartal' : 'Jahr'}
-                          </button>
-                        ))}
-                      </div>
-                      <Select value={ganttFilterProject} onValueChange={setGanttFilterProject}><SelectTrigger className="h-7 text-[10px] w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
-                      <Select value={ganttFilterAssignee} onValueChange={setGanttFilterAssignee}><SelectTrigger className="h-7 text-[10px] w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständig</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
-                      <Select value={ganttGroupBy} onValueChange={v => setGanttGroupBy(v as GanttGroupBy)}><SelectTrigger className="h-7 text-[10px] w-[130px]"><SelectValue /></SelectTrigger><SelectContent>
+                    <div className={`${FILTER_BAR_CLASS} mb-3`}>
+                      <Select value={ganttFilterProject} onValueChange={setGanttFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
+                      <Select value={ganttFilterAssignee} onValueChange={setGanttFilterAssignee}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständigen</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                      <Select value={ganttGroupBy} onValueChange={v => setGanttGroupBy(v as GanttGroupBy)}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent>
                         <SelectItem value="none">Keine Gruppe</SelectItem>
                         <SelectItem value="project">Gruppe: Projekt</SelectItem>
                         <SelectItem value="assignee">Gruppe: Zuständig</SelectItem>
                       </SelectContent></Select>
-                      <div className="flex items-center h-7 rounded border border-[var(--syn-line)] overflow-hidden">
+                      <div className="flex items-center h-8 w-[160px] rounded border border-[var(--syn-line)] overflow-hidden">
                         <button onClick={() => setGanttSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="h-full px-1.5 text-[10px] hover:bg-[var(--syn-hover)] border-r border-[var(--syn-line)]" style={{ color: 'var(--syn-text-muted)' }}>{ganttSortDir === 'asc' ? '↑' : '↓'}</button>
-                        <Select value={ganttSortKey} onValueChange={v => setGanttSortKey(v as any)}><SelectTrigger className="h-7 text-[10px] w-[100px] border-0"><SelectValue /></SelectTrigger><SelectContent>
+                        <Select value={ganttSortKey} onValueChange={v => setGanttSortKey(v as any)}><SelectTrigger className="h-8 text-xs flex-1 border-0"><SelectValue /></SelectTrigger><SelectContent>
                           <SelectItem value="start">Start</SelectItem><SelectItem value="assignee">Zuständig</SelectItem><SelectItem value="title">Titel</SelectItem><SelectItem value="priority">Priorität</SelectItem><SelectItem value="project">Projekt</SelectItem>
                         </SelectContent></Select>
+                      </div>
+                      <div className="flex h-8 w-[160px] border border-[var(--syn-line)] rounded-lg overflow-hidden">
+                        {(['month','quarter','year'] as const).map(g => (
+                          <button key={g} onClick={() => setGanttGranularity(g)} className={`flex-1 px-2 py-1 text-[10px] transition-colors ${ganttGranularity === g ? 'bg-[var(--syn-accent)] text-white' : 'hover:bg-[var(--syn-hover)]'}`} style={ganttGranularity !== g ? { color: 'var(--syn-text-muted)' } : {}}>
+                            {g === 'month' ? 'Monat' : g === 'quarter' ? 'Quartal' : 'Jahr'}
+                          </button>
+                        ))}
                       </div>
                       {/* Column visibility dropdown — styled like sort control */}
                       {(() => {
@@ -2353,7 +2354,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ PROTOKOLL ═══ */}
           {page === 'protokoll' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center justify-start flex-wrap gap-3">
                 <div>
                   <div className="flex items-center gap-2 min-h-7">
                     <h2 className="text-base font-semibold">Protokoll</h2>
@@ -2361,9 +2362,9 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                   </div>
                   <p className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>Endgültige Statusänderungen: Erledigt, Beschlossen, Gelöst, Geschlossen</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input placeholder="Suche..." value={logSearch} onChange={e => setLogSearch(e.target.value)} className="h-8 text-xs w-[180px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                  <Select value={logFilterType} onValueChange={setLogFilterType}><SelectTrigger className="h-8 text-xs w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Typen</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem><SelectItem value="meeting">Meetings</SelectItem><SelectItem value="decision">Entscheidung</SelectItem></SelectContent></Select>
+                <div className={FILTER_BAR_CLASS}>
+                  <Input placeholder="Suche..." value={logSearch} onChange={e => setLogSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
+                  <Select value={logFilterType} onValueChange={setLogFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Typen</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem><SelectItem value="meeting">Meetings</SelectItem><SelectItem value="decision">Entscheidung</SelectItem></SelectContent></Select>
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0">
@@ -2985,13 +2986,35 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       {printView && <div className="fixed inset-0 z-[9999] bg-white text-black overflow-auto print-view" style={{ colorScheme: 'light' }}>
         <div className="p-6 print:p-0">
           <div className="flex items-center justify-between mb-6 print:hidden">
-            <h1 className="text-xl font-bold text-black">{printView === 'kanban' ? 'Kanban-Ansicht' : 'Gantt-Ansicht'} — Projekte</h1>
+            <h1 className="text-xl font-bold text-black">{printView === 'table' ? 'Tabellenansicht' : printView === 'kanban' ? 'Kanban-Ansicht' : 'Gantt-Ansicht'} — Projekte</h1>
             <div className="flex gap-2">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs" onClick={() => window.print()}>Drucken</Button>
               <Button size="sm" className="text-xs bg-white hover:bg-gray-100 text-black border border-gray-300" onClick={() => setPrintView(null)}>✕ Schließen</Button>
             </div>
           </div>
           <div className="text-xs text-gray-400 mb-4 print:mb-2 print:block hidden">Gedruckt am {new Date().toLocaleDateString('de-DE')} — Meeting OS</div>
+
+          {printView === 'table' && (
+            <div className="overflow-hidden rounded-lg border border-gray-300">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead className="bg-gray-100 text-gray-600">
+                  <tr><th className="px-3 py-2">Projekt</th><th className="px-3 py-2">Beschreibung</th><th className="px-3 py-2 text-center">Todos</th><th className="px-3 py-2 text-center">Blocker</th><th className="px-3 py-2">Status</th></tr>
+                </thead>
+                <tbody>
+                  {filteredProjects.map(project => (
+                    <tr key={project.id} className="border-t border-gray-200">
+                      <td className="px-3 py-2 font-medium text-black">{project.name}</td>
+                      <td className="px-3 py-2 text-gray-600">{project.description || '—'}</td>
+                      <td className="px-3 py-2 text-center text-gray-600">{todos.filter(todo => todo.projectId === project.id).length}</td>
+                      <td className="px-3 py-2 text-center text-gray-600">{blockers.filter(blocker => blocker.projectId === project.id).length}</td>
+                      <td className="px-3 py-2 text-gray-600">{ST_LABEL[project.status || 'active'] || project.status || '—'}</td>
+                    </tr>
+                  ))}
+                  {filteredProjects.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-gray-400">Keine Projekte</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {printView === 'kanban' && (() => {
             const statuses = ['open', 'in_progress', 'done'] as const
