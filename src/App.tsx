@@ -27,7 +27,6 @@ import {
   insertTodo, insertBlocker, insertOpenItem, supabase,
 
   fetchInboxItems, updateInboxItemPayload, deleteInboxItemDb, approveInboxItem,
-  triggerMakeWebhook, MAKE_WEBHOOK_URL,
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
   askMemory, askMemoryStream,
@@ -1050,7 +1049,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }, [viewMeeting?.id, viewMeeting?.sourceKind])
 
   const handleAblegen = async () => { await loadData() }
-  const handleRefresh = async () => { setRefreshing(true); try { if (MAKE_WEBHOOK_URL) { try { await triggerMakeWebhook() } catch { } await new Promise(r => setTimeout(r, 10000)) } await loadData() } catch (e: any) { setError(e.message) } finally { setRefreshing(false) } }
+  const handleRefresh = async () => { setRefreshing(true); try { await loadData() } catch (e: any) { setError(e.message) } finally { setRefreshing(false) } }
 
   const getMeeting = (id: string | null) => meetings.find(m => m.id === id)
   const getProjectName = (id: string | null) => projects.find(p => p.id === id)?.name || null
@@ -1319,7 +1318,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {error && <span className="text-xs text-[var(--syn-danger)]">{error}</span>}
           <Button size="sm" variant="outline" onClick={handleToggleNightly} className={`text-xs border-[var(--syn-line)] ${nightlyActive ? 'text-[var(--syn-text-muted)]' : 'text-[var(--syn-text-faint)]'}`}>{nightlyActive ? '☾ An' : '☾ Aus'}</Button>
           <Button size="sm" variant="outline" onClick={handleAblegen} className="text-xs border-[var(--syn-line)] text-[var(--syn-text-muted)]">{'↻'} Neu laden</Button>
-          <Button size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white text-xs">{refreshing ? 'Make läuft...' : 'Aktualisieren'}</Button>
+          <Button size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white text-xs">{refreshing ? 'Lädt...' : 'Aktualisieren'}</Button>
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--syn-hover)] transition-colors text-sm" title="Theme wechseln">{theme === 'dark' ? '☀' : '☾'}</button>
         </header>
 

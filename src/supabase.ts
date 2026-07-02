@@ -3,9 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 const SUPABASE_URL = 'https://lghwikeotbkmojyyjglz.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnaHdpa2VvdGJrbW9qeXlqZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTUyNDMsImV4cCI6MjA5MjI3MTI0M30.pyWWro6BNGf_BeBNi3W-IgrTPGOVZymAjemO-ZVO8TM'
 
-// TODO: Ersetze mit deiner Make Webhook URL
-export const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/9lxc5o11p61np3aergy88jsxkrshk7cx'
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // ── Types matching DB schema ──
@@ -284,14 +281,6 @@ export async function toggleNightlyJob(enable: boolean): Promise<string> {
 export async function logActivity(entityType: string, entityId: string, action: string, newValue?: string) {
   const { error } = await supabase.from('activity_log').insert({ entity_type: entityType, entity_id: entityId, action, new_value: newValue || null })
   if (error) console.error('activity log error', error)
-}
-
-// Trigger Make webhook
-export async function triggerMakeWebhook() {
-  if (!MAKE_WEBHOOK_URL) {
-    throw new Error('Make Webhook URL ist noch nicht konfiguriert. Trage sie in src/supabase.ts ein.')
-  }
-  await fetch(MAKE_WEBHOOK_URL, { method: 'POST', mode: 'no-cors' })
 }
 
 // ── Projects CRUD ──
