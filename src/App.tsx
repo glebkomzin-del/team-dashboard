@@ -1711,10 +1711,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                             </button>
                             <span className="text-xs font-medium ml-auto">Zeitraum wählen</span>
                           </div>
-                          {/* Kalender: 2 Monate, kompakt. NUR className + cell-size-Variable,
-                              keine classNames-Overrides (die würden shadcn-Defaults zerstören). */}
+                          {/* Kalender: 2 Monate, kompakt. classNames-Override reduziert nur
+                              das Spacing (gap/mt), die Strukturklassen (flex/w-full) bleiben erhalten. */}
                           <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from}
                             className="[--cell-size:1.5rem] p-2 text-[0.7rem]"
+                            classNames={{
+                              months: 'relative flex flex-col gap-3 md:flex-row',
+                              month: 'flex w-full flex-col gap-2',
+                              week: 'mt-1 flex w-full',
+                              weekday: 'flex-1 select-none rounded-md text-[0.65rem] font-normal text-muted-foreground',
+                              caption_label: 'select-none text-[0.7rem] font-medium',
+                            }}
                           />
                           <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-[var(--syn-line)]">
                             <span className="text-xs text-[var(--syn-text-muted)] truncate">
