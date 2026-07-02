@@ -437,7 +437,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     }
   }, [loading])
   const [error, setError] = useState<string | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
   const [nightlyActive, setNightlyActive] = useState(true)
   const [globalSearch, setGlobalSearch] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
@@ -1048,9 +1047,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     return () => { cancelled = true }
   }, [viewMeeting?.id, viewMeeting?.sourceKind])
 
-  const handleAblegen = async () => { await loadData() }
-  const handleRefresh = async () => { setRefreshing(true); try { await loadData() } catch (e: any) { setError(e.message) } finally { setRefreshing(false) } }
-
   const getMeeting = (id: string | null) => meetings.find(m => m.id === id)
   const getProjectName = (id: string | null) => projects.find(p => p.id === id)?.name || null
 
@@ -1317,8 +1313,6 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           <div className="flex-1" />
           {error && <span className="text-xs text-[var(--syn-danger)]">{error}</span>}
           <Button size="sm" variant="outline" onClick={handleToggleNightly} className={`text-xs border-[var(--syn-line)] ${nightlyActive ? 'text-[var(--syn-text-muted)]' : 'text-[var(--syn-text-faint)]'}`}>{nightlyActive ? '☾ An' : '☾ Aus'}</Button>
-          <Button size="sm" variant="outline" onClick={handleAblegen} className="text-xs border-[var(--syn-line)] text-[var(--syn-text-muted)]">{'↻'} Neu laden</Button>
-          <Button size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white text-xs">{refreshing ? 'Lädt...' : 'Aktualisieren'}</Button>
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--syn-hover)] transition-colors text-sm" title="Theme wechseln">{theme === 'dark' ? '☀' : '☾'}</button>
         </header>
 
