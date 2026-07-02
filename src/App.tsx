@@ -419,15 +419,18 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }, [])
   const [loading, setLoading] = useState(true)
   // Restore scroll position after data finishes loading.
-  // Auf der KI-Seite überspringen wir die Saved-Position und scrollen nach unten,
-  // damit die letzte Antwort sichtbar ist (statt einer veralteten Position).
+  // Auf der KI-Seite überspringen wir die Saved-Position und scrollen den Chat-
+  // Container direkt nach unten (nicht das Window — der Chat hat eigenes overflow).
   useEffect(() => {
     if (!loading && !scrollRestored.current) {
       scrollRestored.current = true
       const hash = window.location.hash.replace('#', '')
       if (hash === 'ki') {
-        // KI-Seite: nach unten scrollen (neueste Antwort sichtbar)
-        requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight))
+        // KI-Seite: Chat-Container nach unten scrollen (sofort + nach Render).
+        // Zwei Stufen, weil localStorage-Historie asynchron geladen wird.
+        requestAnimationFrame(() => { chatScrollRef.current?.scrollTo(0, chatScrollRef.current.scrollHeight); window.scrollTo(0, 0) })
+        setTimeout(() => chatScrollRef.current?.scrollTo(0, chatScrollRef.current.scrollHeight), 200)
+        setTimeout(() => chatScrollRef.current?.scrollTo(0, chatScrollRef.current.scrollHeight), 600)
       } else {
         const saved = sessionStorage.getItem('mos_scrollY')
         if (saved) { const y = parseInt(saved, 10); requestAnimationFrame(() => window.scrollTo(0, y)) }
@@ -673,10 +676,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     setShowChatScrollButton(!atBottom)
   }, [])
   useEffect(() => {
-    if (chatAutoFollow) scrollChatToBottom('smooth')
+    if (chatAutoFollow) scrollChatToBottom(chatLoading ? 'auto' : 'smooth')
   }, [chatMessages, chatLoading, chatAutoFollow, scrollChatToBottom])
+  // Beim Wechsel auf die KI-Seite: zuverlässig nach unten scrollen.
   useEffect(() => {
-    if (page === 'ki') setTimeout(() => scrollChatToBottom('auto'), 300)
+    if (page === 'ki') {
+      setChatAutoFollow(true)
+      const t1 = setTimeout(() => scrollChatToBottom('auto'), 50)
+      const t2 = setTimeout(() => scrollChatToBottom('auto'), 300)
+      return () => { clearTimeout(t1); clearTimeout(t2) }
+    }
   }, [page, scrollChatToBottom])
   useEffect(() => {
     if (chatMessages.length === 0) return
