@@ -507,6 +507,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [noteFilterDateTo, setNoteFilterDateTo] = useState('')
   const [noteDateFilterOpen, setNoteDateFilterOpen] = useState(false)
   const [noteDateDraft, setNoteDateDraft] = useState<DateRange | undefined>()
+  // 'list' = Preset-Auswahl, 'custom' = Kalender für benutzerdefinierten Zeitraum
+  const [noteDateFilterView, setNoteDateFilterView] = useState<'list' | 'custom'>('list')
   const [logFilterType, setLogFilterType] = useState('all')
   const projectFilterStatus = 'all'
   const todoSort = useSortState(); const blockerSort = useSortState(); const openSort = useSortState()
@@ -1662,40 +1664,57 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     return (
                   <Popover open={noteDateFilterOpen} onOpenChange={open => {
                     setNoteDateFilterOpen(open)
-                    if (open) { setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }
+                    if (open) { setNoteDateFilterView('list'); setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }
                   }}>
                     <PopoverTrigger asChild>
                       <button data-testid="meeting-date-filter" className="h-8 w-[160px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${hasFilter ? 'bg-[var(--syn-accent)]' : 'bg-transparent'}`} />
+                        {hasFilter && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--syn-accent)]" />}
                         <span className="truncate text-left flex-1">{triggerLabel}</span>
                         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
                       </button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-auto p-0 overflow-hidden border-[var(--syn-line)] bg-[var(--syn-bg)]">
-                        <div className="p-2.5">
-                          {/* Preset-Quick-Buttons */}
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {MEETING_DATE_PRESETS.map(p => (
-                              <button key={p.key} onClick={() => applyPreset(p.key)} className={`text-[0.7rem] px-2 py-1 rounded transition-colors ${activePreset === p.key ? 'bg-[var(--syn-accent)] text-white' : 'border border-[var(--syn-line)] hover:bg-[var(--syn-hover)]'}`} style={activePreset === p.key ? {} : { color: 'var(--syn-text-muted)' }}>{p.label}</button>
-                            ))}
+                      {noteDateFilterView === 'list' ? (
+                        <div className="w-[188px] p-1.5 space-y-0.5">
+                          {MEETING_DATE_PRESETS.map(p => (
+                            <button key={p.key} onClick={() => applyPreset(p.key)} className={`w-full text-left text-xs px-2.5 py-1.5 rounded transition-colors ${activePreset === p.key ? 'bg-[var(--syn-accent)] text-white' : 'hover:bg-[var(--syn-hover)]'}`}>{p.label}</button>
+                          ))}
+                          <div className="h-px my-1 bg-[var(--syn-line)]" />
+                          <button onClick={() => { setNoteDateFilterView('custom'); setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }} className="w-full text-left text-xs px-2.5 py-1.5 rounded hover:bg-[var(--syn-hover)] flex items-center justify-between" style={{ color: 'var(--syn-text-muted)' }}>
+                            <span>Benutzerdefiniert</span>
+                            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+                          </button>
+                          {hasFilter && !activePreset && (
+                            <div className="text-[10px] px-2.5 pt-1 truncate" style={{ color: 'var(--syn-text-faint)' }}>
+                              {noteFilterDateFrom && noteFilterDateTo ? `${formatShortDate(parseLocalDate(noteFilterDateFrom)!)} – ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}` : noteFilterDateFrom ? `Ab ${formatShortDate(parseLocalDate(noteFilterDateFrom)!)}` : `Bis ${formatShortDate(parseLocalDate(noteFilterDateTo)!)}`}
+                            </div>
+                          )}
+                          {hasFilter && (
+                            <button onClick={() => { resetFilter(); setNoteDateFilterOpen(false) }} className="w-full text-left text-xs px-2.5 py-1.5 rounded hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-danger)' }}>Alle Zeiträume</button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-auto">
+                          <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--syn-line)]">
+                            <button onClick={() => setNoteDateFilterView('list')} className="flex items-center gap-1 text-xs hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-muted)' }}>
+                              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
+                              Zurück
+                            </button>
+                            <span className="text-xs font-medium ml-auto">Zeitraum wählen</span>
                           </div>
-                          {/* Kalender — immer sichtbar, fixe Breite, kein View-Wechsel.
-                              classNames-Override bewusst weggelassen: die shadcn Calendar
-                              mergt eigene Defaults via cn(), ein Partial-Override würde die
-                              essenziellen Layout-Klassen (flex, flex-1) zerstören → Layout-Bruch.
-                              Nur className (äußere Hülle) + cell-size-Variable sind sicher. */}
-                          <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={1} locale={de} defaultMonth={noteDateDraft?.from}
-                            className="[--cell-size:1.75rem] p-1 text-[0.7rem]"
+                          {/* Kalender: 2 Monate, kompakt. NUR className + cell-size-Variable,
+                              keine classNames-Overrides (die würden shadcn-Defaults zerstören). */}
+                          <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from}
+                            className="[--cell-size:1.5rem] p-2 text-[0.7rem]"
                           />
-                          {/* Footer */}
-                          <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-[var(--syn-line)]">
-                            <span className="text-[0.7rem] truncate" style={{ color: 'var(--syn-text-muted)' }}>
+                          <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-[var(--syn-line)]">
+                            <span className="text-xs text-[var(--syn-text-muted)] truncate">
                               {noteDateDraft?.from ? `${formatShortDate(noteDateDraft.from)}${noteDateDraft.to ? ` – ${formatShortDate(noteDateDraft.to)}` : ''}` : 'Alle Meetings'}
                             </span>
-                            {hasFilter && <button onClick={() => { resetFilter() }} className="text-[0.7rem] hover:underline shrink-0" style={{ color: 'var(--syn-danger)' }}>Zurücksetzen</button>}
-                            <Button size="sm" className="h-7 text-[0.7rem] bg-[var(--syn-accent)] text-white ml-auto" onClick={() => { setNoteFilterDateFrom(toLocalDateValue(noteDateDraft?.from)); setNoteFilterDateTo(toLocalDateValue(noteDateDraft?.to)); setNoteDateFilterOpen(false) }}>Übernehmen</Button>
+                            <Button size="sm" className="h-8 bg-[var(--syn-accent)] text-white" onClick={() => { setNoteFilterDateFrom(toLocalDateValue(noteDateDraft?.from)); setNoteFilterDateTo(toLocalDateValue(noteDateDraft?.to)); setNoteDateFilterOpen(false) }}>Übernehmen</Button>
                           </div>
                         </div>
+                      )}
                     </PopoverContent>
                   </Popover>
                     )
