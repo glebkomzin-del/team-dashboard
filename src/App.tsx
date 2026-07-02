@@ -77,7 +77,7 @@ const MEMBER_ORDER = ['Gleb', 'Niko', 'Mathias', 'Jan Philipp', 'Extern', 'Nicht
 const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved', 'completed'])
 const FILTER_INPUT_CLASS = 'h-8 w-[160px] text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]'
 const FILTER_TRIGGER_CLASS = 'h-8 w-[160px] text-xs'
-const FILTER_BAR_CLASS = 'flex items-center justify-start gap-2 flex-wrap'
+const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
 
 const parseLocalDate = (value: string) => value ? new Date(`${value}T00:00:00`) : undefined
 const toLocalDateValue = (date?: Date) => date
@@ -1635,7 +1635,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ SITZUNGEN ═══ */}
           {page === 'sitzungen' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-start flex-wrap gap-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Meetings <span data-testid="meetings-db-count" className="font-normal" style={{ color: 'var(--syn-text-muted)' }}>({tableCounts.meetings})</span></h2>
                   {meetingSelected.size > 0 && <button onClick={handleBulkDeleteMeetings} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${meetingSelected.size} löschen`}><TrashIcon /></button>}
@@ -1790,7 +1790,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {/* TODOS TAB */}
               {actionTab === 'todos' && (
                 <section>
-                  <div className="flex items-center justify-start mb-3 flex-wrap gap-3">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditTodo({ id: '__new__', assignee: 'Nicht zugeordnet', title: '', description: '', status: 'open', priority: 'medium', dueDate: null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
                       {todoSelected.size > 0 && <button onClick={handleBulkDeleteTodos} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${todoSelected.size} löschen`}><TrashIcon /></button>}
@@ -1835,7 +1835,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {/* BLOCKER TAB */}
               {actionTab === 'blocker' && (
                 <section>
-                  <div className="flex items-center justify-start mb-3 flex-wrap gap-3">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditBlocker({ id: '__new__', reportedBy: 'Nicht zugeordnet', title: '', description: '', status: 'active', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
                       {blockerSelected.size > 0 && <button onClick={handleBulkDeleteBlockers} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${blockerSelected.size} löschen`}><TrashIcon /></button>}
@@ -1872,7 +1872,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               {/* OPEN ITEMS TAB */}
               {actionTab === 'open' && (
                 <section>
-                  <div className="flex items-center justify-start mb-3 flex-wrap gap-3">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => setEditOpen({ id: '__new__', owner: 'Nicht zugeordnet', title: '', description: '', category: 'info', status: 'open', meetingId: null, projectId: null, createdAt: '' })}>+ Neu</Button>
                       {openSelected.size > 0 && <button onClick={handleBulkDeleteOpen} className="h-7 w-7 flex items-center justify-center rounded border border-[var(--syn-danger)]/40 hover:bg-[var(--syn-danger)]/10 transition-colors" style={{ color: 'var(--syn-danger)' }} title={`${openSelected.size} löschen`}><TrashIcon /></button>}
@@ -1916,7 +1916,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ PROJEKTE ═══ */}
           {page === 'projekte' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-start flex-wrap gap-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold">Projekte</h2>
                   <Button size="sm" variant="outline" className="h-7 text-xs border-[var(--syn-line)]" onClick={() => handleOpenProjectDialog('__new__')}>+ Neu</Button>
@@ -2354,7 +2354,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {/* ═══ PROTOKOLL ═══ */}
           {page === 'protokoll' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-start flex-wrap gap-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <div className="flex items-center gap-2 min-h-7">
                     <h2 className="text-base font-semibold">Protokoll</h2>
