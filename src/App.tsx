@@ -1713,13 +1713,32 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           {/* Kalender: 2 Monate, kompakt. classNames-Override reduziert nur
                               das Spacing (gap/mt), die Strukturklassen (flex/w-full) bleiben erhalten. */}
                           <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from}
-                            className="[--cell-size:1.5rem] p-2 text-[0.7rem]"
+                            className="[--cell-size:1.5rem] p-2 text-[0.65rem]"
                             classNames={{
                               months: 'relative flex flex-col gap-3 md:flex-row',
-                              month: 'flex w-full flex-col gap-2',
-                              week: 'mt-1 flex w-full',
-                              weekday: 'flex-1 select-none rounded-md text-[0.65rem] font-normal text-muted-foreground',
-                              caption_label: 'select-none text-[0.7rem] font-medium',
+                              month: 'flex w-full flex-col gap-1.5',
+                              week: 'mt-0.5 flex w-full',
+                              weekday: 'flex-1 select-none rounded-md text-[0.6rem] font-normal text-muted-foreground',
+                              caption_label: 'select-none text-[0.65rem] font-medium',
+                            }}
+                            components={{
+                              DayButton: ({ day, modifiers, ...props }: any) => (
+                                <button
+                                  {...props}
+                                  ref={undefined}
+                                  data-day={day.date.toLocaleDateString()}
+                                  className="flex items-center justify-center font-normal leading-none transition-colors rounded-md hover:bg-[var(--syn-hover)]"
+                                  style={{ width: '1.5rem', height: '1.5rem', fontSize: '0.65rem',
+                                    ...(modifiers.selected && !modifiers.range_start && !modifiers.range_end ? { background: 'var(--syn-accent)', color: 'white' } : {}),
+                                    ...((modifiers.range_start || modifiers.range_end) ? { background: 'var(--syn-accent)', color: 'white' } : {}),
+                                    ...(modifiers.range_middle ? { background: 'var(--syn-accent-soft)', color: 'var(--syn-text)', borderRadius: 0 } : {}),
+                                    ...(modifiers.selected && modifiers.range_start ? { borderRadius: '0.25rem 0 0 0.25rem' } : {}),
+                                    ...(modifiers.selected && modifiers.range_end ? { borderRadius: '0 0.25rem 0.25rem 0' } : {}),
+                                  }}
+                                >
+                                  {day.date.getDate()}
+                                </button>
+                              ),
                             }}
                           />
                           <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-[var(--syn-line)]">
@@ -1781,7 +1800,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={todoSearch} onChange={e => setTodoSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Alle Mitglieder" triggerWidth="w-[140px]" />
+                      <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[140px]" />
                       <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
                       <Select value={todoFilterStatus} onValueChange={setTodoFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent></Select>
                       {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
@@ -1826,7 +1845,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={blockerSearch} onChange={e => setBlockerSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Alle Zuständige" triggerWidth="w-[140px]" />
+                      <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[140px]" />
                       <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                     </div>
                   </div>
@@ -1863,7 +1882,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input placeholder="Suche..." value={openSearch} onChange={e => setOpenSearch(e.target.value)} className="h-8 text-xs w-[150px] bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
-                      <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Alle Zuständige" triggerWidth="w-[140px]" />
+                      <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Zuständig" triggerWidth="w-[140px]" />
                       <Select value={openFilterStatus} onValueChange={setOpenFilterStatus}><SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select>
                       <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className="h-8 text-xs w-[130px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                     </div>
