@@ -786,7 +786,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         if (meetingError) throw meetingError
 
         setMeetings(prev => [{ id: c.id, title: c.title, date: c.meeting_date?.split('T')[0] || '', topics: c.topics || [], participants: c.participants || [], summary: c.ai_summary || '', keyDecisions: c.key_decisions || [], sourceKind: 'promoted' }, ...prev.filter(m => m.id !== c.id)])
-        setInboxItems(prev => prev.filter(x => x.id !== item.id))
+        setMeetingLinks(prev => {
+          const nextLink: DbMeetingLink = { source: item.source, meeting_id: c.id, title: c.title, meeting_date: c.meeting_date?.split('T')[0] || null, deleted_at: null }
+          return prev.some(link => link.source === item.source)
+            ? prev.map(link => link.source === item.source ? nextLink : link)
+            : [...prev, nextLink]
+        })
+        setInboxItems(prev => prev
+          .filter(x => x.id !== item.id)
+          .map(x => x.source === item.source && x.entity_type !== 'meeting'
+            ? { ...x, payload: { ...x.payload, meeting_id: c.id, meeting_source: item.source, meeting_title: c.title } }
+            : x))
         return
       }
       await approveInboxItem(item.id, 'approved')
