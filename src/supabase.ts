@@ -321,8 +321,9 @@ export async function fetchInboxItems() {
 }
 
 export async function updateInboxItemPayload(id: string, payload: Record<string, any>) {
-  const { error } = await supabase.from('inbox_items').update({ payload }).eq('id', id)
+  const { data, error } = await supabase.from('inbox_items').update({ payload }).eq('id', id).select('payload').single()
   if (error) throw error
+  return data.payload as Record<string, any>
 }
 
 export async function deleteInboxItemDb(id: string) {

@@ -297,6 +297,8 @@ interface Meeting {
   sourceKind?: 'promoted' | 'pending'
   pendingRawTranscript?: string | null
   topicDetails?: MeetingTopicDetail[]
+  participantsDraft?: string
+  keyDecisionsDraft?: string
 }
 
 function normalizeTopicDetails(topics: unknown): MeetingTopicDetail[] {
@@ -704,9 +706,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleSaveTodo = async (t: Todo) => {
     if (inboxEditModeFor) {
       const payload = { title: t.title, description: t.description, assignee: t.assignee, priority: t.priority, due_date: t.dueDate, status: t.status }
-      setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: { ...x.payload, ...payload } } : x))
-      updateInboxItemPayload(inboxEditModeFor, payload).catch(() => {})
-      setEditTodo(null); setInboxEditModeFor(null); return
+      try {
+        const current = inboxItems.find(item => item.id === inboxEditModeFor)
+        if (!current) throw new Error('Inbox-Eintrag nicht mehr vorhanden')
+        const savedPayload = await updateInboxItemPayload(inboxEditModeFor, { ...current.payload, ...payload })
+        setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: savedPayload } : x))
+        setEditTodo(null); setInboxEditModeFor(null)
+      } catch (e: any) { setError(e.message || 'Änderungen konnten nicht gespeichert werden') }
+      return
     }
     setTodos(prev => prev.map(x => x.id === t.id ? t : x)); setEditTodo(null); try { await updateTodoFull(t.id, { title: t.title, description: t.description, assignee: t.assignee, priority: t.priority, status: t.status, due_date: t.dueDate, start_date: t.startDate, duration_days: t.durationDays, project_id: t.projectId, depends_on: t.dependsOn } as any) } catch { }
   }
@@ -715,9 +722,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleSaveBlocker = async (b: Blocker) => {
     if (inboxEditModeFor) {
       const payload = { title: b.title, description: b.description, reported_by: b.reportedBy, status: b.status }
-      setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: { ...x.payload, ...payload } } : x))
-      updateInboxItemPayload(inboxEditModeFor, payload).catch(() => {})
-      setEditBlocker(null); setInboxEditModeFor(null); return
+      try {
+        const current = inboxItems.find(item => item.id === inboxEditModeFor)
+        if (!current) throw new Error('Inbox-Eintrag nicht mehr vorhanden')
+        const savedPayload = await updateInboxItemPayload(inboxEditModeFor, { ...current.payload, ...payload })
+        setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: savedPayload } : x))
+        setEditBlocker(null); setInboxEditModeFor(null)
+      } catch (e: any) { setError(e.message || 'Änderungen konnten nicht gespeichert werden') }
+      return
     }
     setBlockers(prev => prev.map(x => x.id === b.id ? b : x)); setEditBlocker(null); try { await updateBlockerFull(b.id, { title: b.title, description: b.description, reported_by: b.reportedBy, status: b.status }) } catch { }
   }
@@ -726,9 +738,14 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleSaveOpen = async (o: OpenItem) => {
     if (inboxEditModeFor) {
       const payload = { title: o.title, description: o.description, owner: o.owner, category: o.category, status: o.status }
-      setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: { ...x.payload, ...payload } } : x))
-      updateInboxItemPayload(inboxEditModeFor, payload).catch(() => {})
-      setEditOpen(null); setInboxEditModeFor(null); return
+      try {
+        const current = inboxItems.find(item => item.id === inboxEditModeFor)
+        if (!current) throw new Error('Inbox-Eintrag nicht mehr vorhanden')
+        const savedPayload = await updateInboxItemPayload(inboxEditModeFor, { ...current.payload, ...payload })
+        setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: savedPayload } : x))
+        setEditOpen(null); setInboxEditModeFor(null)
+      } catch (e: any) { setError(e.message || 'Änderungen konnten nicht gespeichert werden') }
+      return
     }
     setOpenItems(prev => prev.map(x => x.id === o.id ? o : x)); setEditOpen(null); try { await updateOpenItemFull(o.id, { title: o.title, description: o.description, owner: o.owner, category: o.category, status: o.status }) } catch { }
   }
@@ -807,7 +824,10 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     } else if (item.entity_type === 'open_item') {
       setEditOpen({ id: 'inbox_' + item.id, owner: p.owner || 'Nicht zugeordnet', title: p.title || '', description: p.description || '', category: p.category || 'info', status: p.status || 'open', meetingId: null, projectId: null, createdAt: '' })
     } else if (item.entity_type === 'meeting') {
-      setEditMeeting({ id: 'inbox_' + item.id, title: p.title || '', date: p.meeting_date || '', topics: (p.topics || []).map((t: any) => typeof t === 'object' && t !== null ? (t.name || '') : String(t || '')).filter(Boolean), participants: p.participants || [], summary: p.ai_summary || '', keyDecisions: p.key_decisions || [] })
+      const topicDetails = normalizeTopicDetails(p.topics)
+      const participants = Array.isArray(p.participants) ? p.participants.map(String) : []
+      const keyDecisions = Array.isArray(p.key_decisions) ? p.key_decisions.map(String) : []
+      setEditMeeting({ id: 'inbox_' + item.id, title: p.title || '', date: p.meeting_date || '', topics: topicDetails.map(topic => topic.name), topicDetails, participants, participantsDraft: participants.join(', '), summary: p.ai_summary || '', keyDecisions, keyDecisionsDraft: keyDecisions.join(', ') })
     }
   }
 
@@ -831,13 +851,24 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     }
   }
   const handleSaveMeeting = async (m: Meeting) => {
+    const participants = (m.participantsDraft ?? m.participants.join(', ')).split(',').map(value => value.trim()).filter(Boolean)
+    const keyDecisions = (m.keyDecisionsDraft ?? m.keyDecisions.join(', ')).split(',').map(value => value.trim()).filter(Boolean)
+    const topicDetails = (m.topicDetails || m.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 })))
+      .map((topic, index) => ({ name: topic.name.trim(), summary: topic.summary.trim(), sequence: index + 1 }))
+      .filter(topic => topic.name)
+    const normalizedMeeting = { ...m, topics: topicDetails.map(topic => topic.name), participants, keyDecisions, topicDetails }
     if (inboxEditModeFor) {
-      const payload = { title: m.title, meeting_date: m.date, topics: m.topics, participants: m.participants, ai_summary: m.summary, key_decisions: m.keyDecisions }
-      setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: { ...x.payload, ...payload } } : x))
-      updateInboxItemPayload(inboxEditModeFor, payload).catch(() => {})
-      setEditMeeting(null); setInboxEditModeFor(null); return
+      const payload = { title: normalizedMeeting.title, meeting_date: normalizedMeeting.date, topics: topicDetails, participants, ai_summary: normalizedMeeting.summary, key_decisions: keyDecisions }
+      try {
+        const current = inboxItems.find(item => item.id === inboxEditModeFor)
+        if (!current) throw new Error('Inbox-Eintrag nicht mehr vorhanden')
+        const savedPayload = await updateInboxItemPayload(inboxEditModeFor, { ...current.payload, ...payload })
+        setInboxItems(prev => prev.map(x => x.id === inboxEditModeFor ? { ...x, payload: savedPayload } : x))
+        setEditMeeting(null); setInboxEditModeFor(null)
+      } catch (e: any) { setError(e.message || 'Änderungen konnten nicht gespeichert werden') }
+      return
     }
-    setMeetings(prev => prev.map(x => x.id === m.id ? m : x)); setEditMeeting(null); try { await updateMeetingFull(m.id, { title: m.title, meeting_date: m.date, topics: m.topics, participants: m.participants, ai_summary: m.summary, key_decisions: m.keyDecisions }) } catch { }
+    setMeetings(prev => prev.map(x => x.id === m.id ? normalizedMeeting : x)); setEditMeeting(null); try { await updateMeetingFull(m.id, { title: normalizedMeeting.title, meeting_date: normalizedMeeting.date, topics: normalizedMeeting.topics, participants, ai_summary: normalizedMeeting.summary, key_decisions: keyDecisions }) } catch { }
   }
   const handleCreateTodo = async (t: Todo) => { setEditTodo(null); try { const c = await insertTodo({ title: t.title, description: t.description || undefined, assignee: t.assignee, priority: t.priority, due_date: t.dueDate || undefined } as any); setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: t.startDate, durationDays: t.durationDays, dependsOn: [], meetingId: null, projectId: t.projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev]); if (t.startDate || t.projectId || t.durationDays > 1) { await updateTodoFull(c.id, { start_date: t.startDate, duration_days: t.durationDays, project_id: t.projectId } as any) } } catch { } }
   const handleCreateBlocker = async (b: Blocker) => { setEditBlocker(null); try { const c = await insertBlocker({ title: b.title, description: b.description || undefined, reported_by: b.reportedBy }); setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
@@ -2613,7 +2644,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             {viewMeeting.keyDecisions.length > 0 && <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Entscheidungen</h3><div className="space-y-1.5">{viewMeeting.keyDecisions.map((d, i) => <div key={i} className="flex items-start gap-2 text-sm"><span style={{ color: 'var(--syn-ok)' }} className="mt-0.5">{'✓'}</span>{d}</div>)}</div></div></>}
             {(() => { const rel = todos.filter(t => t.meetingId === viewMeeting.id); if (!rel.length) return null; return <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Todos</h3><ul className="space-y-1 list-disc list-inside">{rel.map(t => <li key={t.id} className="text-sm"><button onClick={() => { setViewMeeting(null); setViewTodo(t) }} className="hover:text-[var(--syn-accent)]">{t.title}</button><span className="text-xs ml-2" style={{ color: 'var(--syn-text-faint)' }}>({t.assignee})</span></li>)}</ul></div></> })()}
             <Separator className="bg-[var(--syn-line)]" />
-            <div className="flex gap-2"><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const m = viewMeeting; setViewMeeting(null); setEditMeeting({...m}) }}>{'✎'} Bearbeiten</Button><Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewMeeting.title, action: () => { handleDeleteMeeting(viewMeeting); setViewMeeting(null) } })}>{'✕'} Löschen</Button></div>
+            <div className="flex gap-2"><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const m = viewMeeting; setViewMeeting(null); if (m.sourceKind === 'pending') { const inboxItem = inboxItems.find(item => `inbox_${item.id}` === m.id); if (inboxItem) handleInboxEdit(inboxItem); else setError('Inbox-Eintrag nicht mehr vorhanden') } else setEditMeeting({...m, participantsDraft: m.participants.join(', '), keyDecisionsDraft: m.keyDecisions.join(', ')}) }}>{'✎'} Bearbeiten</Button><Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewMeeting.title, action: () => { handleDeleteMeeting(viewMeeting); setViewMeeting(null) } })}>{'✕'} Löschen</Button></div>
           </div>
         </ScrollArea>}</DialogContent>
       </Dialog>
@@ -2724,17 +2755,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         <Input type="date" value={editMeeting.date} onChange={e => setEditMeeting({...editMeeting, date: e.target.value})} className="h-11 bg-[var(--syn-surface-2)] border-[var(--syn-line)]" />
         <div className="space-y-1.5">
           <div className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Themen</div>
-          {editMeeting.topics.map((t, i) => (
-            <div key={i} className="flex gap-1">
-              <Input value={t} onChange={e => { const ts = [...editMeeting.topics]; ts[i] = e.target.value; setEditMeeting({...editMeeting, topics: ts}) }} className="h-10 bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm flex-1" placeholder={`Thema ${i+1}`} />
-              <button onClick={() => setEditMeeting({...editMeeting, topics: editMeeting.topics.filter((_,j) => j !== i)})} className="w-10 h-10 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors text-sm shrink-0" style={{color:'var(--syn-text-faint)'}}>✕</button>
+          {(editMeeting.topicDetails || editMeeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 }))).map((topic, i) => (
+            <div key={i} className="flex gap-1 items-start">
+              <div className="flex-1 space-y-1.5 rounded-lg border border-[var(--syn-line)] p-2">
+                <Input value={topic.name} onChange={e => { const details = [...(editMeeting.topicDetails || editMeeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 })))]; details[i] = { ...details[i], name: e.target.value }; setEditMeeting({...editMeeting, topics: details.map(item => item.name), topicDetails: details}) }} className="h-10 bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm" placeholder={`Thema ${i+1}`} />
+                {inboxEditModeFor && <Textarea value={topic.summary} onChange={e => { const details = [...(editMeeting.topicDetails || [])]; details[i] = { ...details[i], summary: e.target.value }; setEditMeeting({...editMeeting, topicDetails: details}) }} className="min-h-[96px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm leading-relaxed" placeholder="Teil-Summary" />}
+              </div>
+              <button onClick={() => { const details = (editMeeting.topicDetails || editMeeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 }))).filter((_, j) => j !== i).map((item, index) => ({ ...item, sequence: index + 1 })); setEditMeeting({...editMeeting, topics: details.map(item => item.name), topicDetails: details}) }} className="w-10 h-10 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors text-sm shrink-0" style={{color:'var(--syn-text-faint)'}}>✕</button>
             </div>
           ))}
-          <button onClick={() => setEditMeeting({...editMeeting, topics: [...editMeeting.topics, '']})} className="text-xs px-2 py-1 rounded border border-dashed border-[var(--syn-line)] hover:border-[var(--syn-accent)] hover:text-[var(--syn-accent)] transition-colors w-full" style={{color:'var(--syn-text-faint)'}}>+ Thema hinzufügen</button>
+          <button onClick={() => { const details = [...(editMeeting.topicDetails || editMeeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 }))), { name: '', summary: '', sequence: editMeeting.topics.length + 1 }]; setEditMeeting({...editMeeting, topics: details.map(item => item.name), topicDetails: details}) }} className="text-xs px-2 py-1 rounded border border-dashed border-[var(--syn-line)] hover:border-[var(--syn-accent)] hover:text-[var(--syn-accent)] transition-colors w-full" style={{color:'var(--syn-text-faint)'}}>+ Thema hinzufügen</button>
         </div>
-        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Teilnehmer</label><Textarea value={editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participants: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Teilnehmer (kommagetrennt)" rows={3} className="min-h-[88px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /></div>
+        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Teilnehmer</label><Textarea value={editMeeting.participantsDraft ?? editMeeting.participants.join(', ')} onChange={e => setEditMeeting({...editMeeting, participantsDraft: e.target.value})} placeholder="Teilnehmer (kommagetrennt)" rows={3} className="min-h-[88px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /></div>
         <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Zusammenfassung</label><Textarea value={editMeeting.summary} onChange={e => setEditMeeting({...editMeeting, summary: e.target.value})} placeholder="Zusammenfassung" rows={10} className="min-h-[260px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)] leading-relaxed" /></div>
-        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Entscheidungen</label><Textarea value={editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} placeholder="Entscheidungen (kommagetrennt)" rows={5} className="min-h-[140px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /></div>
+        <div className="space-y-1.5"><label className="text-xs font-medium" style={{color:'var(--syn-text-muted)'}}>Entscheidungen</label><Textarea value={editMeeting.keyDecisionsDraft ?? editMeeting.keyDecisions.join(', ')} onChange={e => setEditMeeting({...editMeeting, keyDecisionsDraft: e.target.value})} placeholder="Entscheidungen (kommagetrennt)" rows={5} className="min-h-[140px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)]" /></div>
         <Button className="w-full bg-[var(--syn-accent)] hover:bg-[var(--syn-accent-strong)] text-white" onClick={() => handleSaveMeeting(editMeeting)}>Speichern</Button>
       </div>}</DialogContent></Dialog>
 
