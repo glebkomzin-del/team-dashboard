@@ -446,13 +446,20 @@ export interface AskMemoryStreamHandlers {
   onDone?: (done: { usage?: Record<string, unknown>; cache?: Record<string, unknown> }) => void
 }
 
+async function requireAccessToken(): Promise<string> {
+  const session = await getSession()
+  if (!session?.access_token) throw new Error('Authentication required')
+  return session.access_token
+}
+
 export async function askMemory(question: string, history: { role: string; text: string }[] = []): Promise<AskMemoryResult> {
   console.log('[Ask Memory] Sending question:', question, '| History:', history.length)
+  const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ question, history }),
   })
@@ -470,11 +477,12 @@ export async function askMemory(question: string, history: { role: string; text:
 
 export async function askMemoryStream(question: string, history: { role: string; text: string }[] = [], handlers: AskMemoryStreamHandlers = {}): Promise<void> {
   console.log('[Ask Memory Stream] Sending question:', question, '| History:', history.length)
+  const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ question, history, stream: true }),
   })
@@ -518,11 +526,12 @@ export async function askMemoryStream(question: string, history: { role: string;
 
 export async function semanticSearch(query: string, history: { role: string; text: string }[] = []): Promise<SearchResult> {
   console.log('[KI] Sending query:', query, '| History:', history.length)
+  const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/semantic-search`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ query, match_threshold: 0.25, match_count: 10, history }),
   })
@@ -545,11 +554,12 @@ export async function semanticSearchStream(
   onError: (err: string) => void,
 ): Promise<void> {
   console.log('[KI-Stream] Sending query:', query)
+  const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/semantic-search`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ query, match_threshold: 0.25, match_count: 10, history, stream: true }),
   })
@@ -584,12 +594,12 @@ export async function semanticSearchStream(
 }
 
 export async function triggerBackfillEmbeddings(): Promise<{ embedded: number; errors: number }> {
-  const session = await getSession()
+  const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/backfill-embeddings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
+      'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({}),
   })

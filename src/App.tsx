@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import DOMPurify from 'dompurify'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -227,7 +228,11 @@ function SourceChip({ meeting, deleted = false, onClick }: { meeting: { id: stri
 }
 
 function sanitizeHtml(html: string): string {
-  return html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/on\w+\s*=\s*"[^"]*"/gi, '').replace(/on\w+\s*=\s*'[^']*'/gi, '')
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ['style', 'iframe', 'object', 'embed', 'form'],
+    FORBID_ATTR: ['style'],
+  })
 }
 
 function renderMarkdown(text: string) {
