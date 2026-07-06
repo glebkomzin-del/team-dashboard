@@ -214,6 +214,27 @@ export async function updateMeetingFull(id: string, fields: Partial<DbMeeting>) 
   if (error) throw error
 }
 
+export async function updateMeetingWithTopics(fields: {
+  meetingId: string
+  title: string
+  meetingDate: string
+  participants: string[]
+  aiSummary: string
+  keyDecisions: string[]
+  topics: { name: string; summary: string; sequence: number }[]
+}) {
+  const { error } = await supabase.rpc('update_meeting_with_topics', {
+    p_meeting_id: fields.meetingId,
+    p_title: fields.title,
+    p_meeting_date: fields.meetingDate,
+    p_participants: fields.participants,
+    p_ai_summary: fields.aiSummary,
+    p_key_decisions: fields.keyDecisions,
+    p_topics: fields.topics,
+  })
+  if (error) throw error
+}
+
 // Insert functions
 export async function insertTodo(fields: { title: string; description?: string; assignee: string; priority: string; due_date?: string | null; created_at?: string; meeting_id?: string | null; meeting_source?: string | null }) {
   const { data, error } = await supabase.from('todos').insert(fields).select().single()

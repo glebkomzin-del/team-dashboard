@@ -21,7 +21,7 @@ import {
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
   updateOpenItemStatus, deleteOpenItemDb, deleteMeetingDb,
   deleteActivityLogDb,
-  updateTodoFull, updateBlockerFull, updateOpenItemFull, updateMeetingFull,
+  updateTodoFull, updateBlockerFull, updateOpenItemFull, updateMeetingWithTopics,
   updateProjectFull, deleteProjectDb,
   fetchProjectMeetings, setProjectMeetings,
   insertTodo, insertBlocker, insertOpenItem, supabase,
@@ -843,6 +843,24 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     }
   }
 
+  const openMeetingEditor = async (meeting: Meeting) => {
+    setError(null)
+    try {
+      const details = await fetchMeetingTopics(meeting.id)
+      setEditMeeting({
+        ...meeting,
+        topics: details.length > 0 ? details.map(topic => topic.name) : meeting.topics,
+        topicDetails: details.length > 0
+          ? details.map(topic => ({ name: topic.name, summary: topic.summary || '', sequence: topic.sequence }))
+          : meeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 })),
+        participantsDraft: meeting.participants.join(', '),
+        keyDecisionsDraft: meeting.keyDecisions.join(', '),
+      })
+    } catch (e: any) {
+      setError(e.message || 'Meeting konnte nicht zum Bearbeiten geladen werden')
+    }
+  }
+
   const handleBulkDeleteTodos = async () => { const ids = [...todoSelected]; setTodos(prev => prev.filter(x => !ids.includes(x.id))); setTodoSelected(new Set()); await Promise.all(ids.map(id => deleteTodoDb(id).catch(() => {}))) }
   const handleBulkDeleteBlockers = async () => { const ids = [...blockerSelected]; setBlockers(prev => prev.filter(x => !ids.includes(x.id))); setBlockerSelected(new Set()); await Promise.all(ids.map(id => deleteBlockerDb(id).catch(() => {}))) }
   const handleBulkDeleteOpen = async () => { const ids = [...openSelected]; setOpenItems(prev => prev.filter(x => !ids.includes(x.id))); setOpenSelected(new Set()); await Promise.all(ids.map(id => deleteOpenItemDb(id).catch(() => {}))) }
@@ -880,7 +898,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       } catch (e: any) { setError(e.message || 'Änderungen konnten nicht gespeichert werden') }
       return
     }
-    setMeetings(prev => prev.map(x => x.id === m.id ? normalizedMeeting : x)); setEditMeeting(null); try { await updateMeetingFull(m.id, { title: normalizedMeeting.title, meeting_date: normalizedMeeting.date, topics: normalizedMeeting.topics, participants, ai_summary: normalizedMeeting.summary, key_decisions: keyDecisions }) } catch { }
+    try {
+      await updateMeetingWithTopics({ meetingId: m.id, title: normalizedMeeting.title, meetingDate: normalizedMeeting.date, participants, aiSummary: normalizedMeeting.summary, keyDecisions, topics: topicDetails })
+      setMeetings(prev => prev.map(x => x.id === m.id ? normalizedMeeting : x))
+      setEditMeeting(null)
+    } catch (e: any) { setError(e.message || 'Änderungen konnten nicht gespeichert werden') }
   }
   const handleCreateTodo = async (t: Todo) => { setEditTodo(null); try { const c = await insertTodo({ title: t.title, description: t.description || undefined, assignee: t.assignee, priority: t.priority, due_date: t.dueDate || undefined } as any); setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: t.startDate, durationDays: t.durationDays, dependsOn: [], meetingId: null, projectId: t.projectId, createdAt: new Date().toISOString().split('T')[0] }, ...prev]); if (t.startDate || t.projectId || t.durationDays > 1) { await updateTodoFull(c.id, { start_date: t.startDate, duration_days: t.durationDays, project_id: t.projectId } as any) } } catch { } }
   const handleCreateBlocker = async (b: Blocker) => { setEditBlocker(null); try { const c = await insertBlocker({ title: b.title, description: b.description || undefined, reported_by: b.reportedBy }); setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: new Date().toISOString().split('T')[0] }, ...prev]) } catch { } }
@@ -1143,7 +1165,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       case 'todo': { const t = todos.find(x => x.id === entityId); if (t) setEditTodo({...t}); break }
       case 'blocker': { const b = blockers.find(x => x.id === entityId); if (b) setEditBlocker({...b}); break }
       case 'open_item': { const o = openItems.find(x => x.id === entityId); if (o) setEditOpen({...o}); break }
-      case 'meeting': { const m = meetings.find(x => x.id === entityId); if (m) setEditMeeting({...m}); break }
+      case 'meeting': { const m = meetings.find(x => x.id === entityId); if (m) openMeetingEditor(m); break }
       case 'project': { const p = projects.find(x => x.id === entityId); if (p) handleOpenProjectDialog(p); break }
     }
   }
@@ -1822,7 +1844,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(m) }} className="text-left hover:text-[var(--syn-accent)] leading-snug">{m.title}</button></TableCell>
                     <TableCell><div className="flex flex-col gap-0.5">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] rounded truncate block" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', padding: '1px 6px', maxWidth: '164px' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
                     <TableCell><div className="flex flex-col gap-0.5">{m.topics.slice(0, 5).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit" style={{ padding: '1px 5px' }}>{shortTopic(t)}</Badge>)}{m.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 5}</span>}</div></TableCell>
-                    <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditMeeting({...m})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => openMeetingEditor(m)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
                   </TableRow>
                 ))}
                 {filteredNotes.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}
@@ -2670,7 +2692,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             {viewMeeting.keyDecisions.length > 0 && <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Entscheidungen</h3><div className="space-y-1.5">{viewMeeting.keyDecisions.map((d, i) => <div key={i} className="flex items-start gap-2 text-sm"><span style={{ color: 'var(--syn-ok)' }} className="mt-0.5">{'✓'}</span>{d}</div>)}</div></div></>}
             {(() => { const rel = todos.filter(t => t.meetingId === viewMeeting.id); if (!rel.length) return null; return <><Separator className="bg-[var(--syn-line)]" /><div><h3 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--syn-text-faint)' }}>Todos</h3><ul className="space-y-1 list-disc list-inside">{rel.map(t => <li key={t.id} className="text-sm"><button onClick={() => { setViewMeeting(null); setViewTodo(t) }} className="hover:text-[var(--syn-accent)]">{t.title}</button><span className="text-xs ml-2" style={{ color: 'var(--syn-text-faint)' }}>({t.assignee})</span></li>)}</ul></div></> })()}
             <Separator className="bg-[var(--syn-line)]" />
-            <div className="flex gap-2"><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const m = viewMeeting; setViewMeeting(null); if (m.sourceKind === 'pending') { const inboxItem = inboxItems.find(item => `inbox_${item.id}` === m.id); if (inboxItem) handleInboxEdit(inboxItem); else setError('Inbox-Eintrag nicht mehr vorhanden') } else setEditMeeting({...m, participantsDraft: m.participants.join(', '), keyDecisionsDraft: m.keyDecisions.join(', ')}) }}>{'✎'} Bearbeiten</Button><Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewMeeting.title, action: () => { handleDeleteMeeting(viewMeeting); setViewMeeting(null) } })}>{'✕'} Löschen</Button></div>
+            <div className="flex gap-2"><Button variant="outline" size="sm" className="text-xs border-[var(--syn-line)]" onClick={() => { const m = viewMeeting; setViewMeeting(null); if (m.sourceKind === 'pending') { const inboxItem = inboxItems.find(item => `inbox_${item.id}` === m.id); if (inboxItem) handleInboxEdit(inboxItem); else setError('Inbox-Eintrag nicht mehr vorhanden') } else openMeetingEditor(m) }}>{'✎'} Bearbeiten</Button><Button variant="outline" size="sm" className="text-xs text-[var(--syn-danger)] border-[var(--syn-line)]" onClick={() => setConfirmDelete({ label: viewMeeting.title, action: () => { handleDeleteMeeting(viewMeeting); setViewMeeting(null) } })}>{'✕'} Löschen</Button></div>
           </div>
         </ScrollArea>}</DialogContent>
       </Dialog>
@@ -2785,7 +2807,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
             <div key={i} className="flex gap-1 items-start">
               <div className="flex-1 space-y-1.5 rounded-lg border border-[var(--syn-line)] p-2">
                 <Input value={topic.name} onChange={e => { const details = [...(editMeeting.topicDetails || editMeeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 })))]; details[i] = { ...details[i], name: e.target.value }; setEditMeeting({...editMeeting, topics: details.map(item => item.name), topicDetails: details}) }} className="h-10 bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm" placeholder={`Thema ${i+1}`} />
-                {inboxEditModeFor && <Textarea value={topic.summary} onChange={e => { const details = [...(editMeeting.topicDetails || [])]; details[i] = { ...details[i], summary: e.target.value }; setEditMeeting({...editMeeting, topicDetails: details}) }} className="min-h-[96px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm leading-relaxed" placeholder="Teil-Summary" />}
+                <Textarea value={topic.summary} onChange={e => { const details = [...(editMeeting.topicDetails || [])]; details[i] = { ...details[i], summary: e.target.value }; setEditMeeting({...editMeeting, topicDetails: details}) }} className="min-h-[96px] resize-y bg-[var(--syn-surface-2)] border-[var(--syn-line)] text-sm leading-relaxed" placeholder="Teil-Summary" />
               </div>
               <button onClick={() => { const details = (editMeeting.topicDetails || editMeeting.topics.map((name, index) => ({ name, summary: '', sequence: index + 1 }))).filter((_, j) => j !== i).map((item, index) => ({ ...item, sequence: index + 1 })); setEditMeeting({...editMeeting, topics: details.map(item => item.name), topicDetails: details}) }} className="w-10 h-10 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors text-sm shrink-0" style={{color:'var(--syn-text-faint)'}}>✕</button>
             </div>
