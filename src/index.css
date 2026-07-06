@@ -176,6 +176,15 @@
     background: var(--syn-accent-soft);
     border-color: var(--syn-accent);
   }
+  .source-chip.source-chip-deleted {
+    background: color-mix(in srgb, var(--syn-danger) 10%, transparent);
+    border-color: color-mix(in srgb, var(--syn-danger) 40%, transparent);
+    color: var(--syn-danger);
+  }
+  .source-chip.source-chip-deleted:hover {
+    background: color-mix(in srgb, var(--syn-danger) 16%, transparent);
+    border-color: var(--syn-danger);
+  }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }

@@ -9,13 +9,14 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 export interface DbTeamMember { id: string; name: string; member_type: string; email: string | null }
 export interface DbMeeting { id: string; title: string; meeting_date: string; topics: string[] | null; participants: string[] | null; transcript_url: string | null; ai_summary: string | null; key_decisions: string[] | null; source_file: string | null; raw_transcript?: string | null; created_at: string }
 export interface DbMeetingTopic { id: string; meeting_id: string; name: string; summary: string; sequence: number; created_at: string | null }
-export interface DbTodo { id: string; assignee: string; assignee_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; priority: string; due_date: string | null; completed_at: string | null; created_at: string; updated_at: string }
-export interface DbBlocker { id: string; reported_by: string; reported_by_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; status: string; resolved_at: string | null; resolution_note: string | null; created_at: string; updated_at: string }
-export interface DbOpenItem { id: string; owner: string; owner_id: string | null; meeting_id: string | null; project_id: string | null; title: string; description: string | null; category: string; status: string; closed_at: string | null; created_at: string; updated_at: string }
+export interface DbTodo { id: string; assignee: string; assignee_id: string | null; meeting_id: string | null; meeting_source: string | null; project_id: string | null; title: string; description: string | null; status: string; priority: string; due_date: string | null; completed_at: string | null; created_at: string; updated_at: string }
+export interface DbBlocker { id: string; reported_by: string; reported_by_id: string | null; meeting_id: string | null; meeting_source: string | null; project_id: string | null; title: string; description: string | null; status: string; resolved_at: string | null; resolution_note: string | null; created_at: string; updated_at: string }
+export interface DbOpenItem { id: string; owner: string; owner_id: string | null; meeting_id: string | null; meeting_source: string | null; project_id: string | null; title: string; description: string | null; category: string; status: string; closed_at: string | null; created_at: string; updated_at: string }
 export interface DbActivity { id: string; entity_type: string; entity_id: string; action: string; field_changed: string | null; old_value: string | null; new_value: string | null; changed_by: string | null; note: string | null; meeting_id: string | null; created_at: string }
 export interface DbProject { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; owner: string | null; priority: string; created_at: string; updated_at: string }
-export interface DbDecision { id: string; meeting_id: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
+export interface DbDecision { id: string; meeting_id: string | null; meeting_source: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
 export interface DbInboxItem { id: string; entity_type: 'todo' | 'blocker' | 'open_item' | 'meeting' | 'decision'; payload: Record<string, any>; source: string; status: 'pending' | 'approved' | 'rejected'; created_at: string }
+export interface DbMeetingLink { source: string; meeting_id: string | null; title: string; meeting_date: string | null; deleted_at: string | null }
 export interface DbMemoryMetric { id: number; created_at: string; meeting_count: number; summary_block_tokens: number; cache_write_tokens: number; cache_read_tokens: number; retrieval_mode: string; output_tokens: number; uncached_input_tokens: number; model: string | null; cost_usd: number }
 export interface TableCounts { meetings: number; todos: number; blockers: number; openItems: number; inbox: number }
 
@@ -63,6 +64,12 @@ export async function fetchMeetings() {
     .order('meeting_date', { ascending: false })
   if (error) throw error
   return data as DbMeeting[]
+}
+
+export async function fetchMeetingLinks() {
+  const { data, error } = await supabase.from('meeting_links').select('source,meeting_id,title,meeting_date,deleted_at')
+  if (error) throw error
+  return data as DbMeetingLink[]
 }
 
 export async function fetchMeetingRawTranscript(meetingId: string): Promise<string | null> {
@@ -208,13 +215,13 @@ export async function updateMeetingFull(id: string, fields: Partial<DbMeeting>) 
 }
 
 // Insert functions
-export async function insertTodo(fields: { title: string; description?: string; assignee: string; priority: string; due_date?: string | null; created_at?: string }) {
+export async function insertTodo(fields: { title: string; description?: string; assignee: string; priority: string; due_date?: string | null; created_at?: string; meeting_id?: string | null; meeting_source?: string | null }) {
   const { data, error } = await supabase.from('todos').insert(fields).select().single()
   if (error) throw error
   return data as DbTodo
 }
 
-export async function insertBlocker(fields: { title: string; description?: string; reported_by: string; created_at?: string }) {
+export async function insertBlocker(fields: { title: string; description?: string; reported_by: string; created_at?: string; meeting_id?: string | null; meeting_source?: string | null }) {
   const { data, error } = await supabase.from('blockers').insert(fields).select().single()
   if (error) throw error
   return data as DbBlocker
@@ -226,7 +233,7 @@ export async function insertMeeting(fields: { title: string; meeting_date: strin
   return data as DbMeeting
 }
 
-export async function insertOpenItem(fields: { title: string; description?: string; owner: string; category: string; created_at?: string }) {
+export async function insertOpenItem(fields: { title: string; description?: string; owner: string; category: string; created_at?: string; meeting_id?: string | null; meeting_source?: string | null }) {
   const { data, error } = await supabase.from('open_items').insert(fields).select().single()
   if (error) throw error
   return data as DbOpenItem

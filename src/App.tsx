@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { DateRange } from 'react-day-picker'
 import { de } from 'date-fns/locale'
 import {
-  fetchTeamMembers, fetchMeetings, fetchMeetingRawTranscript, fetchMeetingTopics, fetchTableCounts, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
+  fetchTeamMembers, fetchMeetings, fetchMeetingLinks, fetchMeetingRawTranscript, fetchMeetingTopics, fetchTableCounts, fetchTodos, fetchBlockers, fetchOpenItems, fetchActivityLog,
   fetchMemoryMetrics,
   fetchProjects, insertProject,
   updateTodoStatus, deleteTodoDb, updateBlockerStatus, deleteBlockerDb,
@@ -30,7 +30,7 @@ import {
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
   askMemory, askMemoryStream,
-  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource, type DbMemoryMetric
+  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingLink, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource, type DbMemoryMetric
 } from './supabase'
 
 type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
@@ -216,11 +216,11 @@ function getProjectColor(projectId: string | null, projectIds: string[]): string
   return PROJECT_COLORS[idx >= 0 ? idx % PROJECT_COLORS.length : 0]
 }
 
-function SourceChip({ meeting, onClick }: { meeting: { id: string; title: string } | null; onClick?: () => void }) {
+function SourceChip({ meeting, deleted = false, onClick }: { meeting: { id: string; title: string } | null; deleted?: boolean; onClick?: () => void }) {
   if (!meeting) return null
   const label = meeting.title.length > 18 ? meeting.title.slice(0, 18) + '…' : meeting.title
   return (
-    <button onClick={onClick} className="source-chip inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded text-[10px] transition-colors w-full" title={meeting.title}>
+    <button onClick={onClick} className={`source-chip ${deleted ? 'source-chip-deleted' : ''} inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded text-[10px] transition-colors w-full`} title={deleted ? `${meeting.title} — Meeting gelöscht` : meeting.title}>
       <span className="opacity-60">{'"'}</span><span className="text-center">{label}</span>
     </button>
   )
@@ -282,9 +282,9 @@ function renderMarkdown(text: string) {
 }
 
 // Types
-interface Todo { id: string; assignee: string; title: string; description: string; status: string; priority: string; dueDate: string | null; startDate: string | null; durationDays: number; dependsOn: string[]; meetingId: string | null; projectId: string | null; createdAt: string }
-interface Blocker { id: string; reportedBy: string; title: string; description: string; status: string; meetingId: string | null; projectId: string | null; createdAt: string }
-interface OpenItem { id: string; owner: string; title: string; description: string; category: string; status: string; meetingId: string | null; projectId: string | null; createdAt: string }
+interface Todo { id: string; assignee: string; title: string; description: string; status: string; priority: string; dueDate: string | null; startDate: string | null; durationDays: number; dependsOn: string[]; meetingId: string | null; meetingSource?: string | null; projectId: string | null; createdAt: string }
+interface Blocker { id: string; reportedBy: string; title: string; description: string; status: string; meetingId: string | null; meetingSource?: string | null; projectId: string | null; createdAt: string }
+interface OpenItem { id: string; owner: string; title: string; description: string; category: string; status: string; meetingId: string | null; meetingSource?: string | null; projectId: string | null; createdAt: string }
 interface MeetingTopicDetail { name: string; summary: string; sequence: number }
 interface Meeting {
   id: string
@@ -456,6 +456,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const [blockers, setBlockers] = useState<Blocker[]>([])
   const [openItems, setOpenItems] = useState<OpenItem[]>([])
   const [meetings, setMeetings] = useState<Meeting[]>([])
+  const [meetingLinks, setMeetingLinks] = useState<DbMeetingLink[]>([])
   const [activity, setActivity] = useState<Activity[]>([])
   const [projects, setProjects] = useState<DbProject[]>([])
   const projectIds = useMemo(() => projects.map(p => p.id), [projects])
@@ -602,16 +603,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const loadData = useCallback(async () => {
     try {
       setError(null)
-      const [mems, mtgs, tds, blk, oi, act, prj, inbox, counts] = await Promise.all([
-        fetchTeamMembers(), fetchMeetings(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects(), fetchInboxItems(), fetchTableCounts()
+      const [mems, mtgs, links, tds, blk, oi, act, prj, inbox, counts] = await Promise.all([
+        fetchTeamMembers(), fetchMeetings(), fetchMeetingLinks(), fetchTodos(), fetchBlockers(), fetchOpenItems(), fetchActivityLog(), fetchProjects(), fetchInboxItems(), fetchTableCounts()
       ])
       setInboxItems(inbox)
       setTableCounts(counts)
       setMembers(mems); setProjects(prj)
+      setMeetingLinks(links)
       setMeetings(mtgs.map(m => ({ id: m.id, title: m.title, date: m.meeting_date?.split('T')[0] || '', topics: m.topics || [], participants: m.participants || [], summary: m.ai_summary || '', keyDecisions: m.key_decisions || [], sourceKind: 'promoted' as const })))
-      setTodos(tds.map(t => ({ id: t.id, assignee: t.assignee || 'Nicht zugeordnet', title: t.title, description: t.description || '', status: t.status, priority: t.priority, dueDate: t.due_date, startDate: (t as any).start_date || null, durationDays: (t as any).duration_days || 1, dependsOn: (t as any).depends_on || [], meetingId: t.meeting_id, projectId: (t as any).project_id || null, createdAt: t.created_at?.split('T')[0] || '' })))
-      setBlockers(blk.map(b => ({ id: b.id, reportedBy: b.reported_by || 'Nicht zugeordnet', title: b.title, description: b.description || '', status: b.status, meetingId: b.meeting_id, projectId: (b as any).project_id || null, createdAt: b.created_at?.split('T')[0] || '' })))
-      setOpenItems(oi.map(o => ({ id: o.id, owner: o.owner || 'Nicht zugeordnet', title: o.title, description: o.description || '', category: o.category, status: o.status, meetingId: o.meeting_id, projectId: (o as any).project_id || null, createdAt: o.created_at?.split('T')[0] || '' })))
+      setTodos(tds.map(t => ({ id: t.id, assignee: t.assignee || 'Nicht zugeordnet', title: t.title, description: t.description || '', status: t.status, priority: t.priority, dueDate: t.due_date, startDate: (t as any).start_date || null, durationDays: (t as any).duration_days || 1, dependsOn: (t as any).depends_on || [], meetingId: t.meeting_id, meetingSource: t.meeting_source, projectId: (t as any).project_id || null, createdAt: t.created_at?.split('T')[0] || '' })))
+      setBlockers(blk.map(b => ({ id: b.id, reportedBy: b.reported_by || 'Nicht zugeordnet', title: b.title, description: b.description || '', status: b.status, meetingId: b.meeting_id, meetingSource: b.meeting_source, projectId: (b as any).project_id || null, createdAt: b.created_at?.split('T')[0] || '' })))
+      setOpenItems(oi.map(o => ({ id: o.id, owner: o.owner || 'Nicht zugeordnet', title: o.title, description: o.description || '', category: o.category, status: o.status, meetingId: o.meeting_id, meetingSource: o.meeting_source, projectId: (o as any).project_id || null, createdAt: o.created_at?.split('T')[0] || '' })))
       const todoMap: Record<string, string> = {}; tds.forEach(t => { todoMap[t.id] = t.title })
       const blkMap: Record<string, string> = {}; blk.forEach(b => { blkMap[b.id] = b.title })
       const oiMap: Record<string, string> = {}; oi.forEach(o => { oiMap[o.id] = o.title })
@@ -749,7 +751,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     }
     setOpenItems(prev => prev.map(x => x.id === o.id ? o : x)); setEditOpen(null); try { await updateOpenItemFull(o.id, { title: o.title, description: o.description, owner: o.owner, category: o.category, status: o.status }) } catch { }
   }
-  const handleDeleteMeeting = async (m: Meeting) => { setMeetings(prev => prev.filter(x => x.id !== m.id)); try { await deleteMeetingDb(m.id) } catch { } }
+  const handleDeleteMeeting = async (m: Meeting) => { setMeetings(prev => prev.filter(x => x.id !== m.id)); setMeetingLinks(prev => prev.map(link => link.meeting_id === m.id ? { ...link, deleted_at: new Date().toISOString() } : link)); try { await deleteMeetingDb(m.id) } catch { await loadData().catch(() => {}) } }
   const handleDeleteActivity = async (a: Activity) => {
     setActivity(prev => prev.filter(x => x.id !== a.id))
     try { await deleteActivityLogDb(a.id) } catch { loadData().catch(() => {}) }
@@ -761,16 +763,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     try {
       if (item.entity_type === 'todo') {
         const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
-        const c = await insertTodo({ title: p.title, description: p.description, assignee: p.assignee || 'Nicht zugeordnet', priority: p.priority || 'medium', due_date: p.due_date || null, created_at: srcDate })
-        setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
+        const c = await insertTodo({ title: p.title, description: p.description, assignee: p.assignee || 'Nicht zugeordnet', priority: p.priority || 'medium', due_date: p.due_date || null, created_at: srcDate, meeting_id: p.meeting_id || null, meeting_source: p.meeting_source || item.source || null })
+        setTodos(prev => [{ id: c.id, assignee: c.assignee, title: c.title, description: c.description || '', status: c.status, priority: c.priority, dueDate: c.due_date, startDate: null, durationDays: 1, dependsOn: [], meetingId: c.meeting_id, meetingSource: c.meeting_source, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'blocker') {
         const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
-        const c = await insertBlocker({ title: p.title, description: p.description, reported_by: p.reported_by || 'Nicht zugeordnet', created_at: srcDate })
-        setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
+        const c = await insertBlocker({ title: p.title, description: p.description, reported_by: p.reported_by || 'Nicht zugeordnet', created_at: srcDate, meeting_id: p.meeting_id || null, meeting_source: p.meeting_source || item.source || null })
+        setBlockers(prev => [{ id: c.id, reportedBy: c.reported_by, title: c.title, description: c.description || '', status: c.status, meetingId: c.meeting_id, meetingSource: c.meeting_source, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'open_item') {
         const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
-        const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'info', created_at: srcDate })
-        setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: null, projectId: null, createdAt: srcDate }, ...prev])
+        const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'info', created_at: srcDate, meeting_id: p.meeting_id || null, meeting_source: p.meeting_source || item.source || null })
+        setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: c.meeting_id, meetingSource: c.meeting_source, projectId: null, createdAt: srcDate }, ...prev])
       } else if (item.entity_type === 'meeting') {
         const { data: meetingId, error: promoteError } = await supabase.rpc('promote_inbox_meeting', { p_inbox_id: item.id })
         if (promoteError) throw promoteError
@@ -834,7 +836,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleBulkDeleteTodos = async () => { const ids = [...todoSelected]; setTodos(prev => prev.filter(x => !ids.includes(x.id))); setTodoSelected(new Set()); await Promise.all(ids.map(id => deleteTodoDb(id).catch(() => {}))) }
   const handleBulkDeleteBlockers = async () => { const ids = [...blockerSelected]; setBlockers(prev => prev.filter(x => !ids.includes(x.id))); setBlockerSelected(new Set()); await Promise.all(ids.map(id => deleteBlockerDb(id).catch(() => {}))) }
   const handleBulkDeleteOpen = async () => { const ids = [...openSelected]; setOpenItems(prev => prev.filter(x => !ids.includes(x.id))); setOpenSelected(new Set()); await Promise.all(ids.map(id => deleteOpenItemDb(id).catch(() => {}))) }
-  const handleBulkDeleteMeetings = async () => { const ids = [...meetingSelected]; setMeetings(prev => prev.filter(x => !ids.includes(x.id))); setMeetingSelected(new Set()); await Promise.all(ids.map(id => deleteMeetingDb(id).catch(() => {}))) }
+  const handleBulkDeleteMeetings = async () => { const ids = [...meetingSelected]; setMeetings(prev => prev.filter(x => !ids.includes(x.id))); setMeetingLinks(prev => prev.map(link => link.meeting_id && ids.includes(link.meeting_id) ? { ...link, deleted_at: new Date().toISOString() } : link)); setMeetingSelected(new Set()); const results = await Promise.allSettled(ids.map(id => deleteMeetingDb(id))); if (results.some(result => result.status === 'rejected')) await loadData().catch(() => {}) }
   const handleBulkDeleteActivity = async () => { const ids = [...logSelected]; setActivity(prev => prev.filter(x => !ids.includes(x.id))); setLogSelected(new Set()); await Promise.all(ids.map(id => deleteActivityLogDb(id).catch(() => {}))) }
   const handleBulkDeleteProjects = async () => {
     const ids = [...projectSelected]
@@ -1082,6 +1084,20 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }, [viewMeeting?.id, viewMeeting?.sourceKind])
 
   const getMeeting = (id: string | null) => meetings.find(m => m.id === id)
+  const meetingLinkMap = useMemo(() => new Map(meetingLinks.map(link => [link.source, link])), [meetingLinks])
+  const resolveMeetingReference = (source?: string | null, meetingId?: string | null) => {
+    const link = source ? meetingLinkMap.get(source) : undefined
+    const liveMeeting = getMeeting(meetingId || link?.meeting_id || null)
+    if (liveMeeting) return { meeting: liveMeeting, deleted: false }
+    if (link && (link.deleted_at || link.meeting_id)) return { meeting: { id: link.meeting_id || `deleted_${link.source}`, title: link.title }, deleted: true }
+    return null
+  }
+  const openMeetingReference = (reference: { meeting: { id: string; title: string }; deleted: boolean } | null) => {
+    if (!reference) return
+    if (reference.deleted) { setError('Meeting gelöscht'); return }
+    const meeting = getMeeting(reference.meeting.id)
+    if (meeting) setViewMeeting(meeting)
+  }
   const getProjectName = (id: string | null) => projects.find(p => p.id === id)?.name || null
 
   const kanbanTodosMemo = useMemo(() => {
@@ -1594,7 +1610,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell className={`text-xs ${p.due_date && p.due_date < today && (p.status || 'open') !== 'done' ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!(p.due_date && p.due_date < today && (p.status || 'open') !== 'done') ? {color:'var(--syn-text-muted)'} : {}}>{p.due_date||'—'}</TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const sm = item.source ? sourceFileMap.get(item.source) || null : null; return <SourceChip meeting={sm} onClick={() => { if (sm) setViewMeeting(sm) }} /> })()}</TableCell>
+                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</TableCell>
                           {projects.length > 0 && <TableCell className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>{getProjectName(p.project_id || null) || '—'}</TableCell>}
                           <FC item={item} />
                         </TableRow>
@@ -1621,7 +1637,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const sm = item.source ? sourceFileMap.get(item.source) || null : null; return <SourceChip meeting={sm} onClick={() => { if (sm) setViewMeeting(sm) }} /> })()}</TableCell>
+                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -1651,7 +1667,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const sm = item.source ? sourceFileMap.get(item.source) || null : null; return <SourceChip meeting={sm} onClick={() => { if (sm) setViewMeeting(sm) }} /> })()}</TableCell>
+                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -1853,7 +1869,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell className={`text-xs ${overdue ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!overdue ? { color: 'var(--syn-text-muted)' } : {}}>{t.dueDate || '—'}</TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[t.status]}`}>{ST_LABEL[t.status]}</Badge></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{t.createdAt || '—'}</TableCell>
-                        <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}><SourceChip meeting={getMeeting(t.meetingId) || null} onClick={() => { const m = getMeeting(t.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
+                        <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const reference = resolveMeetingReference(t.meetingSource, t.meetingId); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} /> })()}</TableCell>
                         {projects.length > 0 && <TableCell className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>{getProjectName(t.projectId) || '—'}</TableCell>}
                         <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditTodo({...t})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: t.title, action: () => handleDeleteTodo(t) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${todoSelected.has(t.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={todoSelected.has(t.id)} onChange={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })} /></div></TableCell>
                       </TableRow>
@@ -1891,7 +1907,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={b.reportedBy} /><span className="text-xs">{b.reportedBy}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[b.status]}`}>{ST_LABEL[b.status]}</Badge></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{b.createdAt}</TableCell>
-                        <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}><SourceChip meeting={getMeeting(b.meetingId) || null} onClick={() => { const m = getMeeting(b.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
+                        <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const reference = resolveMeetingReference(b.meetingSource, b.meetingId); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} /> })()}</TableCell>
                         <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditBlocker({...b})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: b.title, action: () => handleDeleteBlocker(b) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${blockerSelected.has(b.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={blockerSelected.has(b.id)} onChange={() => setBlockerSelected(prev => { const n = new Set(prev); n.has(b.id) ? n.delete(b.id) : n.add(b.id); return n })} /></div></TableCell>
                       </TableRow>
                     ))}
@@ -1933,7 +1949,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={o.owner} /><span className="text-xs">{o.owner}</span></div></TableCell>
                         <TableCell><Badge className={`text-[10px] ${ST_STYLE[o.status]}`}>{ST_LABEL[o.status]}</Badge></TableCell>
                         <TableCell className="text-xs" style={{ color: 'var(--syn-text-muted)' }}>{o.createdAt}</TableCell>
-                        <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}><SourceChip meeting={getMeeting(o.meetingId) || null} onClick={() => { const m = getMeeting(o.meetingId); if (m) setViewMeeting(m) }} /></TableCell>
+                        <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const reference = resolveMeetingReference(o.meetingSource, o.meetingId); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} /> })()}</TableCell>
                         <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => setEditOpen({...o})} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: o.title, action: () => handleDeleteOpen(o) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${openSelected.has(o.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={openSelected.has(o.id)} onChange={() => setOpenSelected(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n })} /></div></TableCell>
                       </TableRow>
                     ))}
