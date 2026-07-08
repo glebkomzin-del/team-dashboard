@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = 'https://lghwikeotbkmojyyjglz.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnaHdpa2VvdGJrbW9qeXlqZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTUyNDMsImV4cCI6MjA5MjI3MTI0M30.pyWWro6BNGf_BeBNi3W-IgrTPGOVZymAjemO-ZVO8TM'
+// Konfigurierbar über .env (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY);
+// die Fallbacks halten den Build ohne .env lauffähig (Anon-Key ist öffentlich).
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://lghwikeotbkmojyyjglz.supabase.co'
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnaHdpa2VvdGJrbW9qeXlqZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTUyNDMsImV4cCI6MjA5MjI3MTI0M30.pyWWro6BNGf_BeBNi3W-IgrTPGOVZymAjemO-ZVO8TM'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -267,12 +269,6 @@ export async function signIn(email: string, password: string) {
   return data
 }
 
-export async function signUp(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({ email, password })
-  if (error) throw error
-  return data
-}
-
 export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
@@ -370,19 +366,7 @@ export async function updateDecisionFull(id: string, fields: Partial<DbDecision>
   if (error) throw error
 }
 
-// ── Semantic Search ──
-export interface SearchMatch {
-  entity_type: string
-  entity_id: string
-  content: string
-  similarity: number
-}
-
-export interface SearchResult {
-  answer: string
-  matches: SearchMatch[]
-}
-
+// ── Ask Memory (KI-Assistent) ──
 export interface AskMemoryMeetingSource {
   id: string
   date: string
@@ -425,6 +409,7 @@ export interface AskMemoryResult {
   model: string
   usage: Record<string, unknown>
   cache: Record<string, unknown>
+  cost_usd?: number
   scaling_notice?: string
 }
 
@@ -443,7 +428,7 @@ export interface AskMemoryStreamHandlers {
   onMetadata?: (metadata: AskMemoryStreamMetadata) => void
   onDelta?: (text: string) => void
   onSources?: (sources: AskMemoryResult['sources']) => void
-  onDone?: (done: { usage?: Record<string, unknown>; cache?: Record<string, unknown> }) => void
+  onDone?: (done: { usage?: Record<string, unknown>; cache?: Record<string, unknown>; cost_usd?: number }) => void
 }
 
 async function requireAccessToken(): Promise<string> {
@@ -453,7 +438,6 @@ async function requireAccessToken(): Promise<string> {
 }
 
 export async function askMemory(question: string, history: { role: string; text: string }[] = []): Promise<AskMemoryResult> {
-  console.log('[Ask Memory] Sending question:', question, '| History:', history.length)
   const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
     method: 'POST',
@@ -471,12 +455,10 @@ export async function askMemory(question: string, history: { role: string; text:
   if (typeof data.answer !== 'string' || !Array.isArray(data.sources?.meetings) || typeof data.retrieval?.mode !== 'string') {
     throw new Error('Ask Memory returned an unexpected response shape')
   }
-  console.log('[Ask Memory] Result:', data.answer.slice(0, 100), '| Sources:', data.sources.meetings.length, '| Mode:', data.retrieval.mode)
   return data
 }
 
 export async function askMemoryStream(question: string, history: { role: string; text: string }[] = [], handlers: AskMemoryStreamHandlers = {}): Promise<void> {
-  console.log('[Ask Memory Stream] Sending question:', question, '| History:', history.length)
   const accessToken = await requireAccessToken()
   const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-memory`, {
     method: 'POST',
@@ -524,85 +506,3 @@ export async function askMemoryStream(question: string, history: { role: string;
   if (buffer.trim()) handleEvent(buffer)
 }
 
-export async function semanticSearch(query: string, history: { role: string; text: string }[] = []): Promise<SearchResult> {
-  console.log('[KI] Sending query:', query, '| History:', history.length)
-  const accessToken = await requireAccessToken()
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/semantic-search`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ query, match_threshold: 0.25, match_count: 10, history }),
-  })
-  console.log('[KI] Response status:', res.status)
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Search error: ${err}`)
-  }
-  const data = await res.json() as SearchResult
-  console.log('[KI] Result:', data.answer?.slice(0, 100), '| Matches:', data.matches?.length)
-  return data
-}
-
-export async function semanticSearchStream(
-  query: string,
-  history: { role: string; text: string }[] = [],
-  onMatches: (matches: SearchMatch[]) => void,
-  onDelta: (text: string) => void,
-  onDone: () => void,
-  onError: (err: string) => void,
-): Promise<void> {
-  console.log('[KI-Stream] Sending query:', query)
-  const accessToken = await requireAccessToken()
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/semantic-search`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ query, match_threshold: 0.25, match_count: 10, history, stream: true }),
-  })
-  if (!res.ok) {
-    const err = await res.text()
-    onError(`Search error: ${err}`)
-    return
-  }
-  const reader = res.body!.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ''
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() || ''
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue
-      const data = line.slice(6).trim()
-      if (!data) continue
-      try {
-        const evt = JSON.parse(data)
-        if (evt.type === 'matches') onMatches(evt.matches || [])
-        else if (evt.type === 'delta') onDelta(evt.text)
-        else if (evt.type === 'done') onDone()
-        else if (evt.type === 'error') onError(evt.error)
-      } catch { /* skip */ }
-    }
-  }
-  onDone()
-}
-
-export async function triggerBackfillEmbeddings(): Promise<{ embedded: number; errors: number }> {
-  const accessToken = await requireAccessToken()
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/backfill-embeddings`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({}),
-  })
-  if (!res.ok) throw new Error(`Backfill error: ${await res.text()}`)
-  return await res.json()
-}

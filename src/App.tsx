@@ -31,7 +31,7 @@ import {
   isNightlyJobActive, toggleNightlyJob,
   signIn, signOut, resetPassword, getSession, onAuthStateChange,
   askMemory, askMemoryStream,
-  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingLink, type DbMeetingTopic, type TableCounts, type SearchMatch, type AskMemoryMeetingSource, type DbMemoryMetric
+  type DbTeamMember, type DbProject, type DbInboxItem, type DbMeetingLink, type DbMeetingTopic, type TableCounts, type AskMemoryMeetingSource, type AskMemoryChunkSource, type AskMemoryItemSource, type DbMemoryMetric
 } from './supabase'
 
 type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
@@ -86,10 +86,11 @@ const toLocalDateValue = (date?: Date) => date
   : ''
 const formatShortDate = (date: Date) => date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
-// ── KI-Kostenberechnung (Frontend, identisch zur Backend-Logik) ─────────────
+// ── KI-Kosten-Fallback: greift nur, wenn das Backend (noch) kein cost_usd
+// liefert. cacheWrite = 2x Input wegen 1h-Cache-TTL im Backend. ────────────
 const CHAT_PRICING: Record<string, { input: number; output: number; cacheWrite: number; cacheRead: number }> = {
-  'claude-sonnet-4-6': { input: 3.0, output: 15.0, cacheWrite: 3.75, cacheRead: 0.3 },
-  'claude-sonnet-4-20250514': { input: 3.0, output: 15.0, cacheWrite: 3.75, cacheRead: 0.3 },
+  'claude-sonnet-4-6': { input: 3.0, output: 15.0, cacheWrite: 6.0, cacheRead: 0.3 },
+  'claude-sonnet-4-20250514': { input: 3.0, output: 15.0, cacheWrite: 6.0, cacheRead: 0.3 },
 }
 const CHAT_DEFAULT_PRICING = CHAT_PRICING['claude-sonnet-4-6']
 const computeChatCost = (model: string | undefined, inputTokens: number, outputTokens: number, cacheWrite: number, cacheRead: number): number => {
@@ -347,7 +348,7 @@ function inboxMeetingView(item: DbInboxItem): Meeting {
   }
 }
 interface Activity { id: string; entityType: string; entityId: string; entityTitle: string; action: string; field: string | null; oldValue: string | null; newValue: string | null; meetingId: string | null; timestamp: string }
-interface ChatMessage { role: 'user' | 'assistant'; text: string; matches?: SearchMatch[]; sources?: AskMemoryMeetingSource[]; mode?: string; scalingNotice?: string; timestamp?: number; tokens?: { input: number; output: number }; model?: string; costUsd?: number }
+interface ChatMessage { role: 'user' | 'assistant'; text: string; sources?: AskMemoryMeetingSource[]; chunkSources?: AskMemoryChunkSource[]; itemSources?: AskMemoryItemSource[]; mode?: string; scalingNotice?: string; timestamp?: number; tokens?: { input: number; output: number }; model?: string; costUsd?: number }
 
 export default function App() {
   const [session, setSession] = useState<any>(null)
@@ -480,9 +481,12 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       if (!raw) return []
       const stored: { messages: ChatMessage[]; savedAt: number }[] = JSON.parse(raw)
       const cutoff = Date.now() - CHAT_MAX_AGE_MS
-      const valid = stored.filter(e => e.savedAt > cutoff)
-      if (valid.length < stored.length) localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(valid))
-      return valid.flatMap(e => e.messages)
+      // Pro Nachricht anhand des eigenen Zeitstempels bereinigen — der Eintrags-
+      // savedAt wird bei jedem Speichern erneuert und taugt nicht als Verfallsdatum.
+      const messages = stored
+        .flatMap(e => e.messages.map(m => ({ ...m, timestamp: m.timestamp ?? e.savedAt })))
+        .filter(m => (m.timestamp ?? 0) > cutoff)
+      return messages
     } catch { return [] }
   }
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(loadChatHistory)
@@ -1025,7 +1029,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           },
         }),
         onDelta: delta => updateAssistant(msg => ({ text: `${msg.text}${delta}` })),
-        onSources: sources => updateAssistant({ sources: sources.meetings }),
+        onSources: sources => updateAssistant({ sources: sources.meetings, chunkSources: sources.chunks, itemSources: sources.items }),
         onDone: done => {
           // done-Event enthält die vollständige usage (inkl. Output-Token).
           // inputTokens = NUR uncached (cacheWrite/cacheRead werden separat berechnet).
@@ -1035,7 +1039,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           const cacheRead = Number(done.cache?.cache_read_input_tokens ?? 0)
           updateAssistant(msg => ({
             tokens: { input: inputTokens + cacheWrite + cacheRead, output: outputTokens || msg.tokens?.output || 0 },
-            costUsd: computeChatCost(msg.model, inputTokens, outputTokens, cacheWrite, cacheRead),
+            // Backend-berechnete Kosten bevorzugen; lokale Preisliste nur als Fallback.
+            costUsd: typeof done.cost_usd === 'number' ? done.cost_usd : computeChatCost(msg.model, inputTokens, outputTokens, cacheWrite, cacheRead),
           }))
           // Metriken neu laden, damit der Monats-Tracker aktuell ist.
           refreshMemoryMetrics()
@@ -1052,11 +1057,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         updateAssistant({
           text: result.answer,
           sources: result.sources.meetings,
+          chunkSources: result.sources.chunks,
+          itemSources: result.sources.items,
           mode: result.retrieval.mode,
           scalingNotice: result.scaling_notice?.trim() || undefined,
           model: result.model,
           tokens: { input: inputTokens + cacheWrite + cacheRead, output: outputTokens },
-          costUsd: computeChatCost(result.model, inputTokens, outputTokens, cacheWrite, cacheRead),
+          costUsd: typeof result.cost_usd === 'number' ? result.cost_usd : computeChatCost(result.model, inputTokens, outputTokens, cacheWrite, cacheRead),
         })
         refreshMemoryMetrics()
       } catch (fallbackError: unknown) {
@@ -1379,7 +1386,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
       <div className="flex-1 flex flex-col min-w-0">
         <header className="glass-header border-b border-[var(--syn-line)] h-14 flex items-center px-6 gap-4 shrink-0 sticky top-0 z-20">
           <div ref={searchRef} className="relative">
-            <Input placeholder="Meetings durchsuchen..." value={globalSearch} onChange={e => { setGlobalSearch(e.target.value); setSearchFocused(true) }} onFocus={() => setSearchFocused(true)} onKeyDown={e => { if (e.key === 'Enter' && globalSearch.trim()) { setSearchFocused(false); setPage('textsuche' as any) } if (e.key === 'Escape') setSearchFocused(false) }} className="h-8 text-sm w-72 bg-[var(--syn-surface-2)] border-[var(--syn-line)] pr-8" />
+            <Input placeholder="Meetings durchsuchen..." value={globalSearch} onChange={e => { setGlobalSearch(e.target.value); setSearchFocused(true) }} onFocus={() => setSearchFocused(true)} onKeyDown={e => { if (e.key === 'Enter' && globalSearch.trim()) { setSearchFocused(false); setPage('textsuche') } if (e.key === 'Escape') setSearchFocused(false) }} className="h-8 text-sm w-72 bg-[var(--syn-surface-2)] border-[var(--syn-line)] pr-8" />
             {globalSearch && (
               <button onClick={() => { setGlobalSearch(''); setSearchFocused(false) }} className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center hover:bg-[var(--syn-hover)] transition-colors text-xs" style={{ color: 'var(--syn-text-faint)' }}>✕</button>
             )}
@@ -1391,7 +1398,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <span className="text-xs shrink-0">☰</span><span className="truncate">{m.title}</span><span className="text-[10px] ml-auto shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{m.date}</span>
                   </button>
                 ))}
-                <button onClick={() => { setSearchFocused(false); setPage('textsuche' as any) }} className="w-full px-3 py-2 text-xs text-center hover:bg-[var(--syn-hover)] transition-colors border-t border-[var(--syn-line)]" style={{ color: 'var(--syn-accent)' }}>
+                <button onClick={() => { setSearchFocused(false); setPage('textsuche') }} className="w-full px-3 py-2 text-xs text-center hover:bg-[var(--syn-hover)] transition-colors border-t border-[var(--syn-line)]" style={{ color: 'var(--syn-accent)' }}>
                   Alle Ergebnisse anzeigen →
                 </button>
               </div>
@@ -2559,7 +2566,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                     <PopoverTrigger asChild>
                       <button className="h-8 px-3 rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
                         <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--syn-accent)' }} />
-                        <span className="truncate">{MONTH_LABELS[Number(metricsMonth.slice(5, 7)) - 1]?.slice(0, 3) || metricsMonth}: {currentMonthStats ? formatCost(currentMonthStats.cost) : '$0,00'}</span>
+                        <span className="truncate">{MONTH_LABELS[Number(metricsMonth.slice(5, 7)) - 1]?.slice(0, 3) || metricsMonth}: {currentMonthStats ? formatCost(currentMonthStats.cost) : '$0.00'}</span>
                         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
                       </button>
                     </PopoverTrigger>
@@ -2601,7 +2608,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                         </div>
                       )}
                       {chatMessages.map((msg, i) => {
-                        if (msg.role === 'assistant' && !msg.text && !msg.matches?.length) return null
+                        if (msg.role === 'assistant' && !msg.text) return null
                         const ts = msg.timestamp ? new Date(msg.timestamp) : null
                         const timeStr = ts ? `${String(ts.getDate()).padStart(2,'0')}.${String(ts.getMonth()+1).padStart(2,'0')}.${ts.getFullYear()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : null
                         return (
@@ -2624,24 +2631,16 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                                 {typeof msg.costUsd === 'number' && msg.costUsd > 0 && (<><span>·</span><span title="Kosten">{formatCost(msg.costUsd)}</span></>)}
                               </div>
                             )}
-                            {msg.matches && msg.matches.length > 0 && (
+                            {(() => {
+                              const sourceCount = (msg.sources?.length || 0) + (msg.chunkSources?.length || 0) + (msg.itemSources?.length || 0)
+                              if (sourceCount === 0) return null
+                              const expanded = expandedChatSources.has(i)
+                              return (
                               <div className="mt-3 pt-2 border-t border-[var(--syn-line)] space-y-1">
-                                <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--syn-text-faint)' }}>Quellen ({msg.matches.length})</p>
-                                {msg.matches.slice(0, 5).map((m, j) => (
-                                  <button key={j} onClick={() => openSourceEntity(m.entity_type, m.entity_id)} className="w-full text-left text-xs flex items-center gap-1.5 rounded px-1 py-0.5 -mx-1 transition-colors cursor-pointer hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-text-muted)' }}>
-                                    <Badge variant="outline" className="text-[9px] shrink-0 border-[var(--syn-line)]">{TYPE_LABEL[m.entity_type] || m.entity_type}</Badge>
-                                    <span className="truncate hover:text-[var(--syn-accent)]">{m.content.slice(0, 80)}...</span>
-                                    <span className="text-[10px] shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{Math.round(m.similarity * 100)}%</span>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                            {msg.sources && msg.sources.length > 0 && (
-                              <div className="mt-3 pt-2 border-t border-[var(--syn-line)] space-y-1">
-                                <button data-testid="chat-sources-toggle" type="button" aria-expanded={expandedChatSources.has(i)} onClick={() => setExpandedChatSources(previous => { const next = new Set(previous); next.has(i) ? next.delete(i) : next.add(i); return next })} className="w-full flex items-center justify-between rounded px-1 py-1 text-[10px] uppercase tracking-wide hover:bg-[var(--syn-hover)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>
-                                  <span>Notizen ({msg.sources.length})</span><span aria-hidden="true">{expandedChatSources.has(i) ? '▴' : '▾'}</span>
+                                <button data-testid="chat-sources-toggle" type="button" aria-expanded={expanded} onClick={() => setExpandedChatSources(previous => { const next = new Set(previous); next.has(i) ? next.delete(i) : next.add(i); return next })} className="w-full flex items-center justify-between rounded px-1 py-1 text-[10px] uppercase tracking-wide hover:bg-[var(--syn-hover)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>
+                                  <span>Belege ({sourceCount})</span><span aria-hidden="true">{expanded ? '▴' : '▾'}</span>
                                 </button>
-                                {expandedChatSources.has(i) && msg.sources.map((source) => {
+                                {expanded && msg.sources?.map((source) => {
                                   const meeting = getMeeting(source.id)
                                   return (
                                     <button key={source.id} disabled={!meeting} onClick={() => meeting && setViewMeeting(meeting)} className="w-full text-left text-xs flex items-center gap-2 rounded px-2 py-1 transition-colors enabled:hover:bg-[var(--syn-hover)] enabled:hover:text-[var(--syn-accent)] disabled:opacity-50" style={{ color: 'var(--syn-text-muted)' }}>
@@ -2650,8 +2649,35 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
                                     </button>
                                   )
                                 })}
+                                {expanded && msg.chunkSources?.map((chunk) => {
+                                  const meeting = getMeeting(chunk.meeting_id)
+                                  return (
+                                    <button key={chunk.id} disabled={!meeting} onClick={() => meeting && setViewMeeting(meeting)} className="w-full text-left text-xs flex items-start gap-2 rounded px-2 py-1 transition-colors enabled:hover:bg-[var(--syn-hover)] disabled:opacity-50" style={{ color: 'var(--syn-text-muted)' }} title="Transkript-Beleg — öffnet das Meeting">
+                                      <Badge variant="outline" className="text-[9px] shrink-0 border-[var(--syn-line)]">Transkript</Badge>
+                                      <span className="shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{chunk.meeting_date}{chunk.speaker ? ` · ${chunk.speaker}` : ''}</span>
+                                      <span className="truncate italic">„{chunk.excerpt.slice(0, 90)}…“</span>
+                                    </button>
+                                  )
+                                })}
+                                {expanded && msg.itemSources?.map((item) => {
+                                  const meeting = item.meeting_id ? getMeeting(item.meeting_id) : undefined
+                                  const openItem = () => {
+                                    if (item.entity_type === 'todo' || item.entity_type === 'blocker' || item.entity_type === 'open_item') {
+                                      openSourceEntity(item.entity_type, item.id)
+                                    } else if (meeting) setViewMeeting(meeting)
+                                  }
+                                  return (
+                                    <button key={item.id} onClick={openItem} className="w-full text-left text-xs flex items-center gap-2 rounded px-2 py-1 transition-colors hover:bg-[var(--syn-hover)]" style={{ color: 'var(--syn-text-muted)' }}>
+                                      <Badge variant="outline" className="text-[9px] shrink-0 border-[var(--syn-line)]">{TYPE_LABEL[item.entity_type] || item.entity_type}</Badge>
+                                      <span className="shrink-0" style={{ color: 'var(--syn-text-faint)' }}>{item.meeting_date || item.created_at?.slice(0, 10) || ''}</span>
+                                      <span className="truncate">{item.title}</span>
+                                      {item.status && <span className="text-[10px] shrink-0" style={{ color: 'var(--syn-text-faint)' }}>({ST_LABEL[item.status] || item.status})</span>}
+                                    </button>
+                                  )
+                                })}
                               </div>
-                            )}
+                              )
+                            })()}
                           </div>
                         </div>
                       )})}
