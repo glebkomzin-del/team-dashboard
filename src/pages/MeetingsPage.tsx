@@ -153,7 +153,7 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
                 <TableHead className={`${TABLE_COL.participants} text-xs text-center`}>Teilnehmer</TableHead>
                 <TableHead className={`${TABLE_COL.topics} text-xs text-center`}>Themen</TableHead>
-                <TableHead className={`${TABLE_COL.compactActions} text-xs text-center`}>Anpassen</TableHead>
+                <TableHead className={`${TABLE_COL.actions} text-xs text-center`}>Anpassen</TableHead>
               </TableRow></TableHeader><TableBody>
                 {filteredNotes.map(m => (
                   <TableRow key={m.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${meetingSelected.has(m.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })}>

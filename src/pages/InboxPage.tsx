@@ -247,7 +247,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       <SH2 label="Titel" />
                       <SH2 label="Teilnehmer" className={TABLE_COL.participants} />
                       <SH2 label="Themen" className={TABLE_COL.topics} />
-                      <SH2 label="Anpassen" className={TABLE_COL.compactActions} />
+                      <SH2 label="Anpassen" className={TABLE_COL.actions} />
                     </TableRow></TableHeader><TableBody>
                       {filteredMeetings.map(item => { const p = item.payload; const vm = inboxMeetingView(item); return (
                         <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
