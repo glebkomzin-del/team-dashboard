@@ -1,9 +1,12 @@
 // Gemeinsame Typen, Konstanten, Helfer und Kleinst-Komponenten des Dashboards.
 // Aus App.tsx extrahiert (2026-07-08); Seiten liegen unter src/pages/.
 import { useState, useCallback, useEffect, useRef } from 'react'
+import type { ComponentProps } from 'react'
 import DOMPurify from 'dompurify'
 import { CardContent } from '@/components/ui/card'
+import { Calendar } from '@/components/ui/calendar'
 import { TableHead } from '@/components/ui/table'
+import { de } from 'date-fns/locale'
 import {
   type DbInboxItem,
   type AskMemoryMeetingSource, type AskMemoryChunkSource, type AskMemoryItemSource,
@@ -105,6 +108,48 @@ export const rangeToPresetKey = (from?: string, to?: string): DatePresetKey | un
     if (toLocalDateValue(r.from) === from && toLocalDateValue(r.to) === to) return p.key
   }
   return undefined
+}
+
+export function CompactRangeCalendar({ className = '', classNames, components, ...props }: ComponentProps<typeof Calendar>) {
+  return (
+    <Calendar
+      numberOfMonths={2}
+      locale={de}
+      className={`[--cell-size:1.5rem] p-2 text-[0.65rem] ${className}`.trim()}
+      classNames={{
+        months: 'relative flex flex-col gap-3 md:flex-row',
+        month: 'flex w-full flex-col gap-1.5',
+        week: 'mt-0.5 flex w-full',
+        weekday: 'flex-1 select-none rounded-md text-[0.6rem] font-normal text-muted-foreground',
+        caption_label: 'select-none text-[0.65rem] font-medium',
+        ...classNames,
+      }}
+      components={{
+        DayButton: ({ day, modifiers, ...buttonProps }: any) => (
+          <button
+            {...buttonProps}
+            ref={undefined}
+            data-day={day.date.toLocaleDateString()}
+            className="flex items-center justify-center font-normal leading-none transition-colors rounded-md hover:bg-[var(--syn-hover)]"
+            style={{
+              width: '1.5rem',
+              height: '1.5rem',
+              fontSize: '0.65rem',
+              ...(modifiers.selected && !modifiers.range_start && !modifiers.range_end ? { background: 'var(--syn-accent)', color: 'white' } : {}),
+              ...((modifiers.range_start || modifiers.range_end) ? { background: 'var(--syn-accent)', color: 'white' } : {}),
+              ...(modifiers.range_middle ? { background: 'var(--syn-accent-soft)', color: 'var(--syn-text)', borderRadius: 0 } : {}),
+              ...(modifiers.selected && modifiers.range_start ? { borderRadius: '0.25rem 0 0 0.25rem' } : {}),
+              ...(modifiers.selected && modifiers.range_end ? { borderRadius: '0 0.25rem 0.25rem 0' } : {}),
+            }}
+          >
+            {day.date.getDate()}
+          </button>
+        ),
+        ...components,
+      }}
+      {...props}
+    />
+  )
 }
 
 export function Av({ name }: { name: string }) {

@@ -5,17 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { MultiSelectFilter } from '@/components/MultiSelectFilter'
 import type { DateRange } from 'react-day-picker'
-import { de } from 'date-fns/locale'
 import {
   PRI_LABEL, PRI_STYLE, ST_LABEL, ST_STYLE, CAT_LABEL, CAT_ICON,
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS,
-  Av, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
+  Av, CompactRangeCalendar, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
   type Meeting, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
 import type { DbInboxItem, DbProject, TableCounts } from '../supabase'
@@ -213,7 +211,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
                                 ) : (
                                   <div className="w-auto">
                                     <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--syn-line)]"><button onClick={() => setMeetingDateFilterView('list')} className="flex items-center gap-1 text-xs hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-muted)' }}><svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>Zurück</button><span className="text-xs font-medium ml-auto">Zeitraum wählen</span></div>
-                                    <Calendar mode="range" selected={meetingDateDraft} onSelect={setMeetingDateDraft} numberOfMonths={2} locale={de} defaultMonth={meetingDateDraft?.from} className="[--cell-size:1.5rem] p-2 text-[0.65rem]" />
+                                    <CompactRangeCalendar mode="range" selected={meetingDateDraft} onSelect={setMeetingDateDraft} defaultMonth={meetingDateDraft?.from} />
                                     <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-[var(--syn-line)]"><span className="text-xs text-[var(--syn-text-muted)] truncate">{meetingDateDraft?.from ? `${formatShortDate(meetingDateDraft.from)}${meetingDateDraft.to ? ` – ${formatShortDate(meetingDateDraft.to)}` : ''}` : 'Alle Meetings'}</span><Button size="sm" className="h-8 bg-[var(--syn-accent)] text-white" onClick={() => { setMeetingFilterDateFrom(toLocalDateValue(meetingDateDraft?.from)); setMeetingFilterDateTo(toLocalDateValue(meetingDateDraft?.to)); setMeetingDateFilterOpen(false) }}>Übernehmen</Button></div>
                                   </div>
                                 )}

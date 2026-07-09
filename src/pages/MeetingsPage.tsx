@@ -4,16 +4,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { MultiSelectFilter } from '@/components/MultiSelectFilter'
 import type { DateRange } from 'react-day-picker'
-import { de } from 'date-fns/locale'
 import {
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS,
-  SH, TrashIcon, useSortState, sortBy, textMatch, shortTopic,
+  CompactRangeCalendar, SH, TrashIcon, useSortState, sortBy, textMatch, shortTopic,
   type Meeting,
 } from '../lib/shared'
 import type { TableCounts } from '../supabase'
@@ -130,36 +128,11 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                             </button>
                             <span className="text-xs font-medium ml-auto">Zeitraum wählen</span>
                           </div>
-                          {/* Kalender: 2 Monate, kompakt. classNames-Override reduziert nur
-                              das Spacing (gap/mt), die Strukturklassen (flex/w-full) bleiben erhalten. */}
-                          <Calendar mode="range" selected={noteDateDraft} onSelect={setNoteDateDraft} numberOfMonths={2} locale={de} defaultMonth={noteDateDraft?.from}
-                            className="[--cell-size:1.5rem] p-2 text-[0.65rem]"
-                            classNames={{
-                              months: 'relative flex flex-col gap-3 md:flex-row',
-                              month: 'flex w-full flex-col gap-1.5',
-                              week: 'mt-0.5 flex w-full',
-                              weekday: 'flex-1 select-none rounded-md text-[0.6rem] font-normal text-muted-foreground',
-                              caption_label: 'select-none text-[0.65rem] font-medium',
-                            }}
-                            components={{
-                              DayButton: ({ day, modifiers, ...props }: any) => (
-                                <button
-                                  {...props}
-                                  ref={undefined}
-                                  data-day={day.date.toLocaleDateString()}
-                                  className="flex items-center justify-center font-normal leading-none transition-colors rounded-md hover:bg-[var(--syn-hover)]"
-                                  style={{ width: '1.5rem', height: '1.5rem', fontSize: '0.65rem',
-                                    ...(modifiers.selected && !modifiers.range_start && !modifiers.range_end ? { background: 'var(--syn-accent)', color: 'white' } : {}),
-                                    ...((modifiers.range_start || modifiers.range_end) ? { background: 'var(--syn-accent)', color: 'white' } : {}),
-                                    ...(modifiers.range_middle ? { background: 'var(--syn-accent-soft)', color: 'var(--syn-text)', borderRadius: 0 } : {}),
-                                    ...(modifiers.selected && modifiers.range_start ? { borderRadius: '0.25rem 0 0 0.25rem' } : {}),
-                                    ...(modifiers.selected && modifiers.range_end ? { borderRadius: '0 0.25rem 0.25rem 0' } : {}),
-                                  }}
-                                >
-                                  {day.date.getDate()}
-                                </button>
-                              ),
-                            }}
+                          <CompactRangeCalendar
+                            mode="range"
+                            selected={noteDateDraft}
+                            onSelect={setNoteDateDraft}
+                            defaultMonth={noteDateDraft?.from}
                           />
                           <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-[var(--syn-line)]">
                             <span className="text-xs text-[var(--syn-text-muted)] truncate">
