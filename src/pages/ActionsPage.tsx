@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { MultiSelectFilter } from '@/components/MultiSelectFilter'
 import {
   PRI_LABEL, PRI_RANK, PRI_STYLE, ST_LABEL, ST_STYLE,
-  FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS,
+  FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS, TABLE_COL,
   Av, CategoryBadge, SH, StatusCycleButton, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, useSortState, sortBy, textMatch,
   type ActionTab, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
@@ -125,14 +125,14 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Titel" field="title" sort={todoSort} onSort={todoSort.toggle} />
-                    <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
-                    <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
-                    <SH label="Fällig" field="dueDate" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
-                    <SH label="Status" field="status" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
-                    <SH label="Erstellt" field="createdAt" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs text-center">Quelle</TableHead>
-                    {projects.length > 0 && <TableHead className="w-[120px] text-xs text-center">Projekt</TableHead>}
-                    <TableHead className="w-[90px] text-xs text-center">Anpassen</TableHead>
+                    <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.assignee} />
+                    <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.priority} />
+                    <SH label="Fällig" field="dueDate" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.due} />
+                    <SH label="Status" field="status" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.status} />
+                    <SH label="Erstellt" field="createdAt" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.created} />
+                    <TableHead className={`${TABLE_COL.source} text-xs text-center`}>Quelle</TableHead>
+                    {projects.length > 0 && <TableHead className={`${TABLE_COL.project} text-xs text-center`}>Projekt</TableHead>}
+                    <TableHead className={`${TABLE_COL.actions} text-xs text-center`}>Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredTodos.map(t => { const overdue = t.dueDate && t.dueDate < today && t.status !== 'done'; return (
                       <TableRow key={t.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none ${t.status === 'done' ? 'opacity-40' : ''} ${todoSelected.has(t.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setTodoSelected(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n })}>
@@ -168,11 +168,11 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Titel" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
-                    <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
-                    <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
-                    <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs text-center">Quelle</TableHead>
-                    <TableHead className="w-[90px] text-xs text-center">Anpassen</TableHead>
+                    <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className={TABLE_COL.assignee} />
+                    <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className={TABLE_COL.status} />
+                    <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className={TABLE_COL.created} />
+                    <TableHead className={`${TABLE_COL.source} text-xs text-center`}>Quelle</TableHead>
+                    <TableHead className={`${TABLE_COL.actions} text-xs text-center`}>Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredBlockers.map(b => (
                       <TableRow key={b.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${b.status !== 'active' ? 'opacity-50' : ''} ${blockerSelected.has(b.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setBlockerSelected(prev => { const n = new Set(prev); n.has(b.id) ? n.delete(b.id) : n.add(b.id); return n })}>
@@ -206,12 +206,12 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Titel" field="title" sort={openSort} onSort={openSort.toggle} />
-                    <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
-                    <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className="w-[130px]" />
-                    <SH label="Status" field="status" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
-                    <SH label="Erstellt" field="createdAt" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
-                    <TableHead className="w-[140px] text-xs text-center">Quelle</TableHead>
-                    <TableHead className="w-[90px] text-xs text-center">Anpassen</TableHead>
+                    <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className={TABLE_COL.category} />
+                    <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className={TABLE_COL.assignee} />
+                    <SH label="Status" field="status" sort={openSort} onSort={openSort.toggle} className={TABLE_COL.status} />
+                    <SH label="Erstellt" field="createdAt" sort={openSort} onSort={openSort.toggle} className={TABLE_COL.created} />
+                    <TableHead className={`${TABLE_COL.source} text-xs text-center`}>Quelle</TableHead>
+                    <TableHead className={`${TABLE_COL.actions} text-xs text-center`}>Anpassen</TableHead>
                   </TableRow></TableHeader><TableBody>
                     {filteredOpen.map(o => (
                       <TableRow key={o.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${o.status === 'closed' ? 'opacity-40' : ''} ${openSelected.has(o.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setOpenSelected(prev => { const n = new Set(prev); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n })}>

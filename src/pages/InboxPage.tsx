@@ -12,7 +12,7 @@ import {
   PRI_LABEL, PRI_STYLE, ST_LABEL, ST_STYLE,
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
-  FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS,
+  FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS, TABLE_COL,
   Av, CategoryBadge, CompactRangeCalendar, StatusCycleButton, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
   type Meeting, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
@@ -243,11 +243,11 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH2 label="Datum" className="w-[100px]" />
+                      <SH2 label="Datum" className={TABLE_COL.created} />
                       <SH2 label="Titel" />
-                      <SH2 label="Teilnehmer" className="w-[180px]" />
-                      <SH2 label="Themen" className="w-[260px]" />
-                      <SH2 label="Anpassen" className="w-[80px]" />
+                      <SH2 label="Teilnehmer" className={TABLE_COL.participants} />
+                      <SH2 label="Themen" className={TABLE_COL.topics} />
+                      <SH2 label="Anpassen" className={TABLE_COL.compactActions} />
                     </TableRow></TableHeader><TableBody>
                       {filteredMeetings.map(item => { const p = item.payload; const vm = inboxMeetingView(item); return (
                         <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -276,14 +276,14 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Titel" />
-                      <SH2 label="Zuständig" className="w-[130px]" />
-                      <SH2 label="Priorität" className="w-[100px]" />
-                      <SH2 label="Fällig" className="w-[100px]" />
-                      <SH2 label="Status" className="w-[100px]" />
-                      <SH2 label="Erstellt" className="w-[100px]" />
-                      <SH2 label="Quelle" className="w-[140px]" />
-                      {projects.length > 0 && <SH2 label="Projekt" className="w-[120px]" />}
-                      <SH2 label="Anpassen" className="w-[90px]" />
+                      <SH2 label="Zuständig" className={TABLE_COL.assignee} />
+                      <SH2 label="Priorität" className={TABLE_COL.priority} />
+                      <SH2 label="Fällig" className={TABLE_COL.due} />
+                      <SH2 label="Status" className={TABLE_COL.status} />
+                      <SH2 label="Erstellt" className={TABLE_COL.created} />
+                      <SH2 label="Quelle" className={TABLE_COL.source} />
+                      {projects.length > 0 && <SH2 label="Projekt" className={TABLE_COL.project} />}
+                      <SH2 label="Anpassen" className={TABLE_COL.actions} />
                     </TableRow></TableHeader><TableBody>
                       {filteredTodos.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
                         <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -314,11 +314,11 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Titel" />
-                      <SH2 label="Zuständig" className="w-[130px]" />
-                      <SH2 label="Status" className="w-[100px]" />
-                      <SH2 label="Erstellt" className="w-[100px]" />
-                      <SH2 label="Quelle" className="w-[140px]" />
-                      <SH2 label="Anpassen" className="w-[90px]" />
+                      <SH2 label="Zuständig" className={TABLE_COL.assignee} />
+                      <SH2 label="Status" className={TABLE_COL.status} />
+                      <SH2 label="Erstellt" className={TABLE_COL.created} />
+                      <SH2 label="Quelle" className={TABLE_COL.source} />
+                      <SH2 label="Anpassen" className={TABLE_COL.actions} />
                     </TableRow></TableHeader><TableBody>
                       {filteredBlockers.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
                         <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -347,12 +347,12 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Titel" />
-                      <SH2 label="Kategorie" className="w-[100px]" />
-                      <SH2 label="Zuständig" className="w-[130px]" />
-                      <SH2 label="Status" className="w-[100px]" />
-                      <SH2 label="Erstellt" className="w-[100px]" />
-                      <SH2 label="Quelle" className="w-[140px]" />
-                      <SH2 label="Anpassen" className="w-[90px]" />
+                      <SH2 label="Kategorie" className={TABLE_COL.category} />
+                      <SH2 label="Zuständig" className={TABLE_COL.assignee} />
+                      <SH2 label="Status" className={TABLE_COL.status} />
+                      <SH2 label="Erstellt" className={TABLE_COL.created} />
+                      <SH2 label="Quelle" className={TABLE_COL.source} />
+                      <SH2 label="Anpassen" className={TABLE_COL.actions} />
                     </TableRow></TableHeader><TableBody>
                       {filteredOpen.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'info', status: p.status||'open', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
                         <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -379,19 +379,19 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH2 label="Art" className="w-[120px]" />
+                      <SH2 label="Art" className={TABLE_COL.type} />
                       <SH2 label="Titel" />
-                      <SH2 label="Beleg / Grund" />
-                      <SH2 label="Erstellt" className="w-[100px]" />
-                      <SH2 label="Quelle" className="w-[140px]" />
-                      <SH2 label="Änderung" className="w-[120px]" />
-                      <SH2 label="Anpassen" className="w-[90px]" />
+                      <SH2 label="Beleg / Grund" className={TABLE_COL.reason} />
+                      <SH2 label="Erstellt" className={TABLE_COL.created} />
+                      <SH2 label="Quelle" className={TABLE_COL.source} />
+                      <SH2 label="Änderung" className={TABLE_COL.status} />
+                      <SH2 label="Anpassen" className={TABLE_COL.actions} />
                     </TableRow></TableHeader><TableBody>
                       {filteredResolutions.map(item => { const p = item.payload; const reference = resolveMeetingReference(null, p.evidence_meeting_id); const entityType = targetEntityType(p.target_table) || (resolutionTargetType(item) !== 'unknown' ? resolutionTargetType(item) : ''); const reason = p.resolution_reason || `Beleg aus dem Meeting vom ${p.evidence_meeting_date || 'unbekannten Datum'}: ${p.evidence_quote || '—'}`; return (
-                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                        <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{typeLabel(resolutionTargetType(item))}</Badge></TableCell>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, p.target_id) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.target_title || '—'}</button></TableCell>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); openMeetingReference(reference) }} className="text-left hover:text-[var(--syn-accent)]"><span className="text-xs whitespace-normal">{reason}</span></button><div className="text-[10px] mt-1" style={{color:'var(--syn-text-faint)'}}>{p.evidence_source === 'summary' ? 'Summary' : 'Transkript-Chunk'}</div></TableCell>
+                          <TableCell className="text-left py-1"><div className={TITLE_WRAP_CLASS}><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, p.target_id) }} className="text-left font-normal hover:text-[var(--syn-accent)] truncate max-w-full">{p.target_title || '—'}</button></div></TableCell>
+                          <TableCell className="text-left py-1"><div className={TITLE_WRAP_CLASS}><button onClick={e => { e.stopPropagation(); openMeetingReference(reference) }} className="block w-full text-left hover:text-[var(--syn-accent)]"><span className="block text-xs truncate">{reason}</span></button><div className="text-[10px] truncate" style={{color:'var(--syn-text-faint)'}}>{p.evidence_source === 'summary' ? 'Summary' : 'Transkript-Chunk'}</div></div></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{resolutionCreatedAt(item)}</TableCell>
                           <TableCell className="text-xs" onClick={e => e.stopPropagation()}><SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} />{p.evidence_meeting_date && <div className="mt-1" style={{color:'var(--syn-text-faint)'}}>{p.evidence_meeting_date}</div>}</TableCell>
                           <TableCell><Badge className="text-[10px] bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]">{proposedStatusLabel(p.proposed_status)}</Badge></TableCell>

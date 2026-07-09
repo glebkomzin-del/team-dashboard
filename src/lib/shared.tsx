@@ -60,6 +60,25 @@ export const FILTER_TRIGGER_CLASS = 'h-8 w-[160px] text-xs'
 export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
 export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px]'
 export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
+// Standardbreiten für Dashboard-Tabellen. Neue Spaltentypen zuerst hier ergänzen,
+// dann in den Layern per TABLE_COL verwenden, damit Inbox/Aktionen konsistent bleiben.
+export const TABLE_COL = {
+  title: '',
+  type: 'w-[100px]',
+  assignee: 'w-[130px]',
+  priority: 'w-[100px]',
+  category: 'w-[100px]',
+  due: 'w-[100px]',
+  status: 'w-[100px]',
+  created: 'w-[100px]',
+  source: 'w-[140px]',
+  project: 'w-[120px]',
+  reason: 'w-[260px]',
+  participants: 'w-[180px]',
+  topics: 'w-[260px]',
+  actions: 'w-[90px]',
+  compactActions: 'w-[80px]',
+} as const
 
 export const parseLocalDate = (value: string) => value ? new Date(`${value}T00:00:00`) : undefined
 export const toLocalDateValue = (date?: Date) => date
