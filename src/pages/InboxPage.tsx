@@ -20,9 +20,13 @@ import type { DbInboxItem, DbProject, TableCounts } from '../supabase'
 
 type MeetingReference = { meeting: { id: string; title: string }; deleted: boolean } | null
 type InboxTab = 'meetings' | 'todos' | 'blockers' | 'open' | 'resolutions'
+type EntityType = 'todo' | 'blocker' | 'open_item'
 
 interface InboxPageProps {
   inboxItems: DbInboxItem[]
+  todos: Todo[]
+  blockers: Blocker[]
+  openItems: OpenItem[]
   tableCounts: TableCounts
   projects: DbProject[]
   memberNames: string[]
@@ -42,7 +46,7 @@ interface InboxPageProps {
   getProjectName: (id: string | null) => string | null
 }
 
-export function InboxPage({ inboxItems, tableCounts, projects, memberNames, globalSearch, today, handleInboxApprove, handleInboxReject, handleInboxEdit, cycleTodoInbox, setViewMeeting, setViewTodo, setViewBlocker, setViewOpen, resolveMeetingReference, openMeetingReference, openSourceEntity, getProjectName }: InboxPageProps) {
+export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts, projects, memberNames, globalSearch, today, handleInboxApprove, handleInboxReject, handleInboxEdit, cycleTodoInbox, setViewMeeting, setViewTodo, setViewBlocker, setViewOpen, resolveMeetingReference, openMeetingReference, openSourceEntity, getProjectName }: InboxPageProps) {
   const [inboxSelected, setInboxSelected] = useState<Set<string>>(new Set())
   const [inboxTab, setInboxTab] = useState<InboxTab>('meetings')
   const [meetingSearch, setMeetingSearch] = useState('')
@@ -65,7 +69,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
   const [openFilterStatus, setOpenFilterStatus] = useState('all')
   const [openFilterCategory, setOpenFilterCategory] = useState('all')
   const [statusSearch, setStatusSearch] = useState('')
-  const [statusFilterKind, setStatusFilterKind] = useState('all')
+  const [statusFilterType, setStatusFilterType] = useState('all')
 
   const handleBulkInboxReject = async () => {
     const ids = Array.from(inboxSelected)
@@ -79,7 +83,6 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
   }
 
             const ib = { meetings: inboxItems.filter(i => i.entity_type === 'meeting'), todos: inboxItems.filter(i => i.entity_type === 'todo'), blockers: inboxItems.filter(i => i.entity_type === 'blocker'), open: inboxItems.filter(i => i.entity_type === 'open_item'), resolutions: inboxItems.filter(i => i.entity_type === 'resolution') }
-            const duplicateItems = inboxItems.filter(i => ['todo', 'blocker', 'open_item'].includes(i.entity_type) && i.payload?.duplicate_of)
             const matchesText = (value: unknown, query: string) => !query.trim() || JSON.stringify(value).toLowerCase().includes(query.trim().toLowerCase())
             const filteredMeetings = useMemo(() => {
               let r = ib.meetings.filter(item => matchesText(item.payload, meetingSearch || globalSearch))
@@ -111,14 +114,25 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
               if (openFilterCategory !== 'all') r = r.filter(item => (item.payload.category || 'info') === openFilterCategory)
               return r
             }, [ib.open, openSearch, globalSearch, openFilterOwner, openFilterStatus, openFilterCategory])
-            const filteredResolutions = useMemo(() => ib.resolutions.filter(item => matchesText(item.payload, statusSearch || globalSearch) && (statusFilterKind === 'all' || statusFilterKind === 'resolution')), [ib.resolutions, statusSearch, globalSearch, statusFilterKind])
-            const filteredDuplicates = useMemo(() => duplicateItems.filter(item => matchesText(item.payload, statusSearch || globalSearch) && (statusFilterKind === 'all' || statusFilterKind === 'duplicate')), [duplicateItems, statusSearch, globalSearch, statusFilterKind])
+            const resolutionTargetType = (item: DbInboxItem): EntityType | 'unknown' => {
+              const p = item.payload || {}
+              if (p.target_entity_type === 'todo' || p.target_entity_type === 'blocker' || p.target_entity_type === 'open_item') return p.target_entity_type
+              if (p.target_table === 'todos') return 'todo'
+              if (p.target_table === 'blockers') return 'blocker'
+              if (p.target_table === 'open_items') return 'open_item'
+              if (p.target_table === 'inbox_items') {
+                const target = inboxItems.find(x => x.id === p.target_id)
+                if (target?.entity_type === 'todo' || target?.entity_type === 'blocker' || target?.entity_type === 'open_item') return target.entity_type
+              }
+              return 'unknown'
+            }
+            const filteredResolutions = useMemo(() => ib.resolutions.filter(item => matchesText(item.payload, statusSearch || globalSearch) && (statusFilterType === 'all' || resolutionTargetType(item) === statusFilterType)), [ib.resolutions, inboxItems, statusSearch, globalSearch, statusFilterType])
             const inboxTabs: [InboxTab, string, number][] = [
               ['meetings', 'Meetings', ib.meetings.length],
               ['todos', 'Todos', ib.todos.length],
               ['blockers', 'Blocker', ib.blockers.length],
               ['open', 'Offene Punkte', ib.open.length],
-              ['resolutions', 'Statusänderung', ib.resolutions.length + duplicateItems.length],
+              ['resolutions', 'Statusänderung', ib.resolutions.length],
             ]
             // Map source filename → meeting vm (for Quelle column in todos/blockers/open_items)
             const sourceFileMap = new Map<string, Meeting>()
@@ -126,7 +140,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
             const FC = ({ item }: { item: DbInboxItem }) => (
               <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center">
                 <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
-                <button onClick={() => handleInboxApprove(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-ok)]/10 transition-colors" style={{ color: 'var(--syn-ok)' }} title={item.payload?.duplicate_of ? 'Dublette bestätigen' : 'Übernehmen'}>✓</button>
+                <button onClick={() => handleInboxApprove(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-ok)]/10 transition-colors" style={{ color: 'var(--syn-ok)' }} title="Übernehmen">✓</button>
                 <button onClick={() => handleInboxReject(item.id)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Ablehnen">✕</button>
                 <input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${inboxSelected.has(item.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={inboxSelected.has(item.id)} onChange={() => setInboxSelected(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })} />
               </div></TableCell>
@@ -134,7 +148,17 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
             const SH2 = ({ label, className }: { label: string; className?: string }) => <TableHead className={`text-xs text-center ${className||''}`}>{label}</TableHead>
             const selRow = (id: string) => setInboxSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
             const targetEntityType = (table?: string) => table === 'todos' ? 'todo' : table === 'blockers' ? 'blocker' : table === 'open_items' ? 'open_item' : ''
-            const targetLabel = (table?: string) => table === 'todos' ? 'Todo' : table === 'blockers' ? 'Blocker' : table === 'open_items' ? 'Offener Punkt' : table === 'inbox_items' ? 'Inbox-Eintrag' : 'Eintrag'
+            const typeLabel = (type: EntityType | 'unknown') => type === 'todo' ? 'Todo' : type === 'blocker' ? 'Blocker' : type === 'open_item' ? 'Offener Punkt' : '—'
+            const proposedStatusLabel = (status?: string) => status === 'done' ? 'Abgeschlossen' : status === 'resolved' ? 'Gelöst' : status === 'closed' ? 'Geschlossen' : status === 'rejected' ? 'Nicht übernehmen' : ST_LABEL[status || ''] || status || '—'
+            const resolutionCreatedAt = (item: DbInboxItem) => {
+              const p = item.payload || {}
+              if (p.target_created_at) return String(p.target_created_at).split('T')[0]
+              if (p.target_table === 'todos') return todos.find(t => t.id === p.target_id)?.createdAt || '—'
+              if (p.target_table === 'blockers') return blockers.find(b => b.id === p.target_id)?.createdAt || '—'
+              if (p.target_table === 'open_items') return openItems.find(o => o.id === p.target_id)?.createdAt || '—'
+              if (p.target_table === 'inbox_items') return inboxItems.find(x => x.id === p.target_id)?.created_at?.split('T')[0] || '—'
+              return '—'
+            }
             const DuplicateBadge = ({ item }: { item: DbInboxItem }) => {
               const dup = item.payload?.duplicate_of
               if (!dup) return null
@@ -254,7 +278,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH2 label="Aufgabe" />
+                      <SH2 label="Titel" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Priorität" className="w-[100px]" />
                       <SH2 label="Fällig" className="w-[100px]" />
@@ -292,7 +316,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH2 label="Blocker" />
+                      <SH2 label="Titel" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
                       <SH2 label="Erstellt" className="w-[100px]" />
@@ -326,7 +350,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="w-10"></TableHead>
-                      <SH2 label="Item" />
+                      <SH2 label="Titel" />
                       <SH2 label="Kategorie" className="w-[100px]" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
@@ -350,44 +374,36 @@ export function InboxPage({ inboxItems, tableCounts, projects, memberNames, glob
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
-                {/* ── Statusänderungen & Dubletten ── */}
+                {/* ── Statusänderungen ── */}
                 {inboxTab === 'resolutions' && (
                   <section>
                     <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
                       <div className={FILTER_BAR_CLASS}>
                         <Input placeholder="Suche..." value={statusSearch} onChange={e => setStatusSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                        <Select value={statusFilterKind} onValueChange={setStatusFilterKind}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Vorschläge</SelectItem><SelectItem value="resolution">Statusänderungen</SelectItem><SelectItem value="duplicate">Dubletten</SelectItem></SelectContent></Select>
+                        <Select value={statusFilterType} onValueChange={setStatusFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent className="w-[160px]"><SelectItem value="all">Alle Arten</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem></SelectContent></Select>
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH2 label="Vorschlag" className="w-[130px]" />
-                      <SH2 label="Eintrag" />
-                      <SH2 label="Beleg / Grund" />
+                      <SH2 label="Art" className="w-[120px]" />
+                      <SH2 label="Titel" />
+                      <SH2 label="Beleggrund" />
+                      <SH2 label="Erstellt" className="w-[100px]" />
                       <SH2 label="Quelle" className="w-[140px]" />
-                      <SH2 label="Bewertung" className="w-[100px]" />
+                      <SH2 label="Änderung" className="w-[120px]" />
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {filteredResolutions.map(item => { const p = item.payload; const reference = resolveMeetingReference(null, p.evidence_meeting_id); const entityType = targetEntityType(p.target_table); return (
+                      {filteredResolutions.map(item => { const p = item.payload; const reference = resolveMeetingReference(null, p.evidence_meeting_id); const entityType = targetEntityType(p.target_table) || (resolutionTargetType(item) !== 'unknown' ? resolutionTargetType(item) : ''); const reason = p.resolution_reason || `Beleg aus dem Meeting vom ${p.evidence_meeting_date || 'unbekannten Datum'}: ${p.evidence_quote || '—'}`; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{targetLabel(p.target_table)}</Badge></TableCell>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, p.target_id) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.target_title || '—'}</button><div className="text-xs" style={{color:'var(--syn-text-faint)'}}>{ST_LABEL[p.proposed_status] || p.proposed_status || 'gelöst'}</div></TableCell>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); openMeetingReference(reference) }} className="text-left hover:text-[var(--syn-accent)]"><span className="text-xs italic line-clamp-2">"{p.evidence_quote || '—'}"</span></button><div className="text-[10px] mt-1" style={{color:'var(--syn-text-faint)'}}>{p.evidence_source === 'summary' ? 'Summary' : 'Transkript-Chunk'}</div></TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{typeLabel(resolutionTargetType(item))}</Badge></TableCell>
+                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, p.target_id) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.target_title || '—'}</button></TableCell>
+                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); openMeetingReference(reference) }} className="text-left hover:text-[var(--syn-accent)]"><span className="text-xs whitespace-normal">{reason}</span></button><div className="text-[10px] mt-1" style={{color:'var(--syn-text-faint)'}}>{p.evidence_source === 'summary' ? 'Summary' : 'Transkript-Chunk'}</div></TableCell>
+                          <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{resolutionCreatedAt(item)}</TableCell>
                           <TableCell className="text-xs" onClick={e => e.stopPropagation()}><SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} />{p.evidence_meeting_date && <div className="mt-1" style={{color:'var(--syn-text-faint)'}}>{p.evidence_meeting_date}</div>}</TableCell>
-                          <TableCell><Badge className={`text-[10px] ${p.confidence === 'high' ? 'bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]' : 'bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]'}`}>{p.confidence === 'high' ? 'Hoch' : 'Mittel'}</Badge></TableCell>
+                          <TableCell><Badge className="text-[10px] bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]">{proposedStatusLabel(p.proposed_status)}</Badge></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {filteredDuplicates.map(item => { const p = item.payload; const dup = p.duplicate_of; const entityType = targetEntityType(dup?.table); const ownType = item.entity_type === 'todo' ? 'Todo' : item.entity_type === 'blocker' ? 'Blocker' : 'Offener Punkt'; const reference = resolveMeetingReference(item.source, p.meeting_id); return (
-                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-danger)]/40 text-[var(--syn-danger)]">Dublette</Badge></TableCell>
-                          <TableCell className="text-left"><div className="font-medium">{p.title || '—'}</div><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, dup.id) }} className="text-xs text-left hover:text-[var(--syn-accent)]" style={{color:'var(--syn-text-faint)'}}>mögliche Dublette von: {dup?.title || '—'}</button><div className="text-[10px] mt-0.5" style={{color:'var(--syn-text-faint)'}}>{ownType}</div></TableCell>
-                          <TableCell className="text-left"><span className="text-xs line-clamp-2">{dup?.reason || 'Fachlich ähnlicher bestehender Eintrag erkannt.'}</span></TableCell>
-                          <TableCell className="text-xs" onClick={e => e.stopPropagation()}><SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} /></TableCell>
-                          <TableCell><Badge className="text-[10px] bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]">Prüfen</Badge></TableCell>
-                          <FC item={item} />
-                        </TableRow>
-                      )})}
-                      {filteredResolutions.length + filteredDuplicates.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Statusänderungen oder Dubletten</TableCell></TableRow>}
+                      {filteredResolutions.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Statusänderungen</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}

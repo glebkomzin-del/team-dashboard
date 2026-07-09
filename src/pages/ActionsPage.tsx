@@ -122,7 +122,7 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                    <SH label="Aufgabe" field="title" sort={todoSort} onSort={todoSort.toggle} />
+                    <SH label="Titel" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className="w-[130px]" />
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
                     <SH label="Fällig" field="dueDate" sort={todoSort} onSort={todoSort.toggle} className="w-[100px]" />
@@ -165,7 +165,7 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                     </div>
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                    <SH label="Blocker" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
+                    <SH label="Titel" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
                     <SH label="Erstellt" field="createdAt" sort={blockerSort} onSort={blockerSort.toggle} className="w-[100px]" />
@@ -204,7 +204,7 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                   </div>
                   <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <TableHead className="w-10"></TableHead>
-                    <SH label="Item" field="title" sort={openSort} onSort={openSort.toggle} />
+                    <SH label="Titel" field="title" sort={openSort} onSort={openSort.toggle} />
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />
                     <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className="w-[130px]" />
                     <SH label="Status" field="status" sort={openSort} onSort={openSort.toggle} className="w-[100px]" />

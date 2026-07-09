@@ -180,7 +180,7 @@ export function ProjectsPage({ projects, projectIds, todos, setTodos, blockers, 
               {projectView === 'table' && (
                 <div className="space-y-1">
                 <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                  <SH label="Projekt" field="name" sort={projectSort} onSort={projectSort.toggle} />
+                  <SH label="Titel" field="name" sort={projectSort} onSort={projectSort.toggle} />
                   <SH label="Beschreibung" field="description" sort={projectSort} onSort={projectSort.toggle} />
                   <TableHead className="w-[80px] text-xs text-center">Todos</TableHead>
                   <TableHead className="w-[80px] text-xs text-center">Blocker</TableHead>

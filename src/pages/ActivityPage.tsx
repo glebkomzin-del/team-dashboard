@@ -65,7 +65,7 @@ export function ActivityPage({ activity, globalSearch, handleDeleteActivity, del
                   <Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Zeitpunkt" field="timestamp" sort={logSort} onSort={logSort.toggle} className="w-[160px]" />
                     <SH label="Typ" field="entityType" sort={logSort} onSort={logSort.toggle} className="w-[110px]" />
-                    <SH label="Element" field="entityTitle" sort={logSort} onSort={logSort.toggle} />
+                    <SH label="Titel" field="entityTitle" sort={logSort} onSort={logSort.toggle} />
                     <SH label="Aktion" field="action" sort={logSort} onSort={logSort.toggle} className="w-[130px]" />
                     <TableHead className="w-[100px] text-xs text-center">Vorher</TableHead>
                     <TableHead className="w-[120px] text-xs text-center">Nachher</TableHead>
