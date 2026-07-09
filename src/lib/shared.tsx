@@ -77,9 +77,9 @@ export const TABLE_COL = {
   project: 'w-[120px]',
   reason: 'w-[260px]',
   participants: 'w-[180px]',
-  topics: 'w-[260px]',
+  topics: 'w-[220px]',
   actions: 'w-[90px]',
-  compactActions: 'w-[80px]',
+  compactActions: 'w-[100px]',
 } as const
 
 export const parseLocalDate = (value: string) => value ? new Date(`${value}T00:00:00`) : undefined
