@@ -304,6 +304,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
   // CRUD Handlers — identical logic
   const cycleTodo = async (t: Todo) => { const order = ['open', 'in_progress', 'done']; const next = order[(order.indexOf(t.status) + 1) % 3]; setTodos(prev => prev.map(x => x.id === t.id ? { ...x, status: next } : x)); try { await updateTodoStatus(t.id, next) } catch { } }
+  const cycleBlocker = async (b: Blocker) => { const order = ['active', 'resolved', 'escalated']; const next = order[(order.indexOf(b.status) + 1) % 3]; setBlockers(prev => prev.map(x => x.id === b.id ? { ...x, status: next } : x)); try { await updateBlockerStatus(b.id, next) } catch { } }
+  const cycleOpen = async (o: OpenItem) => { const order = ['open', 'watching', 'closed']; const next = order[(order.indexOf(o.status) + 1) % 3]; setOpenItems(prev => prev.map(x => x.id === o.id ? { ...x, status: next } : x)); try { await updateOpenItemStatus(o.id, next) } catch { } }
   const handleDeleteTodo = async (t: Todo) => { setTodos(prev => prev.filter(x => x.id !== t.id)); try { await deleteTodoDb(t.id) } catch { } }
   const handleSaveTodo = async (t: Todo) => {
     if (inboxEditModeFor) {
@@ -451,10 +453,17 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
     setInboxItems(prev => prev.filter(x => x.id !== id))
     await deleteInboxItemDb(id).catch(() => {})
   }
-  const cycleTodoInbox = (item: DbInboxItem) => {
+  const cycleInboxStatus = (item: DbInboxItem) => {
     const p = item.payload
-    const cycles: Record<string, string> = { open: 'in_progress', in_progress: 'done', done: 'open' }
-    const newPayload = { ...p, status: cycles[p.status || 'open'] || 'open' }
+    const cycles: Record<string, Record<string, string>> = {
+      todo: { open: 'in_progress', in_progress: 'done', done: 'open' },
+      blocker: { active: 'resolved', resolved: 'escalated', escalated: 'active' },
+      open_item: { open: 'watching', watching: 'closed', closed: 'open' },
+    }
+    const defaults: Record<string, string> = { todo: 'open', blocker: 'active', open_item: 'open' }
+    const map = cycles[item.entity_type] || cycles.todo
+    const current = p.status || defaults[item.entity_type] || 'open'
+    const newPayload = { ...p, status: map[current] || defaults[item.entity_type] || 'open' }
     setInboxItems(prev => prev.map(x => x.id === item.id ? { ...x, payload: newPayload } : x))
     updateInboxItemPayload(item.id, newPayload).catch(() => {})
   }
@@ -949,13 +958,13 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {page === 'uebersicht' && <CommandCenterPage meetings={meetings} todos={todos} blockers={blockers} chatInput={chatInput} setChatInput={setChatInput} handleChat={handleChat} setPage={setPage} setActionTab={setActionTab} setEditTodo={setEditTodo} setViewTodo={setViewTodo} setViewMeeting={setViewMeeting} setViewBlocker={setViewBlocker} handleQuickStatusToggle={handleQuickStatusToggle} />}
 
           {/* ═══ INBOX ═══ */}
-          {page === 'inbox' && <InboxPage inboxItems={inboxItems} todos={todos} blockers={blockers} openItems={openItems} tableCounts={tableCounts} projects={projects} memberNames={memberNames} globalSearch={globalSearch} today={today} handleInboxApprove={handleInboxApprove} handleInboxReject={handleInboxReject} handleInboxEdit={handleInboxEdit} cycleTodoInbox={cycleTodoInbox} setViewMeeting={setViewMeeting} setViewTodo={setViewTodo} setViewBlocker={setViewBlocker} setViewOpen={setViewOpen} resolveMeetingReference={resolveMeetingReference} openMeetingReference={openMeetingReference} openSourceEntity={openSourceEntity} getProjectName={getProjectName} />}
+          {page === 'inbox' && <InboxPage inboxItems={inboxItems} todos={todos} blockers={blockers} openItems={openItems} tableCounts={tableCounts} projects={projects} memberNames={memberNames} globalSearch={globalSearch} today={today} handleInboxApprove={handleInboxApprove} handleInboxReject={handleInboxReject} handleInboxEdit={handleInboxEdit} cycleInboxStatus={cycleInboxStatus} setViewMeeting={setViewMeeting} setViewTodo={setViewTodo} setViewBlocker={setViewBlocker} setViewOpen={setViewOpen} resolveMeetingReference={resolveMeetingReference} openMeetingReference={openMeetingReference} openSourceEntity={openSourceEntity} getProjectName={getProjectName} />}
 
           {/* ═══ SITZUNGEN ═══ */}
           {page === 'sitzungen' && <MeetingsPage meetings={meetings} tableCounts={tableCounts} memberNames={memberNames} globalSearch={globalSearch} openMeetingEditor={openMeetingEditor} handleDeleteMeeting={handleDeleteMeeting} deleteMeetings={deleteMeetings} setViewMeeting={setViewMeeting} setConfirmDelete={setConfirmDelete} />}
 
           {/* ═══ AKTIONEN (Tabs: Todos / Blocker / Open Items) ═══ */}
-          {page === 'aktionen' && <ActionsPage todos={todos} blockers={blockers} openItems={openItems} tableCounts={tableCounts} memberNames={memberNames} projects={projects} actionTab={actionTab} setActionTab={setActionTab} globalSearch={globalSearch} today={today} cycleTodo={cycleTodo} handleDeleteTodo={handleDeleteTodo} handleDeleteBlocker={handleDeleteBlocker} handleDeleteOpen={handleDeleteOpen} deleteTodos={deleteTodos} deleteBlockers={deleteBlockers} deleteOpenItems={deleteOpenItems} setViewTodo={setViewTodo} setEditTodo={setEditTodo} setViewBlocker={setViewBlocker} setEditBlocker={setEditBlocker} setViewOpen={setViewOpen} setEditOpen={setEditOpen} resolveMeetingReference={resolveMeetingReference} openMeetingReference={openMeetingReference} getProjectName={getProjectName} setConfirmDelete={setConfirmDelete} />}
+          {page === 'aktionen' && <ActionsPage todos={todos} blockers={blockers} openItems={openItems} tableCounts={tableCounts} memberNames={memberNames} projects={projects} actionTab={actionTab} setActionTab={setActionTab} globalSearch={globalSearch} today={today} cycleTodo={cycleTodo} cycleBlocker={cycleBlocker} cycleOpen={cycleOpen} handleDeleteTodo={handleDeleteTodo} handleDeleteBlocker={handleDeleteBlocker} handleDeleteOpen={handleDeleteOpen} deleteTodos={deleteTodos} deleteBlockers={deleteBlockers} deleteOpenItems={deleteOpenItems} setViewTodo={setViewTodo} setEditTodo={setEditTodo} setViewBlocker={setViewBlocker} setEditBlocker={setEditBlocker} setViewOpen={setViewOpen} setEditOpen={setEditOpen} resolveMeetingReference={resolveMeetingReference} openMeetingReference={openMeetingReference} getProjectName={getProjectName} setConfirmDelete={setConfirmDelete} />}
 
           {/* ═══ PROJEKTE ═══ */}
           {page === 'projekte' && <ProjectsPage projects={projects} projectIds={projectIds} todos={todos} setTodos={setTodos} blockers={blockers} memberNames={memberNames} today={today} globalSearch={globalSearch} projectView={projectView} setProjectView={setProjectView} projectMutationError={projectMutationError} handleOpenProjectDialog={handleOpenProjectDialog} handleDeleteProject={handleDeleteProject} deleteProjects={deleteProjects} getProjectName={getProjectName} setViewProject={setViewProject} setViewTodo={setViewTodo} setEditTodo={setEditTodo} handleDeleteTodo={handleDeleteTodo} setConfirmDelete={setConfirmDelete} />}

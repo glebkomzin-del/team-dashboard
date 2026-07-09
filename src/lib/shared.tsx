@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { ComponentProps } from 'react'
 import DOMPurify from 'dompurify'
+import { Badge } from '@/components/ui/badge'
 import { CardContent } from '@/components/ui/card'
 import { Calendar } from '@/components/ui/calendar'
 import { TableHead } from '@/components/ui/table'
@@ -57,6 +58,8 @@ export const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved',
 export const FILTER_INPUT_CLASS = 'h-8 w-[160px] text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]'
 export const FILTER_TRIGGER_CLASS = 'h-8 w-[160px] text-xs'
 export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
+export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px]'
+export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
 
 export const parseLocalDate = (value: string) => value ? new Date(`${value}T00:00:00`) : undefined
 export const toLocalDateValue = (date?: Date) => date
@@ -183,6 +186,26 @@ export function TenRowTableViewport({ testId, rowCount, children }: { testId: st
 export function SortIcon({ dir }: { dir: SortDir }) {
   if (!dir) return <span className="text-[var(--syn-text-faint)] ml-1">{'↕'}</span>
   return <span className="ml-1 text-[var(--syn-accent)]">{dir === 'asc' ? '↑' : '↓'}</span>
+}
+
+export function StatusCycleButton({ status, type, onClick }: { status: string; type: 'todo' | 'blocker' | 'open_item'; onClick: () => void }) {
+  const done = ['done', 'resolved', 'closed'].includes(status)
+  const middle = ['in_progress', 'watching', 'escalated'].includes(status)
+  const label = ST_LABEL[status] || status
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); onClick() }}
+      className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center text-[10px] leading-none transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)] ${done ? 'bg-[var(--syn-ok)] border-[var(--syn-ok)] text-white' : middle ? 'border-[var(--syn-warn)] text-[var(--syn-warn)]' : 'border-[var(--syn-line)]'}`}
+      title={`${label} ändern`}
+      aria-label={`${type} Status ändern: ${label}`}
+    >
+      {done ? '✓' : middle ? '•' : ''}
+    </button>
+  )
+}
+
+export function CategoryBadge({ category }: { category: string }) {
+  return <Badge variant="outline" className="text-[10px] border-[var(--syn-line)] inline-flex items-center gap-1"><span>{CAT_ICON[category] || '○'}</span><span>{CAT_LABEL[category] || category || '—'}</span></Badge>
 }
 export function sortBy<T>(arr: T[], key: string, dir: SortDir): T[] {
   if (!dir) return arr

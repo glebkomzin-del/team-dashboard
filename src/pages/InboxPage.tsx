@@ -9,11 +9,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { MultiSelectFilter } from '@/components/MultiSelectFilter'
 import type { DateRange } from 'react-day-picker'
 import {
-  PRI_LABEL, PRI_STYLE, ST_LABEL, ST_STYLE, CAT_LABEL, CAT_ICON,
+  PRI_LABEL, PRI_STYLE, ST_LABEL, ST_STYLE,
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS,
-  Av, CompactRangeCalendar, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
+  Av, CategoryBadge, CompactRangeCalendar, StatusCycleButton, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
   type Meeting, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
 import type { DbInboxItem, DbProject, TableCounts } from '../supabase'
@@ -35,7 +35,7 @@ interface InboxPageProps {
   handleInboxApprove: (item: DbInboxItem) => Promise<void>
   handleInboxReject: (id: string) => Promise<void>
   handleInboxEdit: (item: DbInboxItem) => void
-  cycleTodoInbox: (item: DbInboxItem) => void
+  cycleInboxStatus: (item: DbInboxItem) => void
   setViewMeeting: (m: Meeting) => void
   setViewTodo: (t: Todo) => void
   setViewBlocker: (b: Blocker) => void
@@ -46,7 +46,7 @@ interface InboxPageProps {
   getProjectName: (id: string | null) => string | null
 }
 
-export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts, projects, memberNames, globalSearch, today, handleInboxApprove, handleInboxReject, handleInboxEdit, cycleTodoInbox, setViewMeeting, setViewTodo, setViewBlocker, setViewOpen, resolveMeetingReference, openMeetingReference, openSourceEntity, getProjectName }: InboxPageProps) {
+export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts, projects, memberNames, globalSearch, today, handleInboxApprove, handleInboxReject, handleInboxEdit, cycleInboxStatus, setViewMeeting, setViewTodo, setViewBlocker, setViewOpen, resolveMeetingReference, openMeetingReference, openSourceEntity, getProjectName }: InboxPageProps) {
   const [inboxSelected, setInboxSelected] = useState<Set<string>>(new Set())
   const [inboxTab, setInboxTab] = useState<InboxTab>('meetings')
   const [meetingSearch, setMeetingSearch] = useState('')
@@ -142,7 +142,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                 <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
                 <button onClick={() => handleInboxApprove(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-ok)]/10 transition-colors" style={{ color: 'var(--syn-ok)' }} title="Übernehmen">✓</button>
                 <button onClick={() => handleInboxReject(item.id)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Ablehnen">✕</button>
-                <input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${inboxSelected.has(item.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={inboxSelected.has(item.id)} onChange={() => setInboxSelected(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })} />
+                <input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${inboxSelected.has(item.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={inboxSelected.has(item.id)} onClick={e => e.stopPropagation()} onChange={() => setInboxSelected(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n })} />
               </div></TableCell>
             )
             const SH2 = ({ label, className }: { label: string; className?: string }) => <TableHead className={`text-xs text-center ${className||''}`}>{label}</TableHead>
@@ -159,26 +159,11 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
               if (p.target_table === 'inbox_items') return inboxItems.find(x => x.id === p.target_id)?.created_at?.split('T')[0] || '—'
               return '—'
             }
-            const DuplicateBadge = ({ item }: { item: DbInboxItem }) => {
-              const dup = item.payload?.duplicate_of
-              if (!dup) return null
-              const entityType = targetEntityType(dup.table)
-              return (
-                <button
-                  onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, dup.id) }}
-                  className="mt-1 inline-flex max-w-full items-center gap-1 rounded border border-[var(--syn-danger)]/40 px-1.5 py-0.5 text-[10px] hover:bg-[var(--syn-danger)]/10"
-                  style={{ color: 'var(--syn-danger)' }}
-                  title={dup.reason || 'Mögliche Dublette'}
-                >
-                  <span>Mögliche Dublette von:</span><span className="truncate">{dup.title || dup.id}</span>
-                </button>
-              )
-            }
             const InboxSignal = ({ item }: { item: DbInboxItem }) => (
-              <div className="mt-1 flex flex-wrap gap-1.5">
+              <span className="ml-2 inline-flex gap-1.5 align-middle">
                 {item.payload?.duplicate_of && <Badge variant="outline" className="text-[10px] border-[var(--syn-danger)]/40 text-[var(--syn-danger)]">Dublette</Badge>}
                 {item.payload?.status_suggestion?.kind === 'done' && <Badge className="text-[10px] bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]">Erledigt</Badge>}
-              </div>
+              </span>
             )
             const inboxSignalPayload = (item: DbInboxItem) => ({
               duplicateOf: item.payload?.duplicate_of || null,
@@ -301,8 +286,8 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {filteredTodos.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
-                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell className="text-left"><div className="flex items-center gap-2"><button onClick={e => { e.stopPropagation(); cycleTodoInbox(item) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(vt) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<InboxSignal item={item} /><DuplicateBadge item={item} /></div></div></TableCell>
+                        <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell className="text-left py-1"><div className="flex items-center gap-2"><StatusCycleButton status={p.status || 'open'} type="todo" onClick={() => cycleInboxStatus(item)} /><div className={TITLE_WRAP_CLASS}><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(vt) }} className="text-left hover:text-[var(--syn-accent)] truncate max-w-full">{p.title||'—'}</button><InboxSignal item={item} /></div>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</div></div></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.assignee||'?'}/><span className="text-xs">{p.assignee||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${PRI_STYLE[p.priority]||''}`}>{PRI_LABEL[p.priority]||p.priority||'—'}</Badge></TableCell>
                           <TableCell className={`text-xs ${p.due_date && p.due_date < today && (p.status || 'open') !== 'done' ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!(p.due_date && p.due_date < today && (p.status || 'open') !== 'done') ? {color:'var(--syn-text-muted)'} : {}}>{p.due_date||'—'}</TableCell>
@@ -336,8 +321,8 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {filteredBlockers.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
-                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewBlocker(vb) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<InboxSignal item={item} /><DuplicateBadge item={item} /></TableCell>
+                        <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell className="text-left py-1"><div className="flex items-center gap-2"><StatusCycleButton status={p.status || 'active'} type="blocker" onClick={() => cycleInboxStatus(item)} /><div className={TITLE_WRAP_CLASS}><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewBlocker(vb) }} className="text-left font-normal hover:text-[var(--syn-accent)] truncate max-w-full">{p.title||'—'}</button><InboxSignal item={item} /></div>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</div></div></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
@@ -361,7 +346,6 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <TableHead className="w-10"></TableHead>
                       <SH2 label="Titel" />
                       <SH2 label="Kategorie" className="w-[100px]" />
                       <SH2 label="Zuständig" className="w-[130px]" />
@@ -371,10 +355,9 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {filteredOpen.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'info', status: p.status||'open', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
-                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell className="text-center">{CAT_ICON[p.category]||'○'}</TableCell>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewOpen(vo) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<InboxSignal item={item} /><DuplicateBadge item={item} /></TableCell>
-                          <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[p.category]||p.category||'—'}</Badge></TableCell>
+                        <TableRow key={item.id} className={`${TABLE_ROW_CLASS} text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell className="text-left py-1"><div className="flex items-center gap-2"><StatusCycleButton status={p.status || 'open'} type="open_item" onClick={() => cycleInboxStatus(item)} /><div className={TITLE_WRAP_CLASS}><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewOpen(vo) }} className="text-left hover:text-[var(--syn-accent)] truncate max-w-full">{p.title||'—'}</button><InboxSignal item={item} /></div>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}</div></div></TableCell>
+                          <TableCell><CategoryBadge category={p.category || 'info'} /></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
@@ -382,7 +365,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {filteredOpen.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine offenen Punkte</TableCell></TableRow>}
+                      {filteredOpen.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine offenen Punkte</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
