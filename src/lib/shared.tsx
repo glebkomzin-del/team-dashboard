@@ -58,8 +58,10 @@ export const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved',
 export const FILTER_INPUT_CLASS = 'h-8 w-[160px] text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]'
 export const FILTER_TRIGGER_CLASS = 'h-8 w-[160px] text-xs'
 export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
-export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px]'
+export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px] overflow-hidden'
+export const TABLE_CELL_COMPACT_CLASS = 'h-[52px] max-h-[52px] py-1 overflow-hidden align-middle'
 export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
+export const SOURCE_CELL_CLASS = 'h-[40px] max-h-[40px] flex items-center justify-center overflow-hidden'
 // Standardbreiten für Dashboard-Tabellen. Neue Spaltentypen zuerst hier ergänzen,
 // dann in den Layern per TABLE_COL verwenden, damit die Tabellen konsistent bleiben.
 export const TABLE_COL = {
@@ -282,10 +284,9 @@ export function getProjectColor(projectId: string | null, projectIds: string[]):
 
 export function SourceChip({ meeting, deleted = false, onClick }: { meeting: { id: string; title: string } | null; deleted?: boolean; onClick?: () => void }) {
   if (!meeting) return null
-  const label = meeting.title.length > 18 ? meeting.title.slice(0, 18) + '…' : meeting.title
   return (
-    <button onClick={onClick} className={`source-chip ${deleted ? 'source-chip-deleted' : ''} inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded text-[10px] transition-colors w-full`} title={deleted ? `${meeting.title} — Meeting gelöscht` : meeting.title}>
-      <span className="opacity-60">{'"'}</span><span className="text-center">{label}</span>
+    <button onClick={onClick} className={`source-chip ${deleted ? 'source-chip-deleted' : ''} inline-flex h-9 max-h-9 items-center justify-center gap-1 rounded px-2 py-0.5 text-[10px] leading-[12px] transition-colors w-full overflow-hidden`} title={deleted ? `${meeting.title} — Meeting gelöscht` : meeting.title}>
+      <span className="opacity-60 shrink-0">{'"'}</span><span className="text-center overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">{meeting.title}</span>
     </button>
   )
 }

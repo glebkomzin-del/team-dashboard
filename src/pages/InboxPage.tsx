@@ -13,7 +13,7 @@ import {
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS, TABLE_COL,
-  Av, CategoryBadge, CompactRangeCalendar, StatusCycleButton, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
+  Av, CategoryBadge, CompactRangeCalendar, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
   type Meeting, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
 import type { DbInboxItem, DbProject, TableCounts } from '../supabase'
@@ -293,7 +293,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                           <TableCell className={`text-xs ${p.due_date && p.due_date < today && (p.status || 'open') !== 'done' ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!(p.due_date && p.due_date < today && (p.status || 'open') !== 'done') ? {color:'var(--syn-text-muted)'} : {}}>{p.due_date||'—'}</TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</TableCell>
+                          <TableCell className="overflow-hidden py-1" onClick={e => e.stopPropagation()}><div className={SOURCE_CELL_CLASS}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</div></TableCell>
                           {projects.length > 0 && <TableCell className="text-xs" style={{ color: 'var(--syn-text-faint)' }}>{getProjectName(p.project_id || null) || '—'}</TableCell>}
                           <FC item={item} />
                         </TableRow>
@@ -326,7 +326,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</TableCell>
+                          <TableCell className="overflow-hidden py-1" onClick={e => e.stopPropagation()}><div className={SOURCE_CELL_CLASS}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</div></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -361,7 +361,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
-                          <TableCell className="overflow-hidden" onClick={e => e.stopPropagation()}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</TableCell>
+                          <TableCell className="overflow-hidden py-1" onClick={e => e.stopPropagation()}><div className={SOURCE_CELL_CLASS}>{(() => { const pendingMeeting = item.source ? sourceFileMap.get(item.source) || null : null; const reference = pendingMeeting ? { meeting: pendingMeeting, deleted: false } : resolveMeetingReference(item.source, p.meeting_id); return <SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => pendingMeeting ? setViewMeeting(pendingMeeting) : openMeetingReference(reference)} /> })()}</div></TableCell>
                           <FC item={item} />
                         </TableRow>
                       )})}
@@ -393,7 +393,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                           <TableCell className="text-left py-1"><div className={TITLE_WRAP_CLASS}><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, p.target_id) }} className="text-left font-normal hover:text-[var(--syn-accent)] truncate max-w-full">{p.target_title || '—'}</button></div></TableCell>
                           <TableCell className="text-left py-1"><div className={TITLE_WRAP_CLASS}><button onClick={e => { e.stopPropagation(); openMeetingReference(reference) }} className="block w-full text-left hover:text-[var(--syn-accent)]"><span className="block text-xs truncate">{reason}</span></button><div className="text-[10px] truncate" style={{color:'var(--syn-text-faint)'}}>{p.evidence_source === 'summary' ? 'Summary' : 'Transkript-Chunk'}</div></div></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{resolutionCreatedAt(item)}</TableCell>
-                          <TableCell className="text-xs" onClick={e => e.stopPropagation()}><SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} />{p.evidence_meeting_date && <div className="mt-1" style={{color:'var(--syn-text-faint)'}}>{p.evidence_meeting_date}</div>}</TableCell>
+                          <TableCell className="text-xs overflow-hidden py-1" onClick={e => e.stopPropagation()}><div className={SOURCE_CELL_CLASS}><SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} /></div></TableCell>
                           <TableCell><Badge className="text-[10px] bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]">{proposedStatusLabel(p.proposed_status)}</Badge></TableCell>
                           <FC item={item} />
                         </TableRow>
