@@ -9,7 +9,7 @@ import { MultiSelectFilter } from '@/components/MultiSelectFilter'
 import {
   PRI_LABEL, PRI_RANK, PRI_STYLE, ST_LABEL, ST_STYLE,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS, TABLE_COL,
-  Av, CategoryBadge, SH, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ACTION_CELL_CLASS, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, useSortState, sortBy, textMatch,
+  Av, CategoryBadge, SH, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ACTION_CELL_CLASS, TABLE_ROW_CLASS, TABLE_VIEWPORT_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, useSortState, sortBy, textMatch,
   type ActionTab, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
 import type { DbProject, TableCounts } from '../supabase'
@@ -123,7 +123,7 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                       <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="todos-table-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Titel" field="title" sort={todoSort} onSort={todoSort.toggle} />
                     <SH label="Zuständig" field="assignee" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.assignee} />
                     <SH label="Priorität" field="priority" sort={todoSort} onSort={todoSort.toggle} className={TABLE_COL.priority} />
@@ -166,7 +166,7 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                       <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="blockers-table-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Titel" field="title" sort={blockerSort} onSort={blockerSort.toggle} />
                     <SH label="Zuständig" field="reportedBy" sort={blockerSort} onSort={blockerSort.toggle} className={TABLE_COL.assignee} />
                     <SH label="Status" field="status" sort={blockerSort} onSort={blockerSort.toggle} className={TABLE_COL.status} />
@@ -204,7 +204,7 @@ export function ActionsPage({ todos, blockers, openItems, tableCounts, memberNam
                       <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                     </div>
                   </div>
-                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                  <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="open-items-table-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                     <SH label="Titel" field="title" sort={openSort} onSort={openSort.toggle} />
                     <SH label="Kategorie" field="category" sort={openSort} onSort={openSort.toggle} className={TABLE_COL.category} />
                     <SH label="Zuständig" field="owner" sort={openSort} onSort={openSort.toggle} className={TABLE_COL.assignee} />

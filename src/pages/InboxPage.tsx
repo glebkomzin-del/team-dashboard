@@ -13,7 +13,7 @@ import {
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS, TABLE_COL,
-  Av, CategoryBadge, CompactRangeCalendar, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ACTION_CELL_CLASS, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
+  Av, CategoryBadge, CompactRangeCalendar, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ACTION_CELL_CLASS, TABLE_ROW_CLASS, TABLE_VIEWPORT_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
   type Meeting, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
 import type { DbInboxItem, DbProject, TableCounts } from '../supabase'
@@ -242,7 +242,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                         })()}
                       </div>
                     </div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Datum" className={TABLE_COL.created} />
                       <SH2 label="Titel" />
                       <SH2 label="Teilnehmer" className={TABLE_COL.participants} />

@@ -11,7 +11,7 @@ import {
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, TABLE_COL,
-  CompactRangeCalendar, SH, TABLE_ACTION_CELL_CLASS, TrashIcon, useSortState, sortBy, textMatch, shortTopic,
+  CompactRangeCalendar, SH, TABLE_ACTION_CELL_CLASS, TABLE_VIEWPORT_CLASS, TrashIcon, useSortState, sortBy, textMatch, shortTopic,
   type Meeting,
 } from '../lib/shared'
 import type { TableCounts } from '../supabase'
@@ -148,7 +148,7 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                   })()}
                 </div>
               </div>
-              <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-152px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+              <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                 <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className={TABLE_COL.created} />
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
                 <TableHead className={`${TABLE_COL.participants} text-xs text-center`}>Teilnehmer</TableHead>

@@ -61,6 +61,7 @@ export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
 export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px] overflow-hidden'
 export const TABLE_CELL_COMPACT_CLASS = 'h-[52px] max-h-[52px] py-1 overflow-hidden align-middle'
 export const TABLE_ACTION_CELL_CLASS = 'px-1 py-1'
+export const TABLE_VIEWPORT_CLASS = 'p-0 max-h-[calc(100vh-196px)] overflow-y-auto'
 export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
 export const SOURCE_CELL_CLASS = 'h-[40px] max-h-[40px] flex items-center justify-center overflow-hidden'
 // Standardbreiten für Dashboard-Tabellen. Neue Spaltentypen zuerst hier ergänzen,
