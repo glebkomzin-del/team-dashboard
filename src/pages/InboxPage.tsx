@@ -174,6 +174,18 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                 </button>
               )
             }
+            const InboxSignal = ({ item }: { item: DbInboxItem }) => (
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {item.payload?.duplicate_of && <Badge variant="outline" className="text-[10px] border-[var(--syn-danger)]/40 text-[var(--syn-danger)]">Dublette</Badge>}
+                {item.payload?.status_suggestion?.kind === 'done' && <Badge className="text-[10px] bg-[var(--syn-ok-soft)] text-[var(--syn-ok)]">Erledigt</Badge>}
+              </div>
+            )
+            const inboxSignalPayload = (item: DbInboxItem) => ({
+              duplicateOf: item.payload?.duplicate_of || null,
+              statusSuggestion: item.payload?.status_suggestion || null,
+              source: item.source,
+              meetingId: item.payload?.meeting_id || null,
+            })
             return (
               <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -288,9 +300,9 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       {projects.length > 0 && <SH2 label="Projekt" className="w-[120px]" />}
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {filteredTodos.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate }; return (
+                      {filteredTodos.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell className="text-left"><div className="flex items-center gap-2"><button onClick={e => { e.stopPropagation(); cycleTodoInbox(item) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(vt) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<DuplicateBadge item={item} /></div></div></TableCell>
+                          <TableCell className="text-left"><div className="flex items-center gap-2"><button onClick={e => { e.stopPropagation(); cycleTodoInbox(item) }} className="w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)]" style={{ borderColor: 'var(--syn-line)' }} /><div className="min-w-0"><button onClick={e => { e.stopPropagation(); setViewTodo(vt) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<InboxSignal item={item} /><DuplicateBadge item={item} /></div></div></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.assignee||'?'}/><span className="text-xs">{p.assignee||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${PRI_STYLE[p.priority]||''}`}>{PRI_LABEL[p.priority]||p.priority||'—'}</Badge></TableCell>
                           <TableCell className={`text-xs ${p.due_date && p.due_date < today && (p.status || 'open') !== 'done' ? 'text-[var(--syn-danger)] font-bold' : ''}`} style={!(p.due_date && p.due_date < today && (p.status || 'open') !== 'done') ? {color:'var(--syn-text-muted)'} : {}}>{p.due_date||'—'}</TableCell>
@@ -323,9 +335,9 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       <SH2 label="Quelle" className="w-[140px]" />
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {filteredBlockers.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: srcDate }; return (
+                      {filteredBlockers.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewBlocker(vb) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<DuplicateBadge item={item} /></TableCell>
+                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewBlocker(vb) }} className="text-left font-medium hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-md" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<InboxSignal item={item} /><DuplicateBadge item={item} /></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.reported_by||'?'}/><span className="text-xs">{p.reported_by||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'active']||''}`}>{ST_LABEL[p.status||'active']||'—'}</Badge></TableCell>
                           <TableCell className="text-xs" style={{color:'var(--syn-text-muted)'}}>{srcDate||'—'}</TableCell>
@@ -358,10 +370,10 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                       <SH2 label="Quelle" className="w-[140px]" />
                       <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
-                      {filteredOpen.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'info', status: p.status||'open', meetingId: null, projectId: null, createdAt: srcDate }; return (
+                      {filteredOpen.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'info', status: p.status||'open', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayload(item) }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
                           <TableCell className="text-center">{CAT_ICON[p.category]||'○'}</TableCell>
-                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewOpen(vo) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<DuplicateBadge item={item} /></TableCell>
+                          <TableCell className="text-left"><button onClick={e => { e.stopPropagation(); setViewOpen(vo) }} className="text-left hover:text-[var(--syn-accent)]">{p.title||'—'}</button>{p.description&&<div className="text-xs truncate max-w-sm" style={{color:'var(--syn-text-faint)'}}>{p.description}</div>}<InboxSignal item={item} /><DuplicateBadge item={item} /></TableCell>
                           <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-line)]">{CAT_LABEL[p.category]||p.category||'—'}</Badge></TableCell>
                           <TableCell><div className="flex items-center justify-center gap-1.5"><Av name={p.owner||'?'}/><span className="text-xs">{p.owner||'—'}</span></div></TableCell>
                           <TableCell><Badge className={`text-[10px] ${ST_STYLE[p.status||'open']||''}`}>{ST_LABEL[p.status||'open']||'—'}</Badge></TableCell>
@@ -386,7 +398,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Art" className="w-[120px]" />
                       <SH2 label="Titel" />
-                      <SH2 label="Beleggrund" />
+                      <SH2 label="Beleg / Grund" />
                       <SH2 label="Erstellt" className="w-[100px]" />
                       <SH2 label="Quelle" className="w-[140px]" />
                       <SH2 label="Änderung" className="w-[120px]" />
