@@ -13,7 +13,7 @@ import {
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
   FILTER_BAR_CLASS, FILTER_INPUT_CLASS, FILTER_TRIGGER_CLASS, TABLE_COL,
-  Av, CategoryBadge, CompactRangeCalendar, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
+  Av, CategoryBadge, CompactRangeCalendar, SOURCE_CELL_CLASS, StatusCycleButton, TABLE_ACTION_CELL_CLASS, TABLE_ROW_CLASS, TITLE_WRAP_CLASS, TrashIcon, SourceChip, shortTopic, inboxMeetingView,
   type Meeting, type Todo, type Blocker, type OpenItem,
 } from '../lib/shared'
 import type { DbInboxItem, DbProject, TableCounts } from '../supabase'
@@ -138,7 +138,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
             const sourceFileMap = new Map<string, Meeting>()
             ib.meetings.forEach(item => { if (item.source) sourceFileMap.set(item.source, inboxMeetingView(item)) })
             const FC = ({ item }: { item: DbInboxItem }) => (
-              <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center">
+              <TableCell className={TABLE_ACTION_CELL_CLASS} onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center">
                 <button onClick={() => handleInboxEdit(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Bearbeiten">✎</button>
                 <button onClick={() => handleInboxApprove(item)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-ok)]/10 transition-colors" style={{ color: 'var(--syn-ok)' }} title="Übernehmen">✓</button>
                 <button onClick={() => handleInboxReject(item.id)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }} title="Ablehnen">✕</button>
