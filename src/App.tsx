@@ -32,7 +32,7 @@ import {
   MEMBER_ORDER,
   mutationErrorMessage, computeChatCost,
   Av, SourceChip,
-  sanitizeHtml, shortTopic,
+  sanitizeHtml, shortTopic, inboxMeetingView,
   normalizeTopicDetails, stripEmbeddedTopicsFromSummary,
   addDays, textMatch,
   type Todo, type Blocker, type OpenItem, type Meeting, type MeetingTopicDetail, type Activity, type ChatMessage,
@@ -773,22 +773,66 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   }
   const getProjectName = (id: string | null) => projects.find(p => p.id === id)?.name || null
 
-
+  const normalizeEntityType = (value?: string | null) => {
+    if (value === 'todos' || value === 'todo') return 'todo'
+    if (value === 'blockers' || value === 'blocker') return 'blocker'
+    if (value === 'open_items' || value === 'open_item') return 'open_item'
+    if (value === 'meetings' || value === 'meeting') return 'meeting'
+    if (value === 'projects' || value === 'project') return 'project'
+    if (value === 'inbox_items') return 'inbox_item'
+    return value || ''
+  }
+  const closeEntityViews = () => {
+    setViewTodo(null)
+    setViewBlocker(null)
+    setViewOpen(null)
+    setViewMeeting(null)
+    setViewProject(null)
+  }
+  const inboxSignalPayloadFor = (item: DbInboxItem) => ({
+    duplicateOf: item.payload?.duplicate_of || null,
+    statusSuggestion: item.payload?.status_suggestion || null,
+    source: item.source,
+    meetingId: item.payload?.meeting_id || null,
+  })
+  const openInboxEntity = (item: DbInboxItem) => {
+    const p = item.payload || {}
+    const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''
+    closeEntityViews()
+    if (item.entity_type === 'todo') setViewTodo({ id: 'ib_' + item.id, assignee: p.assignee || 'Nicht zugeordnet', title: p.title || '', description: p.description || '', status: p.status || 'open', priority: p.priority || 'medium', dueDate: p.due_date || null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayloadFor(item) } as any)
+    else if (item.entity_type === 'blocker') setViewBlocker({ id: 'ib_' + item.id, reportedBy: p.reported_by || 'Nicht zugeordnet', title: p.title || '', description: p.description || '', status: p.status || 'active', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayloadFor(item) } as any)
+    else if (item.entity_type === 'open_item') setViewOpen({ id: 'ib_' + item.id, owner: p.owner || 'Nicht zugeordnet', title: p.title || '', description: p.description || '', category: p.category || 'info', status: p.status || 'open', meetingId: null, projectId: null, createdAt: srcDate, inboxSignal: inboxSignalPayloadFor(item) } as any)
+    else if (item.entity_type === 'meeting') setViewMeeting(inboxMeetingView(item))
+  }
   const openSourceEntity = (entityType: string, entityId: string) => {
-    switch (entityType) {
-      case 'todo': { const t = todos.find(x => x.id === entityId); if (t) setViewTodo(t); break }
-      case 'blocker': { const b = blockers.find(x => x.id === entityId); if (b) setViewBlocker(b); break }
-      case 'open_item': { const o = openItems.find(x => x.id === entityId); if (o) setViewOpen(o); break }
-      case 'meeting': { const m = meetings.find(x => x.id === entityId); if (m) setViewMeeting(m); break }
-      case 'decision': { break }
-      case 'project': { const p = projects.find(x => x.id === entityId); if (p) setViewProject(p); break }
+    const normalized = normalizeEntityType(entityType)
+    const openDashboardEntity = (type: string, id: string) => {
+      switch (type) {
+        case 'todo': { const t = todos.find(x => x.id === id); if (t) { closeEntityViews(); setViewTodo(t); return true } break }
+        case 'blocker': { const b = blockers.find(x => x.id === id); if (b) { closeEntityViews(); setViewBlocker(b); return true } break }
+        case 'open_item': { const o = openItems.find(x => x.id === id); if (o) { closeEntityViews(); setViewOpen(o); return true } break }
+        case 'meeting': { const m = meetings.find(x => x.id === id); if (m) { closeEntityViews(); setViewMeeting(m); return true } break }
+        case 'project': { const p = projects.find(x => x.id === id); if (p) { closeEntityViews(); setViewProject(p); return true } break }
+      }
+      return false
     }
+    if (openDashboardEntity(normalized, entityId)) return
+    const inboxItem = normalized === 'inbox_item'
+      ? inboxItems.find(x => x.id === entityId)
+      : inboxItems.find(x => x.id === entityId && normalizeEntityType(x.entity_type) === normalized)
+    if (inboxItem) { openInboxEntity(inboxItem); return }
+    const inferredInboxItem = inboxItems.find(x => x.id === entityId)
+    if (inferredInboxItem) { openInboxEntity(inferredInboxItem); return }
+    setError('Verknüpfter Eintrag nicht gefunden.')
   }
   const renderInboxSignalDetails = (entry: any) => {
     const signal = entry?.inboxSignal
     if (!signal?.duplicateOf && !signal?.statusSuggestion) return null
-    const duplicateEntityType = signal.duplicateOf?.table === 'todos' ? 'todo' : signal.duplicateOf?.table === 'blockers' ? 'blocker' : signal.duplicateOf?.table === 'open_items' ? 'open_item' : ''
+    const duplicateEntityType = normalizeEntityType(signal.duplicateOf?.table || signal.duplicateOf?.entity_type || signal.duplicateOf?.type)
     const evidenceMeeting = signal.statusSuggestion?.evidence_meeting_id ? getMeeting(signal.statusSuggestion.evidence_meeting_id) : null
+    const evidenceInboxMeeting = !evidenceMeeting
+      ? inboxItems.find(item => item.entity_type === 'meeting' && (item.id === signal.statusSuggestion?.evidence_meeting_id || item.payload?.meeting_id === signal.statusSuggestion?.evidence_meeting_id || item.source === signal.source))
+      : null
     return (
       <>
         <Separator className="bg-[var(--syn-line)]" />
@@ -812,7 +856,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
               <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: 'var(--syn-text-faint)' }}>
                 {signal.statusSuggestion.evidence_source && <span>{signal.statusSuggestion.evidence_source === 'chunk' ? 'Transkript-Chunk' : 'Summary'}</span>}
                 {signal.statusSuggestion.evidence_meeting_date && <span>{signal.statusSuggestion.evidence_meeting_date}</span>}
-                {evidenceMeeting && <button onClick={() => setViewMeeting(evidenceMeeting)} className="underline hover:text-[var(--syn-accent)]">Meeting öffnen</button>}
+                {evidenceMeeting && <button onClick={() => { closeEntityViews(); setViewMeeting(evidenceMeeting) }} className="underline hover:text-[var(--syn-accent)]">Meeting öffnen</button>}
+                {evidenceInboxMeeting && <button onClick={() => openInboxEntity(evidenceInboxMeeting)} className="underline hover:text-[var(--syn-accent)]">Meeting öffnen</button>}
               </div>
             </div>
           )}
