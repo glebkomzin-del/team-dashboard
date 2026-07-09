@@ -47,12 +47,13 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
   }
 
             const ib = { meetings: inboxItems.filter(i => i.entity_type === 'meeting'), todos: inboxItems.filter(i => i.entity_type === 'todo'), blockers: inboxItems.filter(i => i.entity_type === 'blocker'), open: inboxItems.filter(i => i.entity_type === 'open_item'), resolutions: inboxItems.filter(i => i.entity_type === 'resolution') }
+            const duplicateItems = inboxItems.filter(i => ['todo', 'blocker', 'open_item'].includes(i.entity_type) && i.payload?.duplicate_of)
             const inboxTabs: [InboxTab, string, number][] = [
               ['meetings', 'Meetings', ib.meetings.length],
               ['todos', 'Todos', ib.todos.length],
               ['blockers', 'Blocker', ib.blockers.length],
               ['open', 'Offene Punkte', ib.open.length],
-              ['resolutions', 'Gelöst?', ib.resolutions.length],
+              ['resolutions', 'Statusänderung', ib.resolutions.length + duplicateItems.length],
             ]
             // Map source filename → meeting vm (for Quelle column in todos/blockers/open_items)
             const sourceFileMap = new Map<string, Meeting>()
@@ -111,7 +112,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                 {/* ── Meetings ── */}
                 {inboxTab === 'meetings' && (
                   <section>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-meetings-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Datum" className="w-[100px]" />
                       <SH2 label="Titel" />
                       <SH2 label="Teilnehmer" className="w-[180px]" />
@@ -134,7 +135,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                 {/* ── Todos ── */}
                 {inboxTab === 'todos' && (
                   <section>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Aufgabe" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Priorität" className="w-[100px]" />
@@ -165,7 +166,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                 {/* ── Blocker ── */}
                 {inboxTab === 'blockers' && (
                   <section>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Blocker" />
                       <SH2 label="Zuständig" className="w-[130px]" />
                       <SH2 label="Status" className="w-[100px]" />
@@ -190,7 +191,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                 {/* ── Offene Punkte ── */}
                 {inboxTab === 'open' && (
                   <section>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <TableHead className="w-10"></TableHead>
                       <SH2 label="Item" />
                       <SH2 label="Kategorie" className="w-[100px]" />
@@ -216,13 +217,13 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
-                {/* ── Lösungsvorschläge ── */}
+                {/* ── Statusänderungen & Dubletten ── */}
                 {inboxTab === 'resolutions' && (
                   <section>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className="p-0 max-h-[calc(100vh-196px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                      <SH2 label="Ziel" className="w-[120px]" />
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                      <SH2 label="Vorschlag" className="w-[130px]" />
                       <SH2 label="Eintrag" />
-                      <SH2 label="Beleg" />
+                      <SH2 label="Beleg / Grund" />
                       <SH2 label="Meeting" className="w-[130px]" />
                       <SH2 label="Confidence" className="w-[110px]" />
                       <SH2 label="Anpassen" className="w-[130px]" />
@@ -237,7 +238,17 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                           <FC item={item} />
                         </TableRow>
                       )})}
-                      {ib.resolutions.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Lösungsvorschläge</TableCell></TableRow>}
+                      {duplicateItems.map(item => { const p = item.payload; const dup = p.duplicate_of; const entityType = targetEntityType(dup?.table); const ownType = item.entity_type === 'todo' ? 'Todo' : item.entity_type === 'blocker' ? 'Blocker' : 'Offener Punkt'; const reference = resolveMeetingReference(item.source, p.meeting_id); return (
+                        <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
+                          <TableCell><Badge variant="outline" className="text-[10px] border-[var(--syn-danger)]/40 text-[var(--syn-danger)]">Dublette</Badge></TableCell>
+                          <TableCell className="text-left"><div className="font-medium">{p.title || '—'}</div><button onClick={e => { e.stopPropagation(); if (entityType) openSourceEntity(entityType, dup.id) }} className="text-xs text-left hover:text-[var(--syn-accent)]" style={{color:'var(--syn-text-faint)'}}>mögliche Dublette von: {dup?.title || '—'}</button><div className="text-[10px] mt-0.5" style={{color:'var(--syn-text-faint)'}}>{ownType}</div></TableCell>
+                          <TableCell className="text-left"><span className="text-xs line-clamp-2">{dup?.reason || 'Fachlich ähnlicher bestehender Eintrag erkannt.'}</span></TableCell>
+                          <TableCell className="text-xs" onClick={e => e.stopPropagation()}><SourceChip meeting={reference?.meeting || null} deleted={reference?.deleted} onClick={() => openMeetingReference(reference)} /></TableCell>
+                          <TableCell><Badge className="text-[10px] bg-[var(--syn-warn-soft)] text-[var(--syn-warn)]">Prüfen</Badge></TableCell>
+                          <FC item={item} />
+                        </TableRow>
+                      )})}
+                      {ib.resolutions.length + duplicateItems.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm py-8" style={{color:'var(--syn-text-faint)'}}>Keine Statusänderungen oder Dubletten</TableCell></TableRow>}
                     </TableBody></Table></CardContent></Card>
                   </section>
                 )}
