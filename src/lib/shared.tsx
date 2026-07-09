@@ -286,7 +286,7 @@ export function SourceChip({ meeting, deleted = false, onClick }: { meeting: { i
   if (!meeting) return null
   return (
     <button onClick={onClick} className={`source-chip ${deleted ? 'source-chip-deleted' : ''} inline-flex max-h-9 min-h-5 items-center justify-center gap-1 rounded px-2 py-0.5 text-[10px] leading-[12px] transition-colors w-full overflow-hidden`} title={deleted ? `${meeting.title} — Meeting gelöscht` : meeting.title}>
-      <span className="opacity-60 shrink-0">{'"'}</span><span className="text-center overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">{meeting.title}</span>
+      <span className="text-center overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">{meeting.title}</span>
     </button>
   )
 }
