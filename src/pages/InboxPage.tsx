@@ -117,7 +117,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                       <SH2 label="Titel" />
                       <SH2 label="Teilnehmer" className="w-[180px]" />
                       <SH2 label="Themen" className="w-[260px]" />
-                      <SH2 label="Anpassen" className="w-[130px]" />
+                      <SH2 label="Anpassen" className="w-[80px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.meetings.map(item => { const p = item.payload; const vm = inboxMeetingView(item); return (
                         <TableRow key={item.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -144,7 +144,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                       <SH2 label="Erstellt" className="w-[100px]" />
                       <SH2 label="Quelle" className="w-[140px]" />
                       {projects.length > 0 && <SH2 label="Projekt" className="w-[120px]" />}
-                      <SH2 label="Anpassen" className="w-[130px]" />
+                      <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.todos.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vt = { id: 'ib_'+item.id, assignee: p.assignee||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'open', priority: p.priority||'medium', dueDate: p.due_date||null, startDate: null, durationDays: 1, dependsOn: [], meetingId: null, projectId: null, createdAt: srcDate }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -172,7 +172,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                       <SH2 label="Status" className="w-[100px]" />
                       <SH2 label="Erstellt" className="w-[100px]" />
                       <SH2 label="Quelle" className="w-[140px]" />
-                      <SH2 label="Anpassen" className="w-[130px]" />
+                      <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.blockers.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vb = { id: 'ib_'+item.id, reportedBy: p.reported_by||'Nicht zugeordnet', title: p.title||'', description: p.description||'', status: p.status||'active', meetingId: null, projectId: null, createdAt: srcDate }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -199,7 +199,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                       <SH2 label="Status" className="w-[100px]" />
                       <SH2 label="Erstellt" className="w-[100px]" />
                       <SH2 label="Quelle" className="w-[140px]" />
-                      <SH2 label="Anpassen" className="w-[130px]" />
+                      <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.open.map(item => { const p = item.payload; const srcDate = p.meeting_date || item.created_at?.split('T')[0] || ''; const vo = { id: 'ib_'+item.id, owner: p.owner||'Nicht zugeordnet', title: p.title||'', description: p.description||'', category: p.category||'info', status: p.status||'open', meetingId: null, projectId: null, createdAt: srcDate }; return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
@@ -224,9 +224,9 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
                       <SH2 label="Vorschlag" className="w-[130px]" />
                       <SH2 label="Eintrag" />
                       <SH2 label="Beleg / Grund" />
-                      <SH2 label="Meeting" className="w-[130px]" />
-                      <SH2 label="Confidence" className="w-[110px]" />
-                      <SH2 label="Anpassen" className="w-[130px]" />
+                      <SH2 label="Quelle" className="w-[140px]" />
+                      <SH2 label="Bewertung" className="w-[100px]" />
+                      <SH2 label="Anpassen" className="w-[90px]" />
                     </TableRow></TableHeader><TableBody>
                       {ib.resolutions.map(item => { const p = item.payload; const reference = resolveMeetingReference(null, p.evidence_meeting_id); const entityType = targetEntityType(p.target_table); return (
                         <TableRow key={item.id} className={`text-sm border-[var(--syn-line)] group select-none cursor-pointer ${inboxSelected.has(item.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => selRow(item.id)}>
