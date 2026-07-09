@@ -86,7 +86,7 @@ export function CommandCenterPage({ meetings, todos, blockers, chatInput, setCha
                     const cardClass = "rounded-xl border border-[var(--syn-line)] overflow-hidden flex flex-col"
                     const cardStyle = { background: 'var(--syn-surface)', height: 562 }
                     const headerClass = "flex items-center justify-between px-4 h-10 border-b border-[var(--syn-line)] shrink-0"
-                    const listClass = "divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto"
+                    const listClass = "divide-y divide-[var(--syn-line)] flex-1 overflow-y-auto [scrollbar-gutter:stable]"
                     const itemClass = "px-4 h-[52px] flex flex-col justify-center hover:bg-[var(--syn-hover)] transition-colors cursor-pointer"
                     const subClass = "flex items-center gap-1.5 h-5 text-[11px] leading-tight"
                     return <>

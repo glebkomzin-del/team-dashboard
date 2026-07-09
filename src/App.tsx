@@ -928,7 +928,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   ]
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--syn-bg)', color: 'var(--syn-text)' }}>
+    <div className="h-screen overflow-hidden flex" style={{ background: 'var(--syn-bg)', color: 'var(--syn-text)' }}>
       {/* ═══ SIDEBAR ═══ */}
       <aside className={`${sidebarCollapsed ? 'w-14' : 'w-52'} glass-sidebar flex flex-col shrink-0 transition-[width] duration-200 sticky top-0 h-screen border-r border-[var(--syn-line)]`} style={{ overflow: 'clip' }}>
         <div className="flex items-center h-14 border-b border-[var(--syn-line)]" style={{ overflow: 'clip' }}>
@@ -997,7 +997,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--syn-hover)] transition-colors text-sm" title="Theme wechseln">{theme === 'dark' ? '☀' : '☾'}</button>
         </header>
 
-        <main data-testid="main-content" className="flex-1 px-6 pt-6 pb-6 overflow-auto">
+        <main data-testid="main-content" className="flex-1 px-6 pt-6 pb-6 overflow-x-auto overflow-y-scroll">
 
           {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
           {page === 'uebersicht' && <CommandCenterPage meetings={meetings} todos={todos} blockers={blockers} chatInput={chatInput} setChatInput={setChatInput} handleChat={handleChat} setPage={setPage} setActionTab={setActionTab} setEditTodo={setEditTodo} setViewTodo={setViewTodo} setViewMeeting={setViewMeeting} setViewBlocker={setViewBlocker} handleQuickStatusToggle={handleQuickStatusToggle} />}

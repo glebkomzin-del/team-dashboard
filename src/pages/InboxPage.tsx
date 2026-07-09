@@ -274,7 +274,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                         <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
                       </div>
                     </div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Titel" />
                       <SH2 label="Zuständig" className={TABLE_COL.assignee} />
                       <SH2 label="Priorität" className={TABLE_COL.priority} />
@@ -312,7 +312,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                         <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                       </div>
                     </div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Titel" />
                       <SH2 label="Zuständig" className={TABLE_COL.assignee} />
                       <SH2 label="Status" className={TABLE_COL.status} />
@@ -345,7 +345,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                         <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                       </div>
                     </div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Titel" />
                       <SH2 label="Kategorie" className={TABLE_COL.category} />
                       <SH2 label="Zuständig" className={TABLE_COL.assignee} />
@@ -378,7 +378,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                         <Select value={statusFilterType} onValueChange={setStatusFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent className="w-[160px]"><SelectItem value="all">Alle Arten</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem></SelectContent></Select>
                       </div>
                     </div>
-                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className="p-0"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
+                    <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
                       <SH2 label="Art" className={TABLE_COL.type} />
                       <SH2 label="Titel" />
                       <SH2 label="Beleg / Grund" className={TABLE_COL.reason} />

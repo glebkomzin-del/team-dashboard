@@ -61,7 +61,10 @@ export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
 export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px] overflow-hidden'
 export const TABLE_CELL_COMPACT_CLASS = 'h-[52px] max-h-[52px] py-1 overflow-hidden align-middle'
 export const TABLE_ACTION_CELL_CLASS = 'px-1 py-1'
-export const TABLE_VIEWPORT_CLASS = 'p-0 max-h-[calc(100vh-196px)] overflow-y-auto'
+// scrollbar-gutter:stable reserviert den Scrollbalken-Platz IMMER — so fluchten
+// die rechten Kanten aller Tabellen (Meetings, Aktionen, Inbox), egal ob eine
+// Tabelle überläuft oder nicht und unabhängig von der OS-Scrollbar-Einstellung.
+export const TABLE_VIEWPORT_CLASS = 'p-0 max-h-[calc(100vh-196px)] overflow-y-auto [scrollbar-gutter:stable]'
 export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
 export const SOURCE_CELL_CLASS = 'h-[40px] max-h-[40px] flex items-center justify-center overflow-hidden'
 // Standardbreiten für Dashboard-Tabellen. Neue Spaltentypen zuerst hier ergänzen,
@@ -203,7 +206,7 @@ export function TenRowTableViewport({ testId, rowCount, children }: { testId: st
     return () => observer.disconnect()
   }, [rowCount])
 
-  return <CardContent ref={viewportRef} data-testid={testId} className="p-0 overflow-y-auto">{children}</CardContent>
+  return <CardContent ref={viewportRef} data-testid={testId} className="p-0 overflow-y-auto [scrollbar-gutter:stable]">{children}</CardContent>
 }
 export function SortIcon({ dir }: { dir: SortDir }) {
   if (!dir) return <span className="text-[var(--syn-text-faint)] ml-1">{'↕'}</span>
@@ -217,11 +220,11 @@ export function StatusCycleButton({ status, type, onClick }: { status: string; t
   return (
     <button
       onClick={e => { e.stopPropagation(); onClick() }}
-      className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center text-[10px] leading-none transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)] ${done ? 'bg-[var(--syn-ok)] border-[var(--syn-ok)] text-white' : middle ? 'border-[var(--syn-warn)] text-[var(--syn-warn)]' : 'border-[var(--syn-line)]'}`}
+      className={`w-4 h-4 rounded border border-[var(--syn-line)] shrink-0 flex items-center justify-center text-[10px] leading-none transition-colors hover:border-[var(--syn-accent)] hover:bg-[var(--syn-accent-soft)] ${done ? 'bg-[var(--syn-surface-3)] text-[var(--syn-text-muted)]' : middle ? 'text-[var(--syn-text-muted)]' : ''}`}
       title={`${label} ändern`}
       aria-label={`${type} Status ändern: ${label}`}
     >
-      {done ? '✓' : middle ? '•' : ''}
+      {done ? '✓' : middle ? '–' : ''}
     </button>
   )
 }
