@@ -361,6 +361,11 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const handleInboxApprove = async (item: DbInboxItem) => {
     const p = item.payload
     try {
+      if (p.duplicate_of && ['todo', 'blocker', 'open_item'].includes(item.entity_type)) {
+        await approveInboxItem(item.id, 'rejected')
+        setInboxItems(prev => prev.filter(x => x.id !== item.id))
+        return
+      }
       if (item.entity_type === 'todo') {
         const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
         const c = await insertTodo({ title: p.title, description: p.description, assignee: p.assignee || 'Nicht zugeordnet', priority: p.priority || 'medium', due_date: p.due_date || null, created_at: srcDate, meeting_id: p.meeting_id || null, meeting_source: p.meeting_source || item.source || null })
