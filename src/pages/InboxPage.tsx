@@ -201,7 +201,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
                       <div className={FILTER_BAR_CLASS}>
                         <Input placeholder="Suche..." value={meetingSearch} onChange={e => setMeetingSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                        <MultiSelectFilter selected={meetingFilterParticipant} onChange={setMeetingFilterParticipant} options={memberNames} allLabel="Alle Teilnehmer" testId="inbox-meeting-participant-filter" triggerWidth="w-[160px]" />
+                        <MultiSelectFilter selected={meetingFilterParticipant} onChange={setMeetingFilterParticipant} options={memberNames} allLabel="Teilnehmer" testId="inbox-meeting-participant-filter" triggerWidth="w-40" />
                         {(() => {
                           const activePreset = rangeToPresetKey(meetingFilterDateFrom, meetingFilterDateTo)
                           const hasFilter = Boolean(meetingFilterDateFrom || meetingFilterDateTo)
@@ -215,7 +215,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                           return (
                             <Popover open={meetingDateFilterOpen} onOpenChange={open => { setMeetingDateFilterOpen(open); if (open) { setMeetingDateFilterView('list'); setMeetingDateDraft(meetingFilterDateFrom || meetingFilterDateTo ? { from: parseLocalDate(meetingFilterDateFrom), to: parseLocalDate(meetingFilterDateTo) } : undefined) } }}>
                               <PopoverTrigger asChild>
-                                <button data-testid="inbox-meeting-date-filter" className="h-8 w-[160px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
+                                <button data-testid="inbox-meeting-date-filter" className="h-8 w-40 rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-sm flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
                                   {hasFilter && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--syn-accent)]" />}
                                   <span className="truncate text-left flex-1">{triggerLabel}</span>
                                   <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
@@ -268,10 +268,10 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
                       <div className={FILTER_BAR_CLASS}>
                         <Input placeholder="Suche..." value={todoSearch} onChange={e => setTodoSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                        <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[160px]" />
-                        {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
-                        <Select value={todoFilterStatus} onValueChange={setTodoFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent></Select>
-                        <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
+                        <MultiSelectFilter selected={todoFilterAssignee} onChange={setTodoFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-40" />
+                        {projects.length > 0 && <Select value={todoFilterProject} onValueChange={setTodoFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>}
+                        <Select value={todoFilterStatus} onValueChange={setTodoFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="in_progress">In Arbeit</SelectItem><SelectItem value="done">Erledigt</SelectItem></SelectContent></Select>
+                        <Select value={todoFilterDue} onValueChange={setTodoFilterDue}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Termine</SelectItem><SelectItem value="overdue">Überfällig</SelectItem><SelectItem value="this_week">Diese Woche</SelectItem><SelectItem value="no_date">Ohne Datum</SelectItem></SelectContent></Select>
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-todos-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -308,8 +308,8 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
                       <div className={FILTER_BAR_CLASS}>
                         <Input placeholder="Suche..." value={blockerSearch} onChange={e => setBlockerSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                        <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-[160px]" />
-                        <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
+                        <MultiSelectFilter selected={blockerFilterAssignee} onChange={setBlockerFilterAssignee} options={memberNames} allLabel="Zuständig" triggerWidth="w-40" />
+                        <Select value={blockerFilterStatus} onValueChange={setBlockerFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Status</SelectItem><SelectItem value="active">Aktiv</SelectItem><SelectItem value="resolved">Gelöst</SelectItem><SelectItem value="escalated">Eskaliert</SelectItem></SelectContent></Select>
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-blockers-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -340,9 +340,9 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
                       <div className={FILTER_BAR_CLASS}>
                         <Input placeholder="Suche..." value={openSearch} onChange={e => setOpenSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                        <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Zuständig" triggerWidth="w-[160px]" />
-                        <Select value={openFilterStatus} onValueChange={setOpenFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select>
-                        <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
+                        <MultiSelectFilter selected={openFilterOwner} onChange={setOpenFilterOwner} options={memberNames} allLabel="Zuständig" triggerWidth="w-40" />
+                        <Select value={openFilterStatus} onValueChange={setOpenFilterStatus}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Status</SelectItem><SelectItem value="open">Offen</SelectItem><SelectItem value="watching">Beobachten</SelectItem><SelectItem value="closed">Geschlossen</SelectItem></SelectContent></Select>
+                        <Select value={openFilterCategory} onValueChange={setOpenFilterCategory}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Kategorien</SelectItem><SelectItem value="decision">Entscheidung</SelectItem><SelectItem value="question">Frage</SelectItem><SelectItem value="risk">Risiko</SelectItem><SelectItem value="info">Information</SelectItem><SelectItem value="general">Allgemein (alt)</SelectItem><SelectItem value="opportunity">Chance (alt)</SelectItem><SelectItem value="follow_up">Nachverfolgung (alt)</SelectItem></SelectContent></Select>
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-open-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
@@ -375,7 +375,7 @@ export function InboxPage({ inboxItems, todos, blockers, openItems, tableCounts,
                     <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
                       <div className={FILTER_BAR_CLASS}>
                         <Input placeholder="Suche..." value={statusSearch} onChange={e => setStatusSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                        <Select value={statusFilterType} onValueChange={setStatusFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent className="w-[160px]"><SelectItem value="all">Alle Arten</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem></SelectContent></Select>
+                        <Select value={statusFilterType} onValueChange={setStatusFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent className="w-[160px]"><SelectItem value="all">Arten</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem></SelectContent></Select>
                       </div>
                     </div>
                     <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="inbox-resolutions-scroll" className={TABLE_VIEWPORT_CLASS}><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">

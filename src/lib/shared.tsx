@@ -55,16 +55,19 @@ export const CAT_LABEL: Record<string, string> = { decision: 'Entscheidung', que
 export const CAT_ICON: Record<string, string> = { decision: '◉', question: '?', risk: '▲', info: 'ⓘ', general: '○', opportunity: '◆', follow_up: '↩' }
 export const MEMBER_ORDER = ['Gleb', 'Niko', 'Mathias', 'Jan Philipp', 'Extern', 'Nicht zugeordnet']
 export const FINAL_STATUSES = new Set(['done', 'resolved', 'closed', 'approved', 'completed'])
-export const FILTER_INPUT_CLASS = 'h-8 w-[160px] text-xs bg-[var(--syn-surface-2)] border-[var(--syn-line)]'
-export const FILTER_TRIGGER_CLASS = 'h-8 w-[160px] text-xs'
+// Einheitliche Filter-Optik über alle Seiten: gleiche Höhe (h-8), gleiche
+// Breite (w-40 = 160px) und Schriftgröße text-sm (passt zum Tabelleninhalt).
+export const FILTER_INPUT_CLASS = 'h-8 w-40 text-sm bg-[var(--syn-surface-2)] border-[var(--syn-line)]'
+export const FILTER_TRIGGER_CLASS = 'h-8 w-40 text-sm'
 export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
 export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px] overflow-hidden'
 export const TABLE_CELL_COMPACT_CLASS = 'h-[52px] max-h-[52px] py-1 overflow-hidden align-middle'
 export const TABLE_ACTION_CELL_CLASS = 'px-1 py-1'
-// scrollbar-gutter:stable reserviert den Scrollbalken-Platz IMMER — so fluchten
-// die rechten Kanten aller Tabellen (Meetings, Aktionen, Inbox), egal ob eine
-// Tabelle überläuft oder nicht und unabhängig von der OS-Scrollbar-Einstellung.
-export const TABLE_VIEWPORT_CLASS = 'p-0 max-h-[calc(100vh-196px)] overflow-y-auto [scrollbar-gutter:stable]'
+// Kein interner Tabellen-Scroll mehr: die Tabelle rendert in voller Höhe und die
+// ganze Seite (main) scrollt einheitlich — gleiches Scrollverhalten und gleicher
+// Bodenabstand auf allen Datenseiten (vorher gab eine magische Fixhöhe je nach
+// Kopfzeilenhöhe unterschiedliche Abstände).
+export const TABLE_VIEWPORT_CLASS = 'p-0'
 export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
 export const SOURCE_CELL_CLASS = 'h-[40px] max-h-[40px] flex items-center justify-center overflow-hidden'
 // Standardbreiten für Dashboard-Tabellen. Neue Spaltentypen zuerst hier ergänzen,

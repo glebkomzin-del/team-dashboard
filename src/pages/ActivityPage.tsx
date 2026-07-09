@@ -57,7 +57,7 @@ export function ActivityPage({ activity, globalSearch, handleDeleteActivity, del
                 </div>
                 <div className={FILTER_BAR_CLASS}>
                   <Input placeholder="Suche..." value={logSearch} onChange={e => setLogSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                  <Select value={logFilterType} onValueChange={setLogFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Typen</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem><SelectItem value="meeting">Meetings</SelectItem><SelectItem value="decision">Entscheidung</SelectItem></SelectContent></Select>
+                  <Select value={logFilterType} onValueChange={setLogFilterType}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Typen</SelectItem><SelectItem value="todo">Todos</SelectItem><SelectItem value="blocker">Blocker</SelectItem><SelectItem value="open_item">Offene Punkte</SelectItem><SelectItem value="meeting">Meetings</SelectItem><SelectItem value="decision">Entscheidung</SelectItem></SelectContent></Select>
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent className="p-0">

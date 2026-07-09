@@ -63,7 +63,7 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                 </div>
                 <div className={FILTER_BAR_CLASS}>
                   <Input placeholder="Suche..." value={noteSearch} onChange={e => setNoteSearch(e.target.value)} className={FILTER_INPUT_CLASS} />
-                  <MultiSelectFilter selected={noteFilterParticipant} onChange={setNoteFilterParticipant} options={memberNames} allLabel="Alle Teilnehmer" testId="meeting-participant-filter" triggerWidth="w-[160px]" />
+                  <MultiSelectFilter selected={noteFilterParticipant} onChange={setNoteFilterParticipant} options={memberNames} allLabel="Teilnehmer" testId="meeting-participant-filter" triggerWidth="w-40" />
                   {(() => {
                     const activePreset = rangeToPresetKey(noteFilterDateFrom, noteFilterDateTo)
                     const hasFilter = Boolean(noteFilterDateFrom || noteFilterDateTo)
@@ -93,7 +93,7 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                     if (open) { setNoteDateFilterView('list'); setNoteDateDraft(noteFilterDateFrom || noteFilterDateTo ? { from: parseLocalDate(noteFilterDateFrom), to: parseLocalDate(noteFilterDateTo) } : undefined) }
                   }}>
                     <PopoverTrigger asChild>
-                      <button data-testid="meeting-date-filter" className="h-8 w-[160px] rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
+                      <button data-testid="meeting-date-filter" className="h-8 w-40 rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-sm flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors">
                         {hasFilter && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--syn-accent)]" />}
                         <span className="truncate text-left flex-1">{triggerLabel}</span>
                         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>

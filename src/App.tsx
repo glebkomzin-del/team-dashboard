@@ -997,7 +997,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--syn-hover)] transition-colors text-sm" title="Theme wechseln">{theme === 'dark' ? '☀' : '☾'}</button>
         </header>
 
-        <main data-testid="main-content" className="flex-1 px-6 pt-6 pb-6 overflow-x-auto overflow-y-scroll">
+        <main data-testid="main-content" className="flex-1 min-h-0 px-6 pt-6 pb-6 overflow-x-auto overflow-y-scroll">
 
           {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
           {page === 'uebersicht' && <CommandCenterPage meetings={meetings} todos={todos} blockers={blockers} chatInput={chatInput} setChatInput={setChatInput} handleChat={handleChat} setPage={setPage} setActionTab={setActionTab} setEditTodo={setEditTodo} setViewTodo={setViewTodo} setViewMeeting={setViewMeeting} setViewBlocker={setViewBlocker} handleQuickStatusToggle={handleQuickStatusToggle} />}

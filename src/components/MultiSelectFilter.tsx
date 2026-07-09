@@ -12,7 +12,7 @@ interface MultiSelectFilterProps {
   allLabel: string
   /** Test-ID für den Trigger-Button. */
   testId?: string
-  /** Breite des Trigger-Buttons (Tailwind-Klasse), default w-[160px]. */
+  /** Breite des Trigger-Buttons (Tailwind-Klasse), default w-40. */
   triggerWidth?: string
 }
 
@@ -21,7 +21,7 @@ interface MultiSelectFilterProps {
  * Konsistent mit dem Design des Datumsfilters: fester Trigger-Button,
  * Akzent-Punkt bei aktiver Auswahl, dezent,Outside-Click schließt.
  */
-export function MultiSelectFilter({ selected, options, onChange, allLabel, testId, triggerWidth = 'w-[160px]' }: MultiSelectFilterProps) {
+export function MultiSelectFilter({ selected, options, onChange, allLabel, testId, triggerWidth = 'w-40' }: MultiSelectFilterProps) {
   const [open, setOpen] = useState(false)
   const hasFilter = selected.length > 0
 
@@ -38,7 +38,7 @@ export function MultiSelectFilter({ selected, options, onChange, allLabel, testI
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button data-testid={testId} className={`h-8 ${triggerWidth} rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-xs flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors`}>
+        <button data-testid={testId} className={`h-8 ${triggerWidth} rounded-md border border-[var(--syn-line)] bg-[var(--syn-surface-2)] px-3 text-sm flex items-center gap-2 hover:bg-[var(--syn-hover)] transition-colors`}>
           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${hasFilter ? 'bg-[var(--syn-accent)]' : 'bg-transparent'}`} />
           <span className="truncate text-left flex-1">{label}</span>
           <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-50" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
@@ -50,7 +50,7 @@ export function MultiSelectFilter({ selected, options, onChange, allLabel, testI
             <button
               key={opt}
               onClick={() => toggle(opt)}
-              className="w-full flex items-center gap-2 text-left text-xs px-2 py-1.5 rounded hover:bg-[var(--syn-hover)] transition-colors"
+              className="w-full flex items-center gap-2 text-left text-sm px-2 py-1.5 rounded hover:bg-[var(--syn-hover)] transition-colors"
               style={{ color: selected.includes(opt) ? 'var(--syn-accent)' : 'var(--syn-text)' }}
             >
               <span className={`w-3.5 h-3.5 shrink-0 rounded border flex items-center justify-center ${selected.includes(opt) ? 'bg-[var(--syn-accent)] border-[var(--syn-accent)]' : 'border-[var(--syn-line)]'}`}>

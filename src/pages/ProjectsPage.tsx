@@ -228,8 +228,8 @@ export function ProjectsPage({ projects, projectIds, todos, setTodos, blockers, 
                 return (
                 <div className="space-y-3">
                   <div className={FILTER_BAR_CLASS}>
-                    <Select value={kanbanFilterProject} onValueChange={setKanbanFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
-                    <Select value={kanbanFilterAssignee} onValueChange={setKanbanFilterAssignee}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständigen</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                    <Select value={kanbanFilterProject} onValueChange={setKanbanFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
+                    <Select value={kanbanFilterAssignee} onValueChange={setKanbanFilterAssignee}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Zuständige</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
                     <Select value={kanbanGroupBy} onValueChange={v => setKanbanGroupBy(v as KanbanGroupBy)}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent>
                       <SelectItem value="none">Keine Gruppe</SelectItem>
                       <SelectItem value="project">Gruppe: Projekt</SelectItem>
@@ -420,8 +420,8 @@ export function ProjectsPage({ projects, projectIds, todos, setTodos, blockers, 
                     <div className="py-12 text-center text-sm" style={{ color: 'var(--syn-text-faint)' }}>Keine Todos mit Startdatum. Bearbeite Todos und setze ein Startdatum und Dauer.</div>
                   ) : (<>
                     <div className={`${FILTER_BAR_CLASS} mb-3`}>
-                      <Select value={ganttFilterProject} onValueChange={setGanttFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
-                      <Select value={ganttFilterAssignee} onValueChange={setGanttFilterAssignee}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Alle Zuständigen</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                      <Select value={ganttFilterProject} onValueChange={setGanttFilterProject}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Projekte</SelectItem>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
+                      <Select value={ganttFilterAssignee} onValueChange={setGanttFilterAssignee}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Zuständige</SelectItem>{memberNames.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
                       <Select value={ganttGroupBy} onValueChange={v => setGanttGroupBy(v as GanttGroupBy)}><SelectTrigger className={FILTER_TRIGGER_CLASS}><SelectValue /></SelectTrigger><SelectContent>
                         <SelectItem value="none">Keine Gruppe</SelectItem>
                         <SelectItem value="project">Gruppe: Projekt</SelectItem>
