@@ -405,6 +405,15 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           }
           await updateOpenItemFull(targetId, { status: 'closed', closed_at: evidenceDate } as any)
           setOpenItems(prev => prev.map(o => o.id === targetId ? { ...o, status: 'closed' } : o))
+        } else if (p.target_table === 'inbox_items') {
+          if (!inboxItems.some(x => x.id === targetId && x.status === 'pending')) {
+            await approveInboxItem(item.id, 'rejected')
+            setInboxItems(prev => prev.filter(x => x.id !== item.id))
+            setError('Vorschlag verworfen: Der Ziel-Inbox-Eintrag existiert nicht mehr.')
+            return
+          }
+          await approveInboxItem(targetId, 'rejected')
+          setInboxItems(prev => prev.filter(x => x.id !== targetId))
         } else {
           throw new Error('Unbekannter Zieltyp für Lösungsvorschlag')
         }

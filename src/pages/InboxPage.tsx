@@ -69,7 +69,7 @@ export function InboxPage({ inboxItems, tableCounts, projects, today, handleInbo
             const SH2 = ({ label, className }: { label: string; className?: string }) => <TableHead className={`text-xs text-center ${className||''}`}>{label}</TableHead>
             const selRow = (id: string) => setInboxSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
             const targetEntityType = (table?: string) => table === 'todos' ? 'todo' : table === 'blockers' ? 'blocker' : table === 'open_items' ? 'open_item' : ''
-            const targetLabel = (table?: string) => table === 'todos' ? 'Todo' : table === 'blockers' ? 'Blocker' : table === 'open_items' ? 'Offener Punkt' : 'Eintrag'
+            const targetLabel = (table?: string) => table === 'todos' ? 'Todo' : table === 'blockers' ? 'Blocker' : table === 'open_items' ? 'Offener Punkt' : table === 'inbox_items' ? 'Inbox-Eintrag' : 'Eintrag'
             const DuplicateBadge = ({ item }: { item: DbInboxItem }) => {
               const dup = item.payload?.duplicate_of
               if (!dup) return null
