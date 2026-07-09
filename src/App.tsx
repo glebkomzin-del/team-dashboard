@@ -373,6 +373,41 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         const srcDate = p.meeting_date || item.created_at?.split('T')[0] || new Date().toISOString().split('T')[0]
         const c = await insertOpenItem({ title: p.title, description: p.description, owner: p.owner || 'Nicht zugeordnet', category: p.category || 'info', created_at: srcDate, meeting_id: p.meeting_id || null, meeting_source: p.meeting_source || item.source || null })
         setOpenItems(prev => [{ id: c.id, owner: c.owner, title: c.title, description: c.description || '', category: c.category, status: c.status, meetingId: c.meeting_id, meetingSource: c.meeting_source, projectId: null, createdAt: srcDate }, ...prev])
+      } else if (item.entity_type === 'resolution') {
+        const targetId = String(p.target_id || '')
+        const evidenceDate = p.evidence_meeting_date || new Date().toISOString().split('T')[0]
+        const quote = String(p.evidence_quote || '')
+        if (p.target_table === 'todos') {
+          if (!todos.some(t => t.id === targetId)) {
+            await approveInboxItem(item.id, 'rejected')
+            setInboxItems(prev => prev.filter(x => x.id !== item.id))
+            setError('Vorschlag verworfen: Das Ziel-Todo existiert nicht mehr.')
+            return
+          }
+          await updateTodoFull(targetId, { status: 'done', completed_at: evidenceDate } as any)
+          setTodos(prev => prev.map(t => t.id === targetId ? { ...t, status: 'done' } : t))
+        } else if (p.target_table === 'blockers') {
+          if (!blockers.some(b => b.id === targetId)) {
+            await approveInboxItem(item.id, 'rejected')
+            setInboxItems(prev => prev.filter(x => x.id !== item.id))
+            setError('Vorschlag verworfen: Der Ziel-Blocker existiert nicht mehr.')
+            return
+          }
+          const shortQuote = quote.length > 180 ? `${quote.slice(0, 177)}...` : quote
+          await updateBlockerFull(targetId, { status: 'resolved', resolved_at: evidenceDate, resolution_note: `lt. Meeting vom ${evidenceDate}: ${shortQuote}` } as any)
+          setBlockers(prev => prev.map(b => b.id === targetId ? { ...b, status: 'resolved' } : b))
+        } else if (p.target_table === 'open_items') {
+          if (!openItems.some(o => o.id === targetId)) {
+            await approveInboxItem(item.id, 'rejected')
+            setInboxItems(prev => prev.filter(x => x.id !== item.id))
+            setError('Vorschlag verworfen: Der offene Punkt existiert nicht mehr.')
+            return
+          }
+          await updateOpenItemFull(targetId, { status: 'closed', closed_at: evidenceDate } as any)
+          setOpenItems(prev => prev.map(o => o.id === targetId ? { ...o, status: 'closed' } : o))
+        } else {
+          throw new Error('Unbekannter Zieltyp für Lösungsvorschlag')
+        }
       } else if (item.entity_type === 'meeting') {
         const { data: meetingId, error: promoteError } = await supabase.rpc('promote_inbox_meeting', { p_inbox_id: item.id })
         if (promoteError) throw promoteError
@@ -869,7 +904,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
           {page === 'uebersicht' && <CommandCenterPage meetings={meetings} todos={todos} blockers={blockers} chatInput={chatInput} setChatInput={setChatInput} handleChat={handleChat} setPage={setPage} setActionTab={setActionTab} setEditTodo={setEditTodo} setViewTodo={setViewTodo} setViewMeeting={setViewMeeting} setViewBlocker={setViewBlocker} handleQuickStatusToggle={handleQuickStatusToggle} />}
 
           {/* ═══ INBOX ═══ */}
-          {page === 'inbox' && <InboxPage inboxItems={inboxItems} tableCounts={tableCounts} projects={projects} today={today} handleInboxApprove={handleInboxApprove} handleInboxReject={handleInboxReject} handleInboxEdit={handleInboxEdit} cycleTodoInbox={cycleTodoInbox} setViewMeeting={setViewMeeting} setViewTodo={setViewTodo} setViewBlocker={setViewBlocker} setViewOpen={setViewOpen} resolveMeetingReference={resolveMeetingReference} openMeetingReference={openMeetingReference} getProjectName={getProjectName} />}
+          {page === 'inbox' && <InboxPage inboxItems={inboxItems} tableCounts={tableCounts} projects={projects} today={today} handleInboxApprove={handleInboxApprove} handleInboxReject={handleInboxReject} handleInboxEdit={handleInboxEdit} cycleTodoInbox={cycleTodoInbox} setViewMeeting={setViewMeeting} setViewTodo={setViewTodo} setViewBlocker={setViewBlocker} setViewOpen={setViewOpen} resolveMeetingReference={resolveMeetingReference} openMeetingReference={openMeetingReference} openSourceEntity={openSourceEntity} getProjectName={getProjectName} />}
 
           {/* ═══ SITZUNGEN ═══ */}
           {page === 'sitzungen' && <MeetingsPage meetings={meetings} tableCounts={tableCounts} memberNames={memberNames} globalSearch={globalSearch} openMeetingEditor={openMeetingEditor} handleDeleteMeeting={handleDeleteMeeting} deleteMeetings={deleteMeetings} setViewMeeting={setViewMeeting} setConfirmDelete={setConfirmDelete} />}

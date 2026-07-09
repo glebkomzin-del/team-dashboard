@@ -17,7 +17,7 @@ export interface DbOpenItem { id: string; owner: string; owner_id: string | null
 export interface DbActivity { id: string; entity_type: string; entity_id: string; action: string; field_changed: string | null; old_value: string | null; new_value: string | null; changed_by: string | null; note: string | null; meeting_id: string | null; created_at: string }
 export interface DbProject { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; owner: string | null; priority: string; created_at: string; updated_at: string }
 export interface DbDecision { id: string; meeting_id: string | null; meeting_source: string | null; project_id: string | null; title: string; description: string | null; decided_by: string | null; status: string; created_at: string; updated_at: string }
-export interface DbInboxItem { id: string; entity_type: 'todo' | 'blocker' | 'open_item' | 'meeting' | 'decision'; payload: Record<string, any>; source: string; status: 'pending' | 'approved' | 'rejected'; created_at: string }
+export interface DbInboxItem { id: string; entity_type: 'todo' | 'blocker' | 'open_item' | 'meeting' | 'decision' | 'resolution'; payload: Record<string, any>; source: string; status: 'pending' | 'approved' | 'rejected'; created_at: string }
 export interface DbMeetingLink { source: string; meeting_id: string | null; title: string; meeting_date: string | null; deleted_at: string | null }
 export interface DbMemoryMetric { id: number; created_at: string; meeting_count: number; summary_block_tokens: number; cache_write_tokens: number; cache_read_tokens: number; retrieval_mode: string; output_tokens: number; uncached_input_tokens: number; model: string | null; cost_usd: number }
 export interface TableCounts { meetings: number; todos: number; blockers: number; openItems: number; inbox: number }
@@ -505,4 +505,3 @@ export async function askMemoryStream(question: string, history: { role: string;
   buffer += decoder.decode()
   if (buffer.trim()) handleEvent(buffer)
 }
-
