@@ -10,7 +10,7 @@ import type { DateRange } from 'react-day-picker'
 import {
   MEETING_DATE_PRESETS, type DatePresetKey, presetToRange, rangeToPresetKey,
   parseLocalDate, toLocalDateValue, formatShortDate,
-  FILTER_BAR_CLASS, FILTER_INPUT_CLASS,
+  FILTER_BAR_CLASS, FILTER_INPUT_CLASS, TABLE_COL,
   CompactRangeCalendar, SH, TrashIcon, useSortState, sortBy, textMatch, shortTopic,
   type Meeting,
 } from '../lib/shared'
@@ -149,11 +149,11 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                 </div>
               </div>
               <Card className="glass-card border-[var(--syn-line)]"><CardContent data-testid="meetings-table-scroll" className="p-0 max-h-[calc(100vh-152px)] overflow-y-auto"><Table className="table-fixed w-full"><TableHeader><TableRow className="border-[var(--syn-line)]">
-                <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className="w-[100px]" />
+                <SH label="Datum" field="date" sort={noteSort} onSort={noteSort.toggle} className={TABLE_COL.created} />
                 <SH label="Titel" field="title" sort={noteSort} onSort={noteSort.toggle} />
-                <TableHead className="w-[180px] text-xs text-center">Teilnehmer</TableHead>
-                <TableHead className="w-[260px] text-xs text-center">Themen</TableHead>
-                <TableHead className="w-[80px] text-xs text-center">Anpassen</TableHead>
+                <TableHead className={`${TABLE_COL.participants} text-xs text-center`}>Teilnehmer</TableHead>
+                <TableHead className={`${TABLE_COL.topics} text-xs text-center`}>Themen</TableHead>
+                <TableHead className={`${TABLE_COL.compactActions} text-xs text-center`}>Anpassen</TableHead>
               </TableRow></TableHeader><TableBody>
                 {filteredNotes.map(m => (
                   <TableRow key={m.id} className={`text-sm cursor-pointer select-none border-[var(--syn-line)] group ${meetingSelected.has(m.id) ? 'bg-[var(--syn-accent)]/5' : 'hover:bg-[var(--syn-hover)]'}`} onClick={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })}>
@@ -161,7 +161,7 @@ export function MeetingsPage({ meetings, tableCounts, memberNames, globalSearch,
                     <TableCell className="text-left font-medium"><button onClick={e => { e.stopPropagation(); setViewMeeting(m) }} className="text-left hover:text-[var(--syn-accent)] leading-snug">{m.title}</button></TableCell>
                     <TableCell><div className="flex flex-col gap-0.5">{m.participants.slice(0, 5).map((p, i) => <span key={i} className="text-[10px] rounded truncate block" style={{ background: 'var(--syn-surface-3)', color: 'var(--syn-text-muted)', padding: '1px 6px', maxWidth: '164px' }}>{p}</span>)}{m.participants.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.participants.length - 5}</span>}</div></TableCell>
                     <TableCell><div className="flex flex-col gap-0.5">{m.topics.slice(0, 5).map((t, i) => <Badge key={i} variant="outline" className="text-[9px] border-[var(--syn-line)] whitespace-nowrap w-fit" style={{ padding: '1px 5px' }}>{shortTopic(t)}</Badge>)}{m.topics.length > 5 && <span className="text-[10px] font-medium" style={{ color: 'var(--syn-text-faint)' }}>+{m.topics.length - 5}</span>}</div></TableCell>
-                    <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => openMeetingEditor(m)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}><div className="flex gap-1.5 items-center justify-center"><button onClick={() => openMeetingEditor(m)} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-accent)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✎'}</button><button onClick={() => setConfirmDelete({ label: m.title, action: () => handleDeleteMeeting(m) })} className="text-base w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--syn-hover)] hover:text-[var(--syn-danger)] transition-colors" style={{ color: 'var(--syn-text-faint)' }}>{'✕'}</button><input type="checkbox" className={`w-3.5 h-3.5 cursor-pointer transition-opacity block ${meetingSelected.has(m.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} style={{ accentColor: 'var(--syn-accent)' }} checked={meetingSelected.has(m.id)} onClick={e => e.stopPropagation()} onChange={() => setMeetingSelected(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n })} /></div></TableCell>
                   </TableRow>
                 ))}
                 {filteredNotes.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm py-8" style={{ color: 'var(--syn-text-faint)' }}>Keine Meetings</TableCell></TableRow>}

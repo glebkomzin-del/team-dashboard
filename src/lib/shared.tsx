@@ -61,7 +61,7 @@ export const FILTER_BAR_CLASS = 'flex items-center gap-2 flex-wrap'
 export const TABLE_ROW_CLASS = 'h-[52px] max-h-[52px]'
 export const TITLE_WRAP_CLASS = 'min-w-0 h-[40px] flex flex-col justify-center overflow-hidden'
 // Standardbreiten für Dashboard-Tabellen. Neue Spaltentypen zuerst hier ergänzen,
-// dann in den Layern per TABLE_COL verwenden, damit Inbox/Aktionen konsistent bleiben.
+// dann in den Layern per TABLE_COL verwenden, damit die Tabellen konsistent bleiben.
 export const TABLE_COL = {
   title: '',
   type: 'w-[100px]',
