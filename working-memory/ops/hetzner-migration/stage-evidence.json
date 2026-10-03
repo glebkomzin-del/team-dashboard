@@ -65,7 +65,7 @@
     "new_and_existing_deno_journal": 12
   },
   "open": {
-    "recovery": "2 completed attempts: Gateway504/Auth context deadline exceeded; 0 captured messages. STALL gate Lead-owned; no third automatic attempt. Reset/link test incomplete.",
+    "recovery": "STALL2 + one authorized CHANGE_APPROACH followup: FOLLOWUP_FAILED. SMTP greeting/EHLO from actual Auth namespace passed, one recovery request returned HTTP500 with Docker DNS lookup server misbehaving. No captured mail; link/reset remain unproved. Original SMTP restored; capture removed; no further automatic attempt.",
     "cli_role_cleanup": "Managed source role DROP denied 42501; login expired and 0 sessions confirmed. Not deleted.",
     "production": "Public TLS/frontend/CSP/worker switch/final export/daily backup deployment and single-writer cutover not performed."
   },
@@ -73,6 +73,20 @@
     "temporary_source_credential_leases": 2,
     "source_full_dump_successful": 1,
     "stage_full_restore": 1,
-    "recovery_failed_attempts": 2
+    "recovery_failed_attempts": 2,
+    "recovery_followup_failed": 1
+  },
+  "recovery_followup": {
+    "problem_id": "HZ-MIGRATION-20261003/recovery",
+    "prior_failed_attempts": 2,
+    "followup_attempt": 1,
+    "smtp_external_messages": 0,
+    "source_mutation": false,
+    "smtp_greeting_ehlo_from_auth_net": true,
+    "status": "FOLLOWUP_FAILED",
+    "failure_type": "HTTPError",
+    "failure_message": "HTTP 500",
+    "auth_smtp_original_restored": true,
+    "capture_removed": true
   }
 }
