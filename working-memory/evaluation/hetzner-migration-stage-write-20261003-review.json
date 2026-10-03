@@ -13,7 +13,7 @@
   },
   "original_private_root": "/opt/dashboard-supabase-20261003/stage-write-replay-1",
   "original_passes": "Append200/revision1, exactReplay200/repeatedtrue, changedReplay409; valid for original v14.17 only",
-  "open": "StaleRevision503 instead of409, remaining wrong-actor/scope/owner/direct-RPC cases not executed; exact owned connection containment must finish before new requests",
+  "open": "None for stage write contract; final production cutover remains separately gated",
   "cause": "Original source SQLSTATE40001 plus PostgREST v14.17 unbounded retries; matching actual private RPC/Envoy/PG activity",
   "primary_sources": [
     "https://supabase.com/docs/guides/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions-77326b",
@@ -23,5 +23,8 @@
   "sql_edge_or_source_change": false,
   "failure_action": "FOLLOWUP_FAILED; no automatic further loop",
   "excluded": "Sourcefreeze, n8n rights, final restore, production aliases/env/writers",
-  "execution_result": "pending"
+  "execution_result": "FOLLOWUP_PASSED",
+  "execution_revision": "7cc8dc3",
+  "execution_evidence": "ops/hetzner-migration/stage-write-followup-evidence.json",
+  "execution_summary": "Native ARM64 PostgREST16.4; append1to2/exactReplay/changed409/stale409/denials403/ownerRLS readback passed, business aggregates unchanged, own prior PID closed, temporary token disabled."
 }
