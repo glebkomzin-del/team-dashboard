@@ -1,0 +1,13 @@
+$ tsc -b && vite build -- --configLoader runner
+vite v8.0.9 building client environment for production...
+
+transforming...✓ 1857 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                       0.52 kB │ gzip:   0.32 kB
+dist/assets/MemoryApp-w3d0z9DS.css   53.45 kB │ gzip:  10.26 kB
+dist/assets/index-DsPv-29T.css       56.01 kB │ gzip:  10.95 kB
+dist/assets/index-C9aF2-ub.js       192.52 kB │ gzip:  60.91 kB
+dist/assets/MemoryApp-DBUFtoaG.js   470.38 kB │ gzip: 127.10 kB
+
+✓ built in 1.18s

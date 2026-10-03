@@ -1,0 +1,468 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FRONTEND-PREP",
+  "checked_at_utc": "2026-10-03T17:18:16.818683+00:00",
+  "source_head": "72c92bbe34753a4114c890f94534e01be9f2b27a",
+  "branch": "codex/working-memory-redesign",
+  "cli_version": "54.18.7",
+  "cli_identity": "glebkomzin-del",
+  "linked_project": {
+    "orgId": "team_xbeBltwkXhOuVc8JUUR0CqoF",
+    "projectId": "prj_pWCB8TaGLQesLsT9me0jgT0FqcC5"
+  },
+  "rollback_deployment_id": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+  "rollback_scope": "Frontend artifact/aliases only; does not restore data or environment values. No rollback executed. Recheck alias before cutover.",
+  "verified_inspections": [
+    {
+      "command": [
+        "vercel",
+        "inspect",
+        "team-dashboard-4z892hxcb-glebkomzin-dels-projects.vercel.app",
+        "--format",
+        "json"
+      ],
+      "output": {
+        "id": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+        "name": "team-dashboard",
+        "url": "team-dashboard-4z892hxcb-glebkomzin-dels-projects.vercel.app",
+        "target": "production",
+        "readyState": "READY",
+        "createdAt": 1790000710388,
+        "aliases": [
+          "team-dashboard-rho.vercel.app",
+          "team-dashboard-glebkomzin-dels-projects.vercel.app"
+        ],
+        "builds": [
+          {
+            "id": "bld_fubycckvb",
+            "deploymentId": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+            "entrypoint": ".",
+            "readyState": "READY",
+            "readyStateAt": 1790000710043,
+            "createdAt": 1790000710043,
+            "createdIn": "sfo1",
+            "use": "@vercel/vc-build",
+            "config": {
+              "framework": "vite",
+              "buildCommand": "npm run build -- --configLoader runner",
+              "outputDirectory": "dist",
+              "nodeVersion": "24.x",
+              "projectCreatedAt": 1776895491539,
+              "vercelConfig": {
+                "buildCommand": "npm run build -- --configLoader runner",
+                "outputDirectory": "dist",
+                "framework": "vite",
+                "headers": [
+                  {
+                    "source": "/(.*)",
+                    "headers": [
+                      {
+                        "key": "Content-Security-Policy",
+                        "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://lghwikeotbkmojyyjglz.supabase.co wss://lghwikeotbkmojyyjglz.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+                      },
+                      {
+                        "key": "X-Content-Type-Options",
+                        "value": "nosniff"
+                      },
+                      {
+                        "key": "X-Frame-Options",
+                        "value": "DENY"
+                      },
+                      {
+                        "key": "Referrer-Policy",
+                        "value": "strict-origin-when-cross-origin"
+                      },
+                      {
+                        "key": "Permissions-Policy",
+                        "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+                      }
+                    ]
+                  }
+                ],
+                "rewrites": [
+                  {
+                    "source": "/api/working-memory/:path*",
+                    "destination": "https://178-105-167-26.nip.io/dashboard-memory/:path*"
+                  },
+                  {
+                    "source": "/(.*)",
+                    "destination": "/index.html"
+                  }
+                ],
+                "name": "team-dashboard",
+                "version": 2
+              }
+            },
+            "middleware": [],
+            "output": [],
+            "fingerprint": null
+          }
+        ],
+        "contextName": "glebkomzin-dels-projects"
+      }
+    },
+    {
+      "command": [
+        "vercel",
+        "inspect",
+        "team-dashboard-rho.vercel.app",
+        "--format",
+        "json"
+      ],
+      "output": {
+        "id": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+        "name": "team-dashboard",
+        "url": "team-dashboard-4z892hxcb-glebkomzin-dels-projects.vercel.app",
+        "target": "production",
+        "readyState": "READY",
+        "createdAt": 1790000710388,
+        "aliases": [
+          "team-dashboard-rho.vercel.app",
+          "team-dashboard-glebkomzin-dels-projects.vercel.app"
+        ],
+        "builds": [
+          {
+            "id": "bld_fubycckvb",
+            "deploymentId": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+            "entrypoint": ".",
+            "readyState": "READY",
+            "readyStateAt": 1790000710043,
+            "createdAt": 1790000710043,
+            "createdIn": "sfo1",
+            "use": "@vercel/vc-build",
+            "config": {
+              "framework": "vite",
+              "buildCommand": "npm run build -- --configLoader runner",
+              "outputDirectory": "dist",
+              "nodeVersion": "24.x",
+              "projectCreatedAt": 1776895491539,
+              "vercelConfig": {
+                "buildCommand": "npm run build -- --configLoader runner",
+                "outputDirectory": "dist",
+                "framework": "vite",
+                "headers": [
+                  {
+                    "source": "/(.*)",
+                    "headers": [
+                      {
+                        "key": "Content-Security-Policy",
+                        "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://lghwikeotbkmojyyjglz.supabase.co wss://lghwikeotbkmojyyjglz.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+                      },
+                      {
+                        "key": "X-Content-Type-Options",
+                        "value": "nosniff"
+                      },
+                      {
+                        "key": "X-Frame-Options",
+                        "value": "DENY"
+                      },
+                      {
+                        "key": "Referrer-Policy",
+                        "value": "strict-origin-when-cross-origin"
+                      },
+                      {
+                        "key": "Permissions-Policy",
+                        "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+                      }
+                    ]
+                  }
+                ],
+                "rewrites": [
+                  {
+                    "source": "/api/working-memory/:path*",
+                    "destination": "https://178-105-167-26.nip.io/dashboard-memory/:path*"
+                  },
+                  {
+                    "source": "/(.*)",
+                    "destination": "/index.html"
+                  }
+                ],
+                "name": "team-dashboard",
+                "version": 2
+              }
+            },
+            "middleware": [],
+            "output": [],
+            "fingerprint": null
+          }
+        ],
+        "contextName": "glebkomzin-dels-projects"
+      }
+    },
+    {
+      "command": [
+        "vercel",
+        "inspect",
+        "team-dashboard-glebkomzin-dels-projects.vercel.app",
+        "--format",
+        "json"
+      ],
+      "output": {
+        "id": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+        "name": "team-dashboard",
+        "url": "team-dashboard-4z892hxcb-glebkomzin-dels-projects.vercel.app",
+        "target": "production",
+        "readyState": "READY",
+        "createdAt": 1790000710388,
+        "aliases": [
+          "team-dashboard-rho.vercel.app",
+          "team-dashboard-glebkomzin-dels-projects.vercel.app"
+        ],
+        "builds": [
+          {
+            "id": "bld_fubycckvb",
+            "deploymentId": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+            "entrypoint": ".",
+            "readyState": "READY",
+            "readyStateAt": 1790000710043,
+            "createdAt": 1790000710043,
+            "createdIn": "sfo1",
+            "use": "@vercel/vc-build",
+            "config": {
+              "framework": "vite",
+              "buildCommand": "npm run build -- --configLoader runner",
+              "outputDirectory": "dist",
+              "nodeVersion": "24.x",
+              "projectCreatedAt": 1776895491539,
+              "vercelConfig": {
+                "buildCommand": "npm run build -- --configLoader runner",
+                "outputDirectory": "dist",
+                "framework": "vite",
+                "headers": [
+                  {
+                    "source": "/(.*)",
+                    "headers": [
+                      {
+                        "key": "Content-Security-Policy",
+                        "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://lghwikeotbkmojyyjglz.supabase.co wss://lghwikeotbkmojyyjglz.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+                      },
+                      {
+                        "key": "X-Content-Type-Options",
+                        "value": "nosniff"
+                      },
+                      {
+                        "key": "X-Frame-Options",
+                        "value": "DENY"
+                      },
+                      {
+                        "key": "Referrer-Policy",
+                        "value": "strict-origin-when-cross-origin"
+                      },
+                      {
+                        "key": "Permissions-Policy",
+                        "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+                      }
+                    ]
+                  }
+                ],
+                "rewrites": [
+                  {
+                    "source": "/api/working-memory/:path*",
+                    "destination": "https://178-105-167-26.nip.io/dashboard-memory/:path*"
+                  },
+                  {
+                    "source": "/(.*)",
+                    "destination": "/index.html"
+                  }
+                ],
+                "name": "team-dashboard",
+                "version": 2
+              }
+            },
+            "middleware": [],
+            "output": [],
+            "fingerprint": null
+          }
+        ],
+        "contextName": "glebkomzin-dels-projects"
+      }
+    }
+  ],
+  "csp": {
+    "source_sha256": "a6db085fa508be50dfc760a5e3bf57a77e7afb4c6ea2c176a04a73606cba5262",
+    "result_sha256": "eaa431e17362d103c7f6c475fbb10fe400ed030cd13319dfed711e6e96a6778c",
+    "patch": "frontend-csp.patch",
+    "only_change": "Add https://178-105-167-26.nip.io to connect-src. Existing dirty vercel.json preserved."
+  },
+  "tests": [
+    {
+      "question": "Existing worktree frontend build with target URL",
+      "criterion": "Existing npm build exits 0",
+      "command": "VITE_SUPABASE_URL=https://178-105-167-26.nip.io/supabase VITE_SUPABASE_ANON_KEY=<synthetic-invalid-key> npm run build -- --configLoader runner",
+      "result": "Stopped at five-minute bounded endpoint; no compiler output beyond startup",
+      "diagnosis": "Main-thread sample blocked in node::fs::Read -> uv_fs_read -> read; open AuthAdminApi.d.ts size169 blocks8 flags hidden, no dataless flag",
+      "passed": false
+    },
+    {
+      "question": "Same source compiles after fresh lockfile installation outside original local node_modules",
+      "criterion": "TypeScript and Vite build exit 0",
+      "scope": "Isolated pnpm frozen-lockfile install from official registry; existing build script with target URL and synthetic invalid key",
+      "result": "passed",
+      "network_effects": "Dependency download only; no deployment, sourceDB or targetAPI calls",
+      "build_seconds_from_vite": 1.18
+    },
+    {
+      "question": "Own CSP edit preserves proxy and existing dirty config",
+      "criterion": "Result hash matches recorded own patch; one origin addition; original proxy retained; git diff --check succeeds",
+      "result": "passed"
+    }
+  ],
+  "implementation_cycles_used": 2,
+  "maximum_cycles": 2,
+  "deployment_executed": false,
+  "production_environment_mutated": false,
+  "application_provider_cost_calls": 0,
+  "codex_budget_usage": "unknown",
+  "isolated_build": {
+    "path": "/private/tmp/hz-frontend-build-ejf6dx_r",
+    "source_hashes": {
+      "pnpm-lock.yaml": "fe04425d444731338266351a9d498ea4157caade8b618820d6cafab9fa4d4242",
+      "tsconfig.node.json": "90a22c920cbc14624fb4658b58f15c875abf3234224f3933f211849c3ada3242",
+      "index.html": "ea9c45773c4d0cbe9f1c44ba95f2fe14395a1a9a9abf845a5e8bddfead51260f",
+      "tailwind.config.js": "5298ab0a8b152890bfb78e0e817328f2587458d7f36be1d294ad0fdadb306399",
+      "tsconfig.app.json": "34351b6490c203f999757ec0f27a7d20376f7c58926aaef03a58f947a0f39a8c",
+      "package.json": "6abfdc89c421b1efa43f293d6eeed175aa7c5b37ad2b42fa8ba4756e65146263",
+      "tsconfig.json": "b6f0ab17a155de3cd71310ed5d7213a1283fcaa95c603b9cda4c8149da33e557",
+      "vite.config.ts": "081a7b8664605b559be54a4bf6605bbed75230b4c61f7f455ea68127ed897285",
+      "postcss.config.js": "190c877db466995bf1482f4a16abd06e04a89ede3119341e2a86ff96e1737b27",
+      "pnpm-workspace.yaml": "1768563c6d26ab601e8cb55b8c342536fc127f49180c53122cee3b28725097f9",
+      "public/icons.svg": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a",
+      "public/favicon.svg": "684b657171b876ec6967595e9bab2ba7baef25c5440f7d54e562fc242491c6b5",
+      "working-memory/dev-proxy.ts": "bfe05c080f1aace65fefccebbdc4de2ba64c96345e77f5d861b432ebf85dcb86",
+      "src/App.tsx": "89ab78b10b6636b0e47842c51289b2265b400990a42a913d406111db95d1f1fc",
+      "src/main.tsx": "6a0b7f32b188741962309d1045a0e1b010af41fa069fa8f35e172de952d62314",
+      "src/.DS_Store": "46571111bd54dbe4361964c6131510864244d2210bcd5ef5b569a5d8ccccd394",
+      "src/App.css": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c",
+      "src/index.css": "79054279673af410b4aab43febe9ccf62816527f7c604be2e12d54c397eb9e28",
+      "src/Entry.tsx": "088bd33fb25475fe76d8cf6900dba0e84081f2f55927ec314664eaacf9990c37",
+      "src/supabase.ts": "2d4b4eea9181efa079d8eee04acd906e20869a735c615afda08b5e2f2a67ba30",
+      "src/auth.ts": "b7f249ce1c2ee1507ed148da9a331bd85a67cd9eb0918d76edc3081334b5b32a",
+      "src/components/MultiSelectFilter.tsx": "e6420708bc090429f7fc8da3ffc08823967233dced590fd2d38cf49597867dc6",
+      "src/hooks/use-toast.ts": "5aab0623ee24bddf9420c259a23a06996292e38ea70eccbac2715516f6d01a0b",
+      "src/lib/shared.tsx": "0d318223d21b013df1468b95207be68373db36a343f178087b8bdae9a83364e4",
+      "src/lib/utils.ts": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+      "src/assets/hero.png": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c",
+      "src/assets/vite.svg": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f",
+      "src/assets/react.svg": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5",
+      "src/pages/MeetingsPage.tsx": "6d544cf62d7d21d8bb439bec3468acb82eca51fe7f99a792ffa2c862848d8cf1",
+      "src/pages/WorkingMemoryPreview.tsx": "6f12f8755f0364fdd50ca5bcc435c911d17999cf106ef8c7194004a2222dec74",
+      "src/pages/WorkingMemoryPage.tsx": "47aaa26d1e933f025cd6e3fe289e04e76aabe4cf2d73c01008c357b587259d52",
+      "src/pages/ActivityPage.tsx": "211d4658534f548a111ccbb78b91ced27f79822bd5147b65cf9f647240709548",
+      "src/pages/ProjectsPage.tsx": "b429c5553d9cc5764a21ec17fbcf0ab8f513f62f01494c451d2abbd67fd1b651",
+      "src/pages/SettingsPage.tsx": "1830f333bf725190ce88322570d8669445681de80c01f61af51db11847e24b60",
+      "src/pages/TextSearchPage.tsx": "e14055e22bff7b816c68e916039587923936a617a65bbfae2d6fbfa52e98111e",
+      "src/pages/InboxPage.tsx": "2582ce91de37bf108718b1d555d5ac43d4cf0c2fae48c51c1e349429728a89cd",
+      "src/pages/ArchivePage.tsx": "e0534577d6da33aeff1bf7cc0098e3dbf51866810ea39320993d1590e49a08a2",
+      "src/pages/KiPage.tsx": "940fd6d1833e493fad3aebab393a39ad80aadb010d99f7102634f0520ca707a7",
+      "src/pages/ProductivityPage.tsx": "b6c7ee4bd7dd4fe60502e3914cc570be38015ab15b96544889abdcedf2106d23",
+      "src/pages/ActionsPage.tsx": "d15ab18c521c42d871e9f30994b18d0a633447cc222b5b5a7c9ff889e6be2c4b",
+      "src/pages/CommandCenterPage.tsx": "b8779a609eea1b2b1d45198aa83439b24393d0b6f60b088557dd6bf18e00b8aa",
+      "src/pages/MemoryApp.tsx": "3b238c22d7c6056ec4eb204f93a3f81b2c4595e848972d0fc54970e9aafad3dd",
+      "src/components/ui/aspect-ratio.tsx": "08b0aa0b05efc573c7d63363c03e83d4b101bfeb54140764e96ddea30659cfcc",
+      "src/components/ui/tabs.tsx": "6f74706bc6b53f9e4bcebb5e7ab8743b616aef181edc7758b8ee905f9b2fdcd7",
+      "src/components/ui/card.tsx": "525c4bb2c051987be64df0e92e1d90174912b219bf541e24ffbc4a3406de49e8",
+      "src/components/ui/slider.tsx": "234e38fef59169bd02d8f5b56ca02e5ec13a0bd6846c328927b924e1299f7fb0",
+      "src/components/ui/popover.tsx": "69f74cdd76588a1249522ff8009e044eee6080ad8cf26cb08d7a5fc3281f0255",
+      "src/components/ui/progress.tsx": "62867bfee64030a1b58ff7e18623893d1b626eab65340f160cdedf88b8b52200",
+      "src/components/ui/toaster.tsx": "05e5b3eb44dce90b44e42ca3b4bdc582c5f4bf1652e38237ff7276aa6bd66d8f",
+      "src/components/ui/hover-card.tsx": "dcb793b8b1202b1634d791a993acadca0cfc3043a93b98c91a627fbff794f384",
+      "src/components/ui/sheet.tsx": "363f8e06aa5b53c6475f445117f60fa9294be79e9e4f1f5bf70886800188124e",
+      "src/components/ui/scroll-area.tsx": "d7d02600effca55d0dcadce8c09c97ebddda3a19c5fa1d52dc9f6f727b26c6b1",
+      "src/components/ui/label.tsx": "2eac8fbb04002c42b0fbc4062d20d131e421796eaf65c37d2049e29e42ecbc5a",
+      "src/components/ui/sonner.tsx": "f93091b355ef5bea646755da13b6f8b87df1be2da4cb0679fe123be99d3d5f04",
+      "src/components/ui/navigation-menu.tsx": "a06d96a582ac207ffcd38445d773c05e841d646efb185b5e9b65f73e5bd388c7",
+      "src/components/ui/accordion.tsx": "dcbfb3243a26096fc3e5f54039ccb5c4c23d9bb79a4d5846b4be75bf912f07d9",
+      "src/components/ui/drawer.tsx": "774316527ddc577fc54012a0c898ebcf7cf8f11152126e550828b53004a5b70c",
+      "src/components/ui/tooltip.tsx": "da5e88fd55b605c2f6960813775bd99c635a69c71657b3f7ad5905e7a9c53e04",
+      "src/components/ui/alert.tsx": "5950ac01377e7eedc94b00eb3fee678745e4cc1a72b5343867f0733d07db6660",
+      "src/components/ui/switch.tsx": "ab2d009e0fa7366f47ae1a6e0ca35d0aac55c6264c5f61718e12366c196163b4",
+      "src/components/ui/calendar.tsx": "12bf2e464080393f253d70ab23acdc126c963a68e0c45d4a7f2b8941552aa404",
+      "src/components/ui/breadcrumb.tsx": "c3d3dcb0d82fc5e91d8830bac7fead905686fe876f1f42c3ed872bb0a6b6584e",
+      "src/components/ui/radio-group.tsx": "9ba7808b7404cdf2159c81883a39290033bc4308f2978eb80797c92b87421301",
+      "src/components/ui/command.tsx": "5a57ebc119f2357b097098d22865d45de8fda623ee88fe98b99999838c13633b",
+      "src/components/ui/toggle-group.tsx": "11592e3f7673ef518e2f82b939dc4752fe5ef7953f487f35595931c3d16fc37d",
+      "src/components/ui/avatar.tsx": "fb33bc4865b74d1f0239b1782dbdc4cc2d38690ba6e245e9e3b024c256b14c2b",
+      "src/components/ui/menubar.tsx": "9e6f0abc04c608d29568be5b3f495815c4d708b5fd5b1e5797a2fb41b6f6b376",
+      "src/components/ui/dialog.tsx": "2cf5b637c460a34436d7946936a50dcb13ac35bb2b5802a1c82f339390df1e11",
+      "src/components/ui/badge.tsx": "77868e31597e89ff2295203400d32bc84e289d597d3a998f6dcb4a3993c4f246",
+      "src/components/ui/table.tsx": "a4a6972c2d47d465d7f02c1dc4a6cbfeda7a97e46479c1b0cebdaf26bf9b497a",
+      "src/components/ui/separator.tsx": "995c54f1c5c688f712a675fe35d55bcada2b31dba561dcc71553a1ad601e59ec",
+      "src/components/ui/button.tsx": "c2b999a96781e6c932632bd089095368e973bf5602e1b1a62156b7d2b43f1e84",
+      "src/components/ui/toggle.tsx": "955fa1bb97505b7a8bba3f7cff1991035a9afa0e1113f5d598147e6369dbf44b",
+      "src/components/ui/toast.tsx": "723d1642dc0505f598126581b27cf8a9f2a1ee383af5b3af06d3b908d9728e4a",
+      "src/components/ui/checkbox.tsx": "da3ac46877c697a12e04c8b84e18d408f54c48faf8ccef710231e4f676ddd35e",
+      "src/components/ui/collapsible.tsx": "6f5be8ba164c177759bf63cc25ad4d49391f162f6784ba624d72e5d5c0c0dde2",
+      "src/components/ui/dropdown-menu.tsx": "dc109123ecd59af01d07aa9f3a8e8a7085bd3f337388c5369799ab1ce6c2d45f",
+      "src/components/ui/select.tsx": "b8936f21d1af9539d43453a96ac1b65cb188f5d2f8d52e05d6eaaded282b794b",
+      "src/components/ui/textarea.tsx": "ec7c92aaed80f6923a7caa4bfe4eead395b50a7001504fd7fbb0b9381804dae9",
+      "src/components/ui/input.tsx": "6299a6a387dc55e528aec4342deaea0b83f1ea3a365c135a31a18ee55334f441",
+      "src/components/ui/skeleton.tsx": "87608e7cc815ad3d88e0b9de6c402bb37b58ea1b38636cf69709da1baff6e334",
+      "src/components/ui/context-menu.tsx": "dc50f646230af939330e709d1a4f0e6d887e5209ee191451df29ce6bc7ccfca3",
+      "src/components/ui/form.tsx": "f57dda04514eb2c4bc325cc89eb29513a0f681bb841199f390aae0af23b43fe6",
+      "src/components/ui/carousel.tsx": "69686986376cbc02a5f907b1ca8a7a759808c4e8df1200517c57ec749e8484cd",
+      "src/features/auth/AuthForms.tsx": "dbd06d06907dff8b8de5a9d680a234c56aaa7095a26164fc4b9e7a0c5bafc087",
+      "src/features/working-memory/processing-status.ts": "a7adf8ea2aa7305b5f2cf57ce12167f865ce4aa5d88538f8aff618a9e42c1b61",
+      "src/features/working-memory/ProcessingPanel.tsx": "324432695e4849c4d8416df15566629ad0bc0042afced11ec20c800c62a78272",
+      "src/features/working-memory/WorkspaceOverview.tsx": "b51f63522374e54d7512bd681e1dc01b96bddd39f95015bc9e92c12affc4d683",
+      "src/features/working-memory/RecoveryDialog.tsx": "cc0ee9fd3ee2b17b92a5b86a685d0695f6b1ad3984883d2ec7347e259cb4b66d",
+      "src/features/working-memory/planning.ts": "af4b071b3a4478a96bd3c32753cbdc9afe366351c23d51e091d62e29556dcd9a",
+      "src/features/working-memory/SourceEditor.tsx": "0670df0674c0fc8e0fb2d6fb4ab4ce6535123862cc1455e2e49129fe1ccd5dc9",
+      "src/features/working-memory/notes-chat-context.ts": "24a8f7cd1bb03d947ee4a9941b59fee94c2fbbd384598a3c5150089542d77b9a",
+      "src/features/working-memory/types.ts": "d68cd3772f0a90a7dac1d47737d1e6cb4b7af0fabbf25d13b6a7d7527ae7f747",
+      "src/features/working-memory/NotesChat.tsx": "a0b6faa0a2747ac7f69644f3b968297b55370a9912e9fb6cff0a639170742d80",
+      "src/features/working-memory/working-memory.css": "317da7169c49b7204c87e59816cfb575b062ce6b22a6222aef4a65af6c8576d9",
+      "src/features/working-memory/preferences.ts": "daf6361853321ebfb140c04e582f37c0398daf5664e04d3c24cd5bbc81a45929",
+      "src/features/working-memory/GenerationReviews.tsx": "46af54d87b7a762aee1513c6c7aceea613a3d1cf163851e2b4322f1ccb8e8864",
+      "src/features/working-memory/DecisionDialog.tsx": "3a6e2fe081b420765414693105d992bbc9f7ae173fbd30c2e87fa8b9720efd75",
+      "src/features/working-memory/notes-chat.css": "14edb80a448c89a0c0e9d28ac2db7ee1971489f0e4d97b08f525ffc2ee182cc0",
+      "src/features/working-memory/snapshot-cache.ts": "eeaec5f6217d0a526e686de2b104f7ba3639c30e68262a3582369cf0d081bf34",
+      "src/features/working-memory/useReviewSnapshot.ts": "f0626cd191f29389b006e95e3380773ce6a974b02e2f61d7c31afa993b976c56",
+      "src/features/working-memory/productivity.css": "7b186a033331c0466f11ce60a53bfb02e25652d481431ffa277bd46760ea69cb",
+      "src/features/working-memory/PlannerEditor.tsx": "feb5a68a03a1074f47893a271a8cfa19c04ac5a07f5310d4a4e1dbfe864a0eba",
+      "src/features/working-memory/EvidenceConfidence.tsx": "522560fd85e532fba4192c9f074e0ae50ee560e6b092f2cc0a0664cc509bde1b"
+    },
+    "no_env_or_private_cache_copied": true,
+    "lockfile": "pnpm-lock.yaml",
+    "package_manager": "pnpm 11.25.0",
+    "question": "Does fresh lockfile installation distinguish local dependency-read blocking from TypeScript/source failure?",
+    "deadline_seconds": 300,
+    "steps": [
+      {
+        "step": "install",
+        "command": [
+          "pnpm",
+          "install",
+          "--frozen-lockfile",
+          "--registry=https://registry.npmjs.org",
+          "--store-dir",
+          "/private/tmp/hz-frontend-build-ejf6dx_r/.pnpm-store"
+        ],
+        "exit_code": 0,
+        "result": "completed",
+        "log": "frontend-install-isolated.txt"
+      },
+      {
+        "step": "build",
+        "command": [
+          "pnpm",
+          "run",
+          "build",
+          "--",
+          "--configLoader",
+          "runner"
+        ],
+        "exit_code": 0,
+        "result": "completed",
+        "log": "frontend-build-isolated.txt"
+      }
+    ],
+    "elapsed_seconds": 14.75,
+    "passed": true
+  },
+  "open_gates": [
+    "Target anon/publishable key not supplied; synthetic key only used for build",
+    "Stage API availability and actual login/recovery/authorization/journal flow not validated",
+    "Production env/alias changes require Lead GOAL_GATE",
+    "Platform rollback only inspected, not executed; data/env recovery separately required"
+  ],
+  "worktree_build_shell_exit_note": "After terminating blocked compiler, wrapper exited 1 because zsh reserves variable status; this is not a TypeScript error."
+}
