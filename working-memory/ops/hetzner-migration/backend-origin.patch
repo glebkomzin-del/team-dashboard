@@ -1,0 +1,38 @@
+--- a/working-memory/access.py
++++ b/working-memory/access.py
+@@ -16,7 +16,11 @@
+     if not supabase_url or not publishable_key or not allowed_users:
+         return None
+     parsed = urlparse(supabase_url)
+-    if parsed.scheme != 'https' or parsed.hostname != 'lghwikeotbkmojyyjglz.supabase.co' or parsed.path not in ('', '/') or parsed.query or parsed.fragment or parsed.username:
++    if supabase_url not in ('https://lghwikeotbkmojyyjglz.supabase.co',
++                                       'https://lghwikeotbkmojyyjglz.supabase.co/',
++                                       'https://178-105-167-26.nip.io/supabase',
++                                       'https://178-105-167-26.nip.io/supabase/',
++                                       'http://api-gw:8000') or parsed.query or parsed.fragment or parsed.username:
+         raise RuntimeError('Unexpected Supabase authentication origin')
+     request = urllib.request.Request(supabase_url.rstrip('/') + '/auth/v1/user',
+                                     headers={'Authorization': header, 'apikey': publishable_key})
+--- a/working-memory/gateway_journal.py
++++ b/working-memory/gateway_journal.py
+@@ -22,7 +22,8 @@
+ 
+ class GatewayJournal:
+     def __init__(self,url,publishable_key,token,space_id):
+-        if not re.fullmatch(r'https://[a-z0-9]+\.supabase\.co',url) or not re.fullmatch('[0-9a-f]{64}',token):
++        if (not re.fullmatch(r'https://[a-z0-9]+\.supabase\.co',url)
++                and url not in ('https://178-105-167-26.nip.io/supabase','http://api-gw:8000')) or not re.fullmatch('[0-9a-f]{64}',token):
+             raise ValueError('Invalid gateway configuration')
+         if not publishable_key:raise ValueError('Missing public project key')
+         self.url=url+'/functions/v1/working-memory-journal'
+--- a/../supabase/functions/working-memory-journal/handler.ts
++++ b/../supabase/functions/working-memory-journal/handler.ts
+@@ -9,7 +9,7 @@
+ const validInt = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0
+ 
+ export function handler(settings: Settings, requestUpstream: typeof fetch = fetch) {
+-  if (!/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(settings.url) || !settings.key) throw new Error('Invalid private configuration')
++  if ((!/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(settings.url) && settings.url !== 'http://api-gw:8000') || !settings.key) throw new Error('Invalid private configuration')
+   async function rest(path: string, data?: unknown): Promise<unknown> {
+     const response = await requestUpstream(settings.url + '/rest/v1/' + path, {
+       method: data === undefined ? 'GET' : 'POST', signal: AbortSignal.timeout(25000),

@@ -1,0 +1,32 @@
+# HZ-MIGRATION-20261003: isolated backend stage
+
+This directory contains the approved backend migration package. Current acceptance evidence is `stage-evidence.json`; the project operation/cutover decision remains in the existing Lead-owned project sources. This stage is not production and is not a final cutover export.
+
+Five ARM64 images are pinned by digest in `compose.yaml`. Only this stack uses `/opt/dashboard-supabase-20261003` and `dashboard-supabase-20261003_restore` (Docker internal network). PostgreSQL has no public port. Internal-network Docker does not publish its declared loopback gateway port; current tests reach the private bridge IP from the host. A later approved production network/public HTTPS transition must preserve the DB port prohibition and queue/cron safety. No n8n/Picnic/production container was changed.
+
+The source archive and offserver copy have SHA256 `4e3574cedb2858f3022f931202581cdea4f43f611e068d8ffecde1c7e1f1bea1`. `restore_target.py` restored a fresh TEMPLATE0 database with original ownership/ACL. Source role metadata retains no password hashes; temporary CLI identities are excluded from target roles. Auth user password hashes and sessions are in the full database dump. Never reset source credentials. Source managed CLI cleanup was denied and remains explicitly open (expired login, no active sessions).
+
+`compare_snapshot.py` streamed immutable source archive COPY rows and target COPY rows, comparing duplicate-preserving sorted SHA256 row hashes. All 88 archive tables and 68,572 rows matched before Vault repair. Extension transient HTTP tables are not in the archive by its native extension contract; target HTTP queue is empty. Both source cron jobs remained inactive. No queue or canonical processing was started.
+
+The source Vault ciphertext requires its original encryption key, unavailable in the dump. `vault_transfer.py` exported its single decrypted secret read-only through the existing authorized Management API to private storage. `reencrypt_vault.py` preserved UUID, nonce, name, description and timestamps, replacing only ciphertext through the installed native encryption primitive. Original UUID and decrypted hash match. Original source cipher archive and plaintext recovery sidecar are separately secured offserver; target native crypto key/config must accompany every target full backup.
+
+`prepare_target.py` is for a fresh isolated target and refuses an existing altered upstream router. Copy `compose.yaml`, `auth-ownership.sql` and this script to that exact target root first. It creates/verifies the internal network, fetches upstream assets from pinned commit, and writes private environment once. The empty-target Auth helper ownership adjustment is part of initial DB bootstrap only. Do not apply it to source or a restored production database. Actual stage performed the same three owner corrections before its first Auth initialization; source Auth objects subsequently came from the full restore.
+
+`backend-origin.patch` records only this package's differences against private before snapshots of preexisting untracked backend files. Before later production deployment, use the actual current server runtime baseline and apply only these changes; do not upload the dirty workspace wholesale. Hosted auth remains supported, along with the exact approved public prefix and internal API gateway. Arbitrary origins remain rejected.
+
+The 11 deployed source Edge bundles were read and retained privately with metadata. Ten already return 410 without database/network/provider calls; those exact retired contracts are installed. The active Journal handler differs only in its permitted internal upstream. `install_edge_stage.py` preserves each function's source `verify_jwt`; Journal continues its own scoped token enforcement.
+
+## Test packages
+
+- Snapshot/restore: can the whole Auth/app database survive migration with original ownership/RLS/data? Full archive restore, all COPY hashes, Auth counts, public RLS/policies and inactive cron/empty queue passed. Any mismatch blocks stage acceptance; source snapshot is the authority, not the later moving hosted database.
+- Backend/API contract: do exact custom origins preserve owner/token boundaries? Three new Python origin cases, 12 existing access/search retry cases and 12 Deno cases passed. Real stage migrated session refresh/owner UUID, test-user password login, REST wrong-owner empty result, backend owner allow/wrong-owner denial and scoped Journal read passed. No providers invoked.
+- Email: are existing SMTP credentials usable without sending mail? TLS identity, SMTP AUTH and NOOP passed with zero messages sent. Recovery via local capture failed twice with HTTP504/Auth context deadline exceeded and zero capture messages. Correct link/reset/new password login remain unproved. Lead owns the active STALL review; no third automatic round is permitted.
+- Legacy Edge: all ten passive retired endpoints returned 410 and invalid Journal token returned 401. Existing per-function JWT settings are retained. No provider/network pipeline calls occurred.
+
+## Private recovery evidence
+
+Mac offserver root: `/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/hetzner-migration-20261003` (0700; artifacts 0600). Contains full dump, role metadata, CA, TOC/hash manifest, exact snapshot comparison, Vault plaintext sidecar/validation and source Edge exports. Never add these to Git or print values.
+
+Stage private root: `/opt/dashboard-supabase-20261003`, `.private.env`, `source-private/`, PostgreSQL volumes `dashboard-supabase-20261003_pg-data` and `_pg-config`, including native Vault crypto configuration/root key. Disposable Auth test users/sessions remain stage-only and must be replaced by the separately approved final source restore. `recovery-failure-private.log` contains original diagnostic material.
+
+The separate backup-adapter owner integrates PG dump, roles and private config/root key into daily/offserver backup and validates its isolated restore. Public Nginx installation, frontend production environment/CSP, final export, worker/network switch, SMTP mail delivery and single-writer production cutover require the later Lead gate; none was performed here.
