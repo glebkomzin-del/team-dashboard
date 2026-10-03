@@ -35,3 +35,49 @@ Primärvertrag: [PostgreSQL17 pg_dump](https://www.postgresql.org/docs/17/app-pg
 Echter Adapterrestore: Zyklus1 scheiterte am nachgewiesenen Konfigurations-Owner; Zyklus2 nach gezielter Reparatur bestanden. Zusätzlich1 Testharness-Vorabbruch (exklusive vorhandene Markerdatei), ohne PG-Restorestart. Identisch restauriert:89 dumpabgedeckte Tabellen/68.572 Zeilen; Auth1 Benutzer/22 Sitzungen, Vault1 Secret, Rollenattribute und Passwortverifier;30 private Configdateien mit SHA256. Keine dritte Lösungsrunde. Private Quittung `/var/backups/dashboard-job/.adapter-check-HZ20261003-1/selfhost/restore-check.json`, SHA256 `3febc28a2332bcc8cfb9dbea682cd5a36edea824b013a185c1394f033a7306a7`. Source-Stage wurde durch dieses Paket nur gelesen. Produktionsbackupscript/Marker unverändert. Der echte Selfhost-Testteil wurde als35-Dateien-v1-Bundle übertragen; das ist keine durchgelaufene tägliche produktive Komplettsicherung.
 
 Die getestete Source-Stage-Datenbank hat Owner`postgres`, Standard-Datenbank-ACL und0 datenbankspezifische Rollen-/DB-Settingzeilen (direkte Metadatenabfrage). Der geprüfte frische-DB-Restore deckt diesen aktuellen Vertrag ab. Bei künftig abweichenden DB-ACL/ALTER-DATABASE-Einstellungen ist deren Wiederherstellung über die im Dump archivierten DATABASE-Einträge gesondert zu prüfen; dieser Test behauptet dafür keine Abnahme.
+
+## Produktionsinstallation und Lead-Cutover-Kommandos
+
+Folgepaket autorisiert die hashgesicherte Produktionsinstallation und einen vollständigen bestehenden Hosted-Tages-/Offserverlauf. Vor Installation: Systemd MainPID0, exklusiver bestehender Backup-Lock, identischer Ausgangshash. Installiert: ScriptSHA256 `58048432e2efb34dc6ede449fc86fc3ce9e3ecbb7d17816d8f512de9b5cb0ea9`; ausschließlich dessen Buildmanifest-Eintrag geändert. Kein Dienstrestart, kein Env-/Markerwechsel. Private ursprüngliche Script-/Manifestkopie unter `/opt/dashboard-memory-canonical-draft/.local/backup-adapter-rollback-HZ20261003/`.
+
+Produktions-Prüfpaket: Offene Frage ist, ob der vollständige etablierte Tageslauf nach der Datenträgererweiterung wieder funktioniert und seine unveränderte Mac-Zweitkopie samt Löschbarriere belegt ist. Pflicht: Systemd und `backup-status.json` melden erst nach komplettem Export, isoliertem n8n-Restore und Paketprüfung Erfolg; vorhandenes Offserverwerkzeug bestätigt denselben Archivhash und sämtliche Manifestdateien. Umfang: ein regulärer Hosted-Systemdlauf, danach das installierte unveränderte Mac-Pullwerkzeug; Containeridentitäten/Startzeiten vor/nach vergleichen. Bestehen: installations-/Cutoverbereit an Lead übergeben. Scheitern: konkrete Diagnose, maximal2 Produktionszyklen, keine automatische zusätzliche Runde. Die2 bereits verbrauchten PG17-Restorezyklen bleiben separat erhalten. Aktivierung und Selfhost-Produktionslauf sind bis ausdrücklichem Leadkommando offen.
+
+Ausgeführte Installation (nicht wiederholen):
+
+```sh
+ssh root@178.105.167.26 'python3 /var/backups/dashboard-job/.adapter-code-HZ20261003/backup-install.py --patch /var/backups/dashboard-job/.adapter-code-HZ20261003/backup-scheduled.patch'
+ssh root@178.105.167.26 'systemctl start --no-block dashboard-job-backup.service'
+```
+
+Hosted-Rollbackkommando, vorbereitet und hashgesichert, **nicht ausgeführt**:
+
+```sh
+ssh root@178.105.167.26 'python3 /var/backups/dashboard-job/.adapter-code-HZ20261003/backup-install.py --rollback'
+```
+
+Rollback verlangt unveränderten Kandidathash/-Manifesteintrag, inaktiven Backupdienst, Hosted-Origin und inaktiven Selfhostmarker. Es stellt nur das Script und seinen Manifesthash zurück und erhält fremde Manifeständerungen. Nach Selfhost-Cutover kein isolierter Scriptrollback; zuerst muss der Lead den gemeinsamen Writer-/Env-Rückweg verantworten.
+
+Lead-Aktivierung, **vorbereitet, nicht ausgeführt**. Der Hostservice muss bereits den mit Backend bestätigten öffentlichen Origin `https://178-105-167-26.nip.io/supabase` ohne TrailingSlash verwenden. `http://api-gw:8000` ist ausschließlich containerintern und am Host kein Backuporigin. Das folgende Kommando verändert nur den privaten Marker und verlangt den bestehenden Backup-Lock; es ist keine Cutoverfreigabe:
+
+```sh
+ssh root@178.105.167.26 'python3 -' <<'PY'
+import fcntl, hashlib, json, os, tempfile
+from pathlib import Path
+root=Path('/opt/dashboard-memory-canonical-draft')
+with open('/run/lock/dashboard-job-backup.lock','a') as lock:
+    fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    cfg=dict(line.split('=',1) for line in (root/'.local/service.env').read_text().splitlines() if line and not line.startswith('#'))
+    if cfg.get('SUPABASE_URL')!='https://178-105-167-26.nip.io/supabase':raise SystemExit('Host origin not switched; marker remains unchanged')
+    expected='58048432e2efb34dc6ede449fc86fc3ce9e3ecbb7d17816d8f512de9b5cb0ea9'
+    if hashlib.sha256((root/'scheduled_backup.py').read_bytes()).hexdigest()!=expected or json.loads((root/'build-manifest.json').read_text()).get('scheduled_backup.py')!=expected:raise SystemExit('Installed adapter hash mismatch')
+    fd,name=tempfile.mkstemp(prefix='.selfhost-backup-',dir=root/'.local')
+    try:
+        with os.fdopen(fd,'w') as stream:json.dump({'enabled':True},stream);stream.flush();os.fsync(stream.fileno())
+        os.chmod(name,0o600);os.replace(name,root/'.local/selfhost-backup.json')
+    finally:
+        if Path(name).exists():Path(name).unlink()
+    print(json.dumps({'selfhost_backup_enabled':True}))
+PY
+```
+
+Nach freigegebener Aktivierung den normalen Systemdlauf und unveränderten Mac-Pull erneut ausführen. Dieses Dokument enthält dafür bislang keinen produktiven Selfhost-Abnahmenachweis; die ausgeführten Produktionsbelege stehen in `backup-production-evidence.json`.

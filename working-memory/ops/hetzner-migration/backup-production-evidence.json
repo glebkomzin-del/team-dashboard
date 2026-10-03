@@ -1,0 +1,38 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-BACKUP",
+  "followup_scope": "production adapter installation and unchanged Hosted daily/offserver run",
+  "prior_isolated_restore_cycles_consumed": 2,
+  "production_run_cycles_started": 1,
+  "production_run_cycles_completed": 0,
+  "production_run_cycle_limit": 2,
+  "application_provider_calls": 0,
+  "budget_binding": "No paid services/model calls; prior counters preserved; runtime token cost unknown",
+  "installed_script_sha256": "58048432e2efb34dc6ede449fc86fc3ce9e3ecbb7d17816d8f512de9b5cb0ea9",
+  "baseline_script_sha256": "0ce536a2fb4980ab27ad72b621b5d3819491aa61b0150db9d544e5c4ea90a95b",
+  "installed_manifest_sha256_at_install": "5a2c36812e76089c712a7180312b60b19328b37426ddea30cbd6679514864004",
+  "rollback_manifest_sha256": "d5e9e668b4cbdcb54ee2591255848746414c8da0b3273768d52a567e4722e4f4",
+  "rollback_directory": "/opt/dashboard-memory-canonical-draft/.local/backup-adapter-rollback-HZ20261003",
+  "hosted_origin": "https://lghwikeotbkmojyyjglz.supabase.co",
+  "cutover_host_origin_contract": "https://178-105-167-26.nip.io/supabase",
+  "selfhost_activation_executed": false,
+  "preflight": {
+    "backup_service_inactive": true,
+    "backup_lock_acquired_during_install": true,
+    "disk_available_bytes": 39081213952,
+    "n8n_database_bytes": 1170291735,
+    "n8n_restore_required_free_bytes": 3510875205,
+    "offserver_installed_script_matches_repo": true,
+    "offserver_script_sha256": "f20eb75a9b43a0b893c4290983c9eecc04b5c6c4bd51d23aef461fd898f49f4b",
+    "mac_available_kib": 15191552
+  },
+  "daily_run_started_at": "2026-10-03T18:26:47.702565+00:00",
+  "daily_run_result": "running",
+  "offserver_result": "pending daily run",
+  "environment_changed_by_install": false,
+  "open_obligations": [
+    "Current complete Hosted daily backup outcome",
+    "Existing offserver pull and barrier receipt",
+    "Lead-owned Cutover marker activation",
+    "Selfhost daily run after Cutover"
+  ]
+}
