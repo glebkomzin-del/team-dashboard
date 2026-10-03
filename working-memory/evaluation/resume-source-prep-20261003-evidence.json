@@ -1,0 +1,62 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "package": "resume-source-PREP",
+  "updated_at": "2026-10-03T21:41:22.578710+00:00",
+  "status": "IMPLEMENTED_LOCAL_FIXTURES_VALIDATED_REAL_ARCHIVE_BLOCKED",
+  "scope": [
+    "two observed guards",
+    "private primary transport errors"
+  ],
+  "test_package": {
+    "question": "Do decoded Vault COPY and OID effective privileges enforce actual Source export guards without mutating Source?",
+    "mandatory_criterion": "Fixtures pass, real archive/sidecar binding passes, actual read-only Source catalog query parses and matches reversible freeze scope.",
+    "scope": "10 deterministic tests; old private COPY/metadata equality; one archive extraction; planned 3 read-only catalog queries.",
+    "decision_on_pass": "Return protocol ready for independent Root gate; no Source mutation without Root GO.",
+    "decision_on_fail": "Stop after at most 2 PREP cycles; preserve primary evidence, return blocker to Root."
+  },
+  "new_tests": {
+    "command": "python3 -m unittest discover -s working-memory/ops/hetzner-migration -p test_resume_source_export.py -v",
+    "tests_run": 10,
+    "failures": 0,
+    "errors": 0,
+    "result": "PASS"
+  },
+  "real_private_sidecars": {
+    "before_after_metadata_equal": true,
+    "decoded_cipher_sha256_equal": true,
+    "decoded_nonce_equal": true,
+    "id_name_description_equal": true,
+    "timestamps_datetime_equal": true,
+    "actual_key_id_null": true,
+    "historical_sidecar_omits_key_id": true
+  },
+  "archive_binding": {
+    "result": "NOT_VALIDATED",
+    "error": "pg_restore: error: could not read input file: Operation timed out",
+    "private_stderr": "working-memory/.local/hetzner-migration-20261003/current-evidence/resume-source-prep-2/archive-extract-private.stderr",
+    "stderr_sha256": "f6f36fda8a445fb469e8b8ca7403bd0c23c5250ecee05b1149d90de28d614dcb"
+  },
+  "source_read_only_preflight": "NOT_EXECUTED (archive check stopped first)",
+  "source_queries": 0,
+  "source_mutations": 0,
+  "new_leases": 0,
+  "new_dumps": 0,
+  "prep_cycles_consumed": 2,
+  "package_max_cycles": 2,
+  "historical_counters": "Unchanged; owned package does not reset prior counters.",
+  "known_budget_binding": "PREP max 2 cycles consumed; Source phase separately max one attempt/lease/dump only after Root GO. Provider spend unchanged. Historical cumulative spend not remeasured.",
+  "open_duties": [
+    "Actual archive-bound COPY proof",
+    "Actual read-only Source catalog preflight",
+    "Root independent review and GO before new Source phase"
+  ],
+  "script_hashes": {
+    "final_quiescence_once.py": "09ca17b3acfcfd7f7692fd9e01bf945e47f6c00e83cb691a6cdbd1e0f28e17df",
+    "final_export_once.py": "e44342ef487451e2279c08645e45a5d989362ec0917ffea97c6c2c7555bffa57",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "vault_copy_codec.py": "cd326b284dbfbb315d0cabae151e78df0599977211da68b60cd660be53b206f5",
+    "test_resume_source_export.py": "bf519a3d44f4245076be2cc0a431a7a54e14eb28b947021ea244eaa665bd3b25",
+    "resume_source_prep_once.py": "d578c8dbf730619c80d52cb077a2d564073568bfc88bb78c9cbdcc34b3b3e513"
+  },
+  "recovery_scope": "Git commit reverts owned protocol code; Source remains operating, no data/runtime recovery needed for PREP."
+}

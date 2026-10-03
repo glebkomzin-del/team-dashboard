@@ -1,13 +1,18 @@
 """One final readonly lease/export after verified freeze; never overwrites initial evidence."""
 import argparse, base64, importlib.util, json, os, shutil, subprocess, urllib.request
 from final_phase_common import *
+from vault_copy_codec import verify_vault_copy
 
 def metadata():
-    vault=sql("SELECT s.id,s.name,s.description,s.created_at,s.updated_at,encode(s.nonce,'hex') AS nonce_hex,encode(extensions.digest(s.secret,'sha256'),'hex') AS cipher_sha256,v.decrypted_secret FROM vault.secrets s JOIN vault.decrypted_secrets v USING(id) ORDER BY s.id")
-    token=subprocess.run(['/usr/bin/security','find-generic-password','-s','Supabase CLI','-a','supabase','-w'],capture_output=True,text=True,check=True).stdout.strip()
-    if token.startswith('go-keyring-base64:'):token=base64.b64decode(token.split(':',1)[1]).decode()
+    vault=sql("SELECT s.id,s.name,s.description,s.key_id,s.created_at,s.updated_at,encode(s.nonce,'hex') AS nonce_hex,encode(extensions.digest(s.secret,'sha256'),'hex') AS cipher_sha256,v.decrypted_secret FROM vault.secrets s JOIN vault.decrypted_secrets v USING(id) ORDER BY s.id")
+    token=source_token()
     req=urllib.request.Request('https://api.supabase.com/v1/projects/'+PROJECT+'/functions',headers={'Authorization':'Bearer '+token})
-    with urllib.request.urlopen(req,timeout=30) as r:edge=json.load(r)
+    try:
+        with urllib.request.urlopen(req,timeout=30) as r:edge=json.load(r)
+    except urllib.error.HTTPError as error:
+        raise private_failure('EDGE_HTTP_ERROR',status=error.code,body=error.read(),headers=str(error.headers)) from None
+    except Exception as error:
+        raise private_failure('EDGE_REQUEST_ERROR',error_type=type(error).__name__,primary_error=str(error)) from None
     edge=sorted(edge,key=lambda x:x['slug'])
     queue=sql('SELECT (SELECT count(*) FROM cron.job WHERE active) AS active_cron,(SELECT count(*) FROM net.http_request_queue) AS queued_http')
     assert len(vault)==1 and len(edge)==11 and queue[0]['active_cron']==0 and queue[0]['queued_http']==0
@@ -41,16 +46,7 @@ def main():
     # The sidecar must match the actual archive's original Vault cipher and nonce, not just wall-clock reads.
     vault_sql=subprocess.check_output(['pg_restore','--data-only','--schema=vault','--table=secrets','--file=-',str(local/'full.dump')])
     (local/'vault-copy-private.sql').write_bytes(vault_sql)
-    row=after['vault'][0];lines=vault_sql.decode().splitlines();header=next(l for l in lines if l.startswith('COPY vault.secrets '))
-    columns=header.split('(',1)[1].split(')',1)[0].split(', ');start=lines.index(header)+1
-    copies=[]
-    for line in lines[start:]:
-        if line=='\\.':break
-        copies.append(dict(zip(columns,line.split('\t'))))
-    assert len(copies)==1 and copies[0]['id']==row['id']
-    # COPY text escapes backslashes. Cipher is base64 and has no COPY-sensitive chars.
-    assert __import__('hashlib').sha256(copies[0]['secret'].encode()).hexdigest()==row['cipher_sha256']
-    assert copies[0]['nonce'].replace('\\\\x','')==row['nonce_hex']
+    verify_vault_copy(vault_sql.decode('utf-8'),after['vault'])
     h=digest(local/'full.dump');receipt={'status':'EXPORTED_AND_VALIDATED','run_dir':remote,'dump_sha256':h,'dump_bytes':(local/'full.dump').stat().st_size,'new_readonly_leases':1,'new_dump_attempts':1,'archive_valid':True,'vault_archive_bound':True,'edge_metadata_unchanged':True,'source_frozen':True,'roles_no_passwords':True,'dump_pg_version':'17.10'}
     save(local/'final-export-receipt.json',receipt)
     # Immutable independent Mac copy before target replacement; verify all copied private files.

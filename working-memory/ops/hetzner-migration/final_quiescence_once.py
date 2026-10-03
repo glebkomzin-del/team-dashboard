@@ -5,6 +5,20 @@ from final_phase_common import *
 
 NGINX='/etc/nginx/sites-available/alexa'
 NGINX_SHA='7cfba8642673162a182f67926bc26dbb0def8bdafecd7952e7ee5c524511fe51'
+EFFECTIVE_PRIVILEGES_SQL="""SELECT r.rolname AS role,
+ (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f')
+  AND has_table_privilege(r.rolname,c.oid,'INSERT,UPDATE,DELETE,TRUNCATE')) AS writable_tables,
+ (SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE n.nspname='public' AND p.proowner='postgres'::regrole
+  AND p.provolatile='v' AND p.prorettype<>'trigger'::regtype
+  AND has_function_privilege(r.rolname,p.oid,'EXECUTE')) AS executable_writers
+ FROM pg_roles r WHERE r.rolname IN ('anon','authenticated','service_role') ORDER BY r.rolname"""
+
+def verify_effective_freeze(rows):
+    assert [r['role'] for r in rows]==['anon','authenticated','service_role'], 'Freeze role coverage differs'
+    assert all(r['writable_tables']==0 and r['executable_writers']==0 for r in rows), 'Effective Source write privilege remains'
+
 def acl_query():
     tree=ast.parse((HERE/'prepare_business_freeze_acl.py').read_text())
     return next(ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign)
@@ -95,12 +109,9 @@ def main():
     freeze=HERE/'freeze-business.sql';assert digest(freeze)=='bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc'
     assert sql(acl_query())==json.loads((PRIVATE/'source/freeze-business-original-acl.json').read_text())
     sql(freeze.read_text())
-    objects=json.loads((PRIVATE/'source/freeze-business-original-acl.json').read_text())
-    functions=sorted(set(r['object'] for r in objects if r['kind']=='FUNCTION'))
-    # All public table direct DML and every reviewed business writer function: effective privileges.
-    function_ids=','.join(literal(x)+'::regprocedure' for x in functions)
-    effective=sql("SELECT r.rolname AS role,(SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND has_table_privilege(r.rolname,c.oid,'INSERT,UPDATE,DELETE,TRUNCATE')) AS writable_tables,(SELECT count(*) FROM pg_proc p WHERE p.oid IN ("+function_ids+") AND has_function_privilege(r.rolname,p.oid,'EXECUTE')) AS executable_writers FROM pg_roles r WHERE r.rolname IN ('anon','authenticated','service_role') ORDER BY r.rolname")
-    assert len(effective)==3 and all(not r['writable_tables'] and not r['executable_writers'] for r in effective)
+    # Catalog OIDs avoid parsing identity-argument names and cover new writers too.
+    effective=sql(EFFECTIVE_PRIVILEGES_SQL)
+    verify_effective_freeze(effective)
     final=state();assert empty(final)
     receipt={'status':'FROZEN','attempt':1,'run_dir':remote,'effective_privileges':effective,'post_stop_empty':True,'config_disabled':True,'ingress_maintenance':True,'source_password_unchanged':True,'runtime_enforcement':'RULES_ONLY','dump_attempts':0}
     save(local/'freeze-receipt.json',receipt);upload(local/'freeze-receipt.json',remote+'/freeze-receipt.json')
