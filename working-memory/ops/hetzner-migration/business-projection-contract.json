@@ -1,0 +1,69 @@
+{
+  "public_table_count": 45,
+  "business_table_count": 43,
+  "excluded_metadata_tables": [
+    "wm_backup_records",
+    "wm_backup_snapshots"
+  ],
+  "normalization": {
+    "wm_processing_config": [
+      "enabled"
+    ]
+  },
+  "query_sha256": "e8ca7870cc965f15fdf1c95ad9d8394a12b04e43eacc08ab49d70853be326254",
+  "source_frozen_baseline": "NOT_CAPTURED_UNTIL_FREEZE",
+  "source_queries": 1,
+  "mutations": 0,
+  "table_names": [
+    "activity_log",
+    "blockers",
+    "cleanup_backup_20260708",
+    "commitments",
+    "decisions",
+    "embeddings",
+    "eval_questions",
+    "eval_results",
+    "eval_runs",
+    "inbox_items",
+    "meeting_links",
+    "meeting_topics",
+    "meetings",
+    "memory_metrics",
+    "open_items",
+    "open_loops",
+    "project_meetings",
+    "projects",
+    "team_members",
+    "todos",
+    "transcript_chunks",
+    "wm_archive_documents",
+    "wm_archive_notes",
+    "wm_conversations",
+    "wm_generation_reviews",
+    "wm_job_decisions",
+    "wm_jobs",
+    "wm_journal",
+    "wm_model_calls",
+    "wm_pipeline_recoveries",
+    "wm_processing_config",
+    "wm_question_calls",
+    "wm_questions",
+    "wm_search_documents",
+    "wm_search_results",
+    "wm_search_snapshots",
+    "wm_source_deletion_checks",
+    "wm_source_deletion_plan",
+    "wm_source_deletion_versions",
+    "wm_source_deletions",
+    "wm_source_reimport_authorizations",
+    "wm_source_versions",
+    "wm_spaces"
+  ],
+  "query_validation": {
+    "source_tables": 43,
+    "source_rows": 31015,
+    "target_stage_tables": 43,
+    "target_stage_rows": 31018,
+    "not_frozen_or_equal": true
+  }
+}
