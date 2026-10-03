@@ -75,6 +75,18 @@ def atomic(p,body):
     fd,n=tempfile.mkstemp(dir=p.parent,prefix='.final-');os.fchmod(fd,p.stat().st_mode&0o777)
     with os.fdopen(fd,'wb') as f:f.write(body);f.flush();os.fsync(f.fileno())
     os.replace(n,p)
+def observe_runtime_health(url='http://127.0.0.1:8798/health', seconds=90):
+    # GET readiness observations do not repeat starts, credentials or mutations.
+    import time
+    deadline=time.monotonic()+seconds
+    while True:
+        try:
+            body,_,_=http_read(url,operation='target-runtime-health',timeout=5)
+            return json.loads(body)
+        except RuntimeError:
+            if time.monotonic()>=deadline:raise
+            time.sleep(2)
+
 def main():
     a=argparse.ArgumentParser();a.add_argument('--run-dir',required=True);a.add_argument('--gate-receipt',required=True);v=a.parse_args();os.umask(0o077)
     run=Path(v.run_dir).resolve();global PRIVATE_ERRORS;PRIVATE_ERRORS=run/'private-errors';assert run.parent==ROOT and re.fullmatch('final-export-[0-9TZ-]+',run.name)
@@ -152,7 +164,7 @@ def main():
     for name in ['access.py','gateway_journal.py']:
         assert hashlib.sha256(call(['docker','exec','dashboard-memory-canonical-draft-canonical-draft-1','cat','/app/'+name])).hexdigest()==h(build/name)
     # Restore narrow backend ingress only after the actual readonly runtime health passes.
-    body,_,_=http_read('http://127.0.0.1:8798/health',operation='target-runtime-health',timeout=5);health=json.loads(body)
+    health=observe_runtime_health()
     nginx=Path('/etc/nginx/sites-available/alexa');expected=(run/'nginx-maintenance.conf').read_bytes()
     assert nginx.read_bytes()==expected
     atomic(nginx,(run/'nginx-original.conf').read_bytes());call(['nginx','-t']);call(['systemctl','reload','nginx'])

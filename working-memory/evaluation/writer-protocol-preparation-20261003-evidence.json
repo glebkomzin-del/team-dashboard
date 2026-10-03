@@ -1,0 +1,174 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "mode": "PREPONLY",
+  "status": "RETURN_ROOT_NOT_READY",
+  "recorded_at": "2026-10-03T22:40:14.979051+00:00",
+  "ownership": "Only three new helpers/tests and this new evidence; Root owns NEXT-OPERATIONS and authority",
+  "requested_model": "native gpt-6.1-sol medium; actual engine identity not independently observable from this tool context",
+  "no_subagents": true,
+  "no_external_requests": true,
+  "provider_calls": 0,
+  "live_execution_count": 0,
+  "new_runtime_gates_created": 0,
+  "source_queries": 0,
+  "docker_calls": 0,
+  "ssh_calls": 0,
+  "historical_counters": "unchanged; these two offline preparation cycles do not reset original counters",
+  "cycles": [
+    {
+      "cycle": 1,
+      "result": "FAIL",
+      "tests_run": 2,
+      "test_method_errors": 2,
+      "subcases": "wrongsha/stale fixture monkeypatch recursed; missing receipt and writer marker denials unaffected",
+      "primary_failure": "RecursionError: original re.fullmatch captured after patch; test harness defect, no external effects"
+    },
+    {
+      "cycle": 2,
+      "result": "CORE_SAFETY_TESTS_PASS_PROTOCOL_NOT_READY",
+      "tests_run": 2,
+      "failed": 0,
+      "seconds_observed": 0.018,
+      "fix": "Capture original regex function before patch; establish valid fixture loader control before each corrupt/stale/missing receipt",
+      "stop": "Two complete offline cycles consumed; no automatic third execution/review-fix cycle"
+    }
+  ],
+  "validation": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s working-memory/ops/hetzner-migration -p test_final_writer_preconditions.py -v",
+    "result": "2 tests OK",
+    "core_cases": [
+      "actual load/execute: changed primary SHA, stale gate, missing Owner receipt => no calls, no marker, byte-identical remaining files",
+      "late rollback: existing writer marker => refusal before any gate read/operation"
+    ],
+    "syntax": "compile() in memory passed for all three files",
+    "fixture_classification": "synthetic temporary disposable files only; no production PASS or real receipt implied",
+    "integration": "NOT_EXECUTED"
+  },
+  "owned_sha256": {
+    "working-memory/ops/hetzner-migration/final_writer_open_once.py": "6df64e92edbc1a4876732a25345e204ddc5fb3840dfd18dcde4717583628f993",
+    "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py": "211751e44a94bb6cfd42b5d0c41ba13a0ba08bfafba752d76404accba0dd017f",
+    "working-memory/ops/hetzner-migration/test_final_writer_preconditions.py": "8d4e150403ad4198ae8a13ae6833e51a57cedd69ae7f64426d8d9f1b7939e506"
+  },
+  "skills_read": {
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md": "7a87b2de62033425b8c42957492e6beb731f59fc8dc6e0099ef2311020edeaea",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md": "34780cb75a91a0994feb41812ce2b08444d844261065ac503abaf6ce46fce98b",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/recovery.md": "bcc53b2bf63536bd9e66bed0c7299a921f92d81c0339b793bd6a8b369b0dabd2",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/specialist-skills.md": "fcdd6c0575ffe042715adc39a06da8331837e4fe1a5648c70566f94316d81118",
+    "/Users/glebkomzin/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md": "1171386737b231610fa42485707272765c3516a9bbc0bd2c6c161a8cee3d7d33"
+  },
+  "skill_application": "Existing authority preserved; recovery claim separated from executable/verified recovery; actual Supabase role and immutable local helper contracts used. External skill changelog/query instructions omitted under explicit PREP no-external/no-SourceSQL mandate. Ponytail not catalogued; no installation or delegated review claimed.",
+  "writer_receipt_contract": {
+    "manifest_schema": "final-writer-prerequisites-v1",
+    "gate": [
+      "problem_id",
+      "phase=TARGET_WRITER_OPEN",
+      "decision=CONTINUE_BOUNDED",
+      "run_dir",
+      "issued_at",
+      "expires_at",
+      "dump_sha256",
+      "script_hashes",
+      "receipt_hashes"
+    ],
+    "manifest": [
+      "schema",
+      "problem_id",
+      "run_dir",
+      "receipts"
+    ],
+    "receipt_reference": {
+      "path": "absolute primary path, copied byte-for-byte if from Mac",
+      "sha256": "actual file SHA256, also in gate.receipt_hashes"
+    },
+    "receipt_names": {
+      "comparison": "final-snapshot-comparison.json",
+      "runtime": "target-runtime-receipt.json",
+      "flags": "source-original-runtime-flags.json",
+      "config": "source-original-config-private.json",
+      "source": "source-effective-before-writer-open.json",
+      "frontend": "frontend-final-promotion-evidence.json",
+      "owner": "production-owner-flow-receipt.json",
+      "backup": null,
+      "mirror": null,
+      "bundle_manifest": null
+    },
+    "source_new_primary_contract": {
+      "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+      "run_dir": "exact remote run",
+      "observed_at": "UTC within 300s",
+      "query_sha256": "Root actual OID effective-right query, in gate.source_query_sha256",
+      "roles": "exact anon/authenticated/service_role rows: writable_tables=0, executable_writers=0",
+      "catalog_function_count": 43,
+      "source_config": "full original with enabled=false",
+      "source_backend_running": false,
+      "other_hosted_writer_processes": [],
+      "primary_receipts": "nonempty direct path/SHA refs ALSO bound by gate"
+    },
+    "owner_new_primary_contract": {
+      "status": "PASSED",
+      "run_dir": "exact remote run",
+      "source_uid": "exact original UID",
+      "target_uid": "same UID",
+      "overview": true,
+      "archive": true,
+      "saved_summary": true,
+      "same_original": true,
+      "readonly": true,
+      "primary_receipts": "nonempty direct path/SHA refs ALSO bound by gate"
+    },
+    "existing_backup_fields": [
+      "state=ok",
+      "archive",
+      "sha256",
+      "bytes",
+      "selfhost.enabled=true",
+      "selfhost.restore_verified=true",
+      "n8n.active=0",
+      "n8n.published=0",
+      "n8n.external_network=false",
+      "n8n.model_calls=0",
+      "n8n.credential_decryption_verified=true"
+    ],
+    "existing_mirror_fields": [
+      "state=ok",
+      "target=owner_mac",
+      "archive/sha256/bytes equal backup",
+      "files_verified equals bundle-manifest.files count"
+    ],
+    "not_ready": "No future runtime files are supplied by PREP; Root must capture actual results."
+  },
+  "prewrite_rollback_input_schema_requirement": {
+    "status": "INPUT_SCHEMA_REQUIRED_NOT_EXECUTABLE",
+    "owner": "Root",
+    "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+    "phase": "PREWRITE_SOURCE_ROLLBACK",
+    "missing_authoritative_inputs": {
+      "source_frozen_baseline": "Exact immutable primary query bytes, query SHA, UTC, run binding; full original Source space/revision/archive identity/business table counts or fingerprints after freeze",
+      "target_business_projection": "Exact native Docker psql readonly query and original response; compare ONLY business fields, excluding explicitly listed Auth/Vault/backup metadata changes",
+      "source_current_projection": "Exact Source Management readonly query response on Mac, compare same frozen business baseline; token only through existing final_phase_common.sql",
+      "target_host_boundary": "Actual all-five-closed env/image, absence of writer marker and any Target business-write receipt, sole frozen Source, n8n inactive versions",
+      "frontend_return_contract": "Actual promotion receipt, existing project cwd, verified installed official rollback/help syntax, two aliases READY old dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL; remove only two new VITE vars if actually added",
+      "private_runtime_return": "SHA-bound original five host files plus exact Source private environment, host selfhost marker migration_run, original ACL82 and enabled-only full CFG restoration SQL"
+    },
+    "transport": "Future execution on Mac using actual final_phase_common.sql/shell; no invented server Source-admin credential",
+    "forbidden": [
+      "late call of final_source_rollback_once.py",
+      "Target data revert",
+      "Source restoration after writer marker",
+      "unknown proof treated as zero",
+      "wholesale frontend OIDC env restoration",
+      "workflow SQL activation"
+    ],
+    "live_execution_count": 0
+  },
+  "known_open_criteria": [
+    "Late readonly Source rollback is deliberately NOT executable. Exact business baseline/current Source/Target primary query contracts plus Mac frontend rollback syntax/host return integration must be supplied by Root; helper rejects even otherwise plausible unintegrated proof.",
+    "All actual final Owner/browser, full Target backup/embedded restore, offserver Mac manifest, promoted frontend and fresh effective Source proof files remain future Root captures; no supplied runtime permit.",
+    "Writer helper is a prepared candidate, not an accepted safe executable protocol. Full gate-bound host artifact/environment/scope identity integration remains for Root review; current host preflight verifies contents but gate has no separate binding for every original host private file.",
+    "Writer preflight errors currently return safe error type via CLI without append-only primary capture; post-marker operation failures do have private append-only original capture and partial-stop receipt. This primary-evidence gap is an unmet criterion.",
+    "Real Source state after writer activation is not queried on Hetzner; current implementation uses fresh Root pre-open source proof and scans running Docker environments, which does not establish every external hosted writer/process. Root must integrate actual final proof.",
+    "Offline tests do not prove real restore, original n8n publications, Source counts, frontend rollback, live provider environment or operational sole-writer behavior."
+  ],
+  "mandatory_return": "Criterion unmet at cycle2: return actual gaps to Root for required independent review/integration. No new runtime action, no automatic extra cycle, no independent review spawned by this Builder.",
+  "versioning": "NOT_VERSIONED_BY_BUILDER: owned-files-only git add failed exit128: .git/index.lock Operation not permitted under workspace sandbox. Root must version four exact owned files; no foreign staging modified."
+}

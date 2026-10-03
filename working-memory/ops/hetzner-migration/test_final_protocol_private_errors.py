@@ -151,7 +151,7 @@ class PrivateProtocol(unittest.TestCase):
     def test_n8n_partial_change_receipt_and_original_http_body_survive_failure(self):
         module = self.modules['n8n_dashboard_pause_once.py']
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp); run = root/'final-export-offline'; run.mkdir(mode=0o700)
+            root = Path(temp).resolve(); run = root/'final-export-offline'; run.mkdir(mode=0o700)
             access = root/'n8n-pause-access-1'; access.mkdir(mode=0o700)
             (access/'existing-api-key-private.json').write_text(json.dumps({'apiKey':SECRET}))
             gate = root/'gate.json'
@@ -220,14 +220,7 @@ class PrivateProtocol(unittest.TestCase):
                 with self.assertRaises(AssertionError): runtime.closed_flags(wrong)
                 with self.assertRaises(AssertionError):
                     runtime.verify_container_flags({'Config': {'Env': [key+'='+value for key, value in wrong.items()]}})
-        owner_tree = ast.parse((OPS/'final_owner_link_once.py').read_text())
-        guard = next(node for node in ast.walk(owner_tree) if isinstance(node, ast.Assert) and
-                     {'MEMORY_QA_ENABLED', 'MEMORY_READ_ONLY'}.issubset({item.value for item in ast.walk(node) if isinstance(item, ast.Constant) and isinstance(item.value, str)}))
-        check = compile(ast.fix_missing_locations(ast.Module(body=[guard], type_ignores=[])), '<owner-readonly-guard>', 'exec')
-        exec(check, {'cfg': EXPECTED})
-        for key, value in EXPECTED.items():
-            with self.subTest(owner_flag=key), self.assertRaises(AssertionError):
-                exec(check, {'cfg': {**EXPECTED, key: '0' if value == '1' else '1'}})
+        self.assertEqual(self.modules['final_owner_link_once.py'].CLOSED_FLAGS, EXPECTED)
 
     def test_actual_image_server_ast_blocks_post_paths_and_deletion_startup(self):
         raw = (CONTRACT/'live-server.py').read_bytes()
@@ -259,6 +252,59 @@ class PrivateProtocol(unittest.TestCase):
         exec(check, env)  # Closed deletion skips all startup side effects.
         env['ORIGINAL_DELETION_ENABLED']=True
         with self.assertRaises(SystemExit): exec(check, env)
+
+
+class ReviewedProtocolRegression(unittest.TestCase):
+    def test_existing_owner_main_original_link_and_password_unchanged_one_request(self):
+        module=load('final_owner_link_once.py')
+        with tempfile.TemporaryDirectory() as temporary:
+            base=Path(temporary).resolve();root=base/'target';root.mkdir();live=base/'live';(live/'.local').mkdir(parents=True)
+            run=root/'final-export-20261003T220500Z';run.mkdir(mode=0o700)
+            (run/'target-runtime-receipt.json').write_text(json.dumps({'status':'TARGET_READONLY_RUNTIME_ACTIVE'}))
+            uid='00000000-0000-0000-0000-000000000001'
+            (live/'.local/service.env').write_text(''.join(k+'='+v+'\n' for k,v in EXPECTED.items())+'MEMORY_ALLOWED_USERS='+uid+'\n')
+            (root/'.private.env').write_text("SERVICE_ROLE_KEY='fixture-private-api-key'\n")
+            owner={'id':uid,'email':'owner@fixture.invalid','encrypted_password':'fixture-unchanged-verifier'}
+            link=module.TARGET+'/auth/v1/verify?'+urllib.parse.urlencode({'type':'magiclink','redirect_to':module.REDIRECT,'token':'fixture-original-token'})
+            body=json.dumps({'id':uid,'verification_type':'magiclink','redirect_to':module.REDIRECT,'action_link':link}).encode()
+            with patch.object(module,'ROOT',root),patch.object(module,'LIVE',live),patch.object(module,'run_process',side_effect=[json.dumps(owner),json.dumps(owner)]) as sql,patch.object(module,'http_read',return_value=(body,200,{})) as fetch,patch('sys.argv',['owner','--run-dir',str(run),'--production-owner-go','HZ-MIGRATION-20261003-FINAL-FRONTEND']),patch('builtins.print'):
+                module.main()
+                self.assertEqual(sql.call_count,2);fetch.assert_called_once()
+                request=fetch.call_args.args[0];self.assertEqual(request.get_method(),'POST')
+                self.assertEqual(json.loads(request.data),{'type':'magiclink','email':owner['email'],'redirect_to':module.REDIRECT})
+            self.assertEqual((run/'owner-original-action-link-private.txt').read_text(),link)
+            self.assertEqual((run/'owner-original-action-link-private.txt').stat().st_mode&0o777,0o600)
+            self.assertTrue(json.loads((run/'owner-link-receipt.json').read_text())['owner_password_hash_unchanged'])
+            self.assertTrue((run/'owner-magiclink-attempt.marker').exists())
+            # Real main must reject every open flag before SQL, token issuance or marker changes.
+            for key,value in EXPECTED.items():
+                cfg={**EXPECTED,key:'0' if value=='1' else '1'}
+                (live/'.local/service.env').write_text(''.join(k+'='+v+'\n' for k,v in cfg.items())+'MEMORY_ALLOWED_USERS='+uid+'\n')
+                with self.subTest(owner_open_flag=key),patch.object(module,'ROOT',root),patch.object(module,'LIVE',live),patch.object(module,'run_process',side_effect=AssertionError('Forbidden SQL')) as sql,patch.object(module,'http_read',side_effect=AssertionError('Forbidden token issuance')) as fetch,patch('sys.argv',['owner','--run-dir',str(run),'--production-owner-go','HZ-MIGRATION-20261003-FINAL-FRONTEND']):
+                    with self.assertRaises(AssertionError):module.main()
+                    sql.assert_not_called();fetch.assert_not_called()
+
+
+    def test_delayed_health_only_get_observations_preserve_original_failures(self):
+        module=load('final_target_runtime_once.py')
+        with tempfile.TemporaryDirectory() as temporary:
+            directory=Path(temporary)/'private';response=Mock(status=200,headers={});response.read.return_value=b'{"status":"ok"}'
+            response.__enter__=Mock(return_value=response);response.__exit__=Mock(return_value=False)
+            with patch.object(module,'PRIVATE_ERRORS',directory),patch('urllib.request.urlopen',side_effect=[urllib.error.URLError(SECRET),response]) as get,patch('subprocess.run',side_effect=AssertionError('No repeated start')),patch('time.monotonic',side_effect=[0,1]),patch('time.sleep') as sleep:
+                self.assertEqual(module.observe_runtime_health(seconds=90),{'status':'ok'})
+                self.assertEqual(get.call_count,2);sleep.assert_called_once_with(2)
+                self.assertTrue(all(call.args[0]=='http://127.0.0.1:8798/health' for call in get.call_args_list))
+            records=[json.loads(x.read_text()) for x in directory.iterdir()]
+            self.assertEqual(len(records),1);self.assertEqual(records[0]['method'],'GET');self.assertIn(SECRET,records[0]['exception_text'])
+
+    def test_health_deadline_preserves_error_and_does_not_open_ingress(self):
+        module=load('final_target_runtime_once.py')
+        with tempfile.TemporaryDirectory() as temporary:
+            directory=Path(temporary)/'private'
+            with patch.object(module,'PRIVATE_ERRORS',directory),patch('urllib.request.urlopen',side_effect=urllib.error.URLError(SECRET)) as get,patch.object(module,'atomic',side_effect=AssertionError('No ingress opening')) as ingress,patch('subprocess.run',side_effect=AssertionError('No start')),patch('time.monotonic',side_effect=[0,91]),patch('time.sleep') as sleep:
+                with self.assertRaises(RuntimeError) as raised:module.observe_runtime_health(seconds=90)
+                get.assert_called_once();sleep.assert_not_called();ingress.assert_not_called();self.assertNotIn(SECRET,str(raised.exception))
+            self.assertEqual(len(list(directory.iterdir())),1)
 
 
 if __name__ == '__main__':

@@ -40,9 +40,40 @@ def run_process(args, *, operation, private_errors=None, **kw):
 
 def http_read(request, *, operation, private_errors=None, timeout=30, preserve_success=False):
     method = request.get_method() if hasattr(request, 'get_method') else 'GET'
-    body,status,_=http_read(req,operation='owner-generate-link')
-    (run/'owner-generate-link-private.json').write_bytes(body);(run/'owner-generate-link-private.json').chmod(0o600)
-    result=json.loads(body)
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            body = response.read(); status = response.status; headers = response.headers
+            if preserve_success:
+                private_error(operation, directory=private_errors, body=body, status=status, headers=headers, method=method)
+            return body, status, headers
+    except Exception as error:
+        body = None
+        if hasattr(error, 'read'):
+            try: body = error.read()
+            except Exception as read_error:
+                private_error(operation, read_error, directory=private_errors)
+        receipt = private_error(operation, error, directory=private_errors, body=body,
+                                status=getattr(error, 'code', None), headers=getattr(error, 'headers', None), method=method)
+        raise safe_failure(receipt) from None
+CLOSED_FLAGS={'MEMORY_READ_ONLY':'1','MEMORY_INTAKE_ENABLED':'0','MEMORY_AUTOMATIC_ENABLED':'0','MEMORY_QA_ENABLED':'0','MEMORY_ORIGINAL_DELETION_ENABLED':'0'}
+ROOT=Path('/opt/dashboard-supabase-20261003');LIVE=Path('/opt/dashboard-memory-canonical-draft');TARGET='https://178-105-167-26.nip.io/supabase';REDIRECT='https://team-dashboard-rho.vercel.app/memory-next'
+def main():
+    p=argparse.ArgumentParser();p.add_argument('--run-dir',required=True);p.add_argument('--production-owner-go',required=True);a=p.parse_args();os.umask(0o077)
+    run=Path(a.run_dir).resolve();global PRIVATE_ERRORS;PRIVATE_ERRORS=run/'private-errors';assert run.parent==ROOT and re.fullmatch(r'final-export-[0-9TZ-]+',run.name)
+    assert a.production_owner_go=='HZ-MIGRATION-20261003-FINAL-FRONTEND'
+    assert json.loads((run/'target-runtime-receipt.json').read_text())['status']=='TARGET_READONLY_RUNTIME_ACTIVE'
+    cfg=dict(l.split('=',1) for l in (LIVE/'.local/service.env').read_text().splitlines() if l and not l.startswith('#'))
+    assert all(cfg.get(k)==v for k,v in CLOSED_FLAGS.items())
+    allowed=cfg['MEMORY_ALLOWED_USERS'].split(',');assert len(allowed)==1
+    q="SELECT row_to_json(x) FROM (SELECT id,email,encrypted_password FROM auth.users WHERE id='"+allowed[0]+"'::uuid) x;"
+    assert re.fullmatch('[0-9a-f-]{36}',allowed[0])
+    r=run_process(['docker','exec','-i','dashboard-supabase-20261003-db-1','psql','-XqAt','-U','supabase_admin','-d','postgres','-v','ON_ERROR_STOP=1'],input=q,text=True,operation='owner-sql')
+    owner=json.loads(r);assert owner['id']==allowed[0] and owner['email'] and owner['encrypted_password']
+    (run/'owner-magiclink-attempt.marker').open('x').write('one existing owner official GoTrue admin link')
+    private=dict(l.split('=',1) for l in (ROOT/'.private.env').read_text().splitlines() if l and not l.startswith('#'));key=private['SERVICE_ROLE_KEY'].strip("'")
+    req=urllib.request.Request(TARGET+'/auth/v1/admin/generate_link',data=json.dumps({'type':'magiclink','email':owner['email'],'redirect_to':REDIRECT}).encode(),headers={'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json'})
+    body,status,_=http_read(req,operation='owner-generate-link');result=json.loads(body)
+    (run/'owner-generate-link-private.json').write_bytes(body)
     assert status==200 and result['id']==owner['id'] and result['verification_type']=='magiclink' and result['redirect_to']==REDIRECT
     url=urllib.parse.urlsplit(result['action_link']);params=urllib.parse.parse_qs(url.query)
     assert url.scheme=='https' and url.netloc=='178-105-167-26.nip.io' and url.path=='/supabase/auth/v1/verify' and not url.fragment

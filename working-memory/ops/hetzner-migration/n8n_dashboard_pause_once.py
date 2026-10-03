@@ -1,5 +1,5 @@
 """Prepared only: targeted supported n8n API pause/resume, gated and immutable."""
-import argparse,json,os,urllib.request
+import argparse,json,os,subprocess,urllib.request
 from pathlib import Path
 
 # Failure captures are private and append-only; outward messages contain no payloads.

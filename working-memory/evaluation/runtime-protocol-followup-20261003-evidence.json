@@ -1,0 +1,47 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "LOCAL_RUNTIME_FOLLOWUP_PASSED",
+  "at_utc": "2026-10-03T22:48:35.552699+00:00",
+  "review": "runtime-low-yield-20261003-review.json",
+  "followup_packages": 1,
+  "complete_cycles_used": 2,
+  "complete_cycles_budget": 2,
+  "cycle1": {
+    "tests": 13,
+    "errors": 1,
+    "cause": "Owner guard fixture required inline literal constants; actual helper correctly uses global complete map. Actual main/open-flag runtime checks added."
+  },
+  "cycle2": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "result": "PASS"
+  },
+  "accepted_regressions": [
+    "Owner actual main one existing-owner original action-link request plus unchanged password verifier",
+    "Each of five open flags denied before SQL/auth request",
+    "Health delayed readiness GET observations only",
+    "Health deadline no ingress opening/no repeated start",
+    "Full private HTTP/process/timeout/fingerprint/partial n8n errors durable0600, no syntheticsecret outward"
+  ],
+  "source_or_target_mutations": 0,
+  "provider_calls": 0,
+  "actual_start_requests": 0,
+  "syntax_all_six": "PASS",
+  "script_hashes": {
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50",
+    "n8n_dashboard_pause_once.py": "77b225f122034ca16784b7c7e812f170438d358145ac81b1ef988073d463e089",
+    "test_final_protocol_private_errors.py": "e9809cc2fc00a3cdd89f5b7ec933974270b1d5efe250434ffcd1108649db2159"
+  },
+  "private_test_diagnostics": [
+    "/private/tmp/hz-runtime-followup-1.stderr",
+    "/private/tmp/hz-runtime-followup-2.stderr"
+  ],
+  "meaningful_test_failure_preserved": true,
+  "operational_goal_gate": "PENDING_FRESH_ASTRA",
+  "historical_counters": "All prior failures/acceptances retained, RuntimePREP1 failure+reviewedfollowup2cycles success",
+  "resourcewarnings": "Temporary marker handles and synthetic HTTPError cleanup warnings; not hidden, not assertions or goal failures."
+}
