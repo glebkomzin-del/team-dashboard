@@ -1,0 +1,95 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "BLOCKED_SOURCE_RECOVERED",
+  "checked_at_utc": "2026-10-03T21:26:22.196012+00:00",
+  "reviewer": "/root/final_vault_copy_gate",
+  "role_binding": "astra-reviewer fixed gpt-6-astra/high",
+  "decision": "BLOCK",
+  "runtime_enforcement": "RULES_ONLY",
+  "reason": "Original final export followup ended FOLLOWUP_FAILED on COPY newline representation guard. Offline diagnosis establishes cipher/nonce equality, but explicit stop contract requires original Source recovery, not a post-hoc package split. New user decision required by existing contract before further migration execution.",
+  "raw_dump_sha256": "61cb1a551eab3c09001160cd0c8e2faea5ccbdb35add9780f887ce2e1433d1e8",
+  "raw_dump_bytes": 321266826,
+  "raw_dump_not_accepted_final_export": true,
+  "credential_problem_followup_connection_dump_succeeded": true,
+  "copy_guard_failure": {
+    "literal_newline_escape_count": 1,
+    "proper_unescaping_cipher_nonce_equal": true,
+    "source_accesses_for_offline_diagnostic": 0
+  },
+  "final_phase_counters": {
+    "source_freeze": 1,
+    "source_effective_verifier_failure": 1,
+    "readonly_verifier_reconciliation": 1,
+    "new_readonly_leases": 2,
+    "full_dump_attempts": 1,
+    "credential_followup": 1,
+    "local_diagnostic_conninfo_parse_failure": 1,
+    "expired_lease_connection_diagnostic": 1,
+    "target_final_restores": 0,
+    "target_production_runtime_changes": 0,
+    "target_full_daily_backups": 0,
+    "frontend_promotions": 0,
+    "production_owner_flows": 0
+  },
+  "recovery": {
+    "status": "SOURCE_OPERATING_STATE_RESTORED",
+    "source_acl_exact_original": true,
+    "source_config_exact_original": true,
+    "source_runtime_original_image_env": true,
+    "original_flags": {
+      "MEMORY_READ_ONLY": "0",
+      "MEMORY_INTAKE_ENABLED": "1",
+      "MEMORY_AUTOMATIC_ENABLED": "1"
+    },
+    "original_three_n8n_versions_restored": true,
+    "api_key_original_scopes_restored": true,
+    "nginx_exact_original_sha256": "7cfba8642673162a182f67926bc26dbb0def8bdafecd7952e7ee5c524511fe51",
+    "health": {
+      "status": "ok",
+      "mode": "production"
+    },
+    "target_final_restore": false,
+    "frontend_production_switched": false,
+    "source_password_reset": false,
+    "migration_complete": false
+  },
+  "live_source_read": {
+    "origin": "https://lghwikeotbkmojyyjglz.supabase.co",
+    "scoped_space_read_passed": true,
+    "revision": 221,
+    "archive_revision": 857,
+    "public_health_http": 200,
+    "public_health_status": "ok",
+    "original_frontend_id": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+    "frontend_ready": "READY",
+    "temporary_login_expired": true,
+    "temporary_login_active_sessions": 0
+  },
+  "raw_evidence_offserver": {
+    "files": 44,
+    "all_file_hashes_equal": true,
+    "status": "raw evidence only, not migration backup acceptance"
+  },
+  "current_server": {
+    "cpu": 4,
+    "memory_mib": 7729,
+    "used_mib": 1898,
+    "available_mib": 5831,
+    "disk_free_bytes": 35910012928,
+    "capacity_verification": "Current observed load only; no stress test"
+  },
+  "open": [
+    "accepted final export/offserver receipt",
+    "target final restore/all COPY comparison",
+    "target runtime switch",
+    "full target daily restore and offserver verification",
+    "production frontend promotion/owner flow",
+    "target writer and automation opening"
+  ],
+  "prepared_not_executed": [
+    "final_export_finalize_offline_once.py",
+    "final_target_runtime_once.py",
+    "frontend-final-promote-once.py",
+    "frontend-final-owner-redirect.py"
+  ]
+}
