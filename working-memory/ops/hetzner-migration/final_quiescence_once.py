@@ -19,8 +19,18 @@ def state():
       'config',(SELECT coalesce(json_agg(c ORDER BY space_id),'[]') FROM public.wm_processing_config c)) AS value""")
     v=rows[0]['value']
     v['n8n_active']=int(n8n_sql('SELECT count(*) FROM execution_entity WHERE "workflowId" IN (\'nzyaKxs5Om9wuPEc\',\'dashboardDriveMove\',\'dashboardDriveWatch\') AND status IN (\'new\',\'running\',\'waiting\');').strip())
-    # Exactly the runtime's live paths, including post-stop host paths; no historical caches.
-    code="import json;from pathlib import Path;print(json.dumps({str(p):len(list(p.rglob('*.json'))) for p in [Path('/opt/dashboard-memory-canonical-draft/.local/projections-rc1-20260919/response-outbox'),Path('/opt/dashboard-memory-canonical-draft/.local/question-outbox')]}))"
+    # Resolve the actual mount and actual env, including after stop. Absence is never zero.
+    code="""import json,subprocess
+from pathlib import Path
+d=json.loads(subprocess.check_output(['docker','inspect','dashboard-memory-canonical-draft-canonical-draft-1']))[0]
+env=dict(x.split('=',1) for x in d['Config']['Env'])
+mount=next(m for m in d['Mounts'] if m['Destination']=='/app/.local')
+assert mount['Type']=='bind' and mount['Source']=='/opt/dashboard-memory-canonical-draft/.local/cache'
+live=[env['MEMORY_CACHE_DIR']+'/response-outbox',env['MEMORY_QA_OUTBOX']]
+assert live==['/app/.local/projections-rc1-20260919/response-outbox','/app/.local/question-outbox']
+paths=[Path(mount['Source'])/Path(p).relative_to('/app/.local') for p in live]
+assert all(p.is_dir() for p in paths),'Missing actual runtime outbox; cannot attest zero'
+print(json.dumps({str(p):len(list(p.rglob('*.json'))) for p in paths}))"""
     v['outboxes']=json.loads(shell('python3 -c '+shlex.quote(code)))
     return v
 
