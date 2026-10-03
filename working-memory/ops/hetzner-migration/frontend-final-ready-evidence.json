@@ -1,0 +1,23 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-FRONTEND",
+  "at_utc": "2026-10-03T21:01:23.857913+00:00",
+  "status": "PREPARED_AWAITING_TARGET_RESTORED_READONLY_GO",
+  "helper_sha256": {
+    "frontend-final-promote-once.py": "36a862fafafbf5073003f4be9871c990981549888bf020f5658ca24b6279ee1b",
+    "frontend-final-owner-redirect.py": "060374cd241fdccaa757caacdbf8a5bdcaa150b3d515ccaee4a8f06945043963"
+  },
+  "tests": {
+    "question": "Can exact frozen artifact be promoted without build and original public Auth callback be used without token injection?",
+    "criterion": "Exact config/static/archive bindings and parsed bounded helpers; actual production/browser proof still open",
+    "scope": "Local hashes, Python AST, installed CLI promote/env help and isolated project link",
+    "pass_decision": "Wait for authoritative target restore GO; promotion1 and flow1 only",
+    "fail_decision": "Stop and report concrete blocker",
+    "passed": true
+  },
+  "production_mutations": 0,
+  "auth_calls": 0,
+  "new_builds": 0,
+  "root104_current": "unknown FileProvider boundary retained",
+  "application_provider_cost_calls": 0,
+  "codex_usage": "unknown"
+}
