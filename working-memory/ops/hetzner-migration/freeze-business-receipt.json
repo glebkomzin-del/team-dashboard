@@ -1,0 +1,15 @@
+{
+  "acl_entries": 82,
+  "table_objects": 23,
+  "function_objects": 32,
+  "files": {
+    "freeze-business-original-acl.json": "59fc65746e3c97383ab5552f1f48816a7dae37bf0edd408eadc07018d99b9cb8",
+    "freeze-business-restore-acl.sql": "26c34f43afa8408e933589b6ce705bf09bd3e36234904de81166b26dd1955f02",
+    "freeze-business.sql": "bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc"
+  },
+  "executed": false,
+  "source_grantor": "postgres",
+  "extension_functions_excluded": true,
+  "read_only_stable_functions_excluded": true,
+  "trigger_functions_excluded": true
+}

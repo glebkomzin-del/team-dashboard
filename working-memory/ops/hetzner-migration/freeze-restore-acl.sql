@@ -1,3 +1,4 @@
+-- SUPERSEDED: DO NOT EXECUTE. Source cannot SET ROLE supabase_admin. Use freeze-business-restore-acl.sql.
 BEGIN;
 SET LOCAL ROLE "supabase_admin";
 GRANT EXECUTE ON FUNCTION public.gin_extract_query_trgm(text, internal, smallint, internal, internal, internal, internal) TO service_role;

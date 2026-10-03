@@ -35,8 +35,8 @@
   },
   "stage": {
     "services_healthy": 5,
-    "network": "dashboard-supabase-20261003_restore",
-    "internal": true,
+    "network": "DB/REST/Edge internal; Auth restricted SMTP; gateway loopback127.0.0.1:8800",
+    "internal": false,
     "app_processing_started": false
   },
   "auth_backend_integration": {
@@ -65,9 +65,9 @@
     "new_and_existing_deno_journal": 12
   },
   "open": {
-    "recovery": "Historical2+failedfollowup1+reopenedcycles2 retained. Exactly one review-authorized diagnostic proved capture process exited1 with unhandled socket ECONNRESET immediately after Node probe returned0. Subsequent native SMTP timeout reached already-dead capture. No recovery/data in diagnostic. Repair not applied; Lead next-step gate pending. Recovery link/reset remains unproved.",
+    "recovery": "Reset and new password login passed via genuine issued recovery session refresh. Original successful verify303 redirect headers were not retained; future public recovery test must retain them.",
     "cli_role_cleanup": "Managed source role DROP denied 42501; login expired and 0 sessions confirmed. Not deleted.",
-    "production": "Public TLS/frontend/CSP/worker switch/final export/daily backup deployment and single-writer cutover not performed."
+    "production": "Public API, frontend production, source freeze/final export and single-writer cutover not performed. Backup adapter installed and Hosted/offserver full backup accepted separately."
   },
   "attempts": {
     "temporary_source_credential_leases": 2,
@@ -77,7 +77,13 @@
     "recovery_followup_failed": 1,
     "recovery_reopened_cycles": 2,
     "recovery_reopened_requests": 1,
-    "recovery_diagnostic_review_followup": 1
+    "recovery_diagnostic_review_followup": 1,
+    "recovery_repair_cycles": 1,
+    "recovery_issued_session_continuations": 1,
+    "network_implementation": 1,
+    "network_verification": 1,
+    "stage_clone_implementation": 1,
+    "stage_clone_read_verification": 1
   },
   "recovery_followup": {
     "problem_id": "HZ-MIGRATION-20261003/recovery",
@@ -144,5 +150,72 @@
     "capture_failure": "Unhandled socket read ECONNRESET after immediate Node client exit",
     "native_failure": "TCP TimeoutError after capture already exited",
     "capture_removed": true
+  },
+  "recovery_repair": {
+    "recovery_http": 200,
+    "public_prefix_link_correct": true,
+    "verify_http": 303,
+    "issued_session_refresh_http": 200,
+    "password_reset_http": 200,
+    "new_password_login_http": 200,
+    "third_party_mail_sent": 0,
+    "original_redirect_header_evidence_gap": true
+  },
+  "network": {
+    "verification_attempt": 1,
+    "source_mutation": false,
+    "external_emails_sent": 0,
+    "public_nginx_changed": false,
+    "healthy_services": 5,
+    "db_auth_rest_functions_no_published_ports": true,
+    "actual_loopback_gateway_http": 200,
+    "owner_auth_passed": true,
+    "owner_spaces_read": 2,
+    "wrong_owner_rls_empty": true,
+    "backend_owner_allow_wrong_owner_deny": true,
+    "scoped_journal_read": true,
+    "actual_auth_namespace_pid": 137831,
+    "actual_auth_dns_passed": true,
+    "actual_auth_gmail_tls_auth_noop": true,
+    "auth_non_smtp_egress_denied": true,
+    "status": "NETWORK_VERIFIED"
+  },
+  "stage_clone": {
+    "question": "Does the real runtime clone read target journal/archive/review for owner and deny wrong owner without processing?",
+    "attempt": 1,
+    "provider_calls": 0,
+    "app_write_requests": 0,
+    "status": "OWNER_READ_INTEGRATION_PASSED",
+    "cases": {
+      "health": {
+        "http": 200,
+        "bytes": 38,
+        "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+      },
+      "owner_archive": {
+        "http": 200,
+        "bytes": 15017,
+        "sha256": "ba27e33e9d40ca52b9c584330df2238b7eafa46fbbb0812d1a1e28df5ecaecf0"
+      },
+      "owner_review": {
+        "http": 200,
+        "bytes": 33516228,
+        "sha256": "b5ba97aa0a41a1e8ac81ca28f299a1dd2baebe96dba155b1e3ab6bb2ccdc68e7"
+      },
+      "owner_overview": {
+        "http": 200,
+        "bytes": 33391701,
+        "sha256": "89cfc43d644609310ab29efb97a82fbfd4bb93492c720d06512250346cca9c9d"
+      },
+      "wrong_owner_archive": {
+        "http": 401,
+        "bytes": 25,
+        "sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630"
+      }
+    },
+    "live_container_image_unchanged": true,
+    "read_only": true,
+    "intake": false,
+    "automatic": false
   }
 }

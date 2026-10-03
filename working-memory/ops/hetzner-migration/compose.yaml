@@ -26,6 +26,10 @@ services:
       timeout: 5s
       retries: 30
   auth:
+    networks:
+      default: {}
+      smtp-egress:
+        ipv4_address: 172.28.80.2
     image: supabase/gotrue:v2.196.0@sha256:93bfec0a41cfe3ed81d03c9c1c8807fd230b8ecea260cf999b8a7204ccc7d5cf
     restart: unless-stopped
     mem_limit: 128m
@@ -88,6 +92,10 @@ services:
       timeout: 5s
       retries: 30
   api-gw:
+    networks:
+      default: {}
+      api-ingress:
+        ipv4_address: 172.28.81.2
     image: envoyproxy/envoy:v1.39.1@sha256:b21240e552b588017072424716c0bce30000f49deed6262bde55b042b5acfd97
     restart: unless-stopped
     mem_limit: 128m
@@ -148,3 +156,9 @@ networks:
   default:
     external: true
     name: dashboard-supabase-20261003_restore
+  smtp-egress:
+    external: true
+    name: dashboard-supabase-20261003_smtp-egress
+  api-ingress:
+    external: true
+    name: dashboard-supabase-20261003_api-ingress

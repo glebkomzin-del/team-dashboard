@@ -1,0 +1,38 @@
+{
+  "question": "Does the real runtime clone read target journal/archive/review for owner and deny wrong owner without processing?",
+  "attempt": 1,
+  "provider_calls": 0,
+  "app_write_requests": 0,
+  "status": "OWNER_READ_INTEGRATION_PASSED",
+  "cases": {
+    "health": {
+      "http": 200,
+      "bytes": 38,
+      "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+    },
+    "owner_archive": {
+      "http": 200,
+      "bytes": 15017,
+      "sha256": "ba27e33e9d40ca52b9c584330df2238b7eafa46fbbb0812d1a1e28df5ecaecf0"
+    },
+    "owner_review": {
+      "http": 200,
+      "bytes": 33516228,
+      "sha256": "b5ba97aa0a41a1e8ac81ca28f299a1dd2baebe96dba155b1e3ab6bb2ccdc68e7"
+    },
+    "owner_overview": {
+      "http": 200,
+      "bytes": 33391701,
+      "sha256": "89cfc43d644609310ab29efb97a82fbfd4bb93492c720d06512250346cca9c9d"
+    },
+    "wrong_owner_archive": {
+      "http": 401,
+      "bytes": 25,
+      "sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630"
+    }
+  },
+  "live_container_image_unchanged": true,
+  "read_only": true,
+  "intake": false,
+  "automatic": false
+}

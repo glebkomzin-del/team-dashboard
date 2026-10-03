@@ -1,0 +1,19 @@
+{
+  "verification_attempt": 1,
+  "source_mutation": false,
+  "external_emails_sent": 0,
+  "public_nginx_changed": false,
+  "healthy_services": 5,
+  "db_auth_rest_functions_no_published_ports": true,
+  "actual_loopback_gateway_http": 200,
+  "owner_auth_passed": true,
+  "owner_spaces_read": 2,
+  "wrong_owner_rls_empty": true,
+  "backend_owner_allow_wrong_owner_deny": true,
+  "scoped_journal_read": true,
+  "actual_auth_namespace_pid": 137831,
+  "actual_auth_dns_passed": true,
+  "actual_auth_gmail_tls_auth_noop": true,
+  "auth_non_smtp_egress_denied": true,
+  "status": "NETWORK_VERIFIED"
+}
