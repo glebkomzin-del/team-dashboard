@@ -58,3 +58,11 @@ PUBLIC-AUTH1 budget1/1 exhausted. Native SMTP/capture continuity passed, public 
 ## Query-corrected reviewed Public Auth followup
 
 One reviewed query-followup closed the public criterion: actual narrow callback allowlist checked after Auth recreation, native SMTP/PID continuity passed; Recover200→captured public verify URL→Verify303 with complete original Location→identical local frontend reset form. Separate API password update200, then fresh interactive existing-password browser login produced actual GoTrue password-grant200 and wrong-owner backend401. Frontend receipt604f71a. UI password-reset submit untested; no owner password change or third-party mail. Original SMTP/allowlist restored, capture removed, public healthv2.196.0/actual-namespace GmailAUTHNOOP passed. Historical PUBLIC-AUTH1 failure remains; exactly1followup consumed. Private original headers, capture, auth logs, credentials and final hashes retained host/Mac/offserver current-evidence/public-auth-query-1.
+
+## Reviewed StageWrite executor followup
+
+Original PostgREST14.17 cycle appended/replayed correctly but stale revision40001 entered an unbounded native retry and Edge returned503. Source dump/current source/target function bodies are identical. Original failure and cancellation evidence remain conserved; own PID13116 was subsequently actually terminated (remaining0).
+
+Exactly one reviewed followup replaced ONLY REST with official ARM64 PostgREST16.4 digest c3638ac25258ede665db66a4052b6fd30db4f22789327dce84599409136da35f. Same disposable space now revision2/journal2; exact replay adds nothing, changed replay/stale409, wrong actor/scope403, wrong ownerRLS empty, direct authenticated RPC403. OwnerRLS/scoped journal/health passed; other service identities and original business aggregates unchanged. Scoped token disabled. Historical StageWrite1failure+1followup retained. Original config/rollback, effective env/role overrides, all private responses/logs/hash receipts retained host/Mac/offserver `stage-write-replay-followup-1`; sanitized `stage-write-followup-evidence.json`. No source writes or production switch.
+
+Final backend/pause parameters are in `final-backend-phase-plan.md`. Fresh export belongs to Lead; final restore and targeted n8n API pause scripts are prepared only, not executed. Final Source freeze/cutover remains gated.

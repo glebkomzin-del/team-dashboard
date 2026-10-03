@@ -71,7 +71,7 @@ services:
       timeout: 5s
       retries: 30
   rest:
-    image: postgrest/postgrest:v14.17@sha256:b48f6387a6cab5013eb19401361a316a3a9cf7f4c2893ea98f54f8a3effbe178
+    image: postgrest/postgrest:v16.4@sha256:c3638ac25258ede665db66a4052b6fd30db4f22789327dce84599409136da35f
     restart: unless-stopped
     mem_limit: 128m
     cpus: 0.5
@@ -87,7 +87,7 @@ services:
       PGRST_ADMIN_SERVER_HOST: localhost
       PGRST_DB_MAX_ROWS: 1000
     healthcheck:
-      test: [CMD, postgrest, --ready]
+      test: [CMD, /bin/postgrest, --ready]
       interval: 5s
       timeout: 5s
       retries: 30
