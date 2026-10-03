@@ -69,52 +69,69 @@ def main():
         save(local/'preparation.json',{'prepared':True,'source_unchanged':True,'nginx_original_sha256':NGINX_SHA,'drain_seconds':600})
         print(json.dumps({'prepared':True,'running':baseline['running'],'unknown_model':baseline['unknown_model'],'unknown_question':baseline['unknown_question'],'n8n_active':baseline['n8n_active'],'outboxes':baseline['outboxes']}));return
     gate_check(a.gate_receipt,a.name)
-    save(local/'freeze-attempt.json',{'attempt':1,'phase':'started'})
-    assert sql(acl_query())==json.loads((PRIVATE/'source/freeze-business-original-acl.json').read_text())
-    assert shell('sha256sum '+NGINX).decode().split()[0]==NGINX_SHA
-    assert shell('systemctl show dashboard-job-backup.service -p ActiveState --value').strip()==b'inactive'
-    image=shell('docker inspect -f '+shlex.quote('{{.Image}}')+' '+CANONICAL).decode().strip()
-    assert image=='sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f'
-    shell('umask 077; mkdir '+shlex.quote(remote))
-    upload(a.gate_receipt,remote+'/gate.json')
-    for file in ['nginx-original.conf','nginx-maintenance.conf','source-original-config-private.json']:
-        upload(local/file,remote+'/'+file)
-    scope=PRIVATE/'current-evidence/n8n-scope-plan-1/add-scopes.sql'
-    assert digest(scope)=='c7b3dfe4ac75688121c89f79f80014494d4ca3cb6a620beb94e5b2682a96b9ca'
-    n8n_sql(scope.read_text())
-    upload(HERE/'n8n_dashboard_pause_once.py',remote+'/n8n_dashboard_pause_once.py')
-    result=shell('python3 '+remote+'/n8n_dashboard_pause_once.py --action pause --run-dir '+remote+' --gate-receipt '+remote+'/gate.json')
-    assert json.loads(result)['status']=='PASSED'
-    # Test complete candidate before replacing live config. Failure restores original immediately.
-    candidate=remote+'/nginx-maintenance-test.conf'
-    shell('umask 077; sed '+shlex.quote('s@include /etc/nginx/sites-enabled/\\*;@include '+remote+'/nginx-maintenance.conf;@')+' /etc/nginx/nginx.conf > '+candidate)
-    shell('nginx -t -c '+candidate)
-    shell('cp '+remote+'/nginx-maintenance.conf '+NGINX+' && (nginx -t && systemctl reload nginx || { cp '+remote+'/nginx-original.conf '+NGINX+'; nginx -t; systemctl reload nginx; exit 1; })')
-    original=json.loads((local/'source-original-config-private.json').read_text())
-    encoded=literal(json.dumps(original))
-    sql("BEGIN; LOCK TABLE public.wm_processing_config IN EXCLUSIVE MODE; DO $m$ BEGIN IF (SELECT jsonb_agg(to_jsonb(c) ORDER BY space_id) FROM public.wm_processing_config c) IS DISTINCT FROM "+encoded+"::jsonb THEN RAISE EXCEPTION 'Config changed'; END IF; END $m$; UPDATE public.wm_processing_config SET enabled=false; COMMIT;")
-    after=state();assert [{**c,'enabled':False} for c in original]==after['config']
-    save(local/'after-config-disable-private.json',after)
-    end=time.monotonic()+600; samples=[]
-    while True:
-        v=state();samples.append(v)
-        if empty(v):break
-        if time.monotonic()>=end:
-            save(local/'drain-failed-private.json',samples);raise RuntimeError('Drain boundary reached; no stop, freeze or dump')
-        time.sleep(10)
-    save(local/'drain-private.json',samples)
-    shell('docker stop --time 120 '+CANONICAL,timeout=135)
-    post=state();save(local/'after-stop-private.json',post);assert empty(post)
-    assert shell('docker inspect -f '+shlex.quote('{{.State.Running}}')+' '+CANONICAL).strip()==b'false'
-    freeze=HERE/'freeze-business.sql';assert digest(freeze)=='bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc'
-    assert sql(acl_query())==json.loads((PRIVATE/'source/freeze-business-original-acl.json').read_text())
-    sql(freeze.read_text())
-    # Catalog OIDs avoid parsing identity-argument names and cover new writers too.
-    effective=sql(EFFECTIVE_PRIVILEGES_SQL)
-    verify_effective_freeze(effective)
-    final=state();assert empty(final)
-    receipt={'status':'FROZEN','attempt':1,'run_dir':remote,'effective_privileges':effective,'post_stop_empty':True,'config_disabled':True,'ingress_maintenance':True,'source_password_unchanged':True,'runtime_enforcement':'RULES_ONLY','dump_attempts':0}
-    save(local/'freeze-receipt.json',receipt);upload(local/'freeze-receipt.json',remote+'/freeze-receipt.json')
-    print(json.dumps(receipt))
+    from n8n_dashboard_pause_once import durable
+    from final_source_partial_rollback_once import runtime_snapshot, verify_runtime
+    durable(local,'freeze-attempt.json',{'attempt':1,'phase':'started'})
+    runtime=runtime_snapshot();verify_runtime(runtime)
+    assert runtime['running']
+    durable(local,'source-original-runtime-private.json',runtime)
+    try:
+        assert sql(acl_query())==json.loads((PRIVATE/'source/freeze-business-original-acl.json').read_text())
+        assert shell('sha256sum '+NGINX).decode().split()[0]==NGINX_SHA
+        assert shell('systemctl show dashboard-job-backup.service -p ActiveState --value').strip()==b'inactive'
+        image=shell('docker inspect -f '+shlex.quote('{{.Image}}')+' '+CANONICAL).decode().strip()
+        assert image=='sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f'
+        shell('umask 077; mkdir '+shlex.quote(remote))
+        upload(a.gate_receipt,remote+'/gate.json')
+        for file in ['nginx-original.conf','nginx-maintenance.conf','source-original-config-private.json']:
+            upload(local/file,remote+'/'+file)
+        scope=PRIVATE/'current-evidence/n8n-scope-plan-1/add-scopes.sql'
+        assert digest(scope)=='c7b3dfe4ac75688121c89f79f80014494d4ca3cb6a620beb94e5b2682a96b9ca'
+        durable(local,'source-stage-scopes-attempt.json',{'stage':'scopes'})
+        n8n_sql(scope.read_text())
+        upload(HERE/'n8n_dashboard_pause_once.py',remote+'/n8n_dashboard_pause_once.py')
+        durable(local,'source-stage-n8n-attempt.json',{'stage':'n8n'})
+        result=shell('python3 '+remote+'/n8n_dashboard_pause_once.py --action pause --run-dir '+remote+' --gate-receipt '+remote+'/gate.json')
+        assert json.loads(result)['status']=='PASSED'
+        # Test the complete candidate before replacement; partial recovery handles failures.
+        candidate=remote+'/nginx-maintenance-test.conf'
+        shell('umask 077; sed '+shlex.quote('s@include /etc/nginx/sites-enabled/\\*;@include '+remote+'/nginx-maintenance.conf;@')+' /etc/nginx/nginx.conf > '+candidate)
+        shell('nginx -t -c '+candidate)
+        durable(local,'source-stage-nginx-attempt.json',{'stage':'nginx'})
+        shell('cmp -s '+NGINX+' '+remote+'/nginx-original.conf && cp '+remote+'/nginx-maintenance.conf '+NGINX+' && nginx -t && systemctl reload nginx')
+        original=json.loads((local/'source-original-config-private.json').read_text())
+        encoded=literal(json.dumps(original))
+        durable(local,'source-stage-config-attempt.json',{'stage':'config'})
+        sql("BEGIN; LOCK TABLE public.wm_processing_config IN EXCLUSIVE MODE; DO $m$ BEGIN IF (SELECT jsonb_agg(to_jsonb(c) ORDER BY space_id) FROM public.wm_processing_config c) IS DISTINCT FROM "+encoded+"::jsonb THEN RAISE EXCEPTION 'Config changed'; END IF; END $m$; UPDATE public.wm_processing_config SET enabled=false; COMMIT;")
+        after=state();assert [{**c,'enabled':False} for c in original]==after['config']
+        save(local/'after-config-disable-private.json',after)
+        end=time.monotonic()+600; samples=[]
+        while True:
+            v=state();samples.append(v)
+            if empty(v):break
+            if time.monotonic()>=end:
+                save(local/'drain-failed-private.json',samples);raise RuntimeError('Drain boundary reached; no stop, freeze or dump')
+            time.sleep(10)
+        save(local/'drain-private.json',samples)
+        durable(local,'source-stage-stop-attempt.json',{'stage':'stop'})
+        shell('docker stop --time 120 '+CANONICAL,timeout=135)
+        post=state();save(local/'after-stop-private.json',post);assert empty(post)
+        assert shell('docker inspect -f '+shlex.quote('{{.State.Running}}')+' '+CANONICAL).strip()==b'false'
+        freeze=HERE/'freeze-business.sql';assert digest(freeze)=='bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc'
+        assert sql(acl_query())==json.loads((PRIVATE/'source/freeze-business-original-acl.json').read_text())
+        durable(local,'source-stage-acl-attempt.json',{'stage':'acl'})
+        sql(freeze.read_text())
+        # Catalog OIDs avoid parsing identity-argument names and cover new writers too.
+        effective=sql(EFFECTIVE_PRIVILEGES_SQL)
+        verify_effective_freeze(effective)
+        final=state();assert empty(final)
+        receipt={'status':'FROZEN','attempt':1,'run_dir':remote,'effective_privileges':effective,'post_stop_empty':True,'config_disabled':True,'ingress_maintenance':True,'source_password_unchanged':True,'runtime_enforcement':'RULES_ONLY','dump_attempts':0}
+        save(local/'freeze-receipt.json',receipt);upload(local/'freeze-receipt.json',remote+'/freeze-receipt.json')
+        print(json.dumps(receipt))
+    except Exception as error:
+        failure=private_failure('SOURCE_QUIESCENCE_STOP',error_type=type(error).__name__,primary_error=str(error))
+        durable(local,'source-quiescence-failure.json',{'failure':str(failure),'forward_stopped':True,
+            'recovery_entry':'final_source_partial_rollback_once.py','lease_attempts':0,'dump_attempts':0})
+        raise failure from None
 
 if __name__=='__main__':main()

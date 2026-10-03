@@ -1,0 +1,133 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "LOCAL_SOURCE_CORRECTION_VALIDATED_PENDING_INDEPENDENT_REVIEW",
+  "operational_go": false,
+  "review_id": "native-source-export-gate-1",
+  "review_path": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-export-gate-1/result.json",
+  "review_sha256": "a3bc6317ac8b5e958805df3ab8a52c896821c9ec84e4604ad292345afbdd2638",
+  "scope": [
+    "EARLY_PARTIAL_RECOVERY",
+    "EXPORT_PRIMARY_ERRORS_INCOMPLETE"
+  ],
+  "maximum_complete_offline_cycles": 2,
+  "offline_cycles_used": 2,
+  "cycle_1": {
+    "passed_tests": 6,
+    "failed_tests": 1,
+    "failure": "Export test module was absent because its creation command used an incorrect relative path; ModuleNotFoundError: No module named test_final_source_export_errors. No operational action occurred."
+  },
+  "cycle_2": {
+    "passed_test_methods": 7,
+    "failed_tests": 0,
+    "targeted_updated_http400_timeout_fixture_passed": true,
+    "complete": true
+  },
+  "accepted_test_methods": [
+    "test_final_source_partial_recovery.PartialRecovery.test_actual_entry_restores_all_partial_stages_exactly_once",
+    "test_final_source_partial_recovery.PartialRecovery.test_foreign_state_stops_before_any_recovery_mutation",
+    "test_final_source_partial_recovery.PartialRecovery.test_health_and_resume_failure_stop_no_speculative_retry",
+    "test_final_source_export_errors.ExportErrors.test_actual_imported_helper_timeouts_psql_dump_dumpall_no_retry",
+    "test_final_source_export_errors.ExportErrors.test_normal_failed_return_preserves_original_helper_receipt",
+    "test_final_source_export_errors.ExportErrors.test_final_entry_version_toc_archive_vault_primary_errors",
+    "test_final_protocol_private_errors.PrivateProtocol.test_n8n_partial_change_receipt_and_original_http_body_survive_failure",
+    "test_final_protocol_private_errors.PrivateProtocol.test_http_primary_body_status_headers_and_exception_are_private",
+    "test_final_protocol_private_errors.PrivateProtocol.test_process_failures_and_timeout_exact_private_capture_one_attempt"
+  ],
+  "fixture_cases": {
+    "partial_original_restore": [
+      "preflight-noop",
+      "second-pause-fails",
+      "uncertain-pause-response-actual-inactive",
+      "configguard",
+      "drain-expiry",
+      "after-stop",
+      "ACL-committed"
+    ],
+    "foreign_rejected": [
+      "config",
+      "nginx",
+      "host-env",
+      "image",
+      "ACL",
+      "workflow-version",
+      "target-marker"
+    ],
+    "recovery_stop": [
+      "health-deadline",
+      "HTTP400-full-body",
+      "timeout-full-primary"
+    ],
+    "export": [
+      "actual-imported-psql-timeout",
+      "actual-imported-pg_dump-timeout",
+      "actual-imported-pg_dumpall-timeout",
+      "normal-helper-nonzero-receipt",
+      "version-nonzero/timeout",
+      "TOC-nonzero/timeout",
+      "archive-nonzero/timeout",
+      "Vault-nonzero/timeout"
+    ]
+  },
+  "validation": {
+    "syntax_in_memory": {
+      "files": 6,
+      "passed": true
+    },
+    "owned_git_diff_check": {
+      "passed": true,
+      "limitation": "Files are untracked in root; git diff --check does not inspect untracked contents."
+    },
+    "whole_process_subprocess_monkeypatch_used_in_implementation": false
+  },
+  "owned_script_sha256": {
+    "final_quiescence_once.py": "e9b42235755e18b2013f3f6f264ca483aaa2debec7f561a62d62d9ff5fcda1ea",
+    "final_export_once.py": "29dbc4d3164bd1abb68eaf269725900f966cf52e9c8ac817e9476995dfe2ff81",
+    "n8n_dashboard_pause_once.py": "91711a2b721b6b787867382087d008afa56aa23cccf56ca2f5b3b7e62cc9a94d",
+    "final_source_partial_rollback_once.py": "f32d80db9fa24a524f9c40178f0276737a7684e1d6ce979598c9f3ed4e7cb917",
+    "test_final_source_partial_recovery.py": "6a360be295971e3c0b90d31726f7097a311cc5324a81ef2ca1a8b34c61774dd3",
+    "test_final_source_export_errors.py": "514157935f50657fa64a9a80e264ec735513e35c80731d703a34e264c332511f"
+  },
+  "immutable_export_source_sha256": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+  "remote_calls": 0,
+  "operational_actions": 0,
+  "source_sql_calls": 0,
+  "leases": 0,
+  "dumps": 0,
+  "target_writes": 0,
+  "commits_created": 0,
+  "source_reserved_budgets_unchanged": {
+    "freeze": 1,
+    "natural_drain_seconds": 600,
+    "readonly_lease": 1,
+    "full_dump": 1
+  },
+  "preserved": "All historical counters and accepted 13 runtime tests, codec, Stage, RLS/Auth, backups, frontend remain unchanged; prepared final-export-20261003T220500Z evidence untouched.",
+  "remaining_exact_gaps": [
+    "Independent targeted Source GOAL_GATE review for these exact hashes by Root.",
+    "Root-owned versioning/integration; no git add/commit in this package.",
+    "No live Source partial recovery, pause, freeze or export validation was performed.",
+    "No operational Target, Writer, Owner, frontend or cutover acceptance is inferred."
+  ],
+  "enforcement": "RULES_ONLY",
+  "reported_at_utc": "2026-10-03T23:13:59.624252+00:00",
+  "native_process_provenance": {
+    "fresh_thread_id": "01a10401-21ad-7890-9373-07b2c24d094f",
+    "requested_accepted_configuration": {
+      "model": "gpt-6.1-sol",
+      "reasoning_effort": "medium",
+      "sandbox": "workspace-write",
+      "ignore_user_config": true,
+      "ephemeral": true
+    },
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED",
+    "actual_usage": {
+      "input_tokens": 1015311,
+      "cached_input_tokens": 933248,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 21092,
+      "reasoning_output_tokens": 3974
+    },
+    "private_primary_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-correction-1"
+  },
+  "root_evidence_correction": "Prior note allfiles untracked inaccurate: three existing helpers tracked, three new helpers/tests untracked. Root staged diff checks all own actual changes before commit. 3 export+4 Source/n8n methods passed current affected versions; extra targeted timeout method passed after fixture addition. Missing-relativepath patch preserved as observed prior code/tool failure, corrected before affected tests."
+}

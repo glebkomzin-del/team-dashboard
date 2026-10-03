@@ -3,6 +3,39 @@ import argparse, base64, importlib.util, json, os, shutil, subprocess, urllib.re
 from final_phase_common import *
 from vault_copy_codec import verify_vault_copy
 
+class PrivateExportProcesses:
+    """Module-local adapter: never changes the shared subprocess module."""
+    def __init__(self, transport=subprocess): self.transport=transport
+    def __getattr__(self,name): return getattr(self.transport,name)
+    def run(self,args,**kw):
+        redirected={}
+        for key in ('stdout','stderr'):
+            stream=kw.get(key)
+            if hasattr(stream,'name') and isinstance(stream.name,(str,bytes)):
+                redirected[key+'_path']=str(stream.name)
+        def details():
+            for key in ('stdout','stderr'):
+                stream=kw.get(key)
+                if hasattr(stream,'flush'):stream.flush()
+            return {**redirected,**{key.replace('_path','_bytes'):Path(value).stat().st_size
+                    for key,value in redirected.items() if Path(value).exists()}}
+        try:result=self.transport.run(args,**kw)
+        except Exception as error:
+            raise private_failure('EXPORT_PROCESS_ERROR',error_type=type(error).__name__,primary_error=str(error),
+                stdout=getattr(error,'stdout',None),stderr=getattr(error,'stderr',None),**details()) from None
+        if result.returncode:
+            # Preserve exact bytes even when the original helper also saves decoded normal returns.
+            failure=private_failure('EXPORT_PROCESS_RETURN',returncode=result.returncode,
+                stdout=result.stdout,stderr=result.stderr,**details())
+            if kw.get('check'):raise failure from None
+        return result
+    def check_output(self,args,**kw):
+        assert 'stdout' not in kw
+        kw.setdefault('stderr',self.transport.PIPE)
+        return self.run(args,stdout=self.transport.PIPE,check=True,**kw).stdout
+
+processes=PrivateExportProcesses()
+
 def metadata():
     vault=sql("SELECT s.id,s.name,s.description,s.key_id,s.created_at,s.updated_at,encode(s.nonce,'hex') AS nonce_hex,encode(extensions.digest(s.secret,'sha256'),'hex') AS cipher_sha256,v.decrypted_secret FROM vault.secrets s JOIN vault.decrypted_secrets v USING(id) ORDER BY s.id")
     token=source_token()
@@ -26,7 +59,7 @@ def main():
     save(local/'final-export-attempt.json',{'attempt':1,'lease_budget':1,'dump_budget':1})
     assert not (local/'login-role.json').exists() and not (local/'full.dump').exists()
     os.environ['PATH']='/opt/homebrew/bin:'+os.environ['PATH']
-    assert '17.10' in subprocess.check_output(['pg_dump','--version']).decode()
+    assert '17.10' in processes.check_output(['pg_dump','--version'],timeout=30).decode()
     before=metadata();save(local/'metadata-before-private.json',before)
     shutil.copyfile(PRIVATE/'source/prod-ca-2021.crt',local/'prod-ca-2021.crt')
     spec=importlib.util.spec_from_file_location('verified_source_export',HERE/'export_source.py');mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
@@ -41,21 +74,21 @@ def main():
     assert isinstance(lease,dict) and all(lease.get(k) for k in ['role','password','ttl_seconds'])
     import datetime
     save(local/'login-role.json',{**lease,'created_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'read_only_requested':True})
-    mod.ROOT=local;mod.main()
+    mod.ROOT=local;mod.subprocess=processes;mod.main()
     assert json.loads((local/'dump-result.json').read_text())['returncode']==0
     assert json.loads((local/'roles-result.json').read_text())['returncode']==0
     role=json.loads((local/'role-validation.json').read_text())
     assert role['roles'][0]['bypassrls'] and role['read_only']=='on' and role['public_writable']==0
     with (local/'full.dump').open('rb') as archive: assert archive.read(5)==b'PGDMP'
-    toc=subprocess.run(['pg_restore','--list',str(local/'full.dump')],capture_output=True,check=True).stdout
+    toc=processes.run(['pg_restore','--list',str(local/'full.dump')],capture_output=True,check=True,timeout=600).stdout
     (local/'toc.txt').write_bytes(toc)
     with (local/'archive-validation-private.stderr').open('xb') as err:
-        result=subprocess.run(['pg_restore','--file=/dev/null',str(local/'full.dump')],stderr=err,timeout=600)
+        result=processes.run(['pg_restore','--file=/dev/null',str(local/'full.dump')],stderr=err,timeout=600)
     assert result.returncode==0
     after=metadata();save(local/'metadata-after-private.json',after);assert before==after
     save(local/'vault-plaintext.json',after['vault'])
     # The sidecar must match the actual archive's original Vault cipher and nonce, not just wall-clock reads.
-    vault_sql=subprocess.check_output(['pg_restore','--data-only','--schema=vault','--table=secrets','--file=-',str(local/'full.dump')])
+    vault_sql=processes.check_output(['pg_restore','--data-only','--schema=vault','--table=secrets','--file=-',str(local/'full.dump')],timeout=700)
     (local/'vault-copy-private.sql').write_bytes(vault_sql)
     verify_vault_copy(vault_sql.decode('utf-8'),after['vault'])
     h=digest(local/'full.dump');receipt={'status':'EXPORTED_AND_VALIDATED','run_dir':remote,'dump_sha256':h,'dump_bytes':(local/'full.dump').stat().st_size,'new_readonly_leases':1,'new_dump_attempts':1,'archive_valid':True,'vault_archive_bound':True,'edge_metadata_unchanged':True,'source_frozen':True,'roles_no_passwords':True,'dump_pg_version':'17.10'}
