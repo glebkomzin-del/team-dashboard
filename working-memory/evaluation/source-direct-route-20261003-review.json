@@ -1,0 +1,88 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "problem": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "provenance": {
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-direct-route-review-2/stderr-private.txt",
+    "exact_lines": {
+      "10": "OpenAI Codex v0.160.0",
+      "13": "model: gpt-6-astra",
+      "14": "provider: openai",
+      "15": "approval: never",
+      "16": "sandbox: read-only",
+      "17": "reasoning effort: high",
+      "19": "session id: 01a1042a-0d24-75b2-ac2f-1fe2668d1201"
+    },
+    "freshness": "Eigene Session gegen\u00fcber Review-1: 01a10426-657b-74e1-a1d8-4fa296683e6a, dort events-private.jsonl:1.",
+    "correction": "Der lokale Name /root belegt keine Desktop-Lead-Identit\u00e4t. Der darauf beruhende Provenienzblock entf\u00e4llt; das vorherige technische CONTINUE_BOUNDED bleibt erhalten.",
+    "limit": "Runtime-Konfigurationsnachweis, keine serverinterne Engine- oder Abrechnungsbehauptung."
+  },
+  "triggers": {
+    "retained": [
+      "LOW_YIELD",
+      "FOLLOWUP_FAILED",
+      "GOAL_GATE"
+    ],
+    "resumption": "Dieses ausdr\u00fccklich angeforderte neue Paket nutzt weder einen Z\u00e4hlerreset noch das abgelaufene Source-Goal2-Permit."
+  },
+  "examined_evidence": [
+    "working-memory/evaluation/source-export-credential-failure-20261003-evidence.json",
+    "working-memory/.local/hetzner-migration-20261003/final-export-20261003T220500Z/connection-failure-233007.json: Pooler-Passwortauthentifizierung fehlgeschlagen.",
+    "working-memory/.local/hetzner-migration-20261003/current-evidence/direct-db-route-1/actual-hetzner-direct-db-network.json: IPv6-TCP erreichbar.",
+    "working-memory/.local/hetzner-migration-20261003/current-evidence/direct-db-route-1/actual-hetzner-direct-db-tls.json: CA/Hostname/TLS1.3 best\u00e4tigt; Authentifizierungen und Queries jeweils null.",
+    "working-memory/ops/hetzner-migration/export_source.py: urspr\u00fcngliches Poolerformat und SHA256 3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea best\u00e4tigt.",
+    "native-direct-route-review-1/result.json: vorheriges technisches Urteil erhalten.",
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md und references/independent-review.md"
+  ],
+  "hypothesis": "Der Direktpfad ist eine passende minimale Korrektur und umgeht Supavisor. Ein fehlerhafter Credential-Cache bleibt Hypothese; auch eine fehlerhafte Lease bleibt m\u00f6glich. Direkter Authentifizierungserfolg w\u00fcrde den nutzbaren Zugang beweisen, nicht r\u00fcckwirkend die Cache-Ursache. Der fr\u00fchere erfolgreiche Dump bleibt akzeptierter Gegenbeleg gegen generell unbrauchbare Credentials.",
+  "bounded_code_and_preflight_actions": {
+    "local_prep": "Genau ein Paket mit h\u00f6chstens zwei Offlinezyklen: instanzgebundener SourceProcessAdapter oder kleine optionale Route-Factory; Originalexporter und \u00fcbrige akzeptierte Protokolle unver\u00e4ndert.",
+    "offline_pass_required": [
+      "SSH bindet ausschlie\u00dflich 127.0.0.1:15433; bestehende strikte Hostkey-Pr\u00fcfung, ExitOnForwardFailure, Timeouts und Cleanup ausschlie\u00dflich eigener Prozesse/Pipes.",
+      "libpq verwendet den originalen DB-Hostnamen, hostaddr=127.0.0.1, Port 15433, verify-full und Original-CA; direkter Lease-Benutzer ohne Projektsuffix.",
+      "Read-only-PGOPTIONS bleiben erhalten. Falsches Projekt, Host, Port, Gate, fehlendes TLS und abgelaufene Lease werden verweigert; keine Credentials in argv oder globalen Monkeypatches.",
+      "Gezieltes unabh\u00e4ngiges Review des tats\u00e4chlichen Diffs, Offlinebelege und Hashbindung muss PASS ergeben."
+    ],
+    "conditional_preflight": "Erst danach genau eine offizielle Read-only-Lease und ein direkter TLS-PSQL-Probeprozess bei weiterlaufender Source-Produktion. Sessionrolle, effektive Rolle, Read-only, SSL, erwartetes BYPASSRLS, s\u00e4mtliche Public/Auth-SELECT-Rechte und Business-DML=0 tats\u00e4chlich pr\u00fcfen. Kein Freeze, Dump oder Target-Eingriff.",
+    "diagnostics": "HTTP-Status/Fehlerbody, Exitcode, stdout/stderr und Timeouts privat gesch\u00fctzt erfassen; keine Secrets in \u00f6ffentliche Berichte."
+  },
+  "leasebudget": {
+    "total_future_maximum": 2,
+    "preflight": 1,
+    "future_final_separately_gated": 1,
+    "automatic_replacement_after_failure": 0
+  },
+  "stopconditions": [
+    "Offlinebudget ohne PASS ersch\u00f6pft, Reviewabweichung, Authentifizierungs-/Rechtefehler oder Timeout: Prim\u00e4rbeleg sichern, eigene Ressourcen bereinigen und betroffenes Paket blockieren.",
+    "Keine automatische zweite Preflight-Lease, Passwort\u00e4nderung, Rechteeskalation, Pooler-/Cachemanipulation, Force-Cancel oder kostenpflichtige Ausweichl\u00f6sung."
+  ],
+  "freshfinalGOconditions": [
+    "Tats\u00e4chlicher Preflight-PASS und separates frisches Source-Final-Phasenreview mit GO. Dieses Urteil erteilt kein operatives Final-GO.",
+    "Neuer Source-Freeze innerhalb der 600-Sekunden-Grenze, neue vollst\u00e4ndige 43-Tabellen-Baseline und erneut best\u00e4tigte Schreibsperren; anschlie\u00dfend eine neue Read-only-Lease und genau ein neuer vollst\u00e4ndiger Dump mit eindeutigem Namen.",
+    "Preflight-Lease, historische Baselines und alte Raw-Dumps nicht wiederverwenden. Jede neue DB-Verbindung einschlie\u00dflich eines sp\u00e4teren Rollenexports muss innerhalb der neuen Lease-G\u00fcltigkeit beginnen.",
+    "Alle akzeptierten Export-, Codec-, Vault-COPY-, Mac/server-Hash-, Backup- und Recovery-Guards beibehalten; Target-Restore, Runtime, Writer und Promotion bleiben separat gegated.",
+    "\u00dcberschneidung mit dem Backup-Timer um 01:10 UTC im zuk\u00fcnftigen Finalplan l\u00f6sen. Falls n\u00f6tig ausschlie\u00dflich den exakten eigenen Timer zustandsgebunden pausieren; Wiederherstellung auch bei Abbruch oder Source-Recovery vorsehen, nicht ausschlie\u00dflich nach erfolgreichem Target-Backup. Im Preflight keine Timer\u00e4nderung."
+  ],
+  "nonclaims": [
+    "Keine Implementierung, Tests, Remoteabfragen, Authentifizierung oder Delegation durchgef\u00fchrt.",
+    "K\u00fcnftiger Adapter, Authentifizierung und Export sind noch nicht abgenommen; der Phasenplan gen\u00fcgt bedingt, seine Ausf\u00fchrung bleibt nachzuweisen.",
+    "Akzeptierte Source-Freeze-/Recovery-, 13-Runtime-, Late-Return-Candidate7-, Stage-, RLS-, Journal-, Backup- und Frontend-Ergebnisse bleiben erhalten.",
+    "Keine abgeschlossene Target-Migration und keine automatische Gate-Durchsetzung behauptet."
+  ],
+  "enforcement": "RULES_ONLY",
+  "native_process_provenance": {
+    "runtime_header_confirmed": true,
+    "runtime_configuration": {
+      "model": "gpt-6-astra",
+      "reasoning_effort": "high",
+      "provider": "openai",
+      "sandbox": "read-only",
+      "approval": "never"
+    },
+    "fresh_session_id": "01a1042a-0d24-75b2-ac2f-1fe2668d1201",
+    "private_header_sha256": "3f8c82c1c8648ac4bc649761160d83de3845c09881fe44ef654bebbadffb2108",
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED",
+    "actual_raw_format": "plain CLI header/commands/response captured privately; events-private.jsonl filename contains plain output, not JSONL",
+    "previous_judgment_preserved": "native-direct-route-review-1 technicalCONTINUE_BOUNDED/provenanceBLOCK; actualfreshCLI header resolves /root mistaken Desktop-identity assumption, no model fallback",
+    "at_utc": "2026-10-03T23:54:08.167041+00:00"
+  }
+}
