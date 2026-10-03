@@ -30,6 +30,17 @@ def main():
     before=metadata();save(local/'metadata-before-private.json',before)
     shutil.copyfile(PRIVATE/'source/prod-ca-2021.crt',local/'prod-ca-2021.crt')
     spec=importlib.util.spec_from_file_location('verified_source_export',HERE/'export_source.py');mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
+    # Create the single official readonly lease here so failed HTTP originals are preserved.
+    request=urllib.request.Request('https://api.supabase.com/v1/projects/'+PROJECT+'/cli/login-role',data=b'{"read_only":true}',headers={'Authorization':'Bearer '+source_token(),'Content-Type':'application/json'})
+    try:
+        with urllib.request.urlopen(request,timeout=30) as response:body=response.read();lease=json.loads(body)
+    except urllib.error.HTTPError as error:
+        raise private_failure('LOGIN_LEASE_HTTP_ERROR',status=error.code,body=error.read(),headers=str(error.headers)) from None
+    except Exception as error:
+        raise private_failure('LOGIN_LEASE_REQUEST_ERROR',error_type=type(error).__name__,primary_error=str(error)) from None
+    assert isinstance(lease,dict) and all(lease.get(k) for k in ['role','password','ttl_seconds'])
+    import datetime
+    save(local/'login-role.json',{**lease,'created_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'read_only_requested':True})
     mod.ROOT=local;mod.main()
     assert json.loads((local/'dump-result.json').read_text())['returncode']==0
     assert json.loads((local/'roles-result.json').read_text())['returncode']==0

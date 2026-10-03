@@ -1,0 +1,132 @@
+{
+  "status": "CATALOG_RECONCILED",
+  "actual_catalog_functions": 43,
+  "original_granted_functions": 32,
+  "missing_original_functions": [],
+  "extra_function_count": 11,
+  "extra_callable_by_public_roles_count": 0,
+  "extra_functions": [
+    {
+      "oid": 17717,
+      "object": "public.get_member_id_by_name(member_name text)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 17876,
+      "object": "public.nightly_archive_completed()",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 17877,
+      "object": "public.toggle_nightly_job(enable boolean)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 17878,
+      "object": "public.is_nightly_job_active()",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 31203,
+      "object": "public.match_embeddings(query_embedding vector, match_threshold double precision, match_count integer, filter_entity_type text)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 31222,
+      "object": "public.match_transcript_chunks(query_embedding vector, match_threshold double precision, match_count integer, filter_meeting_id uuid)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 39905,
+      "object": "public.keyword_search(search_query text, result_limit integer)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 44373,
+      "object": "public.promote_inbox_meeting_internal(p_inbox_id uuid)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 48701,
+      "object": "public.update_meeting_with_topics_internal(p_meeting_id uuid, p_title text, p_meeting_date date, p_participants text[], p_ai_summary text, p_key_decisions text[], p_topics jsonb)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 48763,
+      "object": "public.promote_inbox_meeting(p_inbox_id uuid)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    },
+    {
+      "oid": 48764,
+      "object": "public.update_meeting_with_topics(p_meeting_id uuid, p_title text, p_meeting_date date, p_participants text[], p_ai_summary text, p_key_decisions text[], p_topics jsonb)",
+      "acl": "{postgres=X/postgres}",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": false,
+      "extensions": null
+    }
+  ],
+  "source_mutations": 0,
+  "source_readonly_queries": 1,
+  "catalog_response_preserved": true,
+  "private_catalog_sha256": "e9f0e3a6d2647b3b4f7b6a28eddfdb293d2ca57b3f1552fe9bfcff3d5c69bb51",
+  "comparison_hypothesis": "Original ACL is a granted-object subset of a broader catalog, not necessarily the entire catalog",
+  "source_effective_before_freeze": [
+    {
+      "role": "anon",
+      "writable_tables": 0,
+      "executable_writers": 0
+    },
+    {
+      "role": "authenticated",
+      "writable_tables": 0,
+      "executable_writers": 0
+    },
+    {
+      "role": "service_role",
+      "writable_tables": 23,
+      "executable_writers": 32
+    }
+  ],
+  "readonly_queries_in_reopened_catalog_package": 2
+}
