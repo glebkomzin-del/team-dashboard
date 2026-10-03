@@ -1,7 +1,7 @@
 {
   "problem_id": "HZ-MIGRATION-20261003-FINAL-FRONTEND",
   "at_utc": "2026-10-03T21:01:23.857913+00:00",
-  "status": "PREPARED_AWAITING_TARGET_RESTORED_READONLY_GO",
+  "status": "DEPENDENCY_BLOCKED_NO_PRODUCTION_MUTATION",
   "helper_sha256": {
     "frontend-final-promote-once.py": "36a862fafafbf5073003f4be9871c990981549888bf020f5658ca24b6279ee1b",
     "frontend-final-owner-redirect.py": "060374cd241fdccaa757caacdbf8a5bdcaa150b3d515ccaee4a8f06945043963"
@@ -19,5 +19,21 @@
   "new_builds": 0,
   "root104_current": "unknown FileProvider boundary retained",
   "application_provider_cost_calls": 0,
-  "codex_usage": "unknown"
+  "codex_usage": "unknown",
+  "closed_at_utc": "2026-10-03T21:06:22.467333+00:00",
+  "dependency": {
+    "authority": "Lead message 2026-10-03",
+    "blocker": "Final source export stopped before dump: TLS pooler5432 password authentication failed for cli_login_supabase_read_only_user; no second lease or password reset. Target remains initial stage, target-restored-readonly GO not issued.",
+    "review_gate": "Lead reports LOW_YIELD review needed and runtime thread limit blocks review",
+    "frontend_action": "Stop bounded package as instructed; helpers retained for explicitly authorized resumption"
+  },
+  "final_counters": {
+    "promotion_attempts": 0,
+    "owner_production_flows": 0,
+    "auth_calls": 0,
+    "frontend_repair_cycles": 0,
+    "application_provider_cost_calls": 0,
+    "prior_historical_counters": "Preserved in frontend-final-preparation-evidence.json",
+    "codex_usage": "unknown"
+  }
 }
