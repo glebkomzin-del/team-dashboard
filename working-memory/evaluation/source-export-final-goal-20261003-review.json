@@ -1,0 +1,140 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "scope": "SOURCE_FREEZE_EXPORT_ONLY",
+  "operational_go": true,
+  "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261003T220500Z",
+  "reviewed_revision": "1ba9d0a",
+  "summary": "Beide bisherigen Source-Blocker sind f\u00fcr die gepr\u00fcften Dateien geschlossen. Freigegeben ist ausschlie\u00dflich der einmalige Source-Freeze mit Export und vollst\u00e4ndiger Verifikation; anschlie\u00dfend STOP vor Target.",
+  "review_provenance": {
+    "thread_id_observed": "01a1040e-730a-7d33-be27-83518dc9f786",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning_effort": "high",
+    "accepted_configuration": "Laut Auftrag durch lokalen CLI-Launcher belegt; im gelesenen thread.started-Ereignis nicht ausgewiesen. Eigene Prozessinspektion durch Sandbox verweigert.",
+    "server_internal_engine": "Nicht beobachtet; keine Behauptung.",
+    "mode": "READ_ONLY",
+    "tests_executed": 0,
+    "remote_queries": 0,
+    "mutations": 0,
+    "delegations": 0,
+    "skill_confirmed": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md"
+  },
+  "examined_hashes": {
+    "manifest_sha256": "b2d4b76e2b95ff851a7df880dea132f72bba02ecb1ae4b2a8eb05c944d97ef57",
+    "all_13_manifest_file_hashes_match": true,
+    "content_reviewed": {
+      "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+      "final_quiescence_once.py": "e9b42235755e18b2013f3f6f264ca483aaa2debec7f561a62d62d9ff5fcda1ea",
+      "final_export_once.py": "29dbc4d3164bd1abb68eaf269725900f966cf52e9c8ac817e9476995dfe2ff81",
+      "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+      "n8n_dashboard_pause_once.py": "91711a2b721b6b787867382087d008afa56aa23cccf56ca2f5b3b7e62cc9a94d",
+      "final_source_partial_rollback_once.py": "f32d80db9fa24a524f9c40178f0276737a7684e1d6ce979598c9f3ed4e7cb917",
+      "test_final_source_partial_recovery.py": "6a360be295971e3c0b90d31726f7097a311cc5324a81ef2ca1a8b34c61774dd3",
+      "test_final_source_export_errors.py": "514157935f50657fa64a9a80e264ec735513e35c80731d703a34e264c332511f"
+    },
+    "hash_verified_accepted_dependencies": {
+      "vault_copy_codec.py": "cd326b284dbfbb315d0cabae151e78df0599977211da68b60cd660be53b206f5",
+      "prepare_business_freeze_acl.py": "daa77cf9cf84aa6cf83cadc3dec6b8ba7f86b507c7f4c95fc8019314771f1cb0",
+      "freeze-business.sql": "bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc",
+      "freeze-business-restore-acl.sql": "26c34f43afa8408e933589b6ce705bf09bd3e36234904de81166b26dd1955f02",
+      "final_source_rollback_once.py": "2b6212eba3f22255d1c9a273c561c8a5dce90ebb420a3ea1966e58f8f5811da8",
+      "business-fingerprint.sql": "e8ca7870cc965f15fdf1c95ad9d8394a12b04e43eacc08ab49d70853be326254",
+      "business-projection-contract.json": "1a16ccf47eba9c80a67e6838b945ae790165853827dcacff40c8bfccb190fb95"
+    }
+  },
+  "closed_findings": [
+    {
+      "id": "EARLY_PARTIAL_RECOVERY",
+      "primary_grounds": [
+        "Source-Stufen und einzelne n8n-Mutationen erhalten vor Ausf\u00fchrung exklusive, dauerhaft geschriebene Versuchseintr\u00e4ge.",
+        "Teil-Recovery gleicht tats\u00e4chliche Zust\u00e4nde ab, pr\u00fcft Target-Marker, Originalkonfiguration, ACL, Nginx, Scopes sowie Source-Origin, Image und gespeicherte Runtime einschlie\u00dflich aller f\u00fcnf Flags.",
+        "Unklare Pause-Antworten werden \u00fcber Istzustand und Versuchseintr\u00e4ge reconciliert; reaktiviert werden ausschlie\u00dflich betroffene inaktive Originalworkflows mit Originalversion.",
+        "Konfiguration wird ausschlie\u00dflich enabled-basiert unter vollst\u00e4ndigem Vergleich zur\u00fcckgef\u00fchrt; ACL-R\u00fcckgabe verlangt eigenen ACL-Versuch und tats\u00e4chlich leeren ACL-Zustand. Gesundheit wird vor Ingress und Workflow-Reaktivierung gepr\u00fcft."
+      ]
+    },
+    {
+      "id": "EXPORT_PRIMARY_ERRORS_INCOMPLETE",
+      "primary_grounds": [
+        "Der Adapter wird ausschlie\u00dflich der importierten Exportmodulinstanz zugewiesen; das gemeinsame subprocess-Modul bleibt unver\u00e4ndert.",
+        "psql, pg_dump und pg_dumpall sowie Version, TOC, Archivpr\u00fcfung und Vault-Extraktion erhalten private Fehlererfassung einschlie\u00dflich Timeout-Ausgaben und erhaltener umgeleiteter Dateien.",
+        "Private Originaldaten bleiben erhalten; ausgehende Fehler enthalten sichere Klasse und Belegpfad. Es entsteht weder ein Wiederholungspfad noch eine zus\u00e4tzliche Lease oder ein zweiter Dump."
+      ]
+    }
+  ],
+  "primary_validation_evidence": {
+    "path": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-correction-1/events-private.jsonl",
+    "examined_events": {
+      "item_16": "Erster Zyklus: sechs Tests bestanden, ein fehlendes Export-Testmodul; Fehler bleibt erhalten.",
+      "item_19": "Drei Export-Testmethoden bestanden. Vorausgehender FileNotFoundError der relativen Patch-Adresse bleibt ausdr\u00fccklich erhalten.",
+      "item_20": "Nach korrigierter Patch-Adresse drei Teil-Recovery-Methoden und ein n8n-Test bestanden.",
+      "item_21": "Erweiterter HTTP400-/Timeout-Test bestanden; sechs Syntaxpr\u00fcfungen mit aktuellen Hashes dokumentiert."
+    },
+    "cycles": "Zwei vollst\u00e4ndige Offline-Zyklen plus dokumentierte gezielte Fixture-Nachpr\u00fcfung; keine Z\u00e4hler zur\u00fcckgesetzt."
+  },
+  "counterarguments_and_limits": [
+    "Offline-Fixtures belegen die ausgef\u00fchrten Kontroll- und Fehlerpfade, keine bereits erfolgreiche produktive Recovery.",
+    "Fremde oder unbekannte Zust\u00e4nde f\u00fchren bewusst zum Stop; eine erfolgreiche R\u00fcckkehr ist daf\u00fcr nicht zugesichert.",
+    "Es existiert noch kein neuer finaler Dump und damit kein tats\u00e4chlich verifizierter Dump-Hash.",
+    "Die akzeptierten 13 Runtime-F\u00e4lle und \u00fcbrigen unver\u00e4nderten Abnahmen werden wiederverwendet, nicht neu gepr\u00fcft."
+  ],
+  "current_source_blockers": [],
+  "bounded_source_budget": {
+    "source_freeze_attempts": 1,
+    "natural_drain_seconds": 600,
+    "official_readonly_lease_attempts": 1,
+    "full_dump_attempts": 1,
+    "automatic_forward_retries": 0,
+    "stop_after": "Archiv-, Vault-, Offserver- und Server-Verifikation vor jedem Target-Schritt"
+  },
+  "allowed_actions": [
+    "Den gepr\u00fcften Source-Pause-/Freeze-Ablauf einmal ausf\u00fchren; ausschlie\u00dflich nat\u00fcrliches Drain innerhalb 600 Sekunden, keine erzwungene Arbeitsunterbrechung.",
+    "Nach g\u00fcltigem Freeze-Receipt die 43-Tabellen-Businessbaseline \u00fcber den vorhandenen Read-only-Managementzugang erfassen und Query-Hash, UTC, Run und vollst\u00e4ndige private Antwort binden.",
+    "Eine offizielle Read-only-Lease und einen vollst\u00e4ndigen Export einschlie\u00dflich Rollenexport ohne Passw\u00f6rter ausf\u00fchren.",
+    "Archiv, acht semantische Vault-COPY-Felder sowie unver\u00e4nderliche Offserver-Kopie und Server-Hash pr\u00fcfen; danach stoppen."
+  ],
+  "operating_constraints": [
+    "Alle bestehenden Guards m\u00fcssen am tats\u00e4chlichen Ausf\u00fchrungszustand bestehen; vorbereitete oder historische Belege ersetzen diese nicht.",
+    "Keine \u00dcberschneidung mit aktivem Source-Backup; der einmalige Inaktivit\u00e4tscheck allein garantiert das weitere Zeitfenster nicht. Keine Scheduling-\u00c4nderung aus diesem Urteil ableiten.",
+    "43 Tabellen und historische Zeilenzahlen sind weder Freeze-Nachweis noch Source-/Target-Gleichheitsnachweis."
+  ],
+  "failure_protocol": [
+    "Bei jedem Source- oder Baselinefehler Vorw\u00e4rtsablauf sofort stoppen und vollst\u00e4ndige private Fehler sowie Versuchseintr\u00e4ge erhalten.",
+    "Keine neue Lease, kein zweiter Dump, kein erneuter Freeze und kein Target-Schritt.",
+    "Nur nach Istzustandsabgleich eigene Ver\u00e4nderungen \u00fcber den gepr\u00fcften Teil-Recovery-Pfad zur\u00fcckf\u00fchren; fremde Abweichungen nicht \u00fcberschreiben.",
+    "Der alte Voll-Freeze-Rollback bleibt ausschlie\u00dflich unter seinen urspr\u00fcnglichen vollst\u00e4ndig belegten Pre-Target-Voraussetzungen zul\u00e4ssig.",
+    "Recovery-Fehler oder unklarer Ausgang bleiben blockiert; keine blinde Wiederholung und keine automatische weitere Reparaturschleife."
+  ],
+  "future_blockers_separate": [
+    "Vor Target-Restore oder Runtimewechsel: konkreter sp\u00e4ter Source-R\u00fcckweg und frisches GOAL_GATE.",
+    "Writer-, Owner-, Frontend- und produktive Target-Abnahmen bleiben ausstehend.",
+    "restore-gate-bound.json bindet einen tats\u00e4chlich erzeugten Hash; es erteilt keine Target-Freigabe."
+  ],
+  "review_expires_if": [
+    "Relevante Datei-Hashes, Kriterien, Scope oder Recovery-Vertrag \u00e4ndern sich.",
+    "Ein Source-Einmalbudget wurde verbraucht oder der Lauf ist fehlgeschlagen.",
+    "Ein Target-Schritt begonnen wurde oder fremder Zustand die gepr\u00fcften Voraussetzungen verletzt."
+  ],
+  "historical_counters_and_acceptances": "Unver\u00e4ndert erhalten; dieses Urteil setzt keine Versuche, Marker oder Budgets zur\u00fcck.",
+  "enforcement": "RULES_ONLY",
+  "native_process_provenance": {
+    "fresh_thread_id": "01a1040e-730a-7d33-be27-83518dc9f786",
+    "requested_accepted_configuration": {
+      "model": "gpt-6-astra",
+      "reasoning_effort": "high",
+      "sandbox": "read-only",
+      "multi_agent": false,
+      "ephemeral": true,
+      "ignore_user_config": true
+    },
+    "actual_usage": {
+      "input_tokens": 463556,
+      "cached_input_tokens": 393088,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 5188,
+      "reasoning_output_tokens": 485
+    },
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED",
+    "private_result_sha256": "fec8881fa58cabb5631c2a1e9212f348787f2829c4c67641cdff678f4078d20b"
+  }
+}
