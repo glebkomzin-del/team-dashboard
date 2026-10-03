@@ -1,0 +1,16 @@
+{
+  "diagnostic_run": 1,
+  "original_capture_unmodified": true,
+  "auth_pid": 108426,
+  "node_returncode": 0,
+  "capture_running_after_node": false,
+  "capture_exit_after_node": 1,
+  "native_returncode": 1,
+  "capture_running_after_native": false,
+  "capture_exit_after_native": 1,
+  "recovery_requests": 0,
+  "smtp_data_commands": 0,
+  "capture_failure": "Unhandled socket read ECONNRESET after immediate Node client exit",
+  "native_failure": "TCP TimeoutError after capture already exited",
+  "capture_removed": true
+}
