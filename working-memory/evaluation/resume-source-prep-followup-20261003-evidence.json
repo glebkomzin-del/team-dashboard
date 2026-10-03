@@ -1,0 +1,61 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "updated_at": "2026-10-03T21:54:18.507968+00:00",
+  "status": "FOLLOWUP_FAILED_SOURCE_UNCHANGED",
+  "review": "resume-source-archive-20261003-review.json",
+  "prior_prep_cycles": 2,
+  "review_followup_attempts": 1,
+  "final_assertion": "Actual writer catalog differs from reversible freeze scope",
+  "archive_proof": {
+    "archive_sha256": "61cb1a551eab3c09001160cd0c8e2faea5ccbdb35add9780f887ce2e1433d1e8",
+    "bytes": 321266826,
+    "actual_archive_sha_size_equal": true,
+    "one_extraction_returncode": 0,
+    "archive_extraction_stderr_bytes": 0,
+    "decoded_all_copy_columns_rows_equal": true,
+    "vault_cipher_nonce_full_metadata_equal": true,
+    "evidence_boundary": "Assertions completed before final catalog assertion; historical snapshot only, not final export",
+    "private_extraction_sha256": "864789685db97fb3965bc0ae487d546e5858df5d94d2e020d60ae8fce35e00eb"
+  },
+  "source_preflight": {
+    "readonly_queries_attempted": 3,
+    "original_acl_equal": true,
+    "effective_query_parsed_roles_equal": true,
+    "catalog_scope_equal": false,
+    "raw_successful_catalog_response_preserved": false,
+    "actual_difference_unreconstructable_from_retained_output": true
+  },
+  "source_mutations": 0,
+  "new_leases": 0,
+  "new_dumps": 0,
+  "final_target_restore": 0,
+  "final_target_runtime": 0,
+  "target_daily_full": 0,
+  "frontend_promotion": 0,
+  "production_owner_flow": 0,
+  "target_writer_opening": 0,
+  "fresh_runtime_check": {
+    "health": {
+      "status": "ok",
+      "mode": "production"
+    },
+    "origin": "https://lghwikeotbkmojyyjglz.supabase.co",
+    "readonly": 0,
+    "intake": 1,
+    "automatic": 1,
+    "canonical_running": true,
+    "immutable_image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f",
+    "dashboard_three_workflows_active": true,
+    "original_published_versions_equal": true,
+    "nginx_sha256": "7cfba8642673162a182f67926bc26dbb0def8bdafecd7952e7ee5c524511fe51"
+  },
+  "private_failure_receipt_sha256": "0fb76d6712dc4c701b30b9830a613ae0b88412de94dbb0d9e56fb4f3e703d4c8",
+  "private_primary_error_sha256": "c5920023392598939d69d489ea74f74f48126b42582129048808eb0b3c52a557",
+  "script_sha256": "b42a44f515ded0603ab1cee637615b6f5a08eddd9b00d98599810c38c29b1eae",
+  "next_required_decision": "AGENTS.md section14 requires explicit new user decision after FOLLOWUP_FAILED; no approval question sent",
+  "smallest_future_package": "If explicitly reopened, preserve actual Source catalog response and compare it against the original guarded freeze inventory before any writer pause; then fresh final GOAL_GATE/export. Do not infer mismatch cause or re-use stale dump.",
+  "historical_counters": "Preserved in prior final-blocked and PREP evidence; not reset",
+  "agent_runtime_boundary": "Fresh builder spawn and prior builder followup returned agent thread limit; Root performed necessary bounded integration, no additional worker execution",
+  "runtime_enforcement": "RULES_ONLY",
+  "recovery": "Only owned code/evidence changed. Source data/runtime never mutated in this resume package; no operational rollback required."
+}
