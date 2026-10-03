@@ -39,5 +39,24 @@
     "Target restore not yet accepted",
     "Production cutover not yet accepted"
   ],
-  "prior_export_cycles": "0 reported by implementing worker, no technical controller receipt"
+  "prior_export_cycles": "0 reported by implementing worker, no technical controller receipt",
+  "supplement": {
+    "disposition": "CONTINUE_BOUNDED",
+    "reviewer_task": "/root/migration_export_gate",
+    "scope": "one equivalent renewal after actual TTL expiry and trusted CA readiness",
+    "basis": [
+      "https://www.postgresql.org/docs/17/sql-set-role.html",
+      "https://www.postgresql.org/docs/17/sql-createrole.html"
+    ],
+    "required": [
+      "Server-time expiry proof",
+      "Actual role attributes and SET membership",
+      "SET ROLE supabase_read_only_user plus explicit transaction_read_only=on",
+      "Effective SQL write privileges and complete Auth/application readability",
+      "TLS verify-full and dump row_security=off"
+    ],
+    "budget": "One additional read_only:true API credential request only; no counter reset; within at most2 existing export/integrity cycles",
+    "stop": "Second access window failing requires evidenced blocker; no third automatic renewal or review-fix loop",
+    "provenance_limits": "API201,TTL300 and live-role attributes relayed by builder, not independently re-read by reviewer"
+  }
 }
