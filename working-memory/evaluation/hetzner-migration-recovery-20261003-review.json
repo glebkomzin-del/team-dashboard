@@ -24,7 +24,7 @@
     "Original SMTP config restored; capture removed; source untouched by this test"
   ],
   "remaining_blocker": "Password recovery end-to-end before production cutover",
-  "required_next_decision": "Specific new human decision required under user AGENTS.md section14; no automatic further execution/review-fix loop",
+  "required_next_decision": "Satisfied: explicit human authorization reopens migration-related work; no further permission requests.",
   "candidate_next_step": "Probe DNS and SMTP only after recreated Auth namespace is active; one complete isolated recovery/reset/login if prerequisites pass",
   "production_cutover": false,
   "independent_passes_preserved": [
@@ -33,5 +33,15 @@
     "Stage owner Auth/RLS/Journal and legacy410 compatibility",
     "Target full backup/restore and offserver verification",
     "Frontend preparation build and verified production rollback artifact"
-  ]
+  ],
+  "human_reopening": {
+    "date": "2026-10-03",
+    "quote": "du darfst alles machen, was mit dme umzug im zusammenhang steht. keine weiterten freigabenanfragen",
+    "previous_attempts_preserved": 3,
+    "new_package_limit": 2,
+    "unit": "completed evidence-based recovery diagnosis/action/validation cycles",
+    "owner": "/root/migration_backend",
+    "milestone": "post-recreation real Auth namespace SMTP prerequisites plus recovery/link/reset/login",
+    "review_gates_preserved": true
+  }
 }
