@@ -1,0 +1,41 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-STAGE-WRITE-REPLAY",
+  "cycle": 1,
+  "question": "Does public scoped Journal/RPC preserve revision/idempotency and owner boundaries on a new disposable space?",
+  "cases": {
+    "append": {
+      "http": 200,
+      "bytes": 31,
+      "sha256": "66d5111a87f9834ca84cf9abda10ddbee216270b77a6cb01b899eec9a29a5fea"
+    },
+    "exact_replay": {
+      "http": 200,
+      "bytes": 30,
+      "sha256": "99dbed3666766ca8913286fb8eaeb1fd38376eed408b3f080383cda145a36208"
+    },
+    "changed_replay": {
+      "http": 409,
+      "bytes": 29,
+      "sha256": "4d6a11fe89597d9a780aaadde598ffba89af2515c4957def7d23110286a53ac9"
+    },
+    "stale_revision": {
+      "http": 503,
+      "bytes": 43,
+      "sha256": "06ae980fa74b71b23eaa4a7adb61551690f6e305e3659b9c49c21a448b9eef59"
+    }
+  },
+  "provider_calls": 0,
+  "source_mutation": false,
+  "existing_target_business_mutation": false,
+  "status": "FAILED",
+  "failure_type": "AssertionError",
+  "failure_message": "",
+  "disposable_token_disabled": true,
+  "test_data_retained_until_final_source_restore": true,
+  "existing_target_revision_archive_jobs_unchanged": true,
+  "disposable_final_revision": 1,
+  "disposable_final_journal_rows": 1,
+  "original_harness_sha256": "277cc5f7f61c188e6055f19c29cfb358b798f9c5e093d44dc26401a55c0576c8",
+  "historical_stage_write_cycles": 1,
+  "no_retry_cycle_performed": true
+}
