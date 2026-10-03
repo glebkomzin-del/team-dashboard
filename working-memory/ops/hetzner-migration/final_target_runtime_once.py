@@ -1,5 +1,5 @@
 """Run on Hetzner after exact final COPY comparison; resume only a readonly backend."""
-import argparse,hashlib,json,os,re,shutil,subprocess,tempfile
+import argparse,datetime,hashlib,json,os,re,shutil,subprocess,tempfile
 from pathlib import Path
 ROOT=Path('/opt/dashboard-supabase-20261003');LIVE=Path('/opt/dashboard-memory-canonical-draft');DB='dashboard-supabase-20261003-db-1'
 BASE='sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f'
@@ -22,10 +22,13 @@ def main():
     (run/'target-runtime-attempt.marker').open('x').write('single COPY-bound readonly activation')
     row=json.loads((run/'vault-plaintext.json').read_text())[0]
     before=json.loads(sql("SELECT row_to_json(s) FROM (SELECT id,name,description,created_at,updated_at,encode(nonce,'hex') AS nonce_hex FROM vault.secrets) s"))
-    assert all(str(before[k])==str(row[k]) for k in ['id','name','description','nonce_hex','created_at','updated_at'])
+    assert all(before[k]==row[k] for k in ['id','name','description','nonce_hex'])
+    assert all(datetime.datetime.fromisoformat(before[k])==datetime.datetime.fromisoformat(row[k]) for k in ['created_at','updated_at'])
     sql("UPDATE vault.secrets s SET secret=encode(vault._crypto_aead_det_encrypt(message:=convert_to("+lit(row['decrypted_secret'])+",'utf8'),additional:=convert_to(s.id::text,'utf8'),key_id:=0,context:='pgsodium'::bytea,nonce:=s.nonce),'base64') WHERE id="+lit(row['id'])+"::uuid;")
     actual=sql("SELECT encode(extensions.digest(decrypted_secret,'sha256'),'hex') FROM vault.decrypted_secrets").strip()
     assert actual==hashlib.sha256(row['decrypted_secret'].encode()).hexdigest()
+    after=json.loads(sql("SELECT row_to_json(s) FROM (SELECT id,name,description,created_at,updated_at,encode(nonce,'hex') AS nonce_hex FROM vault.secrets) s"))
+    assert after==before
     acl=run/'freeze-business-restore-acl.sql';assert h(acl)=='26c34f43afa8408e933589b6ce705bf09bd3e36234904de81166b26dd1955f02';sql(acl.read_text())
     original=json.loads((run/'source-original-config-private.json').read_text());target=json.loads(sql('SELECT json_agg(c ORDER BY space_id) FROM public.wm_processing_config c'))
     assert [{**r,'enabled':False} for r in original]==target
