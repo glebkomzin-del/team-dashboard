@@ -1,0 +1,37 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-RECOVERY",
+  "worker_evidence_alias": "HZ-MIGRATION-20261003/recovery (same blocker, counters not reset)",
+  "trigger": "STALL",
+  "reviewer_task": "/root/recovery_stall_gate",
+  "review_role_binding": "astra-reviewer fixes gpt-6-astra/high, fresh fork none read-only",
+  "runtime_enforcement": "RULES_ONLY",
+  "reviewed_git_revision": "dd3d0c661db011c133088d90e68ab31031556011",
+  "reviewed_test_sha256": "96fa96efa9c75292f777309790f83a796dab3ed7cefaf081e28a33432349c99a",
+  "reviewed_remote_compose_sha256": "961071f88466d47dd14b48d4e93935ddafc03a70b3f191aec2cceaea694f7c8e",
+  "disposition": "CHANGE_APPROACH",
+  "original_failures": 2,
+  "finding": "Host UFW INPUT DROP, capture host port1025 not allowed; plausible transport cause, no packet-drop proof or reset-logic defect proven",
+  "provenance_limit": "Both failed rounds reported by worker; first original log not fully conserved; second private diagnostic available",
+  "authorized_followup": "Exactly one ephemeral capture in same private Docker network; SMTP greeting/EHLO from actual Auth network then recovery/link/reset/login once; no firewall opening/source mutation/external mail",
+  "followup_result": "FOLLOWUP_FAILED",
+  "followup_attempts": 1,
+  "followup_evidence": "ops/hetzner-migration/stage-evidence.json, recovery_followup",
+  "followup_observations": [
+    "SMTP greeting/EHLO succeeded",
+    "Single recovery request HTTP500",
+    "Auth log: Docker DNS lookup server misbehaving",
+    "No captured message, link/reset/login not proved",
+    "Original SMTP config restored; capture removed; source untouched by this test"
+  ],
+  "remaining_blocker": "Password recovery end-to-end before production cutover",
+  "required_next_decision": "Specific new human decision required under user AGENTS.md section14; no automatic further execution/review-fix loop",
+  "candidate_next_step": "Probe DNS and SMTP only after recreated Auth namespace is active; one complete isolated recovery/reset/login if prerequisites pass",
+  "production_cutover": false,
+  "independent_passes_preserved": [
+    "Source full dump and88table68572row snapshot comparison",
+    "Source Vault plaintext/identity preserved with target re-encryption",
+    "Stage owner Auth/RLS/Journal and legacy410 compatibility",
+    "Target full backup/restore and offserver verification",
+    "Frontend preparation build and verified production rollback artifact"
+  ]
+}
