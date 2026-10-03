@@ -43,5 +43,74 @@
     "owner": "/root/migration_backend",
     "milestone": "post-recreation real Auth namespace SMTP prerequisites plus recovery/link/reset/login",
     "review_gates_preserved": true
+  },
+  "reopened_package_result": {
+    "completed_cycles": 2,
+    "recovery_requests": 1,
+    "cycle1": "post-recreated Auth Node EHLO prerequisite passed; Recovery HTTP504 with no capturemail",
+    "cycle2": "native Python SMTP prerequisite failed; no further Recoveryrequest",
+    "evidence_limit": "native probe stderr not retained by worker; receipt only records failure",
+    "historical_failed_recovery_requests": 3,
+    "historical_followup_failed_requests": 1,
+    "new_gate": "STALL/LOW_YIELD",
+    "new_reviewer": "/root/recovery_reopened_gate",
+    "status": "under independent review; no affected execution pending"
+  },
+  "reopened_independent_review": {
+    "reviewer": "/root/recovery_reopened_gate",
+    "role": "astra-reviewer (tool binds gpt-6-astra/high)",
+    "mode": "read-only mandate; RULES_ONLY enforcement",
+    "trigger": [
+      "STALL",
+      "LOW_YIELD"
+    ],
+    "disposition": "CHANGE_APPROACH",
+    "revision": "53c747cc7daa717c5554966fd53b25941b20fb93",
+    "finding": "Actual capture CRLF correct; Node ends immediately after QUIT, capture has no socket error handler and no post-probe survival check. Native probe exitcode/stderr absent; capture crash plausible but unproved. Historical Docker events empty.",
+    "counter_binding": "2 original +1 prior followup +2 human-reopened cycles, last has no recoveryrequest",
+    "authorized_followup": "one exact immutable-code Nodeprobe then capturestatus/exit/logs plus native EHLO/QUIT exit/stderr; no DATA/recovery/DB/provider writes",
+    "lead_allocated_budget": {
+      "cycles": 1,
+      "unit": "diagnostic-only bounded replay",
+      "milestone": "distinguish capture crash/native process failure/intact SMTP dialog"
+    },
+    "remaining_mandatory": "Recovery link/reset/login not accepted"
+  },
+  "diagnostic_followup_result": {
+    "status": "DECISIVE_DIAGNOSIS_PASSED",
+    "cycles": 1,
+    "original_capture_unmodified": true,
+    "node_returncode": 0,
+    "capture_running_after_node": false,
+    "capture_exitcode": 1,
+    "native_returncode": 1,
+    "proven_error": "Unhandled Socket error read ECONNRESET terminates capture after Node QUIT probe",
+    "lead_original_check": "SSH receipt.json and capture-after-node-logs.stderr directly read",
+    "recovery_requests": 0,
+    "smtp_data_commands": 0,
+    "private_path": "/opt/dashboard-supabase-20261003/recovery-diagnose-1",
+    "next_bounded_repair": {
+      "cycles": 1,
+      "milestone": "correct capture/probe lifetime then native SMTP readiness and complete isolated recovery/link/reset/login"
+    }
+  },
+  "repair_followup_result": {
+    "status": "RECOVERY_RESET_LOGIN_PASSED",
+    "recovery_requests": 1,
+    "capture_alive_after_node_and_native_smtp": true,
+    "recover_http": 200,
+    "link_correct_public_prefix": true,
+    "verify_http": 303,
+    "verify_has_error": false,
+    "verification_location_header_preserved": false,
+    "evidence_limit": "successful original 303 Location not retained because old test assertion expected302; corrected harness records future headers privately",
+    "continuation": "existing actual OTP recovery session/refresh credential used with real GoTrue refresh200, password reset PUT200, newpassword login200; no fabricated JWT",
+    "external_messages": 0,
+    "source_business_or_auth_mutation": false,
+    "private_evidence": [
+      "/opt/dashboard-supabase-20261003/recovery-repair-1",
+      "/opt/dashboard-supabase-20261003/recovery-issued-session-continuation-1"
+    ],
+    "production_recovery_flow": "not yet tested"
   }
 }
