@@ -1,0 +1,253 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FRONTEND-INTEGRATION",
+  "checked_at_utc": "2026-10-03T19:37:33.118597+00:00",
+  "source_manifest_count": 104,
+  "source_manifest_unchanged": true,
+  "static_artifact_hashes": {
+    "static/assets/MemoryApp-BMo_159W.js": "cca0f8bcc3394af8917117d7b4526c53c55774698153ec9b2424980ed86a0131",
+    "static/assets/MemoryApp-w3d0z9DS.css": "0f9568720bea6f3450804c6ff2722408ddce9482d57c9380413c227c3c7856de",
+    "static/assets/index-BDcuVrsl.js": "deb40d7d8ff45cc1a0ea329e05d6aa1b831d6629d75618b3a63971fc608f65c1",
+    "static/assets/index-DsPv-29T.css": "2c62cf62424d382989c59dabd9a7961689ac5f403151a2729c7fc02f163804ff",
+    "static/favicon.svg": "684b657171b876ec6967595e9bab2ba7baef25c5440f7d54e562fc242491c6b5",
+    "static/icons.svg": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a",
+    "static/index.html": "49784a0dbc8d18a76a30e73a89eaf2decf7712b9ffe6bdfbb95ba75014d8313b"
+  },
+  "environment": "Identical built static output on loopback8943; GET-only relative API through SSHtunnel18899 to readonly liveimageclone1278799; real targetDB and GoTrue stage-issued credentials",
+  "credential_origin": {
+    "owner": "Actual GoTrue refresh-issued owner session, backend verified owner identity; private host /opt/dashboard-supabase-20261003/network-prepare-1/owner-refreshed-tokens-private.json",
+    "wrong_owner": "Actual isolated synthetic .invalid GoTrue session from private host /opt/dashboard-supabase-20261003/recovery-issued-session-continuation-1/reset-login-private.json tokens",
+    "manual_jwt": false,
+    "passwords_entered": false
+  },
+  "browser": "CUA native Google Chrome; IAB unavailable at this runtime; native window Raise required for visible background rendering",
+  "browser_observations": {
+    "owner_working_overview": true,
+    "owner_archive_catalogue_total": 350,
+    "owner_original_latest_characters": 12046,
+    "owner_saved_summary_visible": true,
+    "same_saved_summary_original_characters": 42176,
+    "same_saved_summary_source_id": "096d9d69a24a4d8f225ef4c8bc00fdbc05496946a20dd4878f5562dfda1f15cd",
+    "wrong_owner_message": "Deine Anmeldung ist abgelaufen oder f\u00fcr diesen Bestand nicht freigegeben. Bitte melde dich erneut an.",
+    "wrong_owner_original_visible": false,
+    "receipt_source": "Direct native CUA AX/screenshot tool results, then redacted AX booleans; no screenshot file persisted"
+  },
+  "proxy_get_receipts": [
+    {
+      "route": "/api/working-memory/conversations",
+      "status": 404,
+      "body_sha256": "064e1262e82600f52520eec5a475fe906f349f8a6452efa8b1ba6f39250902b6",
+      "bytes": 22,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    },
+    {
+      "route": "/api/working-memory/review",
+      "status": 200,
+      "body_sha256": "b5ba97aa0a41a1e8ac81ca28f299a1dd2baebe96dba155b1e3ab6bb2ccdc68e7",
+      "bytes": 33516228,
+      "json_keys": [
+        "archive_available",
+        "archive_revision",
+        "as_of",
+        "can_edit",
+        "cancelled",
+        "changes",
+        "completed",
+        "dates",
+        "human_decisions",
+        "jobs",
+        "knowledge",
+        "mode",
+        "personal",
+        "planner",
+        "revision",
+        "sources",
+        "space_id",
+        "storage",
+        "waiting",
+        "waiting_dependencies"
+      ],
+      "array_counts": {
+        "dates": 61,
+        "sources": 210,
+        "jobs": 210,
+        "changes": 1,
+        "personal": 107,
+        "waiting_dependencies": 17,
+        "waiting": 292,
+        "knowledge": 1858,
+        "completed": 54,
+        "human_decisions": 3,
+        "cancelled": 0
+      }
+    },
+    {
+      "route": "/api/working-memory/archive",
+      "status": 200,
+      "body_sha256": "ebf688fb90ad93e658e69cc4001bec2a2d1697f604c335d01f7f4b037c02cd5d",
+      "bytes": 12657,
+      "json_keys": [
+        "archive_revision",
+        "as_of",
+        "known_at",
+        "limit",
+        "offset",
+        "order",
+        "search_mode",
+        "sources",
+        "storage",
+        "total"
+      ],
+      "array_counts": {
+        "sources": 25
+      }
+    },
+    {
+      "route": "/api/working-memory/source-deletions",
+      "status": 404,
+      "body_sha256": "064e1262e82600f52520eec5a475fe906f349f8a6452efa8b1ba6f39250902b6",
+      "bytes": 22,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    },
+    {
+      "route": "/api/working-memory/archive/f00d6e07f75b374cd0aa6b45ee7750423ed0b25387be0bcf86a82edea0fcbf06",
+      "status": 200,
+      "body_sha256": "45fcda5266aaa80464456bfcbe30ad0516ced137704ea38b6d34166a8a6b1b7c",
+      "bytes": 25913,
+      "json_keys": [
+        "content_hash",
+        "display_title_method",
+        "event_date",
+        "export_hash",
+        "full_export",
+        "id",
+        "observed_at",
+        "provenance",
+        "source_id",
+        "summaries",
+        "summary_title",
+        "title",
+        "transcript"
+      ],
+      "array_counts": {
+        "summaries": 0
+      }
+    },
+    {
+      "route": "/api/working-memory/archive",
+      "status": 200,
+      "body_sha256": "061485667f67afc5d059eae7a16d3106da88a005175c22280e4b23e6cded5719",
+      "bytes": 12657,
+      "json_keys": [
+        "archive_revision",
+        "as_of",
+        "known_at",
+        "limit",
+        "offset",
+        "order",
+        "search_mode",
+        "sources",
+        "storage",
+        "total"
+      ],
+      "array_counts": {
+        "sources": 25
+      }
+    },
+    {
+      "route": "/api/working-memory/archive",
+      "status": 200,
+      "body_sha256": "b4b151741d1015dcbe552e5a59babac7eb32c86e3ec57e1ca94b26ca72e9ea2d",
+      "bytes": 12564,
+      "json_keys": [
+        "archive_revision",
+        "as_of",
+        "known_at",
+        "limit",
+        "offset",
+        "order",
+        "search_mode",
+        "sources",
+        "storage",
+        "total"
+      ],
+      "array_counts": {
+        "sources": 25
+      }
+    },
+    {
+      "route": "/api/working-memory/source-deletions",
+      "status": 404,
+      "body_sha256": "064e1262e82600f52520eec5a475fe906f349f8a6452efa8b1ba6f39250902b6",
+      "bytes": 22,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    },
+    {
+      "route": "/api/working-memory/archive/096d9d69a24a4d8f225ef4c8bc00fdbc05496946a20dd4878f5562dfda1f15cd",
+      "status": 200,
+      "body_sha256": "5e26ef97021ecd050c8352964deccf6a4d76df82e63360aeae3ac916ff9a32ae",
+      "bytes": 88550,
+      "json_keys": [
+        "content_hash",
+        "display_title_method",
+        "event_date",
+        "export_hash",
+        "full_export",
+        "id",
+        "observed_at",
+        "provenance",
+        "source_id",
+        "summaries",
+        "summary_title",
+        "title",
+        "transcript"
+      ],
+      "array_counts": {
+        "summaries": 1
+      }
+    },
+    {
+      "route": "/api/working-memory/conversations",
+      "status": 401,
+      "body_sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630",
+      "bytes": 25,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    },
+    {
+      "route": "/api/working-memory/review",
+      "status": 401,
+      "body_sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630",
+      "bytes": 25,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    }
+  ],
+  "mandatory_read_flow": "passed",
+  "interactive_login": "not tested; session bootstrap is not a login proof",
+  "public_recovery": "not tested",
+  "unrelated_observed_error": "GET conversations404 from hidden NotesChat and GET source-deletions404 on readonly immutable clone; scoped Overview/Archive/Summary/Original succeeded; chat/deletion flows not accepted and no speculative fix",
+  "own_harness_repair": "Initial storage key sb-178-auth-token wrong; actual installed SDK hostname-first-segment contract corrected to sb-178-105-167-26-auth-token before owner dataflow",
+  "owner_flow_cycles_used": 1,
+  "owner_flow_cycles_max": 1,
+  "previous_frontend_prep_cycles": 2,
+  "previous_frontend_cutover_cycles": 2,
+  "production_environment_mutated": false,
+  "production_alias_mutated": false,
+  "application_provider_cost_calls": 0,
+  "codex_budget_usage": "unknown",
+  "browser_environment_limit": "Safari retained upgrade-insecure-requests and failed HTTPS loopback assets with TLS errors; no protection relaxed. Native Chrome completed the actual data flow.",
+  "cleanup": "Harness clear navigation executed for own local test origins; own Safari and Chrome test tabs closed; private credential files kept for handoff"
+}

@@ -52,13 +52,16 @@ class Handler(BaseHTTPRequestHandler):
         route = urllib.parse.urlsplit(self.path).path
         if route.startswith('/__migration_session/'):
             name = route.rsplit('/', 1)[-1]
-            if name not in ('owner', 'wrong-owner') or not (options.private_dir / 'public-route-approved').exists():
+            if name not in ('owner', 'wrong-owner', 'clear') or not (options.private_dir / 'public-route-approved').exists():
                 return self.reply(403, b'Public target route awaits Lead GO', 'text/plain')
-            session = json.loads((options.private_dir / (name + '-session.json')).read_text())
-            assert session.get('access_token') and session.get('refresh_token')
             nonce = secrets.token_urlsafe(24)
-            payload = json.dumps(json.dumps(session)).replace('<', '\\u003c')
-            body = ('<!doctype html><meta charset="utf-8"><script nonce="' + nonce + '">localStorage.clear();localStorage.setItem("sb-178-auth-token",' + payload + ');location.replace("/memory-next");</script>').encode()
+            script = 'localStorage.clear();'
+            if name != 'clear':
+                session = json.loads((options.private_dir / (name + '-session.json')).read_text())
+                assert session.get('access_token') and session.get('refresh_token')
+                payload = json.dumps(json.dumps(session)).replace('<', '\\u003c')
+                script += 'localStorage.setItem("sb-178-105-167-26-auth-token",' + payload + ');'
+            body = ('<!doctype html><meta charset="utf-8"><script nonce="' + nonce + '">' + script + 'location.replace("/memory-next");</script>').encode()
             return self.reply(200, body, 'text/html', {'Content-Security-Policy': "default-src 'none'; script-src 'nonce-" + nonce + "'; base-uri 'none'; frame-ancestors 'none'"})
         if route.startswith('/api/working-memory/'):
             upstream_path = self.path[len('/api/working-memory'):]
