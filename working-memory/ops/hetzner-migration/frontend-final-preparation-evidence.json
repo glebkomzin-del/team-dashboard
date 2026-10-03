@@ -5,7 +5,8 @@
   "guards": {
     "isolated_source104_unchanged": true,
     "accepted_static_hashes_unchanged": true,
-    "config_output_binding": true
+    "config_output_binding": true,
+    "preview_public_cli_headers_exact": true
   },
   "root_source104_guard": "OPEN: own read hung >2min at src/features/working-memory/snapshot-cache.ts; interrupted, no source mutation; prior104 acceptance preserved but no fresh complete root guard claimed",
   "production": {
@@ -44,5 +45,6 @@
     "owner_readonly": 1,
     "public_auth_failed": 1,
     "public_auth_review_followup": 1
-  }
+  },
+  "preview_config_inspection_limit": "Prebuilt preview inspect config lacks vercelConfig; actual root response headers checked exactly instead, without asserting unavailable deployment metadata"
 }
