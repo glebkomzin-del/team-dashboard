@@ -1,0 +1,24 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-PUBLIC-AUTH",
+  "trigger": "LOW_YIELD",
+  "reviewer": "/root/public_auth_contract_gate",
+  "role_binding": "astra-reviewer fixed gpt-6-astra/high",
+  "runtime_enforcement": "RULES_ONLY",
+  "decision": "CONTINUE_BOUNDED",
+  "reviewed_revision": "829895112b762acf5d596e7f9916bda5fb3bc361",
+  "original_failure_receipt": "ops/hetzner-migration/public-auth-evidence.json",
+  "frontend_failure_receipt": "ops/hetzner-migration/frontend-public-auth-evidence.json",
+  "original_private_header_sha256": "607b13264d4cf80eaa7bb777f52c3db5c33157448483f8b64d374277be02debb",
+  "original_private_callback_sha256": "311719f7bbc6be52acf908bb52943f4331af2ec9511510ab5d6c16705fa540f1",
+  "cause": "Actual GoTrue v2.196.0 recover JSON ignores redirect_to; header/query/form contract verified against pinned manufacturer source and original identical harness",
+  "primary_sources": [
+    "https://raw.githubusercontent.com/supabase/auth/v2.196.0/internal/api/recover.go",
+    "https://raw.githubusercontent.com/supabase/auth/v2.196.0/internal/utilities/request.go"
+  ],
+  "permit": "Exactly one URL-encoded query-redirect followup after actual Allowlist and SMTP/Capture prerequisites; one Recovery/one local Capturemail; exact actual callback and UI form then API update and interactive synthetic login/wrong-owner denial; restore original config/capture cleanup",
+  "counter": "PublicAuth original 1/1 failure retained; historic Recovery counts preserved in separate receipt",
+  "failure_action": "FOLLOWUP_FAILED; no further automatic loop",
+  "ui_password_submit": "Not tested; CUA requires human takeover, APIupdate separate permitted evidence",
+  "excluded": "No source freeze, final restore, production alias/env/writer permission",
+  "execution_result": "followup pending"
+}
