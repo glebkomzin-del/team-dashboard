@@ -1,0 +1,18 @@
+{
+  "executed": false,
+  "existing_api_key_reused": true,
+  "added_scopes": [
+    "workflow:activate",
+    "workflow:deactivate"
+  ],
+  "original_scope_sha256": "4c1f1b0416ec862ebbae03f0a61cde162370c9225d185b4d22efc28acbd7bce2",
+  "expanded_scope_sha256": "6357ffd67d3c096f5255e460bb5dbd22e6ce68794e4ff3faec3edc3dc558772b",
+  "sql_hashes": {
+    "restore-scopes.sql": "c1fa6235bdee05964f84e3e06521278f7ffcdd463340e8d2bb2644d9492d589a",
+    "add-scopes.sql": "c7b3dfe4ac75688121c89f79f80014494d4ca3cb6a620beb94e5b2682a96b9ca"
+  },
+  "workflow_states_changed": false,
+  "key_secret_changed": false,
+  "project_role_changed": false,
+  "gate_required_before_metadata_mutation": true
+}
