@@ -1,0 +1,44 @@
+HTTP/2 200 
+accept-ranges: bytes
+access-control-allow-origin: *
+age: 0
+cache-control: public, max-age=0, must-revalidate
+content-disposition: inline
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://lghwikeotbkmojyyjglz.supabase.co wss://lghwikeotbkmojyyjglz.supabase.co https://178-105-167-26.nip.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+content-type: text/html; charset=utf-8
+date: Sat, 03 Oct 2026 18:28:34 GMT
+etag: "ccd761e44e5d47603d21d0bb3cd9ee62"
+last-modified: Sat, 03 Oct 2026 18:28:34 GMT
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+referrer-policy: strict-origin-when-cross-origin
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-robots-tag: noindex
+x-vercel-cache: HIT
+x-vercel-id: fra1:fra1:fra1::cq4x5-1791052114051-1f56d4897c22
+
+<!doctype html>
+<html lang="de" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="theme-color" content="#f2f5f5" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Meeting OS</title>
+    <script type="module" crossorigin src="/assets/index-BDcuVrsl.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DsPv-29T.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+<script async data-explicit-opt-in="true" data-deployment-id="dpl_DfSYKEA5xDAH6XKT9yV3djWfAWZC" src="https://vercel.live/_next-live/feedback/feedback.js"></script>Vercel CLI 54.18.7 (Node.js 22.22.3) | curl is in beta — https://vercel.com/feedback
+Retrieving project…
+Retrieving project…
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100   687    0   687    0     0    988      0 --:--:-- --:--:-- --:--:--   988

@@ -1,0 +1,29 @@
+# HZ-MIGRATION-20261003-FRONTEND-CUTOVER
+
+Stand 2026-10-03: Zielartefakt implementiert und lokal validiert; Preview READY und statisch validiert. Ziel-Auth/REST/Recovery-Integration und Production bleiben offen bis korrekter öffentlicher API-Route und Lead-GOAL_GATE. Keine Productionmutation, kein Ownerlogin, keine Mail und kein KI-Aufruf in diesem Paket.
+
+## Gebundene Quelle und Ausgabe
+
+Vorhandene 104-Datei-Quelle aus `frontend-preparation-evidence.json` ist unverändert; keine fremde Baseline committed. Der vorbereitete CSP-Patch bleibt die einzige produktive Sourceänderung. `frontend-build-target.py` prüft beide Quellenmanifest-Sätze, liest ausschließlich ANON_KEY via bestätigtes SSH, prüft JWT role=anon und baut mit `VITE_SUPABASE_URL=https://178-105-167-26.nip.io/supabase`, `VITE_SUPABASE_ANON_KEY`. Bestehender Vercel-Builder erzeugt das Build Output; keine manuelle Routerimplementierung.
+
+Wiederholung: isolierte Quelle am dort genannten Pfad; `.vercel/project.json` vom bestehenden Link kopieren, aktuelles `vercel.json` mit geprüftem CSP-Hash kopieren; im isolierten Verzeichnis `vercel pull --yes --environment=preview`; danach aus dem Repo `python3 working-memory/ops/hetzner-migration/frontend-build-target.py`. Source/Lockfile bleiben gebunden. Ein erneuter Build ist keine Productionfreigabe und aktuell nicht nötig.
+
+Preview: `dpl_DfSYKEA5xDAH6XKT9yV3djWfAWZC`, https://team-dashboard-9tm49ymcm-glebkomzin-dels-projects.vercel.app . Deploy ausgeführt mit `vercel deploy --prebuilt --yes` im isolierten Verzeichnis. Ausgabehashes und privates Archiv stehen in `frontend-target-artifact.json`; dessen `current_static_hashes` sowie config-Hash binden die geprüften Funktionsdateien. Vercel-Diagnosemetadaten können sich beim Deployment ändern. Archiv `/private/tmp/hz-frontend-cutover-private/target-build-output.tgz`, 0600; Quell-/Buildpfade sind lokal temporär und müssen bis Paketübernahme erhalten bleiben.
+
+## Testpaket und Grenzen
+
+Offene Frage: liefert dieses targetkey-Artefakt eine deployfähige Preview mit vorhandenen Einstiegsrouten, CSP und unveränderten Assets? Pflicht: TypeScript/Vite/Vercel Build Exit 0, echte Ziel-URL und anon-Key eingebettet, READY, HTTP 200 auf `/` und `/memory-next?recovery=1`, Targetorigin im CSP, exakt gleiche vier JS/CSS-Dateien. Umfang: bestehender vollständiger Build; `frontend-check-preview.py` über autorisierten `vercel curl`, sechs Checks; Browserprüfung identischer lokaler Dateien ohne Credentials. Bei Bestehen diese Kriterien geschlossen; bei Scheitern gezielte Diagnose innerhalb maximal zwei Zyklen, danach Rückgabe.
+
+Ergebnis: bestanden. Browser-Preview benötigt Vercel-SSO; Schutz blieb erhalten. Identische lokale Ausgabe zeigte Login und nach Klick Recovery-Anforderungsformular. Lokaler Prüfserver und temporärer Browser geschlossen. Keine Auth-/REST-Integration aus der statischen Abnahme ableiten. Erster Vergleich scheiterte an exakt identifiziertem angehängtem Plattformtoolbar; zweiter akzeptiert nur diesen deploymentgebundenen Suffix. CSP wird deswegen nicht erweitert.
+
+CUTOVER-Paket zwei Prüfzyklen verbraucht, beide mit entscheidender Evidenz und finalem Erfolg. Historische FRONTEND-PREP zwei Zyklen bleiben erhalten; kein Zählerreset behauptet. Anwendungskostenaufrufe 0; Codex-Verbrauch unbekannt. Lead übernimmt öffentliche Zielintegration als gesondert freigegebenes Folgepaket gleicher Ownership.
+
+## Vorbereitung für das Lead-GO
+
+Productionalias am Paketbeginn exakt auf `dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL`, READY, beide bekannten Productionaliase. Sichere Originalinspection privat `/private/tmp/hz-frontend-cutover-private/production-inspect.json`. Production-env privat `/private/tmp/hz-frontend-cutover-private/production.env`, 0600, Hash im Artefaktbeleg. Beide VITE-Zielvariablen waren dort **nicht gesetzt**; heutige Production nutzt Sourcefallbacks. Rollback der zukünftigen env-Änderung muss diese Abwesenheit wiederherstellen, nicht Tokenwerte aus generierten Vercel-Systemvariablen kopieren. Envbackup ist geprüft vorhanden, Restore nicht ausgeführt.
+
+Nach explizitem Lead-GO: Target-URL/anon-Key unter genau `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY` für Production setzen (Werte privat über stdin, keine Service-Role). Diese Werte wirken bei zukünftigen Builds; geprüfte Vite-Dateien enthalten bereits die Targetwerte, kein Runtime-env-Backend vorhanden. Dann aus korrekt verknüpftem Projekt `vercel promote dpl_DfSYKEA5xDAH6XKT9yV3djWfAWZC --yes`. Nicht `deploy --prebuilt --prod` auf preview-metadatiertes Build Output anwenden und keine Buildtargetmetadaten manuell umetikettieren.
+
+[Offizieller Promotevertrag](https://vercel.com/docs/cli/promote), geprüft 2026-10-03: Previewpromotion ist unterstützt und erzeugt eine neue Productiondeployment-ID. Deshalb weder identische ID noch reine Aliasmutation behaupten; tatsächliches Ergebnis inspizieren und Funktionsassets/Targetwerte gegen gespeicherte Hashes prüfen. `builds.json` dieses Artefakts trägt target=preview. Productionalias/Umgebung und realer Ownerflow müssen nach GO neu geprüft werden; Promotion und dieser letzte Nutzerfluss sind **nicht ausgeführt**.
+
+Frontendrollback nach passendem Leadkommando: `vercel rollback dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL` sowie neu gesetzte VITE-Productionvariablen wieder entfernen. Das restauriert keine Daten; Datenrückweg und Schreibgrenze liegen beim Lead/Backend. Nicht mit der Quell- oder Zielauth während der gesperrten Route experimentieren.

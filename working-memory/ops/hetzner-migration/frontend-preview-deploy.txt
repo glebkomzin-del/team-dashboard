@@ -1,0 +1,35 @@
+{
+  "status": "ok",
+  "deployment": {
+    "id": "dpl_DfSYKEA5xDAH6XKT9yV3djWfAWZC",
+    "url": "https://team-dashboard-9tm49ymcm-glebkomzin-dels-projects.vercel.app",
+    "inspectorUrl": "https://vercel.com/glebkomzin-dels-projects/team-dashboard/DfSYKEA5xDAH6XKT9yV3djWfAWZC",
+    "readyState": "READY",
+    "target": null,
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_DfSYKEA5xDAH6XKT9yV3djWfAWZC"
+  },
+  "message": "Deployment team-dashboard-9tm49ymcm-glebkomzin-dels-projects.vercel.app ready.",
+  "next": [
+    {
+      "command": "vercel inspect team-dashboard-9tm49ymcm-glebkomzin-dels-projects.vercel.app",
+      "when": "Inspect deployment"
+    },
+    {
+      "command": "vercel deploy --prod",
+      "when": "Promote to production"
+    }
+  ]
+}
+Vercel CLI 54.18.7 (Node.js 22.22.3)
+Retrieving project…
+Deploying glebkomzin-dels-projects/team-dashboard
+Uploading [--------------------] (0.0B/653KB)
+Uploading [=====---------------] (165.5KB/653KB)
+Uploading [==========----------] (337.5KB/653KB)
+Uploading [===============-----] (497.5KB/653KB)
+Uploading [====================] (653.0KB/653KB)
+  Inspect         https://vercel.com/glebkomzin-dels-projects/team-dashboard/DfSYKEA5xDAH6XKT9yV3djWfAWZC
+  Preview         https://team-dashboard-9tm49ymcm-glebkomzin-dels-projects.vercel.app
+Building…
+[2K[1A[2K[G  Preview         https://team-dashboard-9tm49ymcm-glebkomzin-dels-projects.vercel.app
+Completing…
