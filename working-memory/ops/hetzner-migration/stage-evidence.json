@@ -65,7 +65,7 @@
     "new_and_existing_deno_journal": 12
   },
   "open": {
-    "recovery": "STALL2 + one authorized CHANGE_APPROACH followup: FOLLOWUP_FAILED. SMTP greeting/EHLO from actual Auth namespace passed, one recovery request returned HTTP500 with Docker DNS lookup server misbehaving. No captured mail; link/reset remain unproved. Original SMTP restored; capture removed; no further automatic attempt.",
+    "recovery": "Historical STALL2 + failed followup1; new user-authorized cycles2 exhausted. Cycle1 post-recreation fixed-IP Node SMTP EHLO passed, one recovery request HTTP504. Cycle2 actual SMTP environment and Node EHLO passed, native Python SMTP namespace prerequisite failed; no second recovery request. Native subprocess stderr/returncode not retained, explicit evidence gap. Original SMTP restored and capture removed. Recovery link/reset remains unproved; fresh Lead review pending.",
     "cli_role_cleanup": "Managed source role DROP denied 42501; login expired and 0 sessions confirmed. Not deleted.",
     "production": "Public TLS/frontend/CSP/worker switch/final export/daily backup deployment and single-writer cutover not performed."
   },
@@ -74,7 +74,9 @@
     "source_full_dump_successful": 1,
     "stage_full_restore": 1,
     "recovery_failed_attempts": 2,
-    "recovery_followup_failed": 1
+    "recovery_followup_failed": 1,
+    "recovery_reopened_cycles": 2,
+    "recovery_reopened_requests": 1
   },
   "recovery_followup": {
     "problem_id": "HZ-MIGRATION-20261003/recovery",
@@ -88,5 +90,42 @@
     "failure_message": "HTTP 500",
     "auth_smtp_original_restored": true,
     "capture_removed": true
-  }
+  },
+  "recovery_reopened": [
+    {
+      "problem_id": "HZ-MIGRATION-20261003/recovery",
+      "prior_failed_attempts": 2,
+      "prior_followup_failed": 1,
+      "new_authorized_cycle": 1,
+      "smtp_external_messages": 0,
+      "source_mutation": false,
+      "probe_after_auth_recreation": true,
+      "smtp_greeting_ehlo_from_auth_net": true,
+      "capture_fixed_private_ip": "172.22.0.7",
+      "status": "AUTHORIZED_CYCLE_FAILED",
+      "failure_type": "HTTPError",
+      "failure_message": "HTTP 504",
+      "auth_smtp_original_restored": true,
+      "capture_removed": true
+    },
+    {
+      "problem_id": "HZ-MIGRATION-20261003/recovery",
+      "prior_failed_attempts": 2,
+      "prior_followup_failed": 1,
+      "new_authorized_cycle": 2,
+      "smtp_external_messages": 0,
+      "source_mutation": false,
+      "probe_after_auth_recreation": true,
+      "smtp_greeting_ehlo_from_auth_net": true,
+      "capture_fixed_private_ip": "172.22.0.7",
+      "actual_smtp_host_matches_capture": true,
+      "actual_smtp_port": "1025",
+      "native_smtp_full_dialog_after_recreation": false,
+      "status": "AUTHORIZED_CYCLE_FAILED",
+      "failure_type": "RuntimeError",
+      "failure_message": "Native SMTP prerequisite failed",
+      "auth_smtp_original_restored": true,
+      "capture_removed": true
+    }
+  ]
 }
