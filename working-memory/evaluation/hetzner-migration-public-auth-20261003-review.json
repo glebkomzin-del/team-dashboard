@@ -20,5 +20,19 @@
   "failure_action": "FOLLOWUP_FAILED; no further automatic loop",
   "ui_password_submit": "Not tested; CUA requires human takeover, APIupdate separate permitted evidence",
   "excluded": "No source freeze, final restore, production alias/env/writer permission",
-  "execution_result": "followup pending"
+  "execution_result": {
+    "result": "PUBLIC_AUTH_FOLLOWUP_PASSED",
+    "backend_commit": "773b3e8",
+    "frontend_commit": "604f71a",
+    "backend_receipt": "ops/hetzner-migration/public-auth-query-evidence.json",
+    "frontend_receipt": "ops/hetzner-migration/frontend-public-auth-query-evidence.json",
+    "followup_cycles_used": 1,
+    "actual_callback_and_form": true,
+    "api_update_200": true,
+    "interactive_synthetic_password_login_200": true,
+    "wrong_owner_401": true,
+    "original_config_restored": true,
+    "third_party_mail": 0,
+    "ui_password_submit": "not tested"
+  }
 }
