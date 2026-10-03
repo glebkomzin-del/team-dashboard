@@ -1,4 +1,4 @@
-HTTP/2 200 
+HTTP/2 200
 accept-ranges: bytes
 access-control-allow-origin: *
 age: 0
