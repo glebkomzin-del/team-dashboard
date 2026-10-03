@@ -1,0 +1,163 @@
+{
+  "decision": "CHANGE_APPROACH",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "scope": "SOURCE_FREEZE_EXPORT_ONLY",
+  "operational_go": false,
+  "summary": "Vor dem Freeze sind ein konkreter R\u00fcckweg f\u00fcr fr\u00fche Teilfehler und vollst\u00e4ndige private Export-Prozessdiagnostik erforderlich. Das rechtfertigt ein kleines Source-Korrekturpaket, keine Erweiterung auf Target oder Writer.",
+  "review_provenance": {
+    "thread_id_observed": "01a103fb-b03a-7590-ad9e-6558771ac380",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning_effort": "high",
+    "accepted_model_effort": "Im gepr\u00fcften thread.started-Ereignis nicht ausgewiesen; durch Launcher-Beleg separat nachzuweisen.",
+    "server_internal_engine": "Nicht beobachtbar.",
+    "mode": "READ_ONLY",
+    "tests_executed": 0,
+    "remote_calls": 0,
+    "mutations": 0,
+    "delegations": 0,
+    "skill_confirmed": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md"
+  },
+  "examined_script_hashes": {
+    "base": "working-memory/ops/hetzner-migration/",
+    "all_listed_hashes_match_manifest": true,
+    "content_reviewed": {
+      "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+      "final_quiescence_once.py": "09ca17b3acfcfd7f7692fd9e01bf945e47f6c00e83cb691a6cdbd1e0f28e17df",
+      "final_export_once.py": "ead77bcc3e9435711e54be1c8ed9a7adf0572bdfe6a6439de6f0142670d2b6c5",
+      "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+      "vault_copy_codec.py": "cd326b284dbfbb315d0cabae151e78df0599977211da68b60cd660be53b206f5",
+      "prepare_business_freeze_acl.py": "daa77cf9cf84aa6cf83cadc3dec6b8ba7f86b507c7f4c95fc8019314771f1cb0",
+      "n8n_dashboard_pause_once.py": "77b225f122034ca16784b7c7e812f170438d358145ac81b1ef988073d463e089",
+      "freeze-business.sql": "bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc",
+      "final_source_rollback_once.py": "2b6212eba3f22255d1c9a273c561c8a5dce90ebb420a3ea1966e58f8f5811da8"
+    },
+    "hash_verified_without_full_content_review": {
+      "freeze-business-restore-acl.sql": "26c34f43afa8408e933589b6ce705bf09bd3e36234904de81166b26dd1955f02",
+      "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+      "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+      "final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50",
+      "frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+      "frontend-final-owner-redirect.py": "060374cd241fdccaa757caacdbf8a5bdcaa150b3d515ccaee4a8f06945043963"
+    }
+  },
+  "accepted_evidence": [
+    {
+      "finding": "Der Runtime-Followup erreichte im zweiten erlaubten Zyklus 13/13 PASS. Originalprotokoll gelesen; keine Tests wiederholt. Daraus folgt keine operative Target-Freigabe.",
+      "paths": [
+        "working-memory/evaluation/runtime-protocol-followup-20261003-evidence.json",
+        "working-memory/evaluation/runtime-low-yield-20261003-review.json",
+        "/private/tmp/hz-runtime-followup-2.stderr"
+      ]
+    },
+    {
+      "finding": "43 Katalogfunktionen gegen\u00fcber 32 urspr\u00fcnglich gew\u00e4hrten Funktionen sind erkl\u00e4rt: Die zus\u00e4tzlichen elf waren f\u00fcr alle drei API-Rollen bereits nicht ausf\u00fchrbar. Die OID-basierte Pr\u00fcfung aller einschl\u00e4gigen Funktionen bleibt korrekt; Mengengleichheit ist kein Freeze-Kriterium.",
+      "path": "working-memory/evaluation/catalog-reconcile-20261003-evidence.json"
+    },
+    {
+      "finding": "Vorbereitete lokale Originalbelege enthalten 82 ACL-Eintr\u00e4ge, identische vollst\u00e4ndige Konfiguration, beide realen Outboxes leer, running/model/question jeweils null und eine n8n-Ausf\u00fchrung vor Pause. Das ist ein vorbereiteter Zustand, keine aktuelle Remote-Best\u00e4tigung.",
+      "path": "working-memory/.local/hetzner-migration-20261003/final-export-20261003T220500Z/"
+    },
+    {
+      "finding": "Der Exportpfad enth\u00e4lt verify-full, effektive Read-only-Rolle, Voll-Dump, Rollen ohne Passw\u00f6rter, Archivvalidierung, alle acht dekodierten Vault-COPY-Spalten mit Zeitvergleich sowie exklusive Mac-Dateierstellung und SHA-Vergleich auf Mac und Server. Diese Schritte sind noch nicht f\u00fcr den neuen Export ausgef\u00fchrt."
+    }
+  ],
+  "blocking_findings": [
+    {
+      "id": "EARLY_PARTIAL_RECOVERY",
+      "evidence": [
+        "final_quiescence_once.py:84 erweitert Scopes vor der Pause; danach folgen n8n, Nginx, Konfiguration, Drain, Stop und ACL-Freeze ohne \u00fcbergreifenden Teil-Recovery-Pfad.",
+        "final_source_rollback_once.py verlangt bereits exakte Maintenance-Konfiguration und vollst\u00e4ndig entzogene Original-ACL.",
+        "n8n_dashboard_pause_once.py verlangt beim Resume alle drei Workflows inaktiv. Nach erfolgreicher erster Deaktivierung und Fehler beim zweiten Workflow ist diese Voraussetzung nicht erf\u00fcllt.",
+        "n8n attempted/changed wird w\u00e4hrend der Schleife nur im Speicher gef\u00fchrt und erst im finally als Sequenzreceipt geschrieben."
+      ],
+      "reason": "Bereits ein fr\u00fcher Pause-, Konfigurations- oder Drainfehler kann den produktiven Source teilweise ver\u00e4ndert zur\u00fccklassen. Der Voll-Freeze-Rollback darf daf\u00fcr nicht blind aufgerufen werden.",
+      "minimum_correction": "Einen kleinen Source-only-R\u00fcckweg f\u00fcr tats\u00e4chlich versuchte Stufen konkret implementieren oder als exakt ausf\u00fchrbare, gepr\u00fcfte Sequenz festlegen. Versuche vor \u00c4nderungen dauerhaft protokollieren; nach unklarer Antwort Istzustand abgleichen. Nur nachweislich betroffene Workflows mit ihren Originalversionen reaktivieren, ausschlie\u00dflich eigene Scope-Erweiterungen zur\u00fccknehmen und Konfiguration/Nginx/Runtime/ACL entsprechend der erreichten Stufe zur\u00fcckf\u00fchren. Keine allgemeine Writer- oder Journalplattform."
+    },
+    {
+      "id": "EXPORT_PRIMARY_ERRORS_INCOMPLETE",
+      "evidence": [
+        "export_source.py:72-96 sichert normale Prozessr\u00fcckgaben, f\u00e4ngt aber TimeoutExpired von psql, pg_dump und pg_dumpall nicht ab.",
+        "final_export_once.py:50 verliert bei fehlgeschlagener TOC-Ermittlung die erfassten Prozessausgaben als dauerhaften Privatbeleg.",
+        "final_export_once.py:58 verwendet f\u00fcr Vault-Extraktion check_output ohne private stderr-Sicherung."
+      ],
+      "reason": "Die korrigierten HTTP-Fehlerpfade erf\u00fcllen die Anforderung vollst\u00e4ndiger privater Prim\u00e4rfehler noch nicht f\u00fcr den gesamten tats\u00e4chlichen Source-Export.",
+      "minimum_correction": "Die genannten bestehenden Prozessaufrufe mit vollst\u00e4ndiger privater stdout/stderr-/Timeout-Sicherung versehen; nach au\u00dfen nur sichere Fehlerklasse und Belegpfad. Keine Wiederholung, zus\u00e4tzliche Lease oder zweiter Dump."
+    }
+  ],
+  "permitted_actions": [
+    "Ein begrenztes lokales Source-Korrekturpaket f\u00fcr genau die beiden Befunde; Root bleibt verantwortlich.",
+    "Gezielte Offline-Validierung des tats\u00e4chlichen Teil-Recovery-Einstiegs: teilweise deaktivierte Workflows, unklare Mutationsantwort, Konfigurationsguard-Fehler, Drainfrist und Fehler nach Stop beziehungsweise ACL-Commit.",
+    "Gezielte Offline-Pr\u00fcfung der Export-Prozessfehler einschlie\u00dflich Timeout und unver\u00e4nderter Einmalbudgets.",
+    "Neue Hashbindung und anschlie\u00dfend gezielte unabh\u00e4ngige Nachpr\u00fcfung ausschlie\u00dflich dieser \u00c4nderungen."
+  ],
+  "package_boundary": {
+    "maximum_complete_offline_cycles": 2,
+    "stop_on_success": true,
+    "on_unmet_endpoint": "Belege erhalten und blockiert zur\u00fcckgeben; keine automatische weitere Reparaturschleife.",
+    "historical_counters": "Alle urspr\u00fcnglichen Versuche, LOW_YIELD-/FOLLOWUP_FAILED-Ereignisse und Abnahmen bleiben erhalten. Die ausdr\u00fcckliche Nutzerfortsetzung wird anerkannt; dieses Urteil setzt keinen Z\u00e4hler zur\u00fcck."
+  },
+  "source_execution_budget_reserved_not_released": {
+    "source_freeze": 1,
+    "natural_drain_seconds": 600,
+    "readonly_lease": 1,
+    "full_dump": 1,
+    "release_condition": "Die beiden Source-Befunde sind geschlossen und die ge\u00e4nderten Hashes gezielt unabh\u00e4ngig gepr\u00fcft."
+  },
+  "failure_protocol": {
+    "before_full_freeze": [
+      "Vorw\u00e4rtsablauf sofort stoppen; keine Lease und keinen Dump beginnen.",
+      "Private Originalfehler und versuchte Stufen erhalten. Fehlende Erfolgsantwort bedeutet nicht fehlende Mutation.",
+      "Tats\u00e4chliche Zust\u00e4nde gegen Originalbelege abgleichen; nur eigene \u00c4nderungen kompensieren. Fremde Abweichungen nicht \u00fcberschreiben.",
+      "Konfiguration ausschlie\u00dflich enabled-basiert unter vollst\u00e4ndigem Vergleich zur\u00fcckf\u00fchren; ACL nur bei tats\u00e4chlich erfolgtem Revoke exakt wiederherstellen.",
+      "Originalen Source-Prozess nur bei nachgewiesenem Stop starten. Original-Origin, Image und alle f\u00fcnf Flags pr\u00fcfen; Ingress erst nach Gesundheitsnachweis zur\u00fcckf\u00fchren.",
+      "Nur tats\u00e4chlich deaktivierte Originalworkflows offiziell reaktivieren, Originalversionen nachweisen und tempor\u00e4re Scopes exakt zur\u00fccknehmen.",
+      "Wiederherstellung durch konkrete Zustandsbelege abschlie\u00dfen; unbekannte oder fehlgeschlagene Recovery bleibt blockiert."
+    ],
+    "fully_frozen_before_target_changes": "final_source_rollback_once.py bleibt ausschlie\u00dflich f\u00fcr seinen nachgewiesenen Voll-Freeze-Zustand vor Target-Restore, Runtimewechsel und Marker verwendbar. Seine Voraussetzungen zuerst pr\u00fcfen; keine Verwendung f\u00fcr fr\u00fche Teilzust\u00e4nde.",
+    "export_failure": "Keine neue Lease, kein zweiter Dump und kein Target-Schritt. Fehlerartefakte erhalten und Source kontrolliert zur\u00fcckf\u00fchren.",
+    "successful_source_export": "Nach Archiv-/Vault-/Mac-/Server-Verifikation an der Source-only-Grenze stoppen. restore-gate-bound.json ist eine abgeleitete Hashbindung und keine Target-Freigabe."
+  },
+  "forbidden_actions": [
+    "Source-Pause, Freeze, neue Lease oder Dump vor Schlie\u00dfung dieses Gates.",
+    "Target-Restore, Target-Runtime, Promotion, Owner-Link-Ausf\u00fchrung oder \u00d6ffnen von Target-Writern.",
+    "Source-Passwortreset, neue kostenpflichtige Dienste, erzwungenes Abbrechen laufender Arbeit, globale n8n-Neustarts oder Workflow-SQL-Schreiboperationen.",
+    "Neue Backlog-KI-Verarbeitung, Mail oder \u00c4nderungen anderer Projekte.",
+    "Alten Dump als neuen finalen Export verwenden, Originalfehler \u00fcberschreiben oder historische Z\u00e4hler zur\u00fccksetzen."
+  ],
+  "future_blockers_not_expanded_into_current_scope": [
+    "Vor Target-Restore oder Runtimewechsel muss der konkrete sp\u00e4tere Source-R\u00fcckweg vorliegen; final_prewrite_rollback_once.py ist derzeit INPUT_SCHEMA_REQUIRED_NOT_EXECUTABLE.",
+    "Der Writer-Kandidat ben\u00f6tigt tats\u00e4chliche Host-Artefaktbindungen und vollst\u00e4ndige private Fehlerbelege vor seinem Marker.",
+    "Tats\u00e4chliche finale Target-/Owner-/Backup-/Frontend-/Sole-writer-Nachweise und deren GOAL_GATE bleiben ausstehend."
+  ],
+  "preserved_acceptances": [
+    "Stage, Journal16.4, RLS/Auth, Backup und Frozen-Frontend werden nicht wieder ge\u00f6ffnet.",
+    "Vault-COPY-Codec und semantischer Altarchivnachweis bleiben f\u00fcr ihren gepr\u00fcften Umfang g\u00fcltig.",
+    "Runtime-Followup ist lokal bestanden; keine produktive Zielabnahme wird daraus abgeleitet."
+  ],
+  "enforcement": "RULES_ONLY",
+  "native_process_provenance": {
+    "fresh_thread_id": "01a103fb-b03a-7590-ad9e-6558771ac380",
+    "executable": "/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex",
+    "authenticated_route": "existing ChatGPT subscription",
+    "requested_accepted_configuration": {
+      "model": "gpt-6-astra",
+      "reasoning_effort": "high",
+      "sandbox": "read-only",
+      "ignore_user_config": true,
+      "ephemeral": true,
+      "API_key_base_URL_removed_from_child_env": true
+    },
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED",
+    "actual_usage": {
+      "input_tokens": 362665,
+      "cached_input_tokens": 297472,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6384,
+      "reasoning_output_tokens": 1136
+    },
+    "result_sha256": "a3bc6317ac8b5e958805df3ab8a52c896821c9ec84e4604ad292345afbdd2638",
+    "private_primary_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-export-gate-1",
+    "recorded_at": "2026-10-03T23:02:57.848765+00:00"
+  }
+}
