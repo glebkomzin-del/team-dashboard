@@ -1,0 +1,33 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FRONTEND-INTEGRATION",
+  "question": "Is private browser harness exact-source and read-only before public-route GO?",
+  "criterion": "Exact artifact index; private session bootstrap403; proxy write405",
+  "scope": "Loopback harness only, no targetpublicAuth/REST",
+  "decision": "Passed; owner flow still gated",
+  "checks": [
+    {
+      "path": "/__migration_session/owner",
+      "method": "GET",
+      "expected_status": 403,
+      "actual_status": 403
+    },
+    {
+      "path": "/api/working-memory/review",
+      "method": "POST",
+      "expected_status": 405,
+      "actual_status": 405
+    },
+    {
+      "path": "/memory-next",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200
+    }
+  ],
+  "tunnel": "127.0.0.1:18899 -> SSH root@178.105.167.26 -> 127.0.0.1:8799",
+  "owner_flow_cycles_started": 0,
+  "maximum_owner_flow_cycles": 1,
+  "previous_frontend_prep_cycles": 2,
+  "previous_frontend_cutover_cycles": 2,
+  "codex_budget_usage": "unknown"
+}
