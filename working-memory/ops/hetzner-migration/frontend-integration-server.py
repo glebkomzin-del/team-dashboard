@@ -5,6 +5,7 @@ Bootstrap only after Lead approval of the public target Auth route.
 """
 import argparse
 import hashlib
+import html
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
@@ -50,6 +51,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         route = urllib.parse.urlsplit(self.path).path
+        if route == '/__migration_recovery_callback':
+            location = (options.private_dir / 'recovery-callback-private.txt').read_text().strip()
+            parsed = urllib.parse.urlsplit(location)
+            assert parsed.scheme == 'http' and parsed.netloc == 'localhost:8943'
+            assert parsed.path == '/' and parsed.query == 'recovery=1'
+            self.send_response(303)
+            self.send_header('Location', location)
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            return
+        if route == '/__migration_existing_synthetic_credentials':
+            credentials = json.loads((options.private_dir / 'synthetic-login-private.json').read_text())
+            assert credentials['email'].endswith('.invalid')
+            body = ('<!doctype html><meta charset="utf-8"><p>Email: ' + html.escape(credentials['email']) +
+                    '</p><p>Existing password: ' + html.escape(credentials['password']) + '</p>').encode()
+            return self.reply(200, body, 'text/html', {'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'"})
         if route.startswith('/__migration_session/'):
             name = route.rsplit('/', 1)[-1]
             if name not in ('owner', 'wrong-owner', 'clear') or not (options.private_dir / 'public-route-approved').exists():
