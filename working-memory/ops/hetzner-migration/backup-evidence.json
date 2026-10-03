@@ -60,5 +60,11 @@
     "ran_on": "Mac private transferred test subbundle"
   },
   "patch_reconstruction_verified": true,
-  "patch_sha256": "ae0847eb9e26b832bce89eaed5a5d0a88336466d62ac4b5c90cc1b2c10ce8b70"
+  "patch_sha256": "ae0847eb9e26b832bce89eaed5a5d0a88336466d62ac4b5c90cc1b2c10ce8b70",
+  "tested_database_properties": {
+    "owner": "postgres",
+    "default_database_acl": true,
+    "database_specific_role_setting_rows": 0,
+    "observed_on_source_stage": true
+  }
 }
