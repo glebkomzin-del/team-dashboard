@@ -1,3 +1,7 @@
+## Dashboard Job: Betrieb und aktueller Auftrag
+
+Der produktive Betrieb und der freigegebene Hetzner-Ausbau/Umzug stehen in [working-memory/docs/NEXT-OPERATIONS.md](working-memory/docs/NEXT-OPERATIONS.md). Einrichtung und Prüfungen: [working-memory/README.md](working-memory/README.md); Wiederherstellung: [RESTORE-RUNBOOK.md](working-memory/docs/RESTORE-RUNBOOK.md).
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

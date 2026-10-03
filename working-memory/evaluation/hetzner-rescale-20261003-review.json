@@ -1,0 +1,56 @@
+{
+  "problem_id": "HZ-RESCALE-20261003",
+  "trigger": "GOAL_GATE",
+  "date": "2026-10-03",
+  "reviewer_task": "/root/resize_gate",
+  "requested_role": "astra-reviewer",
+  "requested_model": "gpt-6-astra",
+  "requested_effort": "high",
+  "tool_confirmed_task": "/root/resize_gate",
+  "runtime_enforcement": "RULES_ONLY",
+  "disposition": "BLOCK",
+  "reason": "Current external recovery point and restore coverage missing at initial review",
+  "primary_evidence": [
+    "/tmp/hetzner-cax21-freigabe.jpg",
+    "178.105.167.26:/opt/dashboard-memory-canonical-draft/.local/cache/backup-status.json"
+  ],
+  "bounded_next_step": "Obtain external current backup with hash and actual n8n/dashboard/Picnic restore coverage; targeted independent gate supplement only",
+  "resize_executed": true,
+  "review_role_binding": "astra-reviewer runtime tool definition fixes gpt-6-astra/high; spawn returned canonical task identity",
+  "supplement": {
+    "disposition": "CONTINUE_BOUNDED",
+    "reviewer_task": "/root/resize_gate",
+    "backup_time": "2026-10-03T16:50:42.850259+00:00",
+    "backup_proof": "/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/rescale-20261003/validation.json",
+    "permitted": "one CAX21 resize, then actual resource/IP/service verification",
+    "limits": [
+      "no full app restore",
+      "no credential-decryption test",
+      "n8n isolated restore target PG17 source PG16"
+    ]
+  },
+  "final_review": {
+    "disposition": "ACCEPT",
+    "reviewer_task": "/root/resize_gate",
+    "checked_at": "2026-10-03T18:58:00+02:00",
+    "evidence": [
+      "/tmp/hetzner-cax21-expanded-20261003.jpg",
+      "SSH root@178.105.167.26: nproc, free, lsblk, df, docker state",
+      "nginx public /healthz HTTP 200 18:57:22 CEST"
+    ],
+    "confirmed": {
+      "hetzner_server": 131208515,
+      "type": "CAX21",
+      "cpus": 4,
+      "memory_mib": 7729,
+      "disk_free_gib": 43,
+      "ipv4": "178.105.167.26",
+      "existing_containers_running": 4
+    },
+    "limits": [
+      "No full authenticated user flow verified",
+      "No Supabase migration accepted"
+    ],
+    "resize_rounds": 1
+  }
+}
