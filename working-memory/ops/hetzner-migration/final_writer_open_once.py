@@ -4,6 +4,8 @@ Root must supply actual primary receipts using CONTRACT below. This file never
 manufactures them. Failed preconditions cannot write even an attempt marker.
 After the marker, failures return to Root and NEVER trigger Source rollback.
 """
+import base64
+import urllib.error
 import argparse
 import datetime as dt
 import hashlib
@@ -32,6 +34,9 @@ CLOSED = {'MEMORY_READ_ONLY': '1', 'MEMORY_INTAKE_ENABLED': '0',
           'MEMORY_ORIGINAL_DELETION_ENABLED': '0'}
 ORIGINAL = {k: '0' if k == 'MEMORY_READ_ONLY' else '1' for k in CLOSED}
 ALIASES = {'team-dashboard-rho.vercel.app', 'team-dashboard-glebkomzin-dels-projects.vercel.app'}
+HOST_FILES = ('compose.yaml', 'build-manifest.json', 'access.py', 'gateway_journal.py', 'service.env')
+HOST_PRIMARY_SHA = '19cd20b6c8070ed34ffc3e88c8b1df5be3894948fce652cade3e826092885d48'
+SOURCE_ORIGIN = 'https://lghwikeotbkmojyyjglz.supabase.co'
 VERSIONS = {'nzyaKxs5Om9wuPEc': None, 'dashboardDriveMove': None, 'dashboardDriveWatch': None}
 # Version IDs are extracted from the hash-bound existing helper, never guessed.
 RECEIPTS = {
@@ -58,7 +63,8 @@ CONTRACT = {
         'query_sha256': 'Root actual OID effective-right query, in gate.source_query_sha256',
         'roles': 'exact anon/authenticated/service_role rows: writable_tables=0, executable_writers=0',
         'catalog_function_count': 43, 'source_config': 'full original with enabled=false',
-        'source_backend_running': False, 'other_hosted_writer_processes': [],
+        'source_backend_running': False,
+        'process_scope': 'known inspected host backend and three original paused publications; no world absence claim',
         'primary_receipts': 'nonempty direct path/SHA refs ALSO bound by gate'},
     'owner_new_primary_contract': {
         'status': 'PASSED', 'run_dir': 'exact remote run',
@@ -145,7 +151,7 @@ def validate_preconditions(gate, manifest, receipts, *, now, script_hashes, rece
                                for r in ['anon', 'authenticated', 'service_role']]
             and source['catalog_function_count'] == 43, 'Source still writable or incomplete catalog')
     require(source['source_config'] == [{**r, 'enabled': False} for r in receipts['config']]
-            and source['source_backend_running'] is False and source['other_hosted_writer_processes'] == [], 'Source not frozen')
+            and source['source_backend_running'] is False, 'Source not frozen')
     owner = receipts['owner']
     require(owner['status'] == 'PASSED' and owner['run_dir'] == run
             and owner['source_uid'] and owner['source_uid'] == owner['target_uid']
@@ -187,7 +193,7 @@ def read_json(path):
 
 def load_and_validate(run, gate_path, now=None):
     require(run.is_absolute() and run.parent == ROOT and not run.is_symlink(), 'Wrong run root')
-    require(not (run/'writer-open-attempt.marker').exists(), 'Writer attempt already started')
+    require(not any('writer' in p.name and ('marker' in p.name or 'attempt' in p.name) for p in run.iterdir()), 'Writer attempt already started')
     gate = read_json(gate_path)
     require(gate.get('run_dir') == str(run), 'Run binding differs')
     manifest_path = run/'final-writer-prerequisites.json'
@@ -200,6 +206,7 @@ def load_and_validate(run, gate_path, now=None):
         for ref in receipts[key].get('primary_receipts', []):
             require(not Path(ref['path']).is_symlink(), 'Symlink primary refused')
             hashes[ref['path']] = digest(ref['path'])
+    validate_host_binding(gate, run, lambda path: Path(path).read_bytes())
     scripts = {'final_writer_open_once.py': digest(__file__),
                'n8n_dashboard_pause_once.py': digest(run/'n8n_dashboard_pause_once.py')}
     validated = validate_preconditions(gate, manifest, receipts, now=now or dt.datetime.now(dt.timezone.utc),
@@ -214,13 +221,53 @@ def save_private(path, value):
 
 
 def private_failure(run, error):
-    directory = run/'writer-private-errors'
-    directory.mkdir(mode=0o700, exist_ok=True)
-    require(not directory.is_symlink() and not directory.stat().st_mode & 0o077, 'Unsafe error directory')
+    # A rejected/missing run must still retain the original transport failure.
+    directory = Path(run)/'writer-private-errors'
+    try:
+        require(Path(run).is_dir() and not Path(run).is_symlink(), 'Invalid diagnostic run')
+        directory.mkdir(mode=0o700, exist_ok=True)
+        require(not directory.is_symlink() and not directory.stat().st_mode & 0o077, 'Unsafe error directory')
+    except Exception:
+        directory = Path(tempfile.mkdtemp(prefix='hz-writer-private-'))
+        directory.chmod(0o700)
+    def encoded(value):
+        if value is None: return None
+        return base64.b64encode(value.encode() if isinstance(value, str) else value).decode()
+    body = error.read() if isinstance(error, urllib.error.HTTPError) else getattr(error, 'body', None)
     path = directory/(uuid.uuid4().hex+'.json')
     save_private(path, {'exception_type': type(error).__name__, 'primary_error': str(error),
-                        'stdout': str(getattr(error, 'stdout', None)), 'stderr': str(getattr(error, 'stderr', None))})
+        'stdout_b64': encoded(getattr(error, 'stdout', None)),
+        'stderr_b64': encoded(getattr(error, 'stderr', None)), 'body_b64': encoded(body),
+        'status': getattr(error, 'code', getattr(error, 'returncode', None)),
+        'headers': list(error.headers.items()) if getattr(error, 'headers', None) is not None else None,
+        'command': getattr(error, 'cmd', None), 'timeout': getattr(error, 'timeout', None)})
     return str(path)
+
+
+def validate_host_binding(gate, run, read_bytes):
+    refs = gate.get('original_host_files', {})
+    require(set(refs) == set(HOST_FILES), 'Exact five original host SHAs required')
+    primary = gate.get('original_host_primary', {})
+    require(primary.get('sha256') == HOST_PRIMARY_SHA, 'Original host primary differs')
+    require(gate.get('receipt_hashes', {}).get(primary.get('path')) == HOST_PRIMARY_SHA,
+            'Original host primary not gate bound')
+    original = json.loads(read_bytes(primary['path']))
+    require(sha_bytes(read_bytes(primary['path'])) == HOST_PRIMARY_SHA, 'Original host primary bytes differ')
+    require(original['original_image'] == BASE and original['original_origin'] == SOURCE_ORIGIN
+            and original['original_flags'] == ORIGINAL, 'Original host identity differs')
+    for name in HOST_FILES:
+        ref = refs[name]
+        require(ref['path'] == str(run)+'/host-runtime-original/'+name, 'Snapshot path differs')
+        require(ref['sha256'] == original['original_file_sha256'][name]
+                and gate['receipt_hashes'].get(ref['path']) == ref['sha256']
+                and sha_bytes(read_bytes(ref['path'])) == ref['sha256'], 'Original host file SHA differs')
+    env = dict(line.split('=', 1) for line in read_bytes(refs['service.env']['path']).decode().splitlines()
+               if line and not line.startswith('#'))
+    require(env['SUPABASE_URL'].rstrip('/') == SOURCE_ORIGIN
+            and all(env[k] == v for k, v in ORIGINAL.items()), 'Original Source environment differs')
+    require(b'image: dashboard-memory:memory-20260921-compact-guard-final' in
+            read_bytes(refs['compose.yaml']['path']), 'Original compose image differs')
+    return original
 
 
 def env_file(path):
@@ -251,6 +298,8 @@ class HostOperations:
     """No effects in construction. Called only after complete receipt validation."""
     def call(self, args, **kw):
         result = subprocess.run(args, capture_output=True, timeout=kw.pop('timeout', 60), **kw)
+        raw = subprocess.CalledProcessError(result.returncode, args, result.stdout, result.stderr)
+        private_failure(getattr(self, 'run', ROOT), raw)
         if result.returncode:
             raise subprocess.CalledProcessError(result.returncode, args, result.stdout, result.stderr)
         return result.stdout
@@ -269,10 +318,13 @@ class HostOperations:
         for workflow, version in versions.items():
             request = urllib.request.Request('http://127.0.0.1:5678/api/v1/workflows/'+workflow,
                                               headers={'X-N8N-API-KEY': key})
-            with urllib.request.urlopen(request, timeout=10) as response: value = json.load(response)
-            require(value['active'] is active and (not active or value['activeVersionId'] == version), 'n8n publication differs')
+            with urllib.request.urlopen(request, timeout=10) as response:
+                body = response.read()
+                save_private(run/('writer-n8n-'+uuid.uuid4().hex+'.json'), {'body_b64': base64.b64encode(body).decode(), 'status': response.status, 'headers': list(response.headers.items())})
+                value = json.loads(body)
+            require(value['active'] is active and (value.get('activeVersionId') if active else value.get('versionId')) == version, 'n8n publication differs')
 
-    def verify_runtime(self, run, receipts, flags):
+    def verify_runtime(self, run, receipts, flags, nginx_sha=NGINX_SHA):
         image = json.loads(self.call(['docker', 'inspect', CANONICAL]))[0]
         env = dict(item.split('=', 1) for item in image['Config']['Env'] if '=' in item)
         current = env_file(LIVE/'.local/service.env')
@@ -284,8 +336,8 @@ class HostOperations:
         require(set(original) == set(current) and all(current[k] == v and env.get(k) == v
                 for k, v in original.items() if k not in mutable), 'Original provider environment differs')
         private = env_file(ROOT/'.private.env')
-        require(current['SUPABASE_PUBLISHABLE_KEY'] == private['ANON_KEY'].strip("'"), 'Target publish key differs')
-        require(digest('/etc/nginx/sites-available/alexa') == NGINX_SHA, 'Original Nginx not restored')
+        require(current['SUPABASE_PUBLISHABLE_KEY'] == env.get('SUPABASE_PUBLISHABLE_KEY') == private['ANON_KEY'].strip("'"), 'Target publish key differs')
+        require(digest('/etc/nginx/sites-available/alexa') == nginx_sha, 'Original Nginx not restored')
         manifest = read_json(LIVE/'build-manifest.json'); old = read_json(run/'host-runtime-original/build-manifest.json')
         require(manifest['scheduled_backup.py'] == BACKUP_SHA and digest(LIVE/'scheduled_backup.py') == BACKUP_SHA, 'Backup adapter differs')
         changes = {'access.py', 'gateway_journal.py'}
@@ -302,9 +354,18 @@ class HostOperations:
                 require(other_env.get('SUPABASE_URL', '').rstrip('/') != 'https://lghwikeotbkmojyyjglz.supabase.co', 'Hosted Source process still running')
 
     def preflight(self, run, receipts):
+        self.run = run
         require(digest(run/'restore-scopes.sql') == SCOPES_SHA, 'Exact guarded scope restore absent')
         self.verify_runtime(run, receipts, CLOSED)
         self.n8n_check(run, False)
+
+    def hold_maintenance(self, run):
+        nginx = Path('/etc/nginx/sites-available/alexa')
+        original, candidate = (run/'nginx-original.conf').read_bytes(), (run/'nginx-maintenance.conf').read_bytes()
+        require(sha_bytes(original) == NGINX_SHA and nginx.read_bytes() in (original, candidate), 'Foreign Nginx')
+        nginx.write_bytes(candidate)
+        self.call(['nginx', '-t']); self.call(['systemctl', 'reload', 'nginx'])
+        self.call(['docker', 'stop', '--time', '120', CANONICAL], timeout=135)
 
     def open_writer(self, run, gate_path, receipts):
         atomic_env(LIVE/'.local/service.env', receipts['flags'])
@@ -313,9 +374,12 @@ class HostOperations:
         while True:
             try:
                 with urllib.request.urlopen('http://127.0.0.1:8798/health', timeout=5) as response:
-                    health = json.load(response); require(response.status == 200 and health.get('status') == 'ok', 'Health not ok')
+                    body = response.read()
+                    save_private(run/('writer-health-'+uuid.uuid4().hex+'.json'), {'body_b64': base64.b64encode(body).decode(), 'status': response.status, 'headers': list(response.headers.items())})
+                    health = json.loads(body); require(response.status == 200 and health.get('status') == 'ok', 'Health not ok')
                 break
-            except Exception:
+            except Exception as error:
+                private_failure(run, error)
                 if time.monotonic() >= deadline: raise
                 time.sleep(min(2, max(0, deadline-time.monotonic())))
         self.call(['python3', str(run/'n8n_dashboard_pause_once.py'), '--action', 'resume',
@@ -336,24 +400,27 @@ class HostOperations:
 
 
 def execute(run, gate_path, operations=None, now=None):
-    gate, receipts, validated = load_and_validate(run, gate_path, now)
+    marked = False
     operations = operations or HostOperations()
-    operations.preflight(run, receipts)
-    # Recheck freshness and hashes after read-only inspection, before ANY mutation.
-    load_and_validate(run, gate_path, now)
-    save_private(run/'writer-open-attempt.marker', {'problem_id': PROBLEM, 'run_dir': str(run),
-                 'phase': 'TARGET_WRITER_OPEN', 'gate_sha256': digest(gate_path), 'rollback_forbidden': True})
     try:
+        gate, receipts, validated = load_and_validate(run, gate_path, now)
+        operations.preflight(run, receipts)
+        load_and_validate(run, gate_path, now)
+        save_private(run/'writer-open-attempt.marker', {'problem_id': PROBLEM, 'run_dir': str(run),
+                     'phase': 'TARGET_WRITER_OPEN', 'gate_sha256': digest(gate_path), 'rollback_forbidden': True})
+        marked = True
         health = operations.open_writer(run, gate_path, receipts)
         save_private(run/'writer-open-receipt.json', {'status': 'TARGET_WRITER_OPENED', 'problem_id': PROBLEM,
                      'run_dir': str(run), 'image': validated['target_image'], 'health': health,
-                     'business_write_test': False, 'automatic_original_cutoff_budget_preserved': True,
-                     'source_rollback_allowed': False})
+                     'business_write_test': False, 'source_rollback_allowed': False})
     except Exception as error:
         private = private_failure(run, error)
-        save_private(run/'writer-open-partial-receipt.json', {'status': 'PARTIAL_STOP_RETURN_TO_ROOT',
-                     'writer_marker_present': True, 'source_rollback_allowed': False, 'private_primary': private})
-        raise PreconditionsError('Partial writer opening; return to Root; private primary: '+private) from None
+        if marked:
+            try: operations.hold_maintenance(run)
+            except Exception as maintenance_error: private_failure(run, maintenance_error)
+            save_private(run/'writer-open-partial-receipt.json', {'status': 'PARTIAL_STOP_RETURN_TO_ROOT',
+                         'writer_marker_present': True, 'source_rollback_allowed': False, 'private_primary': private})
+        raise PreconditionsError('Writer stopped; private primary: '+private) from None
 
 
 def main():

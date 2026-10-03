@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import final_writer_open_once as writer
 import final_prewrite_rollback_once as rollback
 
@@ -57,13 +57,30 @@ class FinalWriterSafety(unittest.TestCase):
                 'dump_sha256': 'a'*64, 'source_query_sha256': 'c'*64, 'receipt_hashes': hashes,
                 'script_hashes': {'final_writer_open_once.py': writer.digest(writer.__file__),
                                   'n8n_dashboard_pause_once.py': writer.digest(run/'n8n_dashboard_pause_once.py')}}
+        snapshot = run/'host-runtime-original'; snapshot.mkdir()
+        files = {'compose.yaml': b'image: dashboard-memory:memory-20260921-compact-guard-final\n',
+                 'build-manifest.json': b'{}', 'access.py': b'offline-access', 'gateway_journal.py': b'offline-gateway',
+                 'service.env': ('SUPABASE_URL='+writer.SOURCE_ORIGIN+'\nSUPABASE_PUBLISHABLE_KEY=offline-only\n'+
+                     ''.join(k+'='+v+'\n' for k,v in writer.ORIGINAL.items())).encode()}
+        host_refs = {}
+        for name, body in files.items():
+            path = snapshot/name; path.write_bytes(body)
+            host_refs[name] = {'path': str(path), 'sha256': writer.digest(path)}
+            gate['receipt_hashes'][str(path)] = writer.digest(path)
+        original_host = {'original_file_sha256': {n:r['sha256'] for n,r in host_refs.items()},
+            'original_image': writer.BASE, 'original_origin': writer.SOURCE_ORIGIN, 'original_flags': writer.ORIGINAL}
+        primary_path = run/'original-host-primary.json'; primary_path.write_text(json.dumps(original_host))
+        host_sha = writer.digest(primary_path)
+        binding = patch.object(writer, 'HOST_PRIMARY_SHA', host_sha); binding.start(); self.addCleanup(binding.stop)
+        gate['original_host_primary'] = {'path': str(primary_path), 'sha256': host_sha}
+        gate['receipt_hashes'][str(primary_path)] = host_sha; gate['original_host_files'] = host_refs
         gate_path = run/'fixture-gate.json'; gate_path.write_text(json.dumps(gate))
         return now, run, gate_path, gate
 
     def test_wrong_or_stale_receipt_prevents_any_mutation(self):
         """Use actual loader/execute ordering, not just predicate assertions."""
         from unittest.mock import patch
-        for problem in ['wrongsha', 'stale', 'incomplete']:
+        for problem in ['wrongsha', 'stale', 'incomplete', 'missinghost', 'wronghost']:
             with self.subTest(problem=problem), tempfile.TemporaryDirectory() as folder:
                 root = Path(folder); now, run, gate_path, gate = self.fixture(root)
                 original = writer.re.fullmatch
@@ -78,8 +95,12 @@ class FinalWriterSafety(unittest.TestCase):
                 elif problem == 'stale':
                     gate['expires_at'] = (now-dt.timedelta(seconds=1)).isoformat()
                     gate_path.write_text(json.dumps(gate))
-                else:
+                elif problem == 'incomplete':
                     (run/'production-owner-flow-receipt.json').unlink()
+                elif problem == 'missinghost':
+                    gate['original_host_files'].pop('service.env'); gate_path.write_text(json.dumps(gate))
+                else:
+                    (run/'host-runtime-original/service.env').write_text('tampered')
                 before = {str(p): p.read_bytes() for p in run.iterdir() if p.is_file()}
                 operations = Mock()
                 original = writer.re.fullmatch
@@ -101,10 +122,10 @@ class FinalWriterSafety(unittest.TestCase):
             run = Path(folder)
             marker = run/'writer-open-attempt.marker'; marker.write_text('writer started; outcome unknown')
             operations = Mock()
-            with self.assertRaisesRegex(writer.PreconditionsError, 'Writer already opened'):
+            with patch.object(rollback.c, 'ERROR_DIR', run/'private-errors'), self.assertRaises(writer.PreconditionsError):
                 rollback.execute(run, run/'nonexistent-gate.json', operations)
             self.assertEqual(operations.mock_calls, [])
-            self.assertEqual(list(run.iterdir()), [marker])
+            self.assertEqual([p for p in run.iterdir() if p.is_file()], [marker])
             self.assertEqual(marker.read_text(), 'writer started; outcome unknown')
 
 
