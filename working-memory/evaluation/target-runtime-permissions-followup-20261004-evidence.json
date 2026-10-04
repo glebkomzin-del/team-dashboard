@@ -1,0 +1,114 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "PERMISSIONS_ONLY_TARGET_COMPLETION",
+  "status": "LOCAL_VALIDATION_PASS_ROOT_ACCEPTANCE_PENDING",
+  "updated_at": "2026-10-04T02:21:00.839406+00:00",
+  "operational_target_go": false,
+  "root_acceptance_required": true,
+  "mandatory_fresh_actual_hash_astra_review_required": true,
+  "model": {
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "provider": "openai",
+    "session": "01a104ac-af9f-7421-9de3-0a7a6f6c659f",
+    "header_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permissions-builder-1/stderr-private.txt",
+    "confirmed": true
+  },
+  "skills_loaded": [
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/recovery.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/specialist-skills.md",
+    "/Users/glebkomzin/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md"
+  ],
+  "skill_limits": "Supabase external documentation/query steps excluded by explicit offline mandate; no SQL/schema/ACL changes. Exact prescribed continuation retained; no available assigned Ponytail skill used.",
+  "authorizing_review": {
+    "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permission-adjudication-1/result.json",
+    "sha256": "dabe785657e425d8d42272fa2deedd852a007f7245a34b8f32b0a64b2d80fbbb"
+  },
+  "owned_file_hashes": {
+    "working-memory/ops/hetzner-migration/final_target_runtime_permissions_followup_once.py": "30d31431db141b7e95baa81f3e4155042cc85008eee883ebb57cdd133d15fac0",
+    "working-memory/ops/hetzner-migration/test_final_target_runtime_permissions_followup.py": "e0de7dad844890d5179467048f29b756d5fb13c79973ad6914be12b6285e2614"
+  },
+  "budget": {
+    "local_packages": 1,
+    "max_complete_offline_cycles": 2,
+    "complete_cycles_consumed": 2,
+    "further_cycles": 0,
+    "operational_corrected_builds_executed": 0,
+    "operational_host_dispatches_executed": 0
+  },
+  "tests": {
+    "command": "python3 -m unittest -v test_final_target_runtime_permissions_followup (synthetic transports only)",
+    "cycle_1": {
+      "status": "FAILED",
+      "methods": 4,
+      "reached_fixtures": 31,
+      "errors": 31,
+      "primary_cause": "KeyError baseline during fixture setup; no implementation validation accepted",
+      "output": {
+        "path": "/private/tmp/target-runtime-permissions-bhotld4o/cycle-1-output.txt",
+        "sha256": "f9938274cdfb8a34c0ea6cffe96d2a936299342e68aff1c9d84e390f6dcf73b3"
+      }
+    },
+    "cycle_2": {
+      "status": "PASS",
+      "methods": 4,
+      "fixture_cases": 36,
+      "gate_preflight_denials": 19,
+      "failed_steps": 10,
+      "partial_host_boundaries": 5,
+      "open_flags_denial": 1,
+      "full_recovery_projection": 1,
+      "output": {
+        "path": "/private/tmp/target-runtime-permissions-bhotld4o/cycle-2-output.txt",
+        "sha256": "b67ccec03297e56523a655152b6876a1ed82e9944cf83ed845632a0dcefc8232"
+      }
+    },
+    "scope": "Actual helper load/execute/activation and existing unchanged PartialReturn host_check execute on disposable synthetic files. No old runtime/main or SourceReturn execute, no real transport.",
+    "private_artifacts": {
+      "path": "/private/tmp/target-runtime-permissions-bhotld4o/private-artifacts-sha256.json",
+      "sha256": "c067f201c9831c05702504c2cc3be1d4867ccaf8c55f83a0986557f3e95691b4"
+    }
+  },
+  "protected_files": {
+    "count": 69,
+    "all_match_existing_inventory": true,
+    "no_changes_during_package": true,
+    "evidence": {
+      "path": "/private/tmp/target-runtime-permissions-bhotld4o/protected-final.json",
+      "sha256": "7d0c8cb26328a4e618b7faaf9055ee832464f2585699d9dca01a470f32d02367"
+    },
+    "runtime_original_sha256": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "partial_return_sha256": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319",
+    "source19_limit": "No separate Source19 inventory path identified in assigned local inventory; no remote Source inspection performed. Root retains its Source19 receipts."
+  },
+  "current_projection": {
+    "optional_cli_flag": "--project-current-state",
+    "status": "TARGET_READONLY_RUNTIME_ACTIVE",
+    "state_kind": "CURRENT_OPERATIONAL_STATE",
+    "historical_status": "original_runtime_attempt_status FAILED",
+    "recovery_status": "RecoveredRuntime",
+    "binding": "exclusive recovery receipt SHA and original error SHA; proven prior stages referenced; emitted only after actual runtime health and Nginx completion",
+    "acceptance": "Root/Astra must accept this projection; unchanged writer/return helpers retained."
+  },
+  "limitations": [
+    "No operational Target mutation or Source/provider observation executed. Root must supply real fresh individually SHA-bound Root proof and followup review in helper schema.",
+    "Independent identity/provenance is controller-supplied; no runtime controller hook enforcement claim.",
+    "Expected-denial tests assert safe stopping; they do not independently assert each diagnostic text. Positive success and failed-step counter/private evidence are retained.",
+    "Synthetic tests establish helper ordering/compatibility, not actual Docker builder chmod implementation or real default-user runtime health.",
+    "No commit/docs/governance/front-end modifications; Root owns integration and acceptance."
+  ],
+  "no_external_operations": {
+    "network": 0,
+    "ssh": 0,
+    "keychain": 0,
+    "database": 0,
+    "docker": 0,
+    "http": 0,
+    "provider": 0,
+    "partial_return": 0
+  },
+  "enforcement": "RULES_ONLY; helper checks and offline execution validated, no operational hook claimed",
+  "failure_endpoint": "Root only: existing PartialReturn max once with fresh safe proof/noWriter/noFrontend; helper never executes it."
+}
