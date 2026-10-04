@@ -1,0 +1,68 @@
+{
+  "decision": "CHANGE_APPROACH",
+  "scope": "PROMOTE_FROZEN_FRONTEND_OWNER_FLOW",
+  "conditional_technical_go": false,
+  "operational_go": false,
+  "diagnosis": "Der eingefrorene Artefaktstand ist konsistent. Konkrete lokale Vertragsl\u00fccken verhindern den bedingten GO; ausstehende Runtime-/Backup-Nachweise sind ausdr\u00fccklich nicht der Ablehnungsgrund.",
+  "blockers": [
+    {
+      "id": "OWNER_RUNTIME_RECEIPT",
+      "evidence": "final_owner_link_once.py:64 verlangt target-runtime-receipt.json mit TARGET_READONLY_RUNTIME_ACTIVE. Das akzeptierte Permission-Adjudication verlangt eine separate RecoveredRuntime-Receipt und den Erhalt des Originalfehlers.",
+      "smallest_step": "Den Owner-Helfer an die k\u00fcnftig tats\u00e4chlich vorliegende, SHA-gebundene Recovery-Receipt und aktuelle Betriebsbelege anbinden. Keinen urspr\u00fcnglichen Runtime-PASS erzeugen oder voraussetzen."
+    },
+    {
+      "id": "PROMOTION_RETURN_RECEIPTS",
+      "evidence": "frontend-final-promote-once.py:90 initialisiert keine Besitzflags; Zeilen101\u2013104 persistieren erst nach beiden env-add-Aufrufen. Scheitert der zweite Aufruf, fehlt anon_env_added. final_prewrite_rollback_once.py:370\u2013371 verlangt beide Flags als bool. Erfolgreiche CLI-Ausgaben werden vor sp\u00e4teren Parse-/Pr\u00fcffehlern au\u00dferdem nicht dauerhaft erhalten.",
+      "smallest_step": "Initialzustand, Mutationsabsichten, best\u00e4tigte Ergebnisse und Originalausgaben privat dauerhaft sichern. Beide Besitzflags vollst\u00e4ndig f\u00fchren; unklare Remote-Ergebnisse durch aktuelle Originalbelege aufl\u00f6sen, niemals fehlend als false behandeln. R\u00fcckkehrvertrag vor Promotion passend binden."
+    },
+    {
+      "id": "EXACT_PUBLIC_INDEX",
+      "evidence": "frontend-final-promote-once.py:117 vergleicht index.html mit strip(); dies belegt keine vereinbarte Bytegleichheit.",
+      "smallest_step": "Den unver\u00e4nderten Antwortk\u00f6rper gegen den gebundenen Index-SHA beziehungsweise die exakten Bytes pr\u00fcfen."
+    }
+  ],
+  "accepted_evidence": [
+    "Lokale config.json, s\u00e4mtliche sieben hinterlegten Static-Dateien und das Buildarchiv stimmen mit frontend-target-artifact.json \u00fcberein.",
+    "Vercel CLI 54.18.7 best\u00e4tigt lokal env add/pull/promote einschlie\u00dflich stdin, --sensitive und --yes; das aktuelle private Read-Contract meldet envs=[].",
+    "Akzeptierte isolierte Source104-/Preview- und Stage-Owner-Belege bleiben erhalten. Kein Neubuild aus dem schmutzigen Root-Repo."
+  ],
+  "sha256": {
+    "frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "frontend-target-artifact.json": "f1c11b1f683f53b0dbc5e6c793350a25b9156a957787f0b0c335a1029c95829f",
+    "frontend-final-ready-evidence.json": "a4e2da5596d822a48a4541f756a432b0a2489f3e6fac972762f11deac85dc32c",
+    "frontend-final-plan.md": "2a46263746ab1158d4ac33041add4188c7e27b9a258e3b6d38a9a35122dcee59",
+    "final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50",
+    "frontend-final-owner-redirect.py": "060374cd241fdccaa757caacdbf8a5bdcaa150b3d515ccaee4a8f06945043963",
+    "final_prewrite_rollback_once.py": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "target-build-output.tgz": "6236617952b6777422dee6d0b405d4ab3daff9411bd1c47a8e9723019a7c238d"
+  },
+  "mandatory_future_conditions": [
+    "Gezielte unabh\u00e4ngige Nachpr\u00fcfung der korrigierten Vertr\u00e4ge und Bindung ihrer tats\u00e4chlichen Hashes vor Dispatch.",
+    "Tats\u00e4chlich gesunde Target-Runtime mit allen f\u00fcnf geschlossenen Flags, erhaltenem Vault-Klartext/Metadaten und Auth; Source weiterhin eingefroren. Originalfehler und Z\u00e4hler bleiben erhalten.",
+    "Tats\u00e4chliches Target-FULLbackup mit isoliertem Selfhost-, Canonical- und n8n-Restore sowie tats\u00e4chlicher Mac-Kopie desselben Archivs, SHA und vollst\u00e4ndigem Dateibestand.",
+    "Root bindet s\u00e4mtliche aktuellen Prim\u00e4rbelege mit exakten Hashes; keine zuk\u00fcnftigen PASS-Belege vorwegnehmen.",
+    "Vor Promotion beide Originalaliases READY auf dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL, urspr\u00fcngliche Variablenabwesenheit, richtige Projekt-/Org-Bindung und nativer anon-Key-SHA.",
+    "Danach beide Produktionsaliases auf demselben READY-Produktionsdeployment mit exakten \u00f6ffentlichen Index-, Header/CSP- und Asset-Belegen.",
+    "Ein offizieller bestehender Owner-Magiclink, unver\u00e4nderter Passwort-Hash und exakt gebundene Original-Verify-URL; einmaliger Loopback303 auf Port8944 und echte SDK-Session ohne Tokenoffenlegung.",
+    "Frischer Produktionsnachweis f\u00fcr Owner-\u00dcbersicht, Archiv, gespeicherte Zusammenfassung und dasselbe Original bei geschlossenem Schreibbetrieb; anschlie\u00dfend eigene Sitzung bereinigen."
+  ],
+  "budget": {
+    "promotions": 1,
+    "owner_links": 1,
+    "redirect_sdk_flows": 1,
+    "automatic_retries": 0,
+    "currently_released": false
+  },
+  "failure_return": "Vor Writer\u00f6ffnung ausschlie\u00dflich gesundheitsgebundener LateSourceReturn mit aktuellen Source43=Target43=Baseline-, Runtime-, Snapshot-, ACL-, Config-, n8n-, Scope- und Health-Belegen. H\u00f6chstens ein Original-Vercel-Rollback; nur nachgewiesen selbst hinzugef\u00fcgte Variablen entfernen. Nach Frontendwechsel kein PartialReturn. Bei unklaren Belegen oder Ablehnung Maintenance erhalten und an Root zur\u00fcckgeben; keine blinde Source-Reaktivierung.",
+  "boundaries": "Keine Writerfreigabe; daf\u00fcr sp\u00e4ter eigenes wichtiges Gate. Keine neue menschliche Freigabeschleife. Bestehende Passwort-UI-Handoff-Grenze bleibt unver\u00e4ndert.",
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "session": "01a104af-4395-71f2-acd5-d050a12b4b5a",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-final-frontend-goal-review-1/stderr-private.txt:1-35",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md; references/independent-review.md; references/recovery.md",
+    "performed": "Lokale Code-/Beleglekt\u00fcre, Hash-Ermittlung und lokale CLI-Hilfe. Keine Implementierung, Delegation, Tests oder Remote-Aktionen.",
+    "enforcement": "RULES_ONLY"
+  }
+}
