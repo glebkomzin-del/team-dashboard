@@ -1,0 +1,462 @@
+"""Controlled Mac coordinator: one reviewed resume, existing artifacts only.
+
+Immutable host inputs are fetched in ONE batch. Fresh mutable observations are
+collected at each boundary; old timestamps are never renewed. No work on import.
+Root supplies the gate/review; this module does not authenticate reviewer identity
+outside that trusted-controller contract. Original failed/recovered receipts stay
+immutable. Only the explicitly mutable CURRENT_OPERATIONAL_STATE is published.
+"""
+import argparse
+import ast
+import base64
+import concurrent.futures
+import datetime as dt
+import hashlib
+import inspect
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import uuid
+
+import final_phase_common as c
+import final_prewrite_rollback_once as r
+import final_writer_open_once as w
+import final_target_partial_source_return_once as p
+from final_quiescence_once import acl_query, EFFECTIVE_PRIVILEGES_SQL
+from final_target_runtime_once import SERVER_SHA
+
+PROBLEM = w.PROBLEM
+PHASE = 'TARGET_READONLY_RESUME_AFTER_RETURN'
+PACKAGE = 'target-readonly-resume-replan-1'
+IMAGE = 'sha256:7d5e64318a66c3bf0227d694a3d15569263dc96d08b4cd0ae6d8feaeab2a9bcf'
+ACL_SHA = '59fc65746e3c97383ab5552f1f48816a7dae37bf0edd408eadc07018d99b9cb8'
+MAINTENANCE_SHA = '6e56b539a6964f95d3deda9bffd347933de435d787858b973565775024669e5e'
+REQUIRED = {'baseline','query','acl_original','revoke_sql','config','auth_original',
+            'cron_original','cron_fingerprint','vault_original','recovered_runtime',
+            'runtime_original_failure','full_backup','mac_copy','host_original_primary',
+            'runtime_projection','scope_key'}
+STABLE_CONTAINERS={'n8n','n8n_postgres','picnic-skill','dashboard-supabase-20261003-db-1','dashboard-memory-stage-read-20261003'}
+OUTBOXES={'projections-rc1-20260919/response-outbox','question-outbox'}
+ATTEMPT = 'attempt.json'
+RECEIPT = 'resume-receipt.json'
+PROJECTION = 'runtime-current.json'
+STATE_SQL = """SELECT json_build_object('running',(SELECT count(*) FROM public.wm_jobs WHERE state IN ('running','prepared')),'unknown_model',(SELECT count(*) FROM public.wm_model_calls WHERE received_at IS NULL AND redaction_id IS NULL),'unknown_question',(SELECT count(*) FROM public.wm_question_calls WHERE response_json IS NULL AND redaction_id IS NULL),'cron',(SELECT count(*) FROM cron.job WHERE active),'cron_total',(SELECT count(*) FROM cron.job),'queued_http',(SELECT count(*) FROM net.http_request_queue),'config',(SELECT json_agg(c ORDER BY space_id) FROM public.wm_processing_config c)) AS value"""
+AUTH_SQL = """SELECT coalesce(json_agg(json_build_object('id',id::text,'email_sha256',encode(extensions.digest(coalesce(email,''),'sha256'),'hex'),'password_sha256',encode(extensions.digest(coalesce(encrypted_password,''),'sha256'),'hex')) ORDER BY id),'[]'::json) AS value FROM auth.users"""
+CRON_SQL = "SELECT coalesce(json_agg(to_jsonb(j) ORDER BY jobid),'[]'::json) AS value FROM cron.job j"
+VAULT_SQL = "SELECT json_build_object('plaintext_sha256',(SELECT encode(extensions.digest(decrypted_secret,'sha256'),'hex') FROM vault.decrypted_secrets),'metadata',(SELECT row_to_json(s) FROM (SELECT id,name,description,created_at,updated_at,encode(nonce,'hex') AS nonce_hex FROM vault.secrets) s))"
+require = w.require
+
+
+def workflow_versions():
+    tree=ast.parse(Path(__file__).with_name('n8n_dashboard_pause_once.py').read_text())
+    return next(ast.literal_eval(node.value) for node in tree.body if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='VERSIONS' for t in node.targets))
+
+
+def utc():
+    return dt.datetime.now(dt.timezone.utc)
+
+
+def private_bytes(path):
+    path = Path(path)
+    require(path.is_file() and not path.is_symlink(), 'Unsafe input file')
+    return path.read_bytes()
+
+
+def exact_zero(value):
+    return type(value) is int and value == 0
+
+
+def fresh(value, now, seconds=300):
+    require(0 <= (now-r.stamp(value)).total_seconds() <= seconds, 'Observation stale/unknown')
+
+
+def gate_check(gate, now):
+    require(gate.get('problem_id') == PROBLEM and gate.get('phase') == PHASE
+            and gate.get('package_id') == PACKAGE and gate.get('decision') == 'CONTINUE_BOUNDED'
+            and gate.get('operational_target_go') is True, 'No scoped operational gate')
+    require(re.fullmatch(r'/opt/dashboard-supabase-20261003/final-export-\d{8}T\d{6}Z', gate['run_dir']), 'Wrong run')
+    issued, expires = r.stamp(gate['issued_at']), r.stamp(gate['expires_at'])
+    require(issued <= now < expires and 0 < (expires-issued).total_seconds() <= 600, 'Gate stale')
+    fresh(gate['proof_observed_at'], now)
+
+
+def validate_inputs(gate, bodies, now):
+    gate_check(gate, now)
+    require(set(gate['immutable_refs']) == REQUIRED, 'Incomplete immutable contract')
+    for key, ref in gate['immutable_refs'].items():
+        require(Path(ref['path']).is_absolute() and re.fullmatch('[a-f0-9]{64}', ref['sha256'])
+                and r.sha_bytes(bodies[key]) == ref['sha256'], 'Immutable primary SHA changed')
+    data = {k:json.loads(b) for k,b in bodies.items() if k not in ('query','revoke_sql','runtime_original_failure')}
+    require(r.sha_bytes(bodies['query']) == r.QUERY_SHA, 'Query differs')
+    original = data['acl_original']
+    require(r.sha_bytes(bodies['acl_original']) == ACL_SHA and len(original) == 82, 'Original ACL82 differs')
+    require(gate['immutable_refs']['acl_original']['path'] == str(w.ROOT/'source/freeze-business-original-acl.json'), 'Wrong original ACL path')
+    expected = 'BEGIN;\n'+''.join('REVOKE '+x['privilege_type']+' ON '+x['kind']+' '+x['object']+' FROM service_role;\n' for x in original)+'COMMIT;\n'
+    require(bodies['revoke_sql'] == expected.encode(), 'Revoke is not exact existing business freeze')
+    require(gate['immutable_refs']['revoke_sql']['path'] == str(w.ROOT/'source/freeze-business.sql'), 'Wrong revoke artifact')
+    baseline = data['baseline']
+    require(baseline['status'] == 'FROZEN_SOURCE_BUSINESS_BASELINE' and baseline['captured_after_freeze'] is True
+            and baseline['problem_id'] == PROBLEM and baseline['run_dir'] == gate['run_dir']
+            and baseline['query_sha256'] == r.QUERY_SHA, 'Original baseline absent')
+    r.projection(baseline['tables'], r.TABLES)
+    require(data['config'] and all(type(x['enabled']) is bool for x in data['config']), 'Original full config missing')
+    require(data['auth_original']['original_user_hashes'], 'Original Auth missing')
+    require(len(data['cron_original']) == 2 and all(x['active'] is False for x in data['cron_original']), 'Original Cron definitions absent')
+    require(type(data['cron_fingerprint']['rows']) is int and data['cron_fingerprint']['rows'] == 2 and re.fullmatch('[a-f0-9]{64}', data['cron_fingerprint']['sha256']), 'Original Cron COPY missing')
+    recovered = data['recovered_runtime']
+    require(recovered['status'] == 'RecoveredRuntime' and recovered['problem_id'] == PROBLEM
+            and recovered['run_dir'] == gate['run_dir'] and recovered['original_runtime_status'] == 'FAILED'
+            and type(recovered['original_runtime_attempts']) is int and recovered['original_runtime_attempts'] == 1
+            and recovered['corrected_image'] == IMAGE and recovered['closed_flags'] == w.CLOSED
+            and recovered['writers_opened'] is False, 'Original recovery provenance absent')
+    require(gate['immutable_refs']['runtime_original_failure']['sha256'] == recovered['original_error_sha256'], 'Original failure SHA differs')
+    prior = data['runtime_projection']
+    require(prior['state_kind'] == 'CURRENT_OPERATIONAL_STATE' and prior['original_runtime_attempt_status'] == 'FAILED'
+            and prior['recovery_status'] == 'RecoveredRuntime'
+            and prior['recovery_receipt_sha256'] == gate['immutable_refs']['recovered_runtime']['sha256']
+            and prior['original_error_sha256']==recovered['original_error_sha256']
+            and prior['base_image']==w.BASE and prior['backend_origin']==w.ORIGIN
+            and prior['server_py_sha256']==SERVER_SHA and prior['target_image'] == IMAGE and prior['closed_flags'] == w.CLOSED
+            and prior['writers_opened'] is False, 'Prior current projection differs')
+    full, mac = data['full_backup'], data['mac_copy']
+    require(full['state'] == 'ok' and full['selfhost']['restore_verified'] is True
+            and full['canonical']['verified'] is True and full['restore_barrier']['restore_ledger_persisted'] is True
+            and full['sha256'] == mac['status']['sha256'] and full['archive'] == mac['status']['archive']
+            and mac['status']['state'] == 'ok' and mac['status']['files_verified'] == 202
+            and type(mac['status']['files_verified']) is int and mac['same_archive'] is True
+            and mac['all_files_verified'] is True and mac['whole_archive_sha256_rechecked'] is True, 'FULL/Mac provenance missing')
+    host = data['host_original_primary']
+    require(r.sha_bytes(bodies['host_original_primary']) == w.HOST_PRIMARY_SHA, 'Original host primary changed')
+    require(host['original_image'] == w.BASE and host['original_origin'] == w.SOURCE_ORIGIN
+            and host['original_flags'] == w.ORIGINAL
+            and gate['original_file_sha256'] == host['original_file_sha256']
+            and set(gate['live_file_sha256']) == set(w.HOST_FILES), 'Five original/Target files missing')
+    require(STABLE_CONTAINERS <= set(gate['other_containers']) and all(set(x)=={'image','started_at'} and x['image'] and x['started_at'] for x in gate['other_containers'].values()), 'Other project/DB/stage baseline missing')
+    return data
+
+
+def roles(rows, closed):
+    expected = [{'role':role,'writable_tables':0,'executable_writers':0} for role in ('anon','authenticated','service_role')]
+    if not closed:
+        expected[-1].update(writable_tables=23, executable_writers=32)
+    require(rows == expected and all(type(row[k]) is int for row in rows for k in ('writable_tables','executable_writers')), 'Effective role rights differ')
+
+
+def validate_observation(obs, gate, data, now, *, closed, running, prior_close=None, api_running=None):
+    fresh(obs['observed_at'], now)
+    source, native, front = obs['source'], obs['native'], obs['frontend']
+    fresh(native['observed_at'], now)
+    target = native['target']
+    def value(rows):
+        require(type(rows) is list and len(rows) == 1 and set(rows[0]) == {'value'}, 'Unknown Source SQL response')
+        return rows[0]['value']
+    require(r.projection(value(source['business']), r.TABLES) == r.projection(target['business'], r.TABLES)
+            == r.projection(data['baseline']['tables'], r.TABLES), 'Source/Target43 drift')
+    require(value(source['auth']) == target['auth'] == data['auth_original']['original_user_hashes'], 'Source/Target/Auth identity differs')
+    original_config = data['config']
+    for state in (value(source['state']), target['state']):
+        require(all(exact_zero(state[k]) for k in ('running','unknown_model','unknown_question','cron','queued_http'))
+                and type(state['cron_total']) is int and state['cron_total'] == 2, 'Outstanding/unknown work')
+    require(value(source['state'])['config'] == [{**x,'enabled':False} for x in original_config]
+            and target['state']['config'] == original_config, 'Full config differs')
+    require(value(source['cron']) == target['cron'] == data['cron_original']
+            and native['cron_fingerprint'] == data['cron_fingerprint'], 'Full original Cron differs')
+    roles(source['roles'], closed)
+    roles(target['roles'], False)
+    require(source['acl'] == ([] if closed else data['acl_original']) and target['acl'] == data['acl_original'], 'Actual ACL differs')
+    if closed and prior_close is not None:
+        require(prior_close['problem_id'] == PROBLEM and prior_close['run_dir'] == gate['run_dir']
+                and prior_close['phase'] == PHASE and prior_close['status'] == 'SOURCE_CLOSED_READBACK'
+                and prior_close['revoke_dispatches'] == 1, 'Closed Source lacks own resume provenance')
+    vault = data['vault_original'][0]
+    require(target['vault']['plaintext_sha256'] == hashlib.sha256(vault['decrypted_secret'].encode()).hexdigest(), 'Vault plaintext differs')
+    for key in ('id','name','description','nonce_hex'):
+        require(target['vault']['metadata'][key] == vault[key], 'Vault metadata differs')
+    for key in ('created_at','updated_at'):
+        require(r.stamp(target['vault']['metadata'][key]) == r.stamp(vault[key]), 'Vault timestamp differs')
+    require(native['canonical_image'] == IMAGE and native['canonical_running'] is running
+            and native['canonical_user']=='10001:10001' and native['canonical_flags'] == w.CLOSED and native['canonical_origin'] == w.ORIGIN, 'Canonical identity/flags differ')
+    require(native['live_files_sha256'] == gate['live_file_sha256'] and native['original_files_sha256'] == gate['original_file_sha256'], 'Host file drift')
+    require(native['timer_sha256']==p.TIMER_SHA and native['backup_code_sha256']==w.BACKUP_SHA, 'Held backup identity differs')
+    require(native['nginx_sha256'] == MAINTENANCE_SHA and native['timer'] == {'is-active':'inactive','is-enabled':'enabled','service':'inactive'}, 'Maintenance/timer changed')
+    require(native['backup_marker'] == {'enabled':True,'migration_run':Path(gate['run_dir']).name}, 'Backup marker differs')
+    require(native['other_containers'] == gate['other_containers'], 'Other project restarted/changed')
+    require(exact_zero(native['n8n_running']) and set(native['outboxes']) == OUTBOXES and all(exact_zero(x) for x in native['outboxes'].values()), 'n8n/outbox not empty')
+    require(not native['markers'] and native['known_external_target_writers'] == [], 'Owner/frontend/writer opened')
+    require(set(native['workflows']) == set(w.VERSIONS), 'n8n workflow coverage differs')
+    for name, workflow in native['workflows'].items():
+        require(workflow['active'] is False and workflow.get('versionId') == workflow_versions()[name], 'n8n publication changed')
+    key = data['scope_key']
+    require(native['scope'] == {'userId':key['userId'],'md5':hashlib.md5(key['apiKey'].encode()).hexdigest(),
+                             'scopes':key['scopes']+['workflow:activate','workflow:deactivate']}, 'Own two scopes changed')
+    require(set(native['apis']) == set(p.API_IMAGES), 'Four APIs missing')
+    for name, api in native['apis'].items():
+        require(api['running'] is (running if api_running is None else api_running) and api['image'] == 'sha256:'+p.API_IMAGES[name].split('@sha256:')[1]
+                and api['configured_image'] == p.API_IMAGES[name] and set(api['networks']) == p.API_NETWORKS[name]
+                and api['project'] == 'dashboard-supabase-20261003' and api['service'] == name, 'Pinned API differs')
+        require(api['ports'] == ({'8000/tcp':[{'HostIp':'127.0.0.1','HostPort':'8800'}]} if name == 'api-gw' and api['ports'] else {}), 'API public port differs')
+    require(all(front[a]['id'] == r.OLD_DEPLOYMENT and front[a]['readyState'] == 'READY' for a in w.ALIASES)
+            and not any(x['key'] in ('VITE_SUPABASE_URL','VITE_SUPABASE_ANON_KEY') for x in front['production_env']['envs']), 'Frontend changed')
+    if running:
+        require(native['health_status'] == 200 and type(native['health_status']) is int
+                and native['health']['status'] == 'ok', 'Actual health missing')
+
+
+def host_observe(gate, queries, scope_id):
+    """Remote read-only snapshot. One SSH envelope; no host artifact copying."""
+    import subprocess, urllib.request, time
+    def call(args, **kw):
+        return subprocess.check_output(args, timeout=kw.pop('timeout',45), **kw)
+    def sql(q, db=w.DB, user='supabase_admin', name='postgres'):
+        return json.loads(call(['docker','exec','-i',db,'psql','-U',user,'-d',name,'-XqAt','-v','ON_ERROR_STOP=1'], input=q.encode()))
+    def sha(path):
+        path=Path(path); require(path.is_file() and not path.is_symlink(), 'Unsafe Host file'); return r.digest(path)
+    target={k:sql('SELECT coalesce(json_agg(x),\'[]\'::json) FROM ('+q.rstrip(';')+') x' if k in ('acl','roles') else q) for k,q in queries.items()}
+    target['vault']=sql(VAULT_SQL)
+    copied=call(['docker','exec','-i',w.DB,'psql','-U','supabase_admin','-d','postgres','-XqAt','-v','ON_ERROR_STOP=1'],input=b'COPY cron.job TO STDOUT;')
+    fingerprint={'rows':len(copied.splitlines()),'sha256':hashlib.sha256(b''.join(sorted(hashlib.sha256(x).digest() for x in copied.splitlines(keepends=True)))).hexdigest()}
+    key=json.loads(Path('/opt/dashboard-supabase-20261003/n8n-pause-access-1/existing-api-key-private.json').read_bytes())['apiKey']
+    workflows={}
+    for name in w.VERSIONS:
+        with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:5678/api/v1/workflows/'+name,headers={'X-N8N-API-KEY':key}),timeout=10) as response:
+            workflows[name]=json.load(response)
+    n8n_running=sql("SELECT count(*) FROM execution_entity WHERE \"workflowId\" IN ('nzyaKxs5Om9wuPEc','dashboardDriveMove','dashboardDriveWatch') AND status IN ('new','running','waiting');",'n8n_postgres','n8n','n8n')
+    scope=sql("SELECT json_build_object('scopes',scopes,'userId',\"userId\",'md5',md5(\"apiKey\")) FROM user_api_keys WHERE id="+c.literal(scope_id),'n8n_postgres','n8n','n8n')
+    canonical=json.loads(call(['docker','inspect',w.CANONICAL]))[0]
+    env=dict(x.split('=',1) for x in canonical['Config']['Env'] if '=' in x)
+    mount=next(m for m in canonical['Mounts'] if m['Destination']=='/app/.local')
+    require(mount['Type']=='bind' and mount['Source']==str(w.LIVE/'.local/cache'), 'Actual outbox mount differs')
+    require(env['MEMORY_CACHE_DIR']=='/app/.local/projections-rc1-20260919' and env['MEMORY_QA_OUTBOX']=='/app/.local/question-outbox', 'Outbox env differs')
+    boxes={}
+    for rel in ('projections-rc1-20260919/response-outbox','question-outbox'):
+        path=Path(mount['Source'])/rel; require(path.is_dir() and not path.is_symlink(), 'Outbox missing'); boxes[rel]=len(list(path.rglob('*.json')))
+    timer={k:subprocess.run(['systemctl',k,'dashboard-job-backup.timer'],capture_output=True,timeout=10).stdout.decode().strip() for k in ('is-active','is-enabled')}
+    timer['service']=subprocess.run(['systemctl','is-active','dashboard-job-backup.service'],capture_output=True,timeout=10).stdout.decode().strip()
+    apis={}
+    for name in p.API_IMAGES:
+        item=json.loads(call(['docker','inspect','dashboard-supabase-20261003-'+name+'-1']))[0]
+        labels=item['Config']['Labels']
+        apis[name]={'running':item['State']['Running'],'image':item['Image'],'configured_image':item['Config']['Image'],'networks':list(item['NetworkSettings']['Networks']),
+                    'ports':{k:v for k,v in item['NetworkSettings']['Ports'].items() if v},'project':labels['com.docker.compose.project'],'service':labels['com.docker.compose.service']}
+    other={}
+    for name in gate['other_containers']:
+        item=json.loads(call(['docker','inspect',name]))[0]
+        require(item['State']['Running'] is True,'Other project stopped')
+        other[name]={'image':item['Image'],'started_at':item['State']['StartedAt']}
+    foreign=[]
+    ids=call(['docker','ps','-q']).decode().split()
+    for item in (json.loads(call(['docker','inspect',*ids])) if ids else []):
+        e=dict(v.split('=',1) for v in item['Config'].get('Env',[]) if '=' in v)
+        origin=e.get('SUPABASE_URL','').rstrip('/')
+        if origin==w.SOURCE_ORIGIN: foreign.append(item['Name'])
+        if origin in (w.ORIGIN,'http://api-gw:8000'):
+            require(item['Name'] in ('/'+w.CANONICAL,'/dashboard-memory-stage-read-20261003') and all(e.get(k)==v for k,v in w.CLOSED.items()), 'Known Target runtime writable/foreign')
+    markers=[x.name for x in Path(gate['run_dir']).iterdir() if any(k in x.name for k in ('writer','frontend','owner-magiclink')) and any(k in x.name for k in ('attempt','marker'))]
+    health,status=None,None
+    if canonical['State']['Running']:
+        deadline=time.monotonic()+30
+        while True:
+            gate_check(gate,utc())
+            try:
+                with urllib.request.urlopen('http://127.0.0.1:8798/health',timeout=3) as response: health,status=json.load(response),response.status
+                break
+            except (urllib.error.URLError,TimeoutError):
+                if time.monotonic()>=deadline:raise
+                time.sleep(1)
+    return {'target':target,'cron_fingerprint':fingerprint,'workflows':workflows,'scope':scope,'n8n_running':n8n_running,
+            'canonical_running':canonical['State']['Running'],'canonical_image':canonical['Image'],'canonical_user':canonical['Config']['User'],'canonical_flags':{k:env.get(k) for k in w.CLOSED},'canonical_origin':env.get('SUPABASE_URL'),
+            'outboxes':boxes,'timer':timer,'apis':apis,'other_containers':other,'markers':markers,'known_external_target_writers':foreign,
+            'live_files_sha256':{n:sha(w.LIVE/('.local/service.env' if n=='service.env' else n)) for n in w.HOST_FILES},
+            'original_files_sha256':{n:sha(Path(gate['run_dir'])/'host-runtime-original'/n) for n in w.HOST_FILES},
+            'timer_sha256':sha('/etc/systemd/system/dashboard-job-backup.timer'),'backup_code_sha256':sha(w.LIVE/'scheduled_backup.py'),'nginx_sha256':sha('/etc/nginx/sites-available/alexa'),'backup_marker':json.loads((w.LIVE/'.local/selfhost-backup.json').read_bytes()),
+            'health':health,'health_status':status,'observed_at':utc().isoformat()}
+
+
+class Operations(p.PartialOperations):
+    def __init__(self, directory, run):
+        super().__init__(directory)
+        self.remote=run
+        self.directory=directory
+        c.ERROR_DIR=directory/'transport-errors'
+
+    def batch(self, refs):
+        # All immutable Host artifacts verified with ONE remote call. No full
+        # reread in mutation guards; mutable facts are separately recollected.
+        paths={k:v['path'] for k,v in refs.items()}
+        code="import json,base64\nfrom pathlib import Path\nrefs="+repr(paths)+"\nresult={}\nfor k,p in refs.items():\n p=Path(p);assert p.is_file() and not p.is_symlink();result[k]=base64.b64encode(p.read_bytes()).decode()\nprint(json.dumps(result))"
+        return {k:base64.b64decode(v,validate=True) for k,v in json.loads(self.remote_python(code,timeout=100)).items()}
+
+    def observe(self, gate, bodies, data):
+        queries={'business':bodies['query'].decode(),'auth':AUTH_SQL,'state':STATE_SQL,'roles':EFFECTIVE_PRIVILEGES_SQL,'acl':acl_query(),'cron':CRON_SQL}
+        # Read-only independent Source queries and native snapshot run together.
+        code='import json\nfrom final_target_readonly_resume_after_return import *\nprint(json.dumps(host_observe('+repr(gate)+','+repr(queries)+','+repr(data['scope_key']['id'])+')))'
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+            source={k:pool.submit(self.source_sql,q) for k,q in queries.items()}
+            native=pool.submit(self.remote_python,code,timeout=160)
+            front={k:pool.submit(self.cli,args) for k,args in {'production_env':['env','ls','production','--format','json'],**{a:['inspect',a,'--format','json'] for a in sorted(w.ALIASES)}}.items()}
+            observed={'source':{k:v.result() for k,v in source.items()},'native':json.loads(native.result()),'frontend':{k:json.loads(v.result()) for k,v in front.items()},'observed_at':utc().isoformat()}
+        r.durable(self.directory,'observation-'+uuid.uuid4().hex+'.json',observed)
+        return observed
+
+    def claim(self, gate):
+        code="import os,json\nfrom pathlib import Path\np=Path("+repr(gate['run_dir']+'/'+PACKAGE)+")\np.mkdir(mode=0o700)\nfd=os.open(p/'attempt.json',os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)\nwith os.fdopen(fd,'w') as f:json.dump("+repr({'problem_id':PROBLEM,'phase':PHASE,'package_id':PACKAGE,'gate_sha256':self.gate_sha})+",f);f.flush();os.fsync(f.fileno())"
+        self.remote_python(code)
+
+    def revoke(self, sql, gate):
+        token=c.source_token()
+        gate_check(gate,utc())
+        request=c.urllib.request.Request('https://api.supabase.com/v1/projects/'+c.PROJECT+'/database/query',data=json.dumps({'query':sql}).encode(),headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+        try:
+            with c.urllib.request.urlopen(request,timeout=45) as response:
+                body=response.read()
+                r.durable(self.directory,'revoke-response.json',{'body_b64':base64.b64encode(body).decode(),'status':response.status,'headers':list(response.headers.items())})
+                return json.loads(body)
+        except Exception as error:
+            primary=w.private_failure(self.directory,error)
+            raise w.PreconditionsError('Source revoke response unknown; private primary: '+primary) from None
+
+    def start(self, gate, canonical=False):
+        # Existing containers ONLY: docker start cannot restore/build/recreate.
+        names=[w.CANONICAL] if canonical else ['dashboard-supabase-20261003-'+n+'-1' for n in p.API_IMAGES]
+        self.remote_python('import subprocess\nfrom final_target_readonly_resume_after_return import gate_check,utc\ngate_check('+repr(gate)+',utc())\nsubprocess.run('+repr(['docker','start',*names])+',check=True,capture_output=True,timeout=75)',timeout=90)
+
+    def save_host(self, name, value):
+        self.remote_python('from pathlib import Path\nfrom final_prewrite_rollback_once import durable\ndurable(Path('+repr(self.remote+'/'+PACKAGE)+'),'+repr(name)+','+repr(value)+')')
+
+    def publish(self, gate, previous, projection):
+        # Preserve old exact bytes; compare-and-replace the existing mutable
+        # current-state record only AFTER actual healthy runtime evidence.
+        blob=json.dumps(projection).encode()
+        code='import os,tempfile,hashlib\nfrom pathlib import Path\nfrom final_target_readonly_resume_after_return import gate_check,utc\ngate_check('+repr(gate)+',utc())\np=Path('+repr(gate['run_dir']+'/target-runtime-receipt.json')+')\nassert not p.is_symlink() and p.read_bytes()=='+repr(previous)+'\nb='+repr(blob)+'\nq=Path('+repr(gate['run_dir']+'/'+PACKAGE+'/previous-runtime-projection.json')+')\nwith q.open("xb") as f:f.write(p.read_bytes());f.flush();os.fsync(f.fileno())\nfd,t=tempfile.mkstemp(dir=p.parent);os.fchmod(fd,0o600)\nwith os.fdopen(fd,"wb") as f:f.write(b);f.flush();os.fsync(f.fileno())\nos.replace(t,p)\nassert p.read_bytes()==b'
+        self.remote_python(code)
+        return blob
+
+    def fail_closed(self):
+        # No Source rollback or reopen. Stop only own existing Target services;
+        # ingress remains the already verified maintenance configuration.
+        self.remote_python('import subprocess\nsubprocess.run('+repr(['docker','stop','--time','15',w.CANONICAL,*['dashboard-supabase-20261003-'+n+'-1' for n in p.API_IMAGES]])+',check=True,capture_output=True,timeout=90)',timeout=110)
+
+
+def review_check(gate, now):
+    local = gate['review_ref']
+    require(r.sha_bytes(private_bytes(local['path'])) == local['sha256'], 'Review SHA changed')
+    review=json.loads(private_bytes(local['path']))
+    require(review['problem_id']==PROBLEM and review['scope']==PHASE and review['package_id']==PACKAGE
+            and review['decision'] in ('ACCEPT','CONTINUE_BOUNDED') and review['operational_target_go'] is True
+            and review['script_hashes']==gate['script_hashes'] and review['immutable_refs']==gate['immutable_refs']
+            and review['provenance']['model']=='gpt-6-astra' and review['provenance']['effort']=='high'
+            and review['provenance']['sandbox']=='read-only' and review['provenance']['session'], 'Hash-bound independent review absent')
+    fresh(review['reviewed_at'],now,600)
+    for name, sha in gate['script_hashes'].items():
+        require(Path(name).name==name and r.digest(Path(__file__).with_name(name))==sha, 'Reviewed code changed')
+    required={Path(__file__).name,'test_final_target_readonly_resume_after_return.py','final_phase_common.py','final_prewrite_rollback_once.py','final_writer_open_once.py','final_target_partial_source_return_once.py','final_quiescence_once.py','final_target_runtime_once.py','n8n_dashboard_pause_once.py','prepare_business_freeze_acl.py'}
+    require(required <= set(gate['script_hashes']), 'Helper/dependencies/test unreviewed')
+
+
+def execute(run, gate_path, operations=None, clock=utc):
+    run,gate_path=Path(run),Path(gate_path)
+    directory=c.PRIVATE/'current-evidence'/PACKAGE
+    directory.mkdir(parents=True,mode=0o700,exist_ok=True)
+    require(not directory.is_symlink() and directory.stat().st_mode & 0o077 == 0, 'Unsafe package directory')
+    op=operations or Operations(directory,str(w.ROOT/run.name))
+    started=False;revoke_dispatched=False;target_started=False
+    counts={'resume_attempts':0,'revoke_dispatches':0,'api_start_dispatches':0,'canonical_start_dispatches':0}
+    try:
+        gate=json.loads(private_bytes(gate_path));op.gate_sha=r.digest(gate_path)
+        require(run.parent==c.PRIVATE and run.name==Path(gate['run_dir']).name and not run.is_symlink(), 'Local/Host run differs')
+        gate_check(gate,clock());review_check(gate,clock())
+        require(not (directory/ATTEMPT).exists(), 'This package already attempted; no automatic retry')
+        refs={**gate['immutable_refs'], **{'script:'+name:ref for name,ref in gate['host_script_refs'].items()}}
+        fetched=op.batch(refs)
+        bodies={k:fetched[k] for k in gate['immutable_refs']}
+        data=validate_inputs(gate,bodies,clock())
+        # Bind remote executable bytes in the same immutable batch.
+        require(set(gate['host_script_refs'])==set(gate['script_hashes']), 'Host code refs incomplete')
+        for name,ref in gate['host_script_refs'].items():
+            require(ref['path']==gate['run_dir']+'/'+name and ref['sha256']==gate['script_hashes'][name], 'Host code binding differs')
+        # Executable bytes came from the same single immutable batch.
+        for name,sha in gate['script_hashes'].items():
+            require(r.sha_bytes(fetched['script:'+name])==sha, 'Host executable SHA changed')
+        require({'mac_copy','runtime_projection','acl_original'} <= set(gate['local_refs']), 'Mac provenance refs absent')
+        for key in ('mac_copy','runtime_projection','acl_original'):
+            ref=gate['local_refs'][key]
+            require(ref['sha256']==gate['immutable_refs'][key]['sha256'] and private_bytes(ref['path'])==bodies[key], 'Mac/Host primary binding differs')
+        def guard(closed=False,running=False,prior=None):
+            gate_check(gate,clock());review_check(gate,clock())
+            # Local original primaries are immutable, cheap reads only.
+            for ref in gate.get('local_refs',{}).values():
+                require(r.digest(ref['path'])==ref['sha256'], 'Local primary changed')
+            obs=op.observe(gate,bodies,data)
+            sampled=clock()  # Sample AFTER observation, never before slow SSH.
+            gate_check(gate,sampled)
+            validate_observation(obs,gate,data,sampled,closed=closed,running=running,prior_close=prior)
+            return obs
+        obs=guard()
+        # Exclusive Mac/Host claim precedes any SQL. Crashes retain both markers.
+        r.durable(directory,ATTEMPT,{'problem_id':PROBLEM,'phase':PHASE,'package_id':PACKAGE,'gate_sha256':op.gate_sha,'attempt':1})
+        started=True;counts['resume_attempts']=1;op.claim(gate)
+        obs=guard()
+        gate_check(gate,clock())
+        r.durable(directory,'revoke-dispatched.json',{'gate_sha256':op.gate_sha,'revoke_sha256':r.sha_bytes(bodies['revoke_sql'])})
+        counts['revoke_dispatches']=1;revoke_dispatched=True
+        error=None
+        try:
+            # Exact ACL guard and existing REVOKE statements in ONE transaction.
+            expected=json.dumps(data['acl_original']).replace("'","''")
+            check="DO $resume_acl$ BEGIN IF (SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY a.kind,a.object,a.grantor,a.privilege_type),'[]'::jsonb) FROM ("+acl_query().rstrip(';')+") a) IS DISTINCT FROM '"+expected+"'::jsonb THEN RAISE EXCEPTION 'Original ACL82 changed'; END IF; END $resume_acl$;\n"
+            transaction=bodies['revoke_sql'].decode().replace('BEGIN;\n','BEGIN;\n'+check,1)
+            op.revoke(transaction,gate)
+        except Exception as failure:
+            error={'type':type(failure).__name__,'message':str(failure)}
+            r.durable(directory,'ambiguous-revoke-error.json',error)
+        # Ambiguous response: actual readback decides closure, NEVER repeat SQL.
+        obs=guard(closed=True)
+        close={'status':'SOURCE_CLOSED_READBACK','problem_id':PROBLEM,'phase':PHASE,'run_dir':gate['run_dir'],
+               'package_id':PACKAGE,'gate_sha256':op.gate_sha,'revoke_dispatches':1,'ambiguous_response':error is not None,'observed_at':obs['observed_at']}
+        r.durable(directory,'source-closed-readback.json',close);op.save_host('source-closed-readback.json',close)
+        obs=guard(closed=True,prior=close)
+        # Recheck gate freshness immediately at each actual start boundary.
+        gate_check(gate,clock());counts['api_start_dispatches']=1;target_started=True;op.start(gate)
+        # APIs up while canonical still stopped: observe and positively prove
+        # all five flags/data/queues and pinned identities before canonical start.
+        intermediate=op.observe(gate,bodies,data);sampled=clock();gate_check(gate,sampled)
+        validate_observation(intermediate,gate,data,sampled,closed=True,running=False,api_running=True,prior_close=close)
+        gate_check(gate,clock());counts['canonical_start_dispatches']=1;op.start(gate,canonical=True)
+        obs=guard(closed=True,running=True,prior=close)
+        receipt={'status':'TARGET_READONLY_RESUMED','problem_id':PROBLEM,'phase':PHASE,'package_id':PACKAGE,
+                 'run_dir':gate['run_dir'],'observed_at':obs['observed_at'],'gate_sha256':op.gate_sha,
+                 'helper_sha256':r.digest(__file__),'counters':counts,'source_closed':True,'writers_opened':False,
+                 'maintenance_held':True,'n8n_paused':True,'timer_held':True,'original_runtime_status':'FAILED',
+                 'original_recovery_ref':gate['immutable_refs']['recovered_runtime'],'health':obs['native']['health']}
+        r.durable(directory,RECEIPT,receipt);op.save_host(RECEIPT,receipt)
+        projection={**data['runtime_projection'],'health':obs['native']['health'],'current_observed_at':obs['observed_at'],
+                    'observed_at':obs['observed_at'],'resume_receipt_sha256':r.digest(directory/RECEIPT),
+                    'resume_receipt_ref':{'path':gate['run_dir']+'/'+PACKAGE+'/'+RECEIPT,'sha256':r.digest(directory/RECEIPT)},
+                    'maintenance_held':True}
+        r.durable(directory,PROJECTION,projection);op.save_host(PROJECTION,projection)
+        # Final gate boundary guards publishing a genuine current projection.
+        gate_check(gate,clock())
+        blob=op.publish(gate,bodies['runtime_projection'],projection)
+        r.durable(directory,'publish-receipt.json',{'status':'HOST_CURRENT_PROJECTION_PUBLISHED','sha256':r.sha_bytes(blob),'observed_at':clock().isoformat()})
+        return receipt
+    except BaseException as error:
+        failure={'status':'STOP_RETURN_TO_ROOT','problem_id':PROBLEM,'package_id':PACKAGE,'started':started,
+                 'source_revoke_dispatched':revoke_dispatched,'counters':counts,'error_type':type(error).__name__,
+                 'private_error':str(error),'observed_at':clock().isoformat(),'source_rollback_executed':False}
+        if target_started:
+            try:op.fail_closed();failure['own_target_stop_dispatched']=True
+            except BaseException as cleanup:failure['cleanup_error']=str(cleanup)
+        r.durable(directory,'failure-'+uuid.uuid4().hex+'.json',failure)
+        raise w.PreconditionsError('STOP_RETURN_TO_ROOT; private package: '+str(directory)) from None
+
+
+def main(argv=None):
+    parser=argparse.ArgumentParser();parser.add_argument('--run-dir',required=True);parser.add_argument('--gate-receipt',required=True)
+    args=parser.parse_args(argv);os.umask(0o077)
+    try: execute(args.run_dir,args.gate_receipt)
+    except Exception as error: print(json.dumps({'status':'STOP_RETURN_TO_ROOT','error_type':type(error).__name__}));return 1
+    print(json.dumps({'status':'TARGET_READONLY_RESUMED','writers_opened':False,'maintenance_held':True}));return 0
+
+if __name__=='__main__':raise SystemExit(main())
