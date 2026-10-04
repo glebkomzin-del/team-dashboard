@@ -1,0 +1,129 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "PROMOTE_FROZEN_FRONTEND_OWNER_FLOW",
+  "trigger": "GOAL_GATE",
+  "decision": "CHANGE_APPROACH",
+  "conditional_technical_go": false,
+  "operational_frontend_go": false,
+  "reviewed_at": "2026-10-04T02:49:32Z",
+  "diagnosis": "Die drei zuvor beanstandeten Verträge sind korrigiert. Ein belegter neuer Deployment-ID-Vertragsfehler verhindert GO für diesen Hashstand. Ausstehende Runtime-, FULL- und Mac-Belege sind ausdrücklich nicht der Ablehnungsgrund.",
+  "blockers": [
+    {
+      "id": "PROMOTED_DEPLOYMENT_ID_AND_READINESS",
+      "requirement": "Nach genau einer offiziellen Promotion müssen beide Aliase dasselbe tatsächlich erzeugte READY-Productiondeployment mit exakt geprüftem Artefakt bedienen.",
+      "evidence": [
+        "frontend-final-promote-control-once.py:187–189 verlangt stattdessen deployment.id == PREVIEW. Derselbe Guard wird nach Promotion und vor OWNER verwendet.",
+        "frontend-target-artifact.json dokumentiert für PREVIEW dpl_DfSYKEA5xDAH6XKT9yV3djWfAWZC target=null.",
+        "Die tatsächlich installierte Vercel-CLI 54.18.7 verwendet in dist/commands-bulk.js:46462–46493 für target != production und --yes einen POST /v13/deployments mit deploymentId=Originalpreview und target=production. Sie meldet das neu erzeugte Deployment und kehrt unmittelbar zurück.",
+        "test_final_frontend_control.py:119 setzt im Erfolgs-Mock nach Promotion weiterhin deployment=c.PREVIEW. Der erhaltene Erfolgsfall prüft deshalb den falschen Identitätsvertrag.",
+        "Der unveränderte Originalhelper frontend-final-promote-once.py verlangt bereits nur eine gemeinsame tatsächliche Production-ID; frontend-final-plan.md verlangt deren Erfassung."
+      ],
+      "impact": "Eine erfolgreich erzeugte neue Production-ID wird nach bereits erfolgter Mutation zurückgewiesen. Zusätzlich beweist CLI-Exit0 dieses Erstellungspfads noch keine abgeschlossene READY-Aliasumschaltung.",
+      "smallest_correction": "Genau einen Promote-Aufruf beibehalten. Die tatsächliche neue Deploymentidentität aus erhaltenem Promote-Ergebnis und Read-only-Inspection binden, READY und beide Aliase innerhalb eines festen Read-only-Zeitfensters beobachten, danach sämtliche bestehenden Byte-/Header-/Assetprüfungen ausführen. Die tatsächliche ID dauerhaft in der kanonischen Promotionreceipt speichern. OWNER muss seine aktuellen Aliase gegen diese SHA-gebundene Receipt-ID prüfen. Weder PREVIEW-ID erzwingen noch lediglich irgendeine gemeinsame ID akzeptieren.",
+      "certainty": "Direkt aus installiertem CLI-Code, eingefrorenen Deploymentmetadaten und neuen Guards abgeleitet; kein Remoteversuch und keine hypothetische Plattformänderung."
+    }
+  ],
+  "accepted_corrections": {
+    "OWNER_RUNTIME_RECEIPT": "Genuine RecoveredRuntime und aktuelle Betriebsprojektion werden mit Originalstatus FAILED, Fehler-SHA und Recovery-SHA gebunden. Der unveränderte Original-Ownerhelper wird verwendet; sein tatsächlicher Ergebnisbeleg bleibt maßgeblich.",
+    "PROMOTION_RETURN_RECEIPTS": "Beide ENV-Flags sind vollständig. Tatsächliche Originalabwesenheit begründet false; dauerhafter Intent setzt unknown; bestätigter CLI-Erfolg wird unmittelbar true. Rohe Erfolgs-/Fehlerausgaben bleiben vor Parsing erhalten. Mehrdeutige Präsenz begründet keinen Besitz und sperrt LateReturn.",
+    "EXACT_PUBLIC_INDEX": "Öffentlicher Index wird ohne strip() gegen exakte Bytes und SHA geprüft. Header/CSP und Assets bleiben gebunden."
+  },
+  "validation_evidence": {
+    "reviewer_tests_executed": 0,
+    "builder_cycles_consumed": 2,
+    "cycle_1": "24/25 PASS; ursprünglicher Timeout-Fixturefehler erhalten.",
+    "cycle_2": "25/25 PASS; vollständige Testausgabe gelesen.",
+    "private_inventory": {
+      "path": "/private/tmp/frontend-final-control-kly3t7oy/all-private-file-hashes.json",
+      "sha256": "5d6bc48b9c37f36f80d2a72eee691e80bdc3a24f277dd95ee8e01d9f0cf89bf0",
+      "files_verified": 1558,
+      "mismatches": 0
+    },
+    "protected_files_verified": 69,
+    "source_authoritative_files_verified": 19,
+    "protected_or_source_mismatches": 0,
+    "direct_primaries_inspected": [
+      "Erfolg mit genau zwei ENV-Adds und einer Promotion",
+      "Erster ENV-Erfolg, zweiter Fehler und nachgewiesene Abwesenheit",
+      "Fremde Präsenz und verweigerte Besitzannahme",
+      "Timeout mit vollständigem rohem stdout/stderr",
+      "Erfolgreicher CLI-Aufruf mit ungültigem JSON",
+      "Index-Newline-Abweichung",
+      "Original-Ownerreceipt und Recoverybindung des synthetischen Ownerfalls"
+    ],
+    "limits": "Offline-Mocks belegen keine tatsächliche Promotion, Runtime, Sicherung oder Browserabnahme. Der Erfolgs-Mock verdeckt den genannten Deployment-ID-Fehler."
+  },
+  "bounded_correction": {
+    "packages": 1,
+    "scope": "Ausschließlich Deploymentidentität, begrenzte Read-only-READY-Beobachtung, kanonische ID-Bindung und dazu unmittelbar nötige Fixturekorrekturen.",
+    "full_offline_cycles_remaining": 0,
+    "new_full_campaign": false,
+    "targeted_validation_allowance": {
+      "invocations": 1,
+      "cases": [
+        "Neue ID ungleich PREVIEW: zunächst nicht READY, anschließend beide Aliase auf derselben READY-ID; bestehende Artefaktprüfungen bleiben wirksam.",
+        "Abweichende Alias-ID oder Ablauf des festen Beobachtungsfensters: stoppen, vollständige Primärbelege erhalten, keine zweite Mutation.",
+        "OWNER akzeptiert ausschließlich die tatsächlich gebundene kanonische Production-ID und lehnt abweichende aktuelle Aliase ab."
+      ],
+      "remote_operations": 0
+    },
+    "next_gate": "Gezielte frische unabhängige read-only Nachprüfung des Korrekturdiffs, der drei Fallbelege und tatsächlichen neuen Hashes. Unveränderte akzeptierte Fälle bleiben erhalten.",
+    "failure_endpoint": "Scheitert dieses begrenzte Folgepaket ohne entscheidenden Fortschritt, blockierte Rückgabe; keine weitere automatische Review-/Reparaturschleife."
+  },
+  "preserved_preconditions": [
+    "Alle ursprünglichen Pflichtkriterien und früheren unbeeinflussten Abnahmen bleiben bestehen, einschließlich Frozenpreview, sieben Static-Dateien, CSP und Source104-Archiv.",
+    "Vor Ausführung tatsächliche gesunde RecoveredRuntime und CURRENT_OPERATIONAL_STATE; Originalruntime FAILED, ursprünglicher Fehler und Versuchszähler bleiben erhalten. Alle fünf Flags geschlossen, Vault/Auth und ursprüngliche Berechtigungs-/Configbelege erhalten.",
+    "Tatsächliches CURRENT_RECOVERED_TARGET-FULLbackup mit isoliert geprüftem Selfhost/nativePG/Auth/Vault/Rollen/Krypto-, Canonical- und n8n-Umfang sowie echte Mac-Kopie desselben Archivs mit SHA und vollständigem Dateinachweis müssen vor Promotion vorliegen.",
+    "Root prüft die Bedeutung sämtlicher Primärbelege und bindet ihre tatsächlichen SHA-Werte: Source43=Target43=Frozenbaseline, Originalauthhashes, Source-Rechte aller drei Rollen null, Source eingefroren, frisches geschlossenes n8n und keine Writer.",
+    "Unmittelbar vorher tatsächliche Originalaliase READY, ursprüngliche ENV-Abwesenheit, richtige Projekt-/Org-Bindung und nativer anon-Key-SHA.",
+    "Ausführung nur mit passender unveränderter script_hashes-Map, tatsächlichen Pflichtdateien und frischen Beobachtungen gemäß Helper: maximal 300 Sekunden; Gate und unabhängiges Review maximal 600 Sekunden. Keine Zeitstempel nachträglich erneuern.",
+    "Genau ein offizieller GenerateLink für den bestehenden Owner; unveränderter Passwort-Hash, Original-Verify-URL, ein Loopback303-/echter SDK-Browserfluss und Produktionsnachweise für Übersicht, Archiv, gespeicherte Zusammenfassung und dasselbe Original; eigene Sitzung anschließend bereinigen.",
+    "Kein Passwortreset, Mailversand, neuer Benutzer, manuelle JWT-Injektion oder Source-Löschen.",
+    "Vor Writeröffnung Rückkehr ausschließlich über frisch belegten gesundheitsgebundenen LateSourceReturn mit Source43=Target43, Original-Fünfdateiensnapshot, ACL, Config und Scopes; unbekannter ENV-Besitz sperrt Rückkehr. Nach Frontendänderung kein PartialReturn.",
+    "Writeröffnung bleibt einem separaten frischen finalen GOAL_GATE vorbehalten."
+  ],
+  "operational_budget_preserved_not_released": {
+    "env_add_each": 1,
+    "promotions": 1,
+    "owner_links": 1,
+    "redirect_sdk_flows": 1,
+    "automatic_retries": 0
+  },
+  "script_hashes": {
+    "frontend-final-promote-control-once.py": "a14bfe040281db33bfcef48ee36bb289b585400c68cdd093b95cd9ffc862b283",
+    "final_owner_link_recovered_once.py": "a9dc82446af0827b14190296689cc49bd2224dfdc12c466c675a82184a7ba8f7",
+    "test_final_frontend_control.py": "723829a6d66702687b63793e87529e1cb010a4f9f880f0943b117eda031e8305",
+    "frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50",
+    "final_prewrite_rollback_once.py": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "final_writer_open_once.py": "ebc80b2862f2a7592bf5ab91d897d27a25b1bbb270c0b46e3b3421d76f66fab4",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "n8n_dashboard_pause_once.py": "91711a2b721b6b787867382087d008afa56aa23cccf56ca2f5b3b7e62cc9a94d"
+  },
+  "artifact_sha256": "f1c11b1f683f53b0dbc5e6c793350a25b9156a957787f0b0c335a1029c95829f",
+  "additional_evidence_hashes": {
+    "frontend-final-control-20261004-evidence.json": "eedfe9fa80e4f1ebb7b3f6e2ba9798af7f60db748c4cc7914dda68322ffa2c37",
+    "prior_frontend_review": "3c0d4092d7153569b848e19ff5b81dd648581d83a4eb82924afd44f22971b6ae",
+    "installed_vercel_commands_bulk_js": "150bbfe7e314609937a6abfb2f7b97953a3ee232341fbba48b03910316cbdb4d"
+  },
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "provider": "openai",
+    "session": "01a104cd-279c-73e3-b4da-a40c64a51e7f",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-frontend-control-final-goal-1/stderr-private.txt",
+    "header_lines": "1-35",
+    "header_first35_sha256": "9e7b6d8d40a8952605c9e8e635d4f22dfdb139b5828b13a9b3a8b3614ebf7be0",
+    "independence": "Eigener tatsächlicher Standalone-Laufzeitheader geprüft; Session verschieden von Builder und vorherigem Reviewer, keine DesktopLead-Identität.",
+    "attestation_limit": "Beobachteter nativer CLI-Header; keine unabhängige serverseitige Engine-Attestierung.",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references_loaded": [
+      "independent-review.md",
+      "recovery.md",
+      "specialist-skills.md"
+    ],
+    "performed": "Lokale Code-, Originalbeleg- und installierte CLI-Codelektüre sowie Hashvergleiche. Keine Implementierung, Tests, Delegation oder Remoteoperationen.",
+    "enforcement": "RULES_ONLY"
+  }
+}

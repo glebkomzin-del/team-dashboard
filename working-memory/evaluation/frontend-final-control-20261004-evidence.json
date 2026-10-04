@@ -1,0 +1,161 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "frozenFrontendOwnerContract",
+  "phase": "PROMOTE_FROZEN_FRONTEND_OWNER_FLOW",
+  "status": "LOCAL_OFFLINE_PASS_PENDING_FRESH_ASTRA_HASH_REVIEW",
+  "updated_at": "2026-10-04T02:34:47.152685+00:00",
+  "mode": "BOUNDED_BUILDER_LOCAL_ONLY",
+  "operational_go": false,
+  "conditional_production_go": false,
+  "delegation": false,
+  "commits_created": false,
+  "native_provenance": {
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "provider": "openai",
+    "session": "01a104b6-80e7-7b60-868e-c0fe0b303700",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-final-frontend-control-builder-1/stderr-private.txt",
+    "limit": "Observed CLI header, not independent server engine attestation"
+  },
+  "authorizing_review": {
+    "path": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-final-frontend-goal-review-1/result.json",
+    "sha256": "3c0d4092d7153569b848e19ff5b81dd648581d83a4eb82924afd44f22971b6ae",
+    "decision": "CHANGE_APPROACH",
+    "session": "01a104af-4395-71f2-acd5-d050a12b4b5a"
+  },
+  "budget": {
+    "packages": 1,
+    "max_complete_offline_cycles": 2,
+    "complete_cycles_consumed": 2,
+    "further_automatic_cycles": 0,
+    "stop_reason": "PASS"
+  },
+  "owned_file_hashes": {
+    "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py": "a14bfe040281db33bfcef48ee36bb289b585400c68cdd093b95cd9ffc862b283",
+    "working-memory/ops/hetzner-migration/final_owner_link_recovered_once.py": "a9dc82446af0827b14190296689cc49bd2224dfdc12c466c675a82184a7ba8f7",
+    "working-memory/ops/hetzner-migration/test_final_frontend_control.py": "723829a6d66702687b63793e87529e1cb010a4f9f880f0943b117eda031e8305"
+  },
+  "tests": {
+    "question": "Do the corrected ownership/recovery/byte contracts fail closed and retain original primaries without real operations?",
+    "mandatory_criterion": "Single frozen promotion and genuine original Owner flow under mocks; ambiguous ownership denied; recovered FAILED provenance SHA-bound; exact public artifact.",
+    "scope": "25 isolated synthetic unittest methods, real original frozen_checks/static/config/archive hashes, Python AST parse; CLI/HTTP/SQL synthetic mocks only",
+    "pass_decision": "Stop local package and return actual hashes for fresh independent Astra goal review; no production",
+    "fail_decision": "Retain all stdout/stderr/case primaries and stop at the two-cycle boundary",
+    "cycle_1": {
+      "methods": 25,
+      "passed": 24,
+      "failures": 1,
+      "errors": 0,
+      "status": "FAILED",
+      "cause": "Timeout fixture reported URL present before mutation, preventing the intended timeout call; fixture corrected to report it only after add attempt",
+      "stdout": "/private/tmp/frontend-final-control-kly3t7oy/cycle-1/stdout-private.txt",
+      "stderr": "/private/tmp/frontend-final-control-kly3t7oy/cycle-1/stderr-private.txt",
+      "result_sha256": "b11589c879d47899500cc059f9f239266406b34078999e5471132cbc55b1deef"
+    },
+    "cycle_2": {
+      "methods": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0,
+      "status": "PASS",
+      "stdout": "/private/tmp/frontend-final-control-kly3t7oy/cycle-2/stdout-private.txt",
+      "stderr": "/private/tmp/frontend-final-control-kly3t7oy/cycle-2/stderr-private.txt",
+      "result_sha256": "df3d12e731107190a3c2da63a92a899580481c20fce8850539d6812242a6fbe1"
+    },
+    "cases": [
+      "exact frozen 7 static/config/archive and 104 source archive binding",
+      "one env-add each and one promotion with durable markers",
+      "first env success/second failure and unchanged-original absence reconciliation",
+      "foreign exact value never establishes ambiguous ownership",
+      "timeout raw stdout/stderr retained and unknown ownership denied",
+      "successful malformed CLI JSON raw capture before parsing",
+      "both alias READY production targets pinned to exact frozen PREVIEW",
+      "index newline byte mismatch",
+      "header/CSP mismatch",
+      "asset SHA mismatch",
+      "missing/unbound recovery and historical PASS fiction denied",
+      "recovery SHA mismatch",
+      "native container open flag denied",
+      "Source role writers/n8n running/writer marker denied",
+      "Source-era backup/missing n8n restore/missing Mac inventory denied",
+      "stale source primary and unbound original observation denied",
+      "old CHANGE_APPROACH/unreviewed hashes denied",
+      "original official Owner main with two SQL reads and exactly one mocked generate_link, unchanged password hash, real helper receipt read and duplicate attempt denied"
+    ]
+  },
+  "protected": {
+    "inventory_path": "/private/tmp/target-partial-followup-psqjidt_/protected-hashes.json",
+    "count": 69,
+    "before": "/private/tmp/frontend-final-control-kly3t7oy/protected-before.json",
+    "after": "/private/tmp/frontend-final-control-kly3t7oy/protected-after.json",
+    "changed": [],
+    "source19": {
+      "authority": "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/source-only-gate.json",
+      "count": 19,
+      "evidence": "/private/tmp/frontend-final-control-kly3t7oy/source19-authoritative-check.json",
+      "changed": []
+    },
+    "local_source_files": {
+      "count": 49,
+      "before": "/private/tmp/frontend-final-control-kly3t7oy/source-before.json",
+      "after": "/private/tmp/frontend-final-control-kly3t7oy/source-after.json",
+      "changed": []
+    }
+  },
+  "private_primaries": {
+    "directory": "/private/tmp/frontend-final-control-kly3t7oy",
+    "file_inventory": "/private/tmp/frontend-final-control-kly3t7oy/all-private-file-hashes.json",
+    "inventory_sha256": "5d6bc48b9c37f36f80d2a72eee691e80bdc3a24f277dd95ee8e01d9f0cf89bf0",
+    "files_sealed": 1558,
+    "retained_outside_TempDirectory": true,
+    "modes": "directories 0700, files 0600; synthetic fixtures retained"
+  },
+  "implementation": {
+    "canonical_production_receipt": "working-memory/ops/hetzner-migration/frontend-final-promotion-evidence.json",
+    "canonical_receipt_written_in_this_package": false,
+    "original_helpers_edited": false,
+    "env_ownership": "Both flags always explicit; None denotes unknown. False only from actual absence; success exit 0 captured before immediate True persistence. Unknown denies return.",
+    "resolver_limit": "One read-only alias/env reconciliation. Matching value/presence or actor/time alone does not prove a timed-out add belongs to this attempt; no invented mutation IDs. Ambiguous presence stays None.",
+    "owner_runtime": "SHA-bound RecoveredRuntime plus current operational projection with original FAILED/error provenance; original official Owner helper runs unchanged only after actual requirements hold.",
+    "return": "No return execution; only fresh separately reviewed health-bound LateSourceReturn before writers. Both ownership fields must be booleans. PartialReturn forbidden after frontend changes."
+  },
+  "production_operations": {
+    "promotions": 0,
+    "env_adds": 0,
+    "owner_links": 0,
+    "browser_flows": 0,
+    "source_returns": 0,
+    "writer_opens": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "ssh": 0,
+    "docker": 0,
+    "keychain": 0,
+    "database": 0
+  },
+  "remaining_required": [
+    "Fresh independent native Astra actual-hash goal review of these new files before dispatch",
+    "Actual RecoveredRuntime and current projection, healthy backend with all five closed flags, preserved original FAILED/error/Vault/Auth",
+    "Actual CURRENT_RECOVERED_TARGET FULL backup and isolated selfhost/canonical/n8n restores, actual same archive and full Mac file verification",
+    "Root SHA-bound fresh Source43/Target43 frozen baseline, zero Source role writers, closed n8n and no writers",
+    "Actual original aliases READY and production VITE variable absence; actual native anon key hash",
+    "Actual single promotion, exact production public artifact and actual official existing-owner link",
+    "Root one original-URL loopback303/real SDK flow; overview/archive/saved_summary/sameOriginal/readOnly production proof and own session cleanup"
+  ],
+  "enforcement": "RULES_ONLY; local guarded-path tests passed, no live controller-hook or production enforcement claimed",
+  "skills_read": [
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references/independent-review.md",
+    "references/recovery.md",
+    "references/specialist-skills.md",
+    "/Users/glebkomzin/.codex/plugins/cache/chatgpt-global/vercel/0.21.3/skills/env-vars/SKILL.md",
+    "/Users/glebkomzin/.codex/plugins/cache/chatgpt-global/vercel/0.21.3/skills/deployments-cicd/SKILL.md",
+    "/Users/glebkomzin/.codex/plugins/cache/chatgpt-global/supabase/0.1.7/skills/supabase/SKILL.md",
+    "/Users/glebkomzin/.agents/skills/ponytail/SKILL.md"
+  ],
+  "limits": [
+    "No remote documentation/CLI refresh because explicit offline-only mandate supersedes skill network instructions; accepted original CLI54 contract reused",
+    "No new framework/dependency, no edits to frontend or writer modules, no root docs/authority update or Git commit; Root owns them",
+    "Offline synthetic PASS is not operational acceptance, production browser proof, or permission to fabricate future receipts"
+  ]
+}
