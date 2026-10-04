@@ -7,6 +7,7 @@ Scope: local assembler only, not operational migration or Owner acceptance.
 """
 import copy
 import base64
+import ast
 import datetime as dt
 import hashlib
 import json
@@ -259,6 +260,26 @@ class PreparationTests(unittest.TestCase):
         for name,ref in inputs['observations'].items():
             e=p.jsonref(ref);self.assertTrue(e['observed_at']);self.assertIn('payload',e);self.assertGreaterEqual(len(e['primary_receipts']),2)
         self.assertFalse((self.root/'collection/candidate-gate.json').exists())
+
+    def test_native_batch_follows_actual_new_resume_reference_in_same_read(self):
+        archive=self.inputs['archives']['mac'];body=Path(archive['path']).read_bytes()
+        self.inputs['archive_hash_observation']=self.f.put('accepted-hash',{'archive':archive['path'],'sha256':archive['sha256'],'bytes':len(body),'observed_at':NOW.isoformat()})
+        self.inputs['collection']={'frontend_control_directory':RUN+'/control','host_archive':'/var/backups/synthetic'}
+        recovery=p.read(self.inputs['originals']['runtime_recovery'])
+        resume=json.dumps({'original_recovery_ref':{'path':RUN+'/target-runtime-permissions-receipt.json','sha256':p.c.sha(recovery)}}).encode()
+        projection=json.dumps({'resume_receipt_ref':{'path':RUN+'/actual-resume-1/resume-receipt.json','sha256':p.c.sha(resume)}}).encode()
+        bodies={RUN+'/target-runtime-receipt.json':projection,RUN+'/actual-resume-1/resume-receipt.json':resume,
+                RUN+'/target-runtime-permissions-receipt.json':recovery}
+        code=p.native_code(self.inputs,{},[]);tree=ast.parse(code)
+        top=next(n for n in tree.body if isinstance(n,ast.Try))
+        functions=[n for n in top.body if isinstance(n,ast.FunctionDef) and n.name in ('follow','retain')]
+        namespace={'SETTINGS':{'run':RUN},'small':lambda path:bodies[path],'host':{},'visited':set(),
+                   'hashlib':hashlib,'base64':base64,'json':json}
+        exec(compile(ast.Module(body=functions,type_ignores=[]),'actual-native-ref-follow','exec'),namespace)
+        namespace['retain'](RUN+'/target-runtime-receipt.json')
+        self.assertEqual(set(namespace['host']),set(bodies))
+        with self.assertRaises(RuntimeError):namespace['retain'](RUN+'/actual-resume-1/resume-receipt.json','0'*64)
+        with self.assertRaises(KeyError):namespace['retain'](RUN+'/missing-resume/resume-receipt.json','0'*64)
 
     def test_owner_staged_refs_rebase_and_original_bytes_unchanged(self):
         self.owner();candidate=self.prepare()

@@ -319,28 +319,85 @@ def host_cleanup_readback():
             'stop_stderr_b64':base64.b64encode(result.stderr).decode(),'observed_at':utc().isoformat()}
 
 
-def host_degrade(gate, previous, published, intent, cleanup):
+def projection_lock(gate):
+    """One shared Host lock covers publisher and complete cleanup lifetime."""
+    import contextlib
+    import fcntl
+    @contextlib.contextmanager
+    def locked():
+        path=Path(gate['run_dir'])/PACKAGE/'current-projection.lock'
+        fd=os.open(path,os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
+        with os.fdopen(fd,'wb') as stream:
+            fcntl.flock(stream,fcntl.LOCK_EX)
+            try:yield
+            finally:fcntl.flock(stream,fcntl.LOCK_UN)
+    return locked()
+
+
+def replace_current(target, expected, replacement):
+    """Durable atomic replacement plus exact actual byte readback."""
     import tempfile
-    directory=Path(gate['run_dir'])/PACKAGE
-    require(json.loads(private_bytes(directory/'publication-intent.json'))==intent,'Host publication intent changed')
-    require(private_bytes(directory/PROJECTION)==published,'Own historical healthy projection changed')
-    target=Path(gate['run_dir'])/'target-runtime-receipt.json'
-    current=private_bytes(target)
-    degraded=degraded_projection(gate,previous,published,intent,cleanup,current)
-    # Preserve observed bytes and append immutable reconciliation evidence.
-    suffix=uuid.uuid4().hex
-    snapshot=directory/('cleanup-current-before-'+suffix+'.json')
-    with snapshot.open('xb') as stream:stream.write(current);stream.flush();os.fsync(stream.fileno())
-    r.durable(directory,'cleanup-readback-'+suffix+'.json',cleanup)
-    r.durable(directory,'runtime-degraded-'+suffix+'.json',degraded)
-    replacement=json.dumps(degraded).encode()
+    require(private_bytes(target)==expected,'Current projection changed')
     fd,temp=tempfile.mkstemp(dir=target.parent);os.fchmod(fd,0o600)
-    with os.fdopen(fd,'wb') as stream:stream.write(replacement);stream.flush();os.fsync(stream.fileno())
-    require(private_bytes(target)==current,'Current projection changed during reconciliation')
-    os.replace(temp,target)
-    require(private_bytes(target)==replacement,'Degraded current readback differs')
-    return {'status':degraded['status'],'cleanup_status':degraded['cleanup_status'],
-            'sha256':r.sha_bytes(replacement),'observed_at':cleanup['observed_at']}
+    try:
+        with os.fdopen(fd,'wb') as stream:stream.write(replacement);stream.flush();os.fsync(stream.fileno())
+        require(private_bytes(target)==expected,'Current projection changed during replacement')
+        os.replace(temp,target)
+        directory_fd=os.open(target.parent,os.O_RDONLY|os.O_DIRECTORY)
+        try:os.fsync(directory_fd)
+        finally:os.close(directory_fd)
+        require(private_bytes(target)==replacement,'Current projection readback differs')
+    finally:
+        if os.path.exists(temp):os.unlink(temp)
+
+
+def host_publish(gate, previous, published):
+    with projection_lock(gate):
+        gate_check(gate,utc())
+        directory=Path(gate['run_dir'])/PACKAGE
+        intent=json.loads(private_bytes(directory/'publication-intent.json'))
+        require(private_bytes(directory/PROJECTION)==published,'Historical own projection changed')
+        require(intent['previous_sha256']==r.sha_bytes(previous) and intent['published_sha256']==r.sha_bytes(published),'Publication intent differs')
+        degraded_projection(gate,previous,published,intent,{'containers':{},'observed_at':utc().isoformat()},previous)
+        target=Path(gate['run_dir'])/'target-runtime-receipt.json'
+        require(private_bytes(target)==previous,'Current projection changed before publication')
+        with (directory/'previous-runtime-projection.json').open('xb') as stream:
+            stream.write(previous);stream.flush();os.fsync(stream.fileno())
+        replace_current(target,previous,published)
+        return {'sha256':r.sha_bytes(published)}
+
+
+def host_degrade(gate, previous, published, intent, cleanup=None):
+    # The safety publication and stop happen in ONE Host invocation and lock.
+    # No stop is dispatched unless UNKNOWN is durably positively read back.
+    with projection_lock(gate):
+        directory=Path(gate['run_dir'])/PACKAGE
+        require(json.loads(private_bytes(directory/'publication-intent.json'))==intent,'Host publication intent changed')
+        require(private_bytes(directory/PROJECTION)==published,'Own historical healthy projection changed')
+        target=Path(gate['run_dir'])/'target-runtime-receipt.json'
+        current=private_bytes(target)
+        pending={'observed_at':utc().isoformat(),'containers':{}}
+        unknown=degraded_projection(gate,previous,published,intent,pending,current)
+        suffix=uuid.uuid4().hex
+        with (directory/('cleanup-current-before-'+suffix+'.json')).open('xb') as stream:
+            stream.write(current);stream.flush();os.fsync(stream.fileno())
+        r.durable(directory,'runtime-unknown-before-stop-'+suffix+'.json',unknown)
+        unknown_bytes=json.dumps(unknown).encode()
+        replace_current(target,current,unknown_bytes)
+        # From here lost transport/final STOPPED write leaves UNKNOWN, never ACTIVE.
+        try:
+            cleanup=host_cleanup_readback()
+        except BaseException as error:
+            cleanup={'observed_at':utc().isoformat(),'containers':{},'error_type':type(error).__name__,'error':str(error)}
+        r.durable(directory,'cleanup-readback-'+suffix+'.json',cleanup)
+        status=cleanup_status(cleanup)
+        if status=='STOPPED':
+            stopped=degraded_projection(gate,previous,published,intent,cleanup,published)
+            r.durable(directory,'runtime-stopped-'+suffix+'.json',stopped)
+            replace_current(target,unknown_bytes,json.dumps(stopped).encode())
+        actual=private_bytes(target)
+        return {'status':json.loads(actual)['status'],'cleanup_status':status,
+                'sha256':r.sha_bytes(actual),'observed_at':cleanup['observed_at']}
 
 
 class Operations(p.PartialOperations):
@@ -398,7 +455,7 @@ class Operations(p.PartialOperations):
         # Preserve old exact bytes; compare-and-replace the existing mutable
         # current-state record only AFTER actual healthy runtime evidence.
         blob=json.dumps(projection).encode()
-        code='import os,tempfile,hashlib\nfrom pathlib import Path\nfrom final_target_readonly_resume_after_return import gate_check,utc\ngate_check('+repr(gate)+',utc())\np=Path('+repr(gate['run_dir']+'/target-runtime-receipt.json')+')\nassert not p.is_symlink() and p.read_bytes()=='+repr(previous)+'\nb='+repr(blob)+'\nq=Path('+repr(gate['run_dir']+'/'+PACKAGE+'/previous-runtime-projection.json')+')\nwith q.open("xb") as f:f.write(p.read_bytes());f.flush();os.fsync(f.fileno())\nfd,t=tempfile.mkstemp(dir=p.parent);os.fchmod(fd,0o600)\nwith os.fdopen(fd,"wb") as f:f.write(b);f.flush();os.fsync(f.fileno())\nos.replace(t,p)\nassert p.read_bytes()==b'
+        code='from final_target_readonly_resume_after_return import host_publish\nhost_publish('+repr(gate)+','+repr(previous)+','+repr(blob)+')'
         self.remote_python(code)
         return blob
 
@@ -527,23 +584,22 @@ def execute(run, gate_path, operations=None, clock=utc):
                  'source_revoke_dispatched':revoke_dispatched,'counters':counts,'error_type':type(error).__name__,
                  'private_error':str(error),'observed_at':clock().isoformat(),'source_rollback_executed':False}
         if target_started:
-            cleanup={'status':'UNKNOWN','observed_at':clock().isoformat()}
-            try:
-                cleanup=op.fail_closed()
-                if not isinstance(cleanup,dict) or 'observed_at' not in cleanup:
-                    cleanup={'status':'UNKNOWN','observed_at':clock().isoformat()}
-                failure['own_target_stop_dispatched']=True
-                failure['cleanup_status']=cleanup_status(cleanup)
-            except BaseException as cleanup_error:
-                failure['cleanup_error']=str(cleanup_error);failure['cleanup_status']='UNKNOWN'
             if publication_attempted:
-                # Lost publish response/local receipt failure: reconcile actual
-                # Host bytes, not the success/failure of the transport response.
                 try:
-                    failure['current_projection_reconciliation']=op.degrade(gate,bodies['runtime_projection'],publication_blob,publication_intent,cleanup)
-                except BaseException as degrade_error:
-                    failure['projection_reconciliation_error']=str(degrade_error)
+                    result=op.degrade(gate,bodies['runtime_projection'],publication_blob,publication_intent,None)
+                    failure['current_projection_reconciliation']=result
+                    failure['cleanup_status']=result['cleanup_status']
+                except BaseException as cleanup_error:
+                    failure['projection_reconciliation_error']=str(cleanup_error)
                     failure['current_projection_status']='UNKNOWN_REPLAN_UNRECONCILED'
+                    # Unknown transport says nothing about actual Host stop.
+                    failure['cleanup_status']='UNKNOWN'
+            else:
+                try:
+                    cleanup=op.fail_closed()
+                    failure['cleanup_status']=cleanup_status(cleanup)
+                except BaseException as cleanup_error:
+                    failure['cleanup_error']=str(cleanup_error);failure['cleanup_status']='UNKNOWN'
         r.durable(directory,'failure-'+uuid.uuid4().hex+'.json',failure)
         raise w.PreconditionsError('STOP_RETURN_TO_ROOT; private package: '+str(directory)) from None
 

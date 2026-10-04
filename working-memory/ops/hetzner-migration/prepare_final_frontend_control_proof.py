@@ -377,13 +377,31 @@ try:
     for k in ['frontend-control-attempt.marker','promotion-INTENT.marker','VITE_SUPABASE_URL-INTENT.json','VITE_SUPABASE_ANON_KEY-INTENT.json']:
         paths[k]=Path(SETTINGS['control'])/k
     markers={k:path.exists() for k,path in paths.items()}
-    host={}
-    for ref in SETTINGS['refs']:
-        body=small(ref['path'])
-        if hashlib.sha256(body).hexdigest()!=ref['sha256']:raise RuntimeError('Actual immutable Host primary SHA differs')
-        host[ref['path']]=base64.b64encode(body).decode()
+    host={};visited=set()
+    def follow(value):
+        if isinstance(value,dict):
+            if set(value)=={'path','sha256'} and value['path'].startswith(SETTINGS['run']+'/'):
+                retain(value['path'],value['sha256'])
+            else:
+                for key,item in value.items():
+                    if key!='origin_refs':follow(item)
+        elif isinstance(value,list):
+            for item in value:follow(item)
+    def retain(path,expected=None):
+        if path in visited:
+            if expected and hashlib.sha256(base64.b64decode(host[path])).hexdigest()!=expected:raise RuntimeError('Contradictory actual native reference')
+            return
+        body=small(path)
+        if expected and hashlib.sha256(body).hexdigest()!=expected:raise RuntimeError('Actual immutable Host primary SHA differs')
+        visited.add(path);host[path]=base64.b64encode(body).decode()
+        try:value=json.loads(body)
+        except (json.JSONDecodeError,UnicodeDecodeError):return
+        follow(value)
+    for ref in SETTINGS['refs']:retain(ref['path'],ref['sha256'])
+    # The actual projection can introduce a newly executed resume receipt.
+    # Follow its actual raw references in THIS batch; never predict its SHA.
     for name in ['target-runtime-receipt.json','target-runtime-permissions-receipt.json']:
-        path=SETTINGS['run']+'/'+name;host[path]=base64.b64encode(small(path)).decode()
+        retain(SETTINGS['run']+'/'+name)
     artifact=Path(SETTINGS['archive']);stat=artifact.stat();accepted=SETTINGS['archive_hash_observation']
     if not artifact.is_file() or artifact.is_symlink() or stat.st_size!=accepted['bytes']:raise RuntimeError('Existing native FULL archive metadata differs')
     archive={'archive':artifact.name,'bytes':stat.st_size,'sha256':accepted['sha256'],'mac_sha256':accepted['sha256'],

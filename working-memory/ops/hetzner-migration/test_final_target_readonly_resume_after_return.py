@@ -116,7 +116,13 @@ class FakeOps:
     def degrade(self,gate,previous,published,intent,cleanup):
         self.calls.append('degrade')
         assert self.host_values['publication-intent.json']==intent
-        degraded=m.degraded_projection(gate,previous,published,intent,cleanup,self.host_current)
+        pending={'observed_at':self.clock.now.isoformat(),'containers':{}}
+        unknown=m.degraded_projection(gate,previous,published,intent,pending,self.host_current)
+        self.host_current=blob(unknown)
+        try:cleanup=self.fail_closed()
+        except Exception:cleanup=None
+        if not isinstance(cleanup,dict):cleanup=pending
+        degraded=m.degraded_projection(gate,previous,published,intent,cleanup,published)
         self.host_current=blob(degraded)
         return {'status':degraded['status'],'cleanup_status':degraded['cleanup_status'],'sha256':sha(self.host_current)}
 
@@ -280,9 +286,10 @@ class ContractTests(unittest.TestCase):
         op.remote_python=capture
         projection={'status':'synthetic-current','health':{'status':'ok'}}
         self.assertEqual(op.publish(self.gate,self.bodies['runtime_projection'],projection),blob(projection))
-        code=calls[0];self.assertIn('p.read_bytes()==',code);self.assertIn('previous-runtime-projection.json',code)
-        self.assertLess(code.index('q.open("xb")'),code.index('os.replace(t,p)'))
-        self.assertIn('gate_check(',code)
+        code=calls[0];self.assertIn('host_publish(',code)
+        source=m.inspect.getsource(m.host_publish)
+        self.assertIn('projection_lock(gate)',source);self.assertIn('previous-runtime-projection.json',source)
+        self.assertLess(source.index(".open('xb')"),source.index('replace_current('));self.assertIn('gate_check(',source)
     def test_complete_host_observer_code_compiles_without_execution(self):
         compile(m.inspect.getsource(m.host_observe),'offline-host-observer','exec')
     def test_missing_mac_positive_binding_denies(self):
@@ -354,5 +361,116 @@ class ContractTests(unittest.TestCase):
     def test_original_recovered_history_must_remain_failed(self):
         data=json.loads(self.bodies['recovered_runtime']);data['original_runtime_status']='PASS';self.bodies['recovered_runtime']=blob(data);self.gate['immutable_refs']['recovered_runtime']['sha256']=sha(self.bodies['recovered_runtime'])
         with self.assertRaises(Exception):self.data()
+
+class HostFilesystemTests(unittest.TestCase):
+    """Actual local filesystem/lock, injected Docker only; no external calls."""
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
+        self.directory=self.root/m.PACKAGE;self.directory.mkdir()
+        self.previous=blob({'status':'OLD'})
+        self.published=blob({'status':'TARGET_READONLY_RUNTIME_ACTIVE','state_kind':'CURRENT_OPERATIONAL_STATE',
+                            'resume_receipt_sha256':'receipt','original_runtime_attempt_status':'FAILED',
+                            'recovery_status':'RecoveredRuntime','health':{'status':'ok'}})
+        self.target=self.root/'target-runtime-receipt.json';self.target.write_bytes(self.previous)
+        self.gate={'run_dir':str(self.root),'immutable_refs':{'runtime_projection':{'sha256':sha(self.previous)}}}
+        self.intent={'problem_id':m.PROBLEM,'phase':m.PHASE,'package_id':m.PACKAGE,'run_dir':str(self.root),
+                     'previous_sha256':sha(self.previous),'published_sha256':sha(self.published),'resume_receipt_sha256':'receipt'}
+        (self.directory/'publication-intent.json').write_bytes(blob(self.intent))
+        (self.directory/m.PROJECTION).write_bytes(self.published)
+        expected={m.w.CANONICAL:m.IMAGE,**{'dashboard-supabase-20261003-'+n+'-1':'sha256:'+v.split('@sha256:')[1] for n,v in m.p.API_IMAGES.items()}}
+        self.stopped={'containers':{n:{'image':image,'running':False} for n,image in expected.items()},'observed_at':NOW.isoformat()}
+        self.clock=patch.object(m,'utc',return_value=NOW);self.clock.start()
+        self.guard=patch.object(m,'gate_check');self.guard.start()
+    def tearDown(self):self.clock.stop();self.guard.stop();self.temp.cleanup()
+    def current(self):return json.loads(self.target.read_bytes())
+    def cleanup(self):return m.host_degrade(self.gate,self.previous,self.published,self.intent)
+    def test_publisher_response_lost_then_cleanup_actual_file_stopped(self):
+        m.host_publish(self.gate,self.previous,self.published)
+        # Actual Host write completed; caller receives no success response.
+        with patch.object(m,'host_cleanup_readback',return_value=self.stopped):self.cleanup()
+        self.assertEqual(self.current()['status'],'TARGET_READONLY_RUNTIME_STOPPED')
+        self.assertEqual((self.directory/m.PROJECTION).read_bytes(),self.published)
+    def test_local_receipt_failure_then_actual_host_cleanup(self):
+        m.host_publish(self.gate,self.previous,self.published)
+        try:raise OSError('Mac receipt disk failure')
+        except OSError:
+            with patch.object(m,'host_cleanup_readback',return_value=self.stopped):self.cleanup()
+        self.assertIs(self.current()['runtime_active'],False)
+    def test_unknown_durable_and_read_back_before_stop(self):
+        def stop():
+            self.assertEqual(self.current()['status'],'TARGET_RUNTIME_UNKNOWN_REPLAN')
+            return self.stopped
+        with patch.object(m,'host_cleanup_readback',side_effect=stop):self.cleanup()
+        self.assertEqual(self.current()['status'],'TARGET_READONLY_RUNTIME_STOPPED')
+    def test_unknown_write_failure_denies_stop(self):
+        with patch.object(m,'replace_current',side_effect=OSError('durability failed')),patch.object(m,'host_cleanup_readback') as stop:
+            with self.assertRaises(OSError):self.cleanup()
+            stop.assert_not_called()
+        self.assertEqual(self.target.read_bytes(),self.previous)
+    def test_successful_stop_final_replace_failure_leaves_unknown(self):
+        original=m.os.replace;calls=[]
+        def replace(*args):
+            calls.append(args)
+            if len(calls)==2:raise OSError('STOPPED write failed')
+            return original(*args)
+        with patch.object(m.os,'replace',side_effect=replace),patch.object(m,'host_cleanup_readback',return_value=self.stopped):
+            with self.assertRaises(OSError):self.cleanup()
+        self.assertEqual(self.current()['status'],'TARGET_RUNTIME_UNKNOWN_REPLAN')
+        self.assertIsNone(self.current()['runtime_active'])
+    def test_stop_transport_failure_or_unknown_readback_leaves_unknown(self):
+        for result in (TimeoutError('stop response lost'),{'containers':{},'observed_at':NOW.isoformat()}):
+            self.target.write_bytes(self.previous)
+            with patch.object(m,'host_cleanup_readback',side_effect=result if isinstance(result,Exception) else None,return_value=result):self.cleanup()
+            self.assertEqual(self.current()['status'],'TARGET_RUNTIME_UNKNOWN_REPLAN')
+    def test_completed_cleanup_response_lost_actual_file_remains_stopped(self):
+        with patch.object(m,'host_cleanup_readback',return_value=self.stopped):
+            try:
+                self.cleanup()
+                raise TimeoutError('completed Host response lost')
+            except TimeoutError:pass
+        self.assertEqual(self.current()['status'],'TARGET_READONLY_RUNTIME_STOPPED')
+
+    def test_foreign_bytes_deny_no_stop_no_overwrite(self):
+        self.target.write_bytes(b'{"status":"FOREIGN"}')
+        with patch.object(m,'host_cleanup_readback') as stop:
+            with self.assertRaises(Exception):self.cleanup()
+            stop.assert_not_called()
+        self.assertEqual(self.target.read_bytes(),b'{"status":"FOREIGN"}')
+    def test_delayed_publisher_cannot_publish_after_cleanup(self):
+        import threading
+        started=threading.Event();finished=threading.Event();errors=[]
+        def publisher():
+            started.set()
+            try:m.host_publish(self.gate,self.previous,self.published)
+            except Exception as error:errors.append(error)
+            finally:finished.set()
+        with m.projection_lock(self.gate):
+            worker=threading.Thread(target=publisher);worker.start();self.assertTrue(started.wait(1))
+            self.assertFalse(finished.wait(.05))
+            # Simulate durable cleanup publication while the delayed publisher waits.
+            unknown=m.degraded_projection(self.gate,self.previous,self.published,self.intent,{'containers':{},'observed_at':NOW.isoformat()},self.previous)
+            m.replace_current(self.target,self.previous,blob(unknown))
+        worker.join(2);self.assertFalse(worker.is_alive());self.assertEqual(len(errors),1)
+        self.assertEqual(self.current()['status'],'TARGET_RUNTIME_UNKNOWN_REPLAN')
+    def test_cleanup_waits_for_inflight_publisher_until_end(self):
+        import threading
+        entered=threading.Event();release=threading.Event();completed=threading.Event();errors=[]
+        original=m.replace_current
+        def slow(*args):
+            result=original(*args)
+            if args[2]==self.published:entered.set();release.wait(2)
+            return result
+        def publish():
+            try:m.host_publish(self.gate,self.previous,self.published)
+            except Exception as e:errors.append(e)
+        def cleanup():
+            try:self.cleanup()
+            except Exception as e:errors.append(e)
+            finally:completed.set()
+        with patch.object(m,'replace_current',side_effect=slow),patch.object(m,'host_cleanup_readback',return_value=self.stopped):
+            publisher=threading.Thread(target=publish);publisher.start();self.assertTrue(entered.wait(1))
+            cleaner=threading.Thread(target=cleanup);cleaner.start();self.assertFalse(completed.wait(.05));release.set()
+            publisher.join(2);cleaner.join(2)
+        self.assertEqual(errors,[]);self.assertEqual(self.current()['status'],'TARGET_READONLY_RUNTIME_STOPPED')
 
 if __name__=='__main__':unittest.main()
