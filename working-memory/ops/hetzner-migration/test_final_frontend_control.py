@@ -92,7 +92,7 @@ class Fixture:
         self.proof['refs']=self.refs;self.gate['proof']=self.put('proof',self.proof)
         self.gate['independent_review']=self.put('review',self.review)
         self.path.write_text(json.dumps(self.gate));self.path.chmod(0o600)
-    def owner(self):
+    def owner(self, actual_receipt=None):
         self.gate['action']='OWNER'
         receipt={'status':'PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED','promotion_attempts':1,'url_env_added':True,'anon_env_added':True,
                  'artifact_sha256':c.ARTIFACT_SHA,'runtime_recovery_sha256':self.refs['runtime_recovery']['sha256'],
@@ -100,6 +100,14 @@ class Fixture:
                  'production':{'id':ACTUAL_ID,'url':ACTUAL_URL}}
         self.objects['frontend']['promotion_receipt']=self.put('canonical-promotion',receipt)
         self.objects['frontend']['aliases']={a:{'id':ACTUAL_ID,'readyState':'READY','target':'production','name':c.PROJECT,'contextName':c.SCOPE,'aliases':sorted(c.ALIASES)} for a in c.ALIASES}
+        if actual_receipt is not None:
+            receipt=json.loads(actual_receipt.read_text())
+            ref={'path':str(actual_receipt),'sha256':c.digest(actual_receipt)}
+            self.gate['receipt_hashes'][str(actual_receipt)]=ref['sha256']
+            self.objects['frontend']['promotion_receipt']=ref
+            if 'production' in receipt:
+                poll=json.loads((self.root/'control'/('ready-poll-'+str(receipt['readiness_count'])+'.json')).read_text())
+                self.objects['frontend']['aliases']=poll['aliases']
         self.write()
 
 class FakeOps(c.Operations):
@@ -119,7 +127,11 @@ class FakeOps(c.Operations):
         if cli[0]=='promote':
             assert json.loads(self.receipt.read_text())['promotion_attempts']==1
             assert (self.directory.parent/'promotion-INTENT.marker').exists()
-            self.promoted=True;return subprocess.CompletedProcess(args,0,'original promotion stdout\n',PROMOTE_STDERR)
+            stderr=PROMOTE_STDERR
+            if self.case=='missing-create':stderr='No creation result\n'
+            if self.case=='ambiguous-create':stderr+=PROMOTE_STDERR
+            if self.case=='old-preview':stderr=stderr.replace(ACTUAL_ID.removeprefix('dpl_'),c.PREVIEW.removeprefix('dpl_'))
+            self.promoted=True;return subprocess.CompletedProcess(args,0,'original promotion stdout\n',stderr)
         if cli[0]=='inspect':
             if self.case=='bad-json':return subprocess.CompletedProcess(args,0,'ORIGINAL MALFORMED JSON','original inspect success stderr')
             deployment=ACTUAL_ID if self.promoted else c.ROLLBACK
@@ -160,7 +172,8 @@ class FrontendControlTests(unittest.TestCase):
         self.assertEqual(self.before,{p:c.digest(p) for p in self.before})
         c.save(self.root/'case-result.json',{'case':self._testMethodName,'synthetic_only':True,'input_artifact_hashes_unchanged':True})
     def promote(self,case='success'):
-        directory=self.root/'control';ops=FakeOps(directory/'primaries',self.receipt,case)
+        directory=self.root/'control';directory.mkdir(mode=0o700,exist_ok=True)
+        ops=FakeOps(directory/'primaries',self.receipt,case)
         with patch.object(c.subprocess,'run',side_effect=ops.process):
             try:result=c.execute(self.f.path,directory,ops,NOW,self.receipt)
             except Exception:
@@ -230,7 +243,7 @@ class FrontendControlTests(unittest.TestCase):
     def test_owner_rejects_old_pass_without_recovery(self):
         self.f.owner();self.denial(lambda:self.f.objects['runtime_projection'].update(recovery_status='PASS'),action='OWNER')
     def test_owner_real_original_flow_once_on_bound_current_projection(self):
-        self.f.owner();gate,values,data,key=c.load(self.f.path,'OWNER',NOW)
+        self.f.owner(getattr(self,'actual_promotion',None));gate,values,data,key=c.load(self.f.path,'OWNER',NOW)
         root=self.root/'host';root.mkdir(mode=0o700);run=root/'final-export-20261004T004000Z';run.mkdir(mode=0o700)
         (run/'target-runtime-receipt.json').write_bytes(values['runtime_projection'])
         (run/'target-runtime-permissions-receipt.json').write_bytes(values['runtime_recovery'])
@@ -284,9 +297,16 @@ class DeploymentIdentityFollowupTests(FrontendControlTests):
         self.assertEqual(base64.b64decode(record['stderr_b64']).decode(),PROMOTE_STDERR)
         self.assertEqual(self.receipt.stat().st_mode&0o777,0o600)
 
+        unsafe=self.root/'unsafe-control';unsafe.mkdir(mode=0o755);unsafe.chmod(0o755)
+        with self.assertRaisesRegex(Exception,'Unsafe private directory'):c.private_dir(unsafe)
+
     def test_alias_mismatch_or_expiry_stops_without_second_mutation(self):
         original_root=self.root
-        for case in ('alias-fail','expiry'):
+        causes={'alias-fail':'Foreign alias identity','expiry':'READY observation expired',
+                'old-preview':'New creation identity absent','byte-fail':'Index bytes differ',
+                'missing-create':'Unambiguous CLI54 creation result absent',
+                'ambiguous-create':'Unambiguous CLI54 creation result absent','timeout':None,'foreign-present':None}
+        for case in causes:
             self.root=original_root/case;self.root.mkdir(mode=0o700)
             self.f=Fixture(self.root);self.receipt=self.root/'frontend-final-promotion-evidence.json'
             ticks=[0.0]
@@ -295,27 +315,40 @@ class DeploymentIdentityFollowupTests(FrontendControlTests):
                 with self.assertRaises(RuntimeError):self.promote(case)
             result=json.loads(self.receipt.read_text());calls=json.loads((self.root/'call-summary.json').read_text())['calls']
             self.assertEqual(result['status'],'STOPPED_NO_RETRY')
-            self.assertEqual(result['production_deployment_id'],ACTUAL_ID)
-            self.assertEqual(sum(x[0]=='promote' for x in calls),1)
-            self.assertEqual(sum(x[:2]==['env','add'] for x in calls),2)
-            self.assertIs(result['url_env_added'],True);self.assertIs(result['anon_env_added'],True)
-            self.assertTrue(result['return_ownership_known'])
-            self.assertTrue((self.root/'control/ready-poll-1.json').exists())
-            primary=json.loads(Path(result['promote_primary']['path']).read_text())
-            self.assertEqual(base64.b64decode(primary['stderr_b64']).decode(),PROMOTE_STDERR)
+            promoted=case not in ('timeout','foreign-present')
+            self.assertEqual(sum(x[0]=='promote' for x in calls),int(promoted))
+            self.assertEqual(sum(x[:2]==['env','add'] for x in calls),1 if case=='timeout' else 2)
+            if not promoted:
+                self.assertFalse(result['return_ownership_known'])
+                self.assertEqual(result['return_authorization'],'DENY_RETURN_UNKNOWN_OWNERSHIP')
+            else:
+                self.assertIs(result['url_env_added'],True);self.assertIs(result['anon_env_added'],True)
+                self.assertTrue(result['return_ownership_known'])
+            self.f.owner(self.receipt)
+            with self.assertRaises(Exception):c.load(self.f.path,'OWNER',NOW)
             error=json.loads((self.root/'control/primary-control-error.json').read_text())
-            self.assertEqual(error['cause'],'Foreign alias identity' if case=='alias-fail' else 'READY observation expired')
+            if causes[case] is not None:self.assertEqual(error['cause'],causes[case])
         self.root=original_root
 
     def test_owner_actual_receipt_id_accepts_and_mismatch_denies(self):
+        with patch.object(c.time,'sleep'):result,ops=self.promote('pending')
+        self.actual_promotion=self.receipt
         self.test_owner_real_original_flow_once_on_bound_current_projection()
         self.assertNotEqual(ACTUAL_ID,c.PREVIEW)
         gate,values,data,key=c.load(self.f.path,'OWNER',NOW)
+        self.assertEqual(data['frontend']['promotion_receipt']['sha256'],c.digest(self.receipt))
+        self.assertEqual(json.loads(c.bound(data['frontend']['promotion_receipt'],gate))['promote_primary'],result['promote_primary'])
         self.assertEqual({x['id'] for x in data['frontend']['aliases'].values()},{ACTUAL_ID})
         for mismatch in ('dpl_foreign',c.PREVIEW):
             self.f.objects['frontend']['aliases'][sorted(c.ALIASES)[0]]['id']=mismatch;self.f.write()
             with patch.object(c.subprocess,'run',side_effect=AssertionError('mutation forbidden')):
                 with self.assertRaisesRegex(Exception,'Production identity/project differs'):c.load(self.f.path,'OWNER',NOW)
+        self.f.owner(self.receipt)
+        self.f.objects['runtime_projection']['recovery_status']='PASS';self.f.write()
+        with self.assertRaises(Exception):c.load(self.f.path,'OWNER',NOW)
+        self.f.objects['runtime_projection']['recovery_status']='RecoveredRuntime'
+        self.f.objects['frontend'].pop('promotion_receipt');self.f.write()
+        with self.assertRaises(Exception):c.load(self.f.path,'OWNER',NOW)
         c.save(self.root/'owner-id-family.json',{'accepted_id':ACTUAL_ID,'rejected_ids':['dpl_foreign',c.PREVIEW],
                'actual_original_owner_receipt':str(self.root/'host/final-export-20261004T004000Z/owner-link-receipt.json')})
 
