@@ -1,0 +1,54 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "operational_go": true,
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "enforcement": "RULES_ONLY",
+  "reviewed_commit": "62752118001aa3221fa1ceaeb66f04b5db6c271e",
+  "blockers": [],
+  "diagnosis": "Exakte Rollenfreigabe korrekt; bestehende Rollenbindung, TTL-, Read-only-, TLS- und Faktenpr\u00fcfungen erhalten. Aktuelles Probe-Skript bewahrt auch HTTP-Fehlerstatus, Header und Body.",
+  "script_hashes": {
+    "source_direct_route.py": "1cb323399a8e215727110d1519ed634fb4cde2c73fc4fc652b79da0d8eadbef7",
+    "source_direct_preflight_once.py": "800ca78008762edb3dc1734a8dc666e88f38dbe97504486f9ada723e5b7d32ae",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "final_export_once.py": "0e61119c979f38fcb6e00ca275141e73a75e7a9007928066f19497b60d1602e3",
+    "test_source_direct_route.py": "d5a84fa1b20aa590d8a230615c7897fc3ae325a29c0713b55df7f0667e9f489c"
+  },
+  "probe_script_sha256": "fb0bdb7387c87adc161ff81f66d9d7a8880799ac864dece0e54f2cdabdfe0e47",
+  "expired_existing_lease_replacement_max": 1,
+  "operational_bounds": {
+    "probe_directory_verified_unused": true,
+    "authenticated_queries_max": 1,
+    "aggregate_direct_preflight_leases_max": 2,
+    "retry_after_failure": false,
+    "cleanup": "Ausschlie\u00dflich eigener Tunnel.",
+    "pass_receipt": "Erst nach tats\u00e4chlichen Fakten und Tunnel-Cleanup; urspr\u00fcngliche Lease und Fehlerbelege bleiben erhalten.",
+    "excluded": [
+      "Source-Pause",
+      "Dump",
+      "Target",
+      "Timer",
+      "Frontend"
+    ]
+  },
+  "provenance": {
+    "header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-direct-role-review-1/stderr-private.txt",
+    "model": "gpt-6-astra",
+    "provider": "openai",
+    "effort": "high",
+    "sandbox": "read-only",
+    "approval": "never",
+    "fresh_session_uuid": "01a10449-fb49-7633-85df-8ee93864f7f0",
+    "basis": "Eigener CLI-Laufzeitheader; keine separate serverinterne Modellattestierung.",
+    "governance_read": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "independent_review_reference_read": true,
+    "validation": "Aktuelle Dateihashes, relevanter Git-Diff, CA-/TCP-/TLS-Bindungen und vorhandener 16-Test-PASS-Beleg gepr\u00fcft.",
+    "tests_executed": 0,
+    "remote_calls": 0,
+    "mutations": 0,
+    "delegation": 0,
+    "credential_contents_read": false
+  },
+  "preserved": "Alte Z\u00e4hler, Fehlversuche und Budgets unver\u00e4ndert; bisherige unabh\u00e4ngige Abnahmen unber\u00fchrt. Supavisorcache bleibt Hypothese. Keine abschlie\u00dfende Cutover-Abnahme."
+}
