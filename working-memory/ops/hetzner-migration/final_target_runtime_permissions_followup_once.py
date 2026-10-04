@@ -30,7 +30,8 @@ BAD='dashboard-memory:hetzner-final-permission-failed-20261003'
 NGINX=Path('/etc/nginx/sites-available/alexa')
 STAGE=Path('/opt/dashboard-memory-stage-read-20261003/build')
 OLD_DOCKERFILE=b'FROM dashboard-canonical-baseline:hz20261003\nCOPY access.py gateway_journal.py /app/\n'
-DOCKERFILE=('FROM '+rt.BASE+'\nCOPY --chmod=0644 access.py gateway_journal.py /app/\n').encode()
+BASE_ALIAS='dashboard-canonical-baseline:hz20261003'
+DOCKERFILE=('FROM '+BASE_ALIAS+'\nCOPY --chmod=0644 access.py gateway_journal.py /app/\n').encode()
 ATTEMPT='target-runtime-permissions-attempt.marker'
 RECOVERY='target-runtime-permissions-receipt.json'
 PROOF='target-runtime-permissions-proof.json'
@@ -153,6 +154,7 @@ def preflight(run,gate,values,data,op):
     observation=op.host(gate,values)
     require(observation['changed'] is False and observation['canonical_running'] is False and observation['runtime_attempt'] is True,'Host no longer original')
     require(all(x['running'] is True for x in observation['apis']),'Prior APIs not running')
+    require(op.inspect(BASE_ALIAS)['Id']==rt.BASE,'Base alias differs')
     base=op.inspect(rt.BASE);bad=op.inspect(STATIC)
     require(base['Config']['User']==bad['Config']['User']=='10001:10001','Default user differs')
     require(bad['Id']==data['failure']['bad_image'] and bad['RootFS']['Layers'][:-1]==base['RootFS']['Layers'] and len(bad['RootFS']['Layers'])==len(base['RootFS']['Layers'])+1,'Old bad image differs')

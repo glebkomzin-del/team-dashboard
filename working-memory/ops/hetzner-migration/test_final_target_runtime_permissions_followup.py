@@ -28,7 +28,7 @@ PRIVATE.mkdir(mode=0o700,parents=True,exist_ok=True)
 
 class Synthetic(f.Operations):
     def __init__(self,run,old):
-        super().__init__(run);self.old=old;self.events=[];self.fail=None;self.images={f.STATIC:old.target_id,rt.BASE:rt.BASE};self.user='10001:10001'
+        super().__init__(run);self.old=old;self.events=[];self.fail=None;self.images={f.STATIC:old.target_id,rt.BASE:rt.BASE,f.BASE_ALIAS:rt.BASE};self.user='10001:10001'
     def inspect(self,name):
         identity=self.images[name]
         return {'Id':identity,'RootFS':{'Layers':['base'] if identity==rt.BASE else ['base','own']},'Config':{'User':'0' if self.fail=='user' and name==f.GOOD else self.user}}
