@@ -255,7 +255,19 @@ def prepare(input_path, output, now=None):
              and not any(x['key'] in c.ENV_FLAGS for x in front['production_env']['envs']), 'Frontend ENV absence incomplete')
     else:
         promotion=jsonref(inputs['promotion_receipt'])
-        need(promotion['status']=='PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED' and promotion['url_env_added'] is True
+        successor=inputs.get('promotion_successor_ref')
+        if successor:
+            import frontend_access_successor as access
+            need(successor==inputs['promotion_receipt'], 'Explicit successor ref differs')
+            current_ref=inputs['frontend_access_current_ref']
+            current_receipt=jsonref(current_ref)
+            current_hashes={ref['path']:ref['sha256'] for ref in refs(current_receipt)}
+            current_hashes[current_ref['path']]=current_ref['sha256']
+            current=access.current_observation(current_ref,lambda path:Path(path).read_bytes(),current_hashes,run=run,now=now)
+            need(current==front['access_provider'],'Current access raw GETs differ from fresh frontend envelope')
+            access.validate(promotion, lambda path: Path(path).read_bytes(), run=run,
+                            recovery_sha=inputs['originals']['runtime_recovery']['sha256'], current_provider=current)
+        need((promotion['status']=='PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED' or successor and promotion['status']=='READONLY_VERIFIED') and promotion['url_env_added'] is True
              and promotion['anon_env_added'] is True and promotion['promotion_attempts']==1
              and promotion['return_ownership_known'] is True and promotion['unknown_ownership']==[]
              and all(promotion['ownership'][k]=='OWN_ADD_CONFIRMED_EXIT_0' for k in c.ENV_FLAGS), 'Actual ENV ownership/promotion absent')
@@ -304,6 +316,11 @@ def prepare(input_path, output, now=None):
     data['vault_auth']['primary_receipts'] += data['source']['primary_receipts']
     if inputs['action']=='OWNER':
         data['frontend']['promotion_receipt']=retain(inputs['promotion_receipt'])
+        if inputs.get('promotion_successor_ref'):
+            data['frontend']['access_schema']=access.SCHEMA
+            data['frontend']['access_provider']=front['access_provider']
+            for ref in refs(current_receipt):read(ref);hashes[ref['path']]=ref['sha256']
+            data['frontend']['access_current_ref']=retain(current_ref)
         for ref in refs(promotion):
             # Promotion originals remain byte-exact, transitive refs stay bound.
             read(ref);hashes[ref['path']]=ref['sha256']
@@ -317,6 +334,10 @@ def prepare(input_path, output, now=None):
           'source104_archive_sha256':raw_refs['source_archive']['sha256'],'preview':c.PREVIEW,'project':PROJECT,
           'budget':{'env_add_each':1,'promotions':1,'owner_links':1,'automatic_retries':0},'proof':proof_ref,
           'preparation_only':True,'collector_sha256':digest(Path(__file__).resolve()),'origin_refs':inputs}
+    if inputs.get('promotion_successor_ref'):
+        need(inputs['action']=='OWNER', 'Successor only applies to OWNER preparation')
+        gate['frontend_access_schema']=access.SCHEMA
+        gate['script_hashes']['frontend_access_successor.py']=digest(OPS/'frontend_access_successor.py')
     result=write(directory,'candidate-gate.json',gate)
     write(directory,'preparation-result.json',{'status':'CANDIDATE_ONLY_PENDING_ACTUAL_REVIEW_AND_CONTROL_LOAD','candidate':result,
           'provider_calls':0,'promotion_actions':0,'owner_actions':0,'writer_actions':0,'late_return':'PENDING'})
@@ -430,7 +451,7 @@ def collect(base_path, output, *, assemble=False):
     query=(OPS/'business-fingerprint.sql').read_text();need(hashlib.sha256(query.encode()).hexdigest()==c.late.QUERY_SHA,'Actual business query SHA differs')
     queries={'business':query,'auth':auth,'state':state,'roles':EFFECTIVE_PRIVILEGES_SQL,'acl':acl_query(),
              'cron':"SELECT coalesce(json_agg(to_jsonb(j) ORDER BY jobid),'[]'::json) AS value FROM cron.job j;"}
-    observations={}
+    observations={};access_primary_refs={}
     def envelope(name,payload,observed_at,primary,additional=()):
         raw=write(directory,name+'-payload-private.json',payload)
         observations[name]=write(directory,name+'-envelope-private.json',{'problem_id':c.PROBLEM,'run_dir':inputs['run_dir'],
@@ -462,6 +483,21 @@ def collect(base_path, output, *, assemble=False):
             with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
                 tasks={k:pool.submit(operation.cli,v) for k,v in args.items()}
                 payload={k:json.loads(task.result()) for k,task in tasks.items()}
+            if inputs.get('promotion_successor_ref'):
+                import frontend_access_successor as access
+                promotion=jsonref(inputs['promotion_successor_ref'])
+                endpoints={'project':'/v9/projects/team-dashboard','deployment':'/v13/deployments/'+promotion['production_deployment_id'],
+                           'alias-primary':'/v4/aliases/'+access.PRIMARY,'alias-secondary':'/v4/aliases/'+access.SECONDARY}
+                def access_get(item):
+                    name,endpoint=item;args=['api',endpoint,'--method','GET','--raw','--scope','glebkomzin-dels-projects']
+                    body=operation.cli(args);observed_at=dt.datetime.now(dt.timezone.utc).isoformat()
+                    record={'args':args,'exit_code':0,'stdout_b64':base64.b64encode(body).decode(),'observed_at':observed_at}
+                    ref=write(directory,'frontend-access-'+name+'-primary-private.json',record)
+                    return name,json.loads(body),ref
+                with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+                    values=list(pool.map(access_get,endpoints.items()))
+                payload['access_provider']={name:value for name,value,ref in values}
+                access_primary_refs.update({name:ref for name,value,ref in values})
             return payload,dt.datetime.now(dt.timezone.utc).isoformat()
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
             source_future=pool.submit(source_read);frontend_future=pool.submit(frontend_read)
@@ -504,9 +540,16 @@ def collect(base_path, output, *, assemble=False):
         envelope('native',native['payload'],native['observed_at'],combined,[native_primary,local_primary])
         envelope('frontend',frontend,front_time,front_primary,raw_records('frontend-cli-*.json'))
         inputs['observations']=observations
+        if inputs.get('promotion_successor_ref'):
+            inputs['frontend_access_current_ref']=write(directory,'frontend-access-current-observation.json',
+                 {'problem_id':c.PROBLEM,'run_dir':inputs['run_dir'],'observed_at':front_time,
+                  'provider_primaries':access_primary_refs,'payload':frontend['access_provider']})
         if inputs['action']=='OWNER':
-            receipt=Path(inputs['collection']['frontend_marker_paths']['frontend-final-promotion-evidence.json'])
-            inputs['promotion_receipt']={'path':str(receipt),'sha256':digest(receipt)}
+            if inputs.get('promotion_successor_ref'):
+                read(inputs['promotion_successor_ref']);inputs['promotion_receipt']=inputs['promotion_successor_ref']
+            else:
+                receipt=Path(inputs['collection']['frontend_marker_paths']['frontend-final-promotion-evidence.json'])
+                inputs['promotion_receipt']={'path':str(receipt),'sha256':digest(receipt)}
         actual_inputs=write(directory,'actual-inputs-private.json',inputs)
         # Capture all raw API/CLI receipts in the output. No summary replaces them.
         result={'status':'COLLECTED_ONLY_NO_OPERATIONAL_GO','inputs':actual_inputs,'provider_mutations':0,'auth_calls':0,
@@ -544,6 +587,10 @@ def owner_bundle(candidate_path, host_directory, host_files_path, output):
     aliases=json.loads(Path(host_files_path).read_bytes());directory=private_new(output)
     proof=jsonref(gate['proof'])
     generated={gate['proof']['path'],*(r['path'] for k,r in proof['refs'].items() if k not in ('runtime_recovery','runtime_projection','runtime_error','baseline','source_archive','anon_key'))}
+    frontend=jsonref(proof['refs']['frontend'])
+    successor_path=frontend.get('promotion_receipt',{}).get('path') if frontend.get('access_schema') else None
+    current_access_path=frontend.get('access_current_ref',{}).get('path') if successor_path else None
+    if successor_path:generated.add(successor_path);generated.add(current_access_path)
     mapping={};manifest=[]
     for index,(path,sha) in enumerate(gate['receipt_hashes'].items()):
         ref={'path':path,'sha256':sha}
@@ -561,7 +608,8 @@ def owner_bundle(candidate_path, host_directory, host_files_path, output):
         if isinstance(value,list): return [remap(v) for v in value]
         return value
     # Bottom-up: rewrite generated observation wrappers, then proof. Originals stay raw.
-    for path in [p for p in generated if p!=gate['proof']['path']]+[gate['proof']['path']]:
+    order=([current_access_path,successor_path] if successor_path else [])+[p for p in generated if p not in (gate['proof']['path'],successor_path,current_access_path)]+[gate['proof']['path']]
+    for path in order:
         old=mapping[path];value=remap(json.loads(Path(path).read_bytes()))
         value['origin_refs']=[{'path':path,'sha256':gate['receipt_hashes'][path]}]
         new=write(directory,'remapped-'+Path(old['path']).name,value)

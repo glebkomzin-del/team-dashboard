@@ -108,7 +108,7 @@ def stamp(value):
     return parsed.astimezone(dt.timezone.utc)
 
 
-def validate_preconditions(gate, manifest, receipts, *, now, script_hashes, receipt_hashes):
+def validate_preconditions(gate, manifest, receipts, *, now, script_hashes, receipt_hashes, frontend_read_bytes=None):
     """Pure validator. receipt_hashes are hashes of actual bytes, not claimed hashes."""
     run = gate.get('run_dir', '')
     require(re.fullmatch(r'/opt/dashboard-supabase-20261003/final-export-\d{8}T\d{6}Z', run), 'Exact new run required')
@@ -128,6 +128,8 @@ def validate_preconditions(gate, manifest, receipts, *, now, script_hashes, rece
     for key, filename in RECEIPTS.items():
         ref = refs[key]
         require(Path(ref['path']).is_absolute(), 'Primary receipt path must be absolute')
+        if key=='frontend' and receipts['frontend'].get('schema')=='frontend-access-successor-v1':
+            filename='frontend-access-successor-receipt.json'
         if filename:
             require(ref['path'] == run+'/'+filename, 'Receipt belongs to another run')
         require(re.fullmatch('[a-f0-9]{64}', ref['sha256']) and receipt_hashes.get(ref['path']) == ref['sha256']
@@ -163,12 +165,28 @@ def validate_preconditions(gate, manifest, receipts, *, now, script_hashes, rece
                     and receipt_hashes.get(ref['path']) == ref['sha256']
                     and gate['receipt_hashes'].get(ref['path']) == ref['sha256'], 'Primary proof not bound')
     frontend = receipts['frontend']
-    require(frontend['status'] == 'PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED'
-            and frontend['production']['readyState'] == 'READY'
-            and frontend['production']['target'] == 'production'
-            and ALIASES.issubset(set(frontend['production']['aliases'])), 'Frozen frontend not ready')
-    require(all(any(c.get('alias') == a and c.get('exact_index') is True and c.get('exact_headers') is True
-                    for c in frontend['checks']) for a in ALIASES), 'Public artifact checks incomplete')
+    if frontend.get('schema')=='frontend-access-successor-v1':
+        import frontend_access_successor as access
+        require(gate.get('frontend_access_schema')==access.SCHEMA and callable(frontend_read_bytes)
+                and script_hashes.get('frontend_access_successor.py')==gate['script_hashes'].get('frontend_access_successor.py')
+                and re.fullmatch('[a-f0-9]{64}',script_hashes.get('frontend_access_successor.py','')), 'Reviewed access validator/raw reader absent')
+        current_ref=gate['frontend_access_current_ref']
+        current=access.current_observation(current_ref,frontend_read_bytes,gate['receipt_hashes'],run=run,now=now)
+        require(receipt_hashes.get(current_ref['path'])==current_ref['sha256'], 'Actual current access observation not hashed')
+        current_receipt=json.loads(access.bound(current_ref,frontend_read_bytes,gate['receipt_hashes']))
+        for ref in access.references(current_receipt):
+            require(receipt_hashes.get(ref['path'])==ref['sha256'],'Actual current access primary not hashed')
+        access.validate(frontend, frontend_read_bytes, gate['receipt_hashes'], run=run,
+                        recovery_sha=runtime['recovery_receipt_sha256'], current_provider=current)
+        for ref in access.references(frontend):
+            require(receipt_hashes.get(ref['path'])==ref['sha256'], 'Actual access primary hash not established')
+    else:
+        require(frontend['status'] == 'PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED'
+                and frontend['production']['readyState'] == 'READY'
+                and frontend['production']['target'] == 'production'
+                and ALIASES.issubset(set(frontend['production']['aliases'])), 'Frozen frontend not ready')
+        require(all(any(c.get('alias') == a and c.get('exact_index') is True and c.get('exact_headers') is True
+                        for c in frontend['checks']) for a in ALIASES), 'Public artifact checks incomplete')
     backup, mirror, bundle = receipts['backup'], receipts['mirror'], receipts['bundle_manifest']
     require(backup['state'] == 'ok' and backup['selfhost']['enabled'] is True
             and backup['selfhost']['restore_verified'] is True, 'Full target restore not verified')
@@ -206,11 +224,20 @@ def load_and_validate(run, gate_path, now=None):
         for ref in receipts[key].get('primary_receipts', []):
             require(not Path(ref['path']).is_symlink(), 'Symlink primary refused')
             hashes[ref['path']] = digest(ref['path'])
+    if receipts['frontend'].get('schema')=='frontend-access-successor-v1':
+        import frontend_access_successor as access
+        current_ref=gate['frontend_access_current_ref'];hashes[current_ref['path']]=digest(current_ref['path'])
+        current=json.loads(access.bound(current_ref,lambda path:Path(path).read_bytes(),gate['receipt_hashes']))
+        for ref in [*access.references(receipts['frontend']),*access.references(current)]:
+            require(not Path(ref['path']).is_symlink(), 'Symlink access primary refused')
+            hashes[ref['path']]=digest(ref['path'])
     validate_host_binding(gate, run, lambda path: Path(path).read_bytes())
     scripts = {'final_writer_open_once.py': digest(__file__),
                'n8n_dashboard_pause_once.py': digest(run/'n8n_dashboard_pause_once.py')}
+    if receipts['frontend'].get('schema')=='frontend-access-successor-v1':
+        scripts['frontend_access_successor.py']=digest(Path(__file__).with_name('frontend_access_successor.py'))
     validated = validate_preconditions(gate, manifest, receipts, now=now or dt.datetime.now(dt.timezone.utc),
-                                       script_hashes=scripts, receipt_hashes=hashes)
+                                       script_hashes=scripts, receipt_hashes=hashes, frontend_read_bytes=lambda path: Path(path).read_bytes())
     return gate, receipts, validated
 
 

@@ -177,7 +177,17 @@ def load(gate_path,action,now=None):
         check_old(front['aliases']);require(not any(x['key'] in ENV_FLAGS for x in front['production_env']['envs']),'Original ENV present')
     else:
         promotion=json.loads(bound(data['frontend']['promotion_receipt'],gate))
-        require(promotion['status']=='PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED' and promotion['promotion_attempts']==1 and
+        successor=data['frontend'].get('access_schema')
+        if successor:
+            import frontend_access_successor as access
+            require(successor==gate.get('frontend_access_schema')==access.SCHEMA and
+                    gate['script_hashes'].get('frontend_access_successor.py')==digest(OPS/'frontend_access_successor.py'),
+                    'Access successor helper/schema not reviewed')
+            current=access.current_observation(data['frontend']['access_current_ref'],raw,gate['receipt_hashes'],run=gate['run_dir'],now=now)
+            require(current==data['frontend']['access_provider'],'Current access observation/envelope differs')
+            access.validate(promotion, raw, gate['receipt_hashes'], run=gate['run_dir'], recovery_sha=sha(values['runtime_recovery']),
+                            current_provider=current)
+        require((promotion['status']=='PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED' or successor and promotion['status']=='READONLY_VERIFIED') and promotion['promotion_attempts']==1 and
                 promotion['url_env_added'] is True and promotion['anon_env_added'] is True and promotion['artifact_sha256']==ARTIFACT_SHA and
                 promotion['runtime_recovery_sha256']==sha(values['runtime_recovery']),'Actual canonical promotion absent')
         identity=promotion['production_deployment_id']
