@@ -355,7 +355,7 @@ class FinalEntryTests(Fixtures):
         module = self.original()
         spec = types.SimpleNamespace(loader=types.SimpleNamespace(exec_module=lambda m: None))
         tunnel = Mock()
-        tunnel.return_value.__enter__ = Mock(side_effect=lambda: events.append('tunnel'))
+        tunnel.return_value.__enter__ = Mock(side_effect=lambda *args: events.append('tunnel'))
         tunnel.return_value.__exit__ = Mock(side_effect=lambda *args: events.append('closed'))
         response = Mock(status=201, headers={'raw': 'header'})
         response.read.return_value = json.dumps({'role': 'cli_login_postgres_fixture', 'password': SECRET, 'ttl_seconds': 300}).encode()
@@ -393,6 +393,15 @@ class FinalEntryTests(Fixtures):
         receipt.write_text(json.dumps({'status': 'PASSED', 'actual_auth_pass': False}))
         self.gate['preflight_receipt_sha256'] = c.digest(receipt)
         with self.assertRaises(RuntimeError): r.checked_gate(self.gate, self.run_dir, self.gate['phase'], self.clock)
+
+
+class ActualPathTests(unittest.TestCase):
+    def test_unmodified_connection_paths_equal_and_exist_without_reading_contents(self):
+        spec = importlib.util.spec_from_file_location('actual_source_path', OPS / 'export_source.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.assertEqual(pre.POOLER_LINK.resolve(), module.LINK.resolve())
+        self.assertTrue(pre.POOLER_LINK.is_file())
 
 
 if __name__ == '__main__':
