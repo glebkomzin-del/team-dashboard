@@ -218,7 +218,7 @@ class PreparationTests(unittest.TestCase):
         self.native['archive_current'].update(hash_kind='HISTORICAL_ACCEPTED_FULL_HASH',hash_observed_at=NOW.isoformat())
         self.denied()
 
-    def test_one_collection_command_uses_three_separately_observed_envelopes(self):
+    def changed_current_collection(self, mode="positive"):
         import final_phase_common as common
         import final_target_partial_source_return_once as partial
         archive=self.inputs['archives']['mac'];body=Path(archive['path']).read_bytes()
@@ -227,6 +227,20 @@ class PreparationTests(unittest.TestCase):
                 'frontend_marker_paths':{}}
         self.inputs['local_receipts']={RUN+'/'+name:self.inputs['originals'][key]
               for name,key in [('target-runtime-receipt.json','runtime_projection'),('target-runtime-permissions-receipt.json','runtime_recovery')]}
+        self.inputs['archives']['full']=archive
+        self.native['archive_current'].update(hash_kind='HISTORICAL_ACCEPTED_FULL_HASH',hash_observed_at=NOW.isoformat())
+        recovery=p.read(self.inputs['originals']['runtime_recovery'])
+        parent=json.dumps({'original_recovery_ref':{'path':RUN+'/target-runtime-permissions-receipt.json','sha256':p.c.sha(recovery)}}).encode()
+        resume=json.dumps({'parent_ref':{'path':RUN+'/parent/resume.json','sha256':p.c.sha(parent)}}).encode()
+        current=p.jsonref(self.inputs['originals']['runtime_projection'])
+        current['resume_receipt_ref']={'path':RUN+'/actual-resume/resume.json','sha256':p.c.sha(resume) if mode!='wrong' else '0'*64}
+        current_body=json.dumps(current).encode()
+        mutable_alias=self.root/'current-alias.json';mutable_alias.write_bytes(current_body)
+        self.assertNotEqual(p.digest(mutable_alias),self.inputs['originals']['runtime_projection']['sha256'])
+        host={RUN+'/target-runtime-receipt.json':current_body,RUN+'/target-runtime-permissions-receipt.json':recovery,
+              RUN+'/actual-resume/resume.json':resume,RUN+'/parent/resume.json':parent}
+        if mode=='missing':del host[RUN+'/parent/resume.json']
+        if mode=='unknown':del host[RUN+'/target-runtime-receipt.json']
         self.save_inputs();calls=[];test=self
         class FakeOperations:
             def __init__(self,directory):self.directory=directory
@@ -245,21 +259,33 @@ class PreparationTests(unittest.TestCase):
         def shell(command,timeout):
             calls.append(('ssh','one-native-batch'))
             self.assertIn('8798/health',command);self.assertNotIn('generateLink',command)
-            originals={RUN+'/'+name:base64.b64encode(p.read(self.inputs['originals'][key])).decode()
-                for name,key in [('target-runtime-receipt.json','runtime_projection'),('target-runtime-permissions-receipt.json','runtime_recovery')]}
-            return json.dumps({'payload':self.native,'observed_at':NOW.isoformat(),'host_primaries':originals,'process_records':[]}).encode()
+            originals={path:base64.b64encode(body).decode() for path,body in host.items()}
+            return json.dumps({'payload':self.native,'observed_at':dt.datetime.now(dt.timezone.utc).isoformat(),'host_primaries':originals,'process_records':[]}).encode()
         with patch.object(partial,'PartialOperations',FakeOperations),patch.object(common,'shell',side_effect=shell),\
              patch.object(subprocess,'run',side_effect=AssertionError('REAL OPERATIONS FORBIDDEN')):
-            ref=p.collect(self.input_path,self.root/'collection')
+            if mode!='positive':
+                with self.assertRaises((ValueError,KeyError,RuntimeError)):p.collect(self.input_path,self.root/'collection',assemble=True)
+                self.assertFalse((self.root/'collection/candidate/candidate-gate.json').exists())
+                return
+            ref=p.collect(self.input_path,self.root/'collection',assemble=True)
         inputs=p.jsonref(ref)
         self.assertEqual(len([x for x in calls if x[0]=='ssh']),1)
         self.assertEqual(len([x for x in calls if x[0]=='source']),6)
         self.assertEqual(len([x for x in calls if x[0]=='cli']),3)
         self.assertEqual(set(inputs['observations']),p.OBSERVATIONS)
-        self.assertEqual(len(list((self.root/'collection').glob('native-original-*.raw'))),2)
+        self.assertEqual(len(list((self.root/'collection').glob('native-original-*.raw'))),4)
         for name,ref in inputs['observations'].items():
             e=p.jsonref(ref);self.assertTrue(e['observed_at']);self.assertIn('payload',e);self.assertGreaterEqual(len(e['primary_receipts']),2)
-        self.assertFalse((self.root/'collection/candidate-gate.json').exists())
+        self.assertEqual(inputs['originals']['runtime_projection']['sha256'],p.c.sha(current_body))
+        result=json.loads((self.root/'collection/collection-result.json').read_bytes())
+        gate=p.jsonref(result['candidate']);self.assertFalse(gate['operational_frontend_go'])
+        self.assertEqual(p.read(inputs['originals']['runtime_recovery']),recovery)
+        self.assertEqual(p.digest(mutable_alias),p.c.sha(current_body))
+
+    def test_changed_current_collect_replaces_historical_bootstrap(self):self.changed_current_collection()
+    def test_changed_current_collect_missing_parent_denied(self):self.changed_current_collection('missing')
+    def test_changed_current_collect_wrong_resume_sha_denied(self):self.changed_current_collection('wrong')
+    def test_changed_current_collect_unknown_current_denied(self):self.changed_current_collection('unknown')
 
     def test_native_batch_follows_actual_new_resume_reference_in_same_read(self):
         archive=self.inputs['archives']['mac'];body=Path(archive['path']).read_bytes()

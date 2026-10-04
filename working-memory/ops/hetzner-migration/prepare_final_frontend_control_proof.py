@@ -470,6 +470,9 @@ def collect(base_path, output, *, assemble=False):
             body=native_future.result();native_primary=write(directory,'native-batch-stdout-private.json',body)
             native=json.loads(body);need(not native.get('failed'), 'Native batch failed')
             source,source_time=source_future.result();frontend,front_time=frontend_future.result()
+        need(all(inputs['run_dir']+'/'+name in native['host_primaries'] for name in
+                 ('target-runtime-receipt.json','target-runtime-permissions-receipt.json')),
+             'Actual current projection and original recovery Host primaries required')
         for index,(path,encoded) in enumerate(native['host_primaries'].items()):
             body=base64.b64decode(encoded,validate=True);ref=write(directory,'native-original-'+str(index)+'.raw',body)
             inputs.setdefault('local_receipts',{})[path]=ref
