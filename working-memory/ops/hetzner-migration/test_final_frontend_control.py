@@ -24,6 +24,10 @@ o=importlib.util.module_from_spec(spec);spec.loader.exec_module(o)
 NOW=dt.datetime(2026,10,4,8,tzinfo=dt.timezone.utc)
 RUN='/opt/dashboard-supabase-20261003/final-export-20261004T004000Z'
 UID='01234567-89ab-cdef-0123-456789abcdef'
+ACTUAL_ID='dpl_SyntheticNewProduction54'
+ACTUAL_URL='synthetic-new.vercel.app'
+RESULT_URL='https://vercel.com/'+c.SCOPE+'/'+c.PROJECT+'/'+ACTUAL_ID.removeprefix('dpl_')
+PROMOTE_STDERR='Successfully created new deployment of '+c.PROJECT+' at '+RESULT_URL+'\n'
 KEY='eyJhbGciOiJIUzI1NiJ9.'+base64.urlsafe_b64encode(b'{"role":"anon"}').decode().rstrip('=')+'.synthetic-only'
 
 class Fixture:
@@ -91,14 +95,16 @@ class Fixture:
     def owner(self):
         self.gate['action']='OWNER'
         receipt={'status':'PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED','promotion_attempts':1,'url_env_added':True,'anon_env_added':True,
-                 'artifact_sha256':c.ARTIFACT_SHA,'runtime_recovery_sha256':self.refs['runtime_recovery']['sha256']}
+                 'artifact_sha256':c.ARTIFACT_SHA,'runtime_recovery_sha256':self.refs['runtime_recovery']['sha256'],
+                 'production_deployment_id':ACTUAL_ID,'promoted_url':ACTUAL_URL,'readiness_count':2,
+                 'production':{'id':ACTUAL_ID,'url':ACTUAL_URL}}
         self.objects['frontend']['promotion_receipt']=self.put('canonical-promotion',receipt)
-        self.objects['frontend']['aliases']={a:{'id':c.PREVIEW,'readyState':'READY','target':'production','aliases':sorted(c.ALIASES)} for a in c.ALIASES}
+        self.objects['frontend']['aliases']={a:{'id':ACTUAL_ID,'readyState':'READY','target':'production','name':c.PROJECT,'contextName':c.SCOPE,'aliases':sorted(c.ALIASES)} for a in c.ALIASES}
         self.write()
 
 class FakeOps(c.Operations):
     def __init__(self,directory,receipt,case='success'):
-        super().__init__(directory);self.receipt=receipt;self.case=case;self.calls=[];self.adds=0;self.promoted=False
+        super().__init__(directory);self.receipt=receipt;self.case=case;self.calls=[];self.adds=0;self.promoted=False;self.polls=0
     def process(self,args,**kw):
         cli=args[1:];self.calls.append(cli)
         if cli[:2]==['env','add']:
@@ -113,12 +119,16 @@ class FakeOps(c.Operations):
         if cli[0]=='promote':
             assert json.loads(self.receipt.read_text())['promotion_attempts']==1
             assert (self.directory.parent/'promotion-INTENT.marker').exists()
-            self.promoted=True;return subprocess.CompletedProcess(args,0,'original promotion stdout\n','original promotion stderr\n')
+            self.promoted=True;return subprocess.CompletedProcess(args,0,'original promotion stdout\n',PROMOTE_STDERR)
         if cli[0]=='inspect':
             if self.case=='bad-json':return subprocess.CompletedProcess(args,0,'ORIGINAL MALFORMED JSON','original inspect success stderr')
-            deployment=c.PREVIEW if self.promoted else c.ROLLBACK
+            deployment=ACTUAL_ID if self.promoted else c.ROLLBACK
             if self.promoted and self.case=='alias-fail' and cli[1]==sorted(c.ALIASES)[0]:deployment='dpl_foreign'
-            body={'id':deployment,'readyState':'READY','target':'production','aliases':sorted(c.ALIASES),'url':'synthetic.vercel.app'}
+            if self.promoted and cli[1]==RESULT_URL:self.polls+=1
+            pending=self.promoted and self.case in ('pending','expiry') and (self.polls==1 or self.case=='expiry')
+            if pending and cli[1] in c.ALIASES:deployment=c.ROLLBACK
+            body={'id':deployment,'readyState':'BUILDING' if pending and cli[1]==RESULT_URL else 'READY',
+                  'target':'production','name':c.PROJECT,'contextName':c.SCOPE,'aliases':sorted(c.ALIASES),'url':ACTUAL_URL}
             return subprocess.CompletedProcess(args,0,json.dumps(body),'inspect stderr')
         if cli[:2]==['env','ls']:
             envs=[]
@@ -250,5 +260,63 @@ class FrontendControlTests(unittest.TestCase):
         self.assertEqual(json.loads((run/'owner-link-receipt.json').read_text()),receipt)
         self.assertTrue((run/'owner-recovered-control-private/original-output.json').exists())
         self.assertTrue(any('body_b64' in json.loads(p.read_text()) for p in (run/'owner-recovered-control-private').glob('*.json')))
+
+
+class DeploymentIdentityFollowupTests(FrontendControlTests):
+    """Only these three selected families run in the single follow-up invocation."""
+    def test_new_id_pending_then_ready(self):
+        with patch.object(c.time,'sleep'):
+            result,ops=self.promote('pending')
+        self.assertNotEqual(ACTUAL_ID,c.PREVIEW)
+        self.assertEqual(result['production_deployment_id'],ACTUAL_ID)
+        self.assertEqual(result['promoted_url'],ACTUAL_URL)
+        self.assertEqual(result['readiness_count'],2)
+        self.assertEqual(result['status'],'PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED')
+        self.assertEqual(len(result['checks']),12)
+        self.assertEqual(sum(x[0]=='promote' for x in ops.calls),1)
+        self.assertEqual(ops.adds,2)
+        first=json.loads((self.root/'control/ready-poll-1.json').read_text())
+        self.assertEqual(first['production']['readyState'],'BUILDING')
+        self.assertEqual({x['id'] for x in first['aliases'].values()},{c.ROLLBACK})
+        primary=result['promote_primary'];self.assertEqual(c.digest(primary['path']),primary['sha256'])
+        record=json.loads(Path(primary['path']).read_text())
+        self.assertEqual(base64.b64decode(record['stdout_b64']),b'original promotion stdout\n')
+        self.assertEqual(base64.b64decode(record['stderr_b64']).decode(),PROMOTE_STDERR)
+        self.assertEqual(self.receipt.stat().st_mode&0o777,0o600)
+
+    def test_alias_mismatch_or_expiry_stops_without_second_mutation(self):
+        original_root=self.root
+        for case in ('alias-fail','expiry'):
+            self.root=original_root/case;self.root.mkdir(mode=0o700)
+            self.f=Fixture(self.root);self.receipt=self.root/'frontend-final-promotion-evidence.json'
+            ticks=[0.0]
+            def sleep(seconds):ticks[0]+=180 if case=='expiry' else seconds
+            with patch.object(c.time,'monotonic',side_effect=lambda:ticks[0]),patch.object(c.time,'sleep',side_effect=sleep):
+                with self.assertRaises(RuntimeError):self.promote(case)
+            result=json.loads(self.receipt.read_text());calls=json.loads((self.root/'call-summary.json').read_text())['calls']
+            self.assertEqual(result['status'],'STOPPED_NO_RETRY')
+            self.assertEqual(result['production_deployment_id'],ACTUAL_ID)
+            self.assertEqual(sum(x[0]=='promote' for x in calls),1)
+            self.assertEqual(sum(x[:2]==['env','add'] for x in calls),2)
+            self.assertIs(result['url_env_added'],True);self.assertIs(result['anon_env_added'],True)
+            self.assertTrue(result['return_ownership_known'])
+            self.assertTrue((self.root/'control/ready-poll-1.json').exists())
+            primary=json.loads(Path(result['promote_primary']['path']).read_text())
+            self.assertEqual(base64.b64decode(primary['stderr_b64']).decode(),PROMOTE_STDERR)
+            error=json.loads((self.root/'control/primary-control-error.json').read_text())
+            self.assertEqual(error['cause'],'Foreign alias identity' if case=='alias-fail' else 'READY observation expired')
+        self.root=original_root
+
+    def test_owner_actual_receipt_id_accepts_and_mismatch_denies(self):
+        self.test_owner_real_original_flow_once_on_bound_current_projection()
+        self.assertNotEqual(ACTUAL_ID,c.PREVIEW)
+        gate,values,data,key=c.load(self.f.path,'OWNER',NOW)
+        self.assertEqual({x['id'] for x in data['frontend']['aliases'].values()},{ACTUAL_ID})
+        for mismatch in ('dpl_foreign',c.PREVIEW):
+            self.f.objects['frontend']['aliases'][sorted(c.ALIASES)[0]]['id']=mismatch;self.f.write()
+            with patch.object(c.subprocess,'run',side_effect=AssertionError('mutation forbidden')):
+                with self.assertRaisesRegex(Exception,'Production identity/project differs'):c.load(self.f.path,'OWNER',NOW)
+        c.save(self.root/'owner-id-family.json',{'accepted_id':ACTUAL_ID,'rejected_ids':['dpl_foreign',c.PREVIEW],
+               'actual_original_owner_receipt':str(self.root/'host/final-export-20261004T004000Z/owner-link-receipt.json')})
 
 if __name__=='__main__':unittest.main(verbosity=2)

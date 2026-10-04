@@ -23,7 +23,7 @@ import n8n_dashboard_pause_once as n8n
 
 PHASE='PERMISSIONS_ONLY_TARGET_COMPLETION'
 OLD_SHA='e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c'
-PARTIAL_SHA='b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319'
+PARTIAL_SHA='a7067eebfb01bc4ede1884bafb34f6ebfd4352b0e8ff0d6ab78b6eaa702ba3b8'
 STATIC='dashboard-memory:hetzner-final-20261003'
 GOOD='dashboard-memory:hetzner-final-permissions-20261004'
 BAD='dashboard-memory:hetzner-final-permission-failed-20261003'

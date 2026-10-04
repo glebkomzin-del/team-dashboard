@@ -273,7 +273,8 @@ class PartialOperations(r.MacReturnOperations):
         require(len(rows)==1 and set(rows[0])=={'value'},'Source state incomplete');state=rows[0]['value']
         require(all(type(state[k]) is int and state[k]==0 for k in ['running','unknown_model','unknown_question']),'Source calls outstanding')
         require(state['config']==[{**r,'enabled':False} for r in json.loads(values['config'])],'Source full CFG differs')
-        require(self.source_sql('SELECT count(*) AS count FROM cron.job')==[{'count':0}],'Source cron writer')
+        cron=self.source_sql('SELECT count(*) AS count FROM cron.job WHERE active')
+        require(type(cron) is list and len(cron)==1 and type(cron[0]) is dict and set(cron[0])=={'count'} and type(cron[0]['count']) is int and cron[0]['count']==0,'Source cron writer')
         self.source_projection(values,frozen,names)
 
     def source_projection(self,values,frozen,names):
@@ -301,7 +302,8 @@ class PartialOperations(r.MacReturnOperations):
                     and comparison['comparison_before_auth_vault_acl'] is True,'Root ALLCOPY absent')
             require(projection(self.target_sql(values['query'].decode()),names)==frozen,'Target43 differs')
             require(self.target_sql("SELECT json_build_object('running',(SELECT count(*) FROM public.wm_jobs WHERE state IN ('running','prepared')),'unknown_model',(SELECT count(*) FROM public.wm_model_calls WHERE received_at IS NULL AND redaction_id IS NULL),'unknown_question',(SELECT count(*) FROM public.wm_question_calls WHERE response_json IS NULL AND redaction_id IS NULL))")=={'running':0,'unknown_model':0,'unknown_question':0},'Target calls outstanding')
-            require(self.target_sql('SELECT count(*) FROM cron.job')==0,'Target cron writer')
+            cron=self.target_sql('SELECT count(*) FROM cron.job WHERE active')
+            require(type(cron) is int and cron==0,'Target cron writer')
         else:
             require(not observation['changed'] and not observation['canonical_running'],'Restore failed branch invalid')
             # host_check pins all four API identities; stop_partial proves actual inactivity

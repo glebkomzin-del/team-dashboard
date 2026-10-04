@@ -201,7 +201,8 @@ for w,v in VERSIONS.items():
         require(len(source_rows) == 1 and set(source_rows[0]) == {'value'}, 'Source live state incomplete')
         source_state = source_rows[0]['value']
         require(all(type(source_state[k]) is int and source_state[k] == 0 for k in ['running','unknown_model','unknown_question']), 'Source outstanding work unknown/nonempty')
-        require(self.source_sql('SELECT count(*) AS count FROM cron.job') == [{'count': 0}], 'Source scheduled writer unknown/nonempty')
+        cron = self.source_sql('SELECT count(*) AS count FROM cron.job WHERE active')
+        require(type(cron) is list and len(cron) == 1 and type(cron[0]) is dict and set(cron[0]) == {'count'} and type(cron[0]['count']) is int and cron[0]['count'] == 0, 'Source scheduled writer unknown/nonempty')
         require(self.source_sql(acl_query()) == json.loads(values['acl_frozen']), 'Source ACL changed')
         config = json.loads(values['config'])
         require(source_state['config'] == [{**r, 'enabled': False} for r in config], 'Source full config changed')
@@ -229,7 +230,8 @@ for p in [env['MEMORY_CACHE_DIR']+'/response-outbox',env['MEMORY_QA_OUTBOX']]:
  d=Path(m['Source'])/Path(p).relative_to('/app/.local');assert d.is_dir() and not list(d.rglob('*.json'))
 assert op.sql("SELECT json_build_object('running',(SELECT count(*) FROM public.wm_jobs WHERE state IN ('running','prepared')),'unknown_model',(SELECT count(*) FROM public.wm_model_calls WHERE received_at IS NULL AND redaction_id IS NULL),'unknown_question',(SELECT count(*) FROM public.wm_question_calls WHERE response_json IS NULL AND redaction_id IS NULL))")=={{'running':0,'unknown_model':0,'unknown_question':0}}
 assert op.call(['docker','exec','-i','n8n_postgres','psql','-U','n8n','-d','n8n','-XqAt','-v','ON_ERROR_STOP=1'],input=b\"SELECT count(*) FROM execution_entity WHERE \\\"workflowId\\\" IN ('nzyaKxs5Om9wuPEc','dashboardDriveMove','dashboardDriveWatch') AND status IN ('new','running','waiting');\").strip()==b'0'
-assert op.sql('SELECT count(*) FROM cron.job')==0
+cron=op.sql('SELECT count(*) FROM cron.job WHERE active')
+assert type(cron) is int and cron==0
 """
         self.remote_python(code, timeout=100)
 

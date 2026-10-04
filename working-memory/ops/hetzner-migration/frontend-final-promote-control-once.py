@@ -19,6 +19,8 @@ from pathlib import Path
 import re
 import subprocess
 import uuid
+import time
+from urllib.parse import urlparse
 import final_owner_link_once as owner
 import final_prewrite_rollback_once as late
 import final_writer_open_once as writer
@@ -178,30 +180,83 @@ def load(gate_path,action,now=None):
         require(promotion['status']=='PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED' and promotion['promotion_attempts']==1 and
                 promotion['url_env_added'] is True and promotion['anon_env_added'] is True and promotion['artifact_sha256']==ARTIFACT_SHA and
                 promotion['runtime_recovery_sha256']==sha(values['runtime_recovery']),'Actual canonical promotion absent')
-        check_production(data['frontend']['aliases'])
+        identity=promotion['production_deployment_id']
+        require(promotion['production']['id']==identity and promotion['readiness_count']>=1 and
+                promotion['promoted_url']==promotion['production']['url'] and identity!=PREVIEW,'Canonical identity unbound')
+        check_production(data['frontend']['aliases'],identity)
     return gate,values,data,key
 
 def check_old(aliases):
     require(set(aliases)==ALIASES and all(v['id']==ROLLBACK and v['readyState']=='READY' for v in aliases.values()),'Original aliases differ')
 
-def check_production(aliases):
-    require(set(aliases)==ALIASES and {x['id'] for x in aliases.values()}=={PREVIEW} and
-            all(x['readyState']=='READY' and x['target']=='production' and ALIASES.issubset(set(x['aliases'])) for x in aliases.values()),'Production aliases/artifact differ')
+# CLI54 inspect JSON exposes name/contextName, not projectId/team.id.
+# Their expected values come from the frozen inspector URL; local project/org
+# IDs are independently checked by frozen_checks and the actual gate.
+SCOPE,PROJECT= urlparse(original.artifact['preview_deployment']['inspectorUrl']).path.strip('/').split('/')[:2]
+READY_BOUND_SECONDS=180
+
+def deployment_identity(deployment,identity):
+    require(re.fullmatch(r'dpl_[A-Za-z0-9]+',identity) and identity!=PREVIEW and
+            deployment['id']==identity and deployment['target']=='production' and
+            deployment['name']==PROJECT and deployment['contextName']==SCOPE,'Production identity/project differs')
+
+def check_production(aliases,identity):
+    require(set(aliases)==ALIASES,'Production aliases differ')
+    for deployment in aliases.values():
+        deployment_identity(deployment,identity)
+        require(deployment['readyState']=='READY' and ALIASES.issubset(set(deployment.get('aliases',[]))),
+                'Production aliases/artifact differ')
+
+def promoted_result(ops):
+    # log() writes console output, including stderr; preserve both before parsing.
+    record=json.loads(raw(ops.last_primary))
+    text='\n'.join(base64.b64decode(record[k] or '').decode() for k in ('stdout_b64','stderr_b64'))
+    text=re.sub(r'\x1b\[[0-9;]*m','',text)
+    urls=re.findall(r'Successfully created new deployment of '+re.escape(PROJECT)+r' at (https://[^\s]+)',text)
+    require(len(urls)==1,'Unambiguous CLI54 creation result absent')
+    result=urls[0];parsed=urlparse(result);parts=parsed.path.strip('/').split('/')
+    require(parsed.scheme=='https' and parsed.netloc=='vercel.com' and not parsed.query and not parsed.fragment and
+            len(parts)==3 and parts[:2]==[SCOPE,PROJECT],'Promote result scope/project differs')
+    identity=parts[2] if parts[2].startswith('dpl_') else 'dpl_'+parts[2]
+    require(re.fullmatch(r'dpl_[A-Za-z0-9]+',identity) and identity!=PREVIEW,'New creation identity absent')
+    return result,identity,{'path':str(ops.last_primary),'sha256':digest(ops.last_primary)}
+
+def observe_ready(ops,result_url,identity,directory,evidence,persist):
+    deadline=time.monotonic()+READY_BOUND_SECONDS;count=0
+    def inspect(url):
+        remaining=deadline-time.monotonic();require(remaining>0,'READY observation expired')
+        return json.loads(ops.cli(['inspect',url,'--format','json'],timeout=remaining))
+    while True:
+        count+=1;production=inspect(result_url);deployment_identity(production,identity)
+        require(production['readyState'] not in ('ERROR','CANCELED'),'Production deployment failed')
+        aliases={a:inspect(a) for a in sorted(ALIASES)}
+        save(directory/('ready-poll-'+str(count)+'.json'),{'production':production,'aliases':aliases})
+        evidence.update(readiness_count=count,production_deployment_id=identity,promoted_url=production['url']);persist()
+        for deployment in aliases.values():
+            require(deployment['id'] in (ROLLBACK,identity),'Foreign alias identity')
+            if deployment['id']==identity:deployment_identity(deployment,identity)
+        require(time.monotonic()<=deadline,'READY observation expired')
+        if production['readyState']=='READY' and all(x['id']==identity and x['readyState']=='READY' for x in aliases.values()):
+            check_production(aliases,identity);return production
+        remaining=deadline-time.monotonic();require(remaining>0,'READY observation expired')
+        time.sleep(min(2,remaining))
 
 class Operations:
     def __init__(self,directory):self.directory=private_dir(directory)
-    def cli(self,args,value=None):
+    def cli(self,args,value=None,*,timeout=None):
         """Preserve all success/error output BEFORE caller parses or records ownership."""
-        record={'args':args,'stdout_b64':None,'stderr_b64':None,'exit_code':None,'timeout':False}
+        effective_timeout=timeout if timeout is not None else (120 if args[0]=='promote' else 240)
+        record={'args':args,'stdout_b64':None,'stderr_b64':None,'exit_code':None,'timeout':False,'timeout_seconds':effective_timeout}
         try:
-            result=subprocess.run(['vercel',*args],cwd=original.BUILD,input=value,capture_output=True,text=True,timeout=240)
+            result=subprocess.run(['vercel',*args],cwd=original.BUILD,input=value,capture_output=True,text=True,timeout=effective_timeout)
             record.update(stdout_b64=enc(result.stdout),stderr_b64=enc(result.stderr),exit_code=result.returncode)
         except Exception as error:
             record.update(stdout_b64=enc(getattr(error,'stdout',None)),stderr_b64=enc(getattr(error,'stderr',None)),
                           timeout=isinstance(error,subprocess.TimeoutExpired),error_type=type(error).__name__,error_text=str(error))
             save(self.directory/('cli-'+uuid.uuid4().hex+'.json'),record)
             raise RuntimeError('CLI ambiguous; private primary retained') from None
-        save(self.directory/('cli-'+uuid.uuid4().hex+'.json'),record)
+        self.last_primary=self.directory/('cli-'+uuid.uuid4().hex+'.json')
+        save(self.last_primary,record)
         require(result.returncode==0,'CLI failed; private primary retained')
         return result.stdout
     def aliases(self):return {a:json.loads(self.cli(['inspect',a,'--format','json'])) for a in sorted(ALIASES)}
@@ -281,8 +336,10 @@ def execute(gate_path,directory=None,operations=None,now=None,receipt=None):
         save(directory/'promotion-INTENT.marker',{'preview':PREVIEW,'promotion_attempts':1,'gate_sha256':digest(gate_path)})
         evidence['promotion_attempts']=1;persist()
         ops.cli(['promote',PREVIEW,'--yes'])
-        aliases=ops.aliases();check_production(aliases)
-        prod=aliases[sorted(ALIASES)[0]];evidence['production']={k:prod[k] for k in ('id','readyState','target','aliases','url')};persist()
+        result_url,identity,primary=promoted_result(ops)
+        evidence.update(promote_result_url=result_url,production_deployment_id=identity,promote_primary=primary,readiness_bound_seconds=READY_BOUND_SECONDS,readiness_count=0);persist()
+        prod=observe_ready(ops,result_url,identity,directory,evidence,persist)
+        evidence['production']=prod;persist()
         evidence['checks']=verify_public(ops,output);original.frozen_checks()
         evidence['status']='PROMOTED_AND_PUBLIC_ARTIFACT_VERIFIED';persist();return evidence
     except Exception as error:
