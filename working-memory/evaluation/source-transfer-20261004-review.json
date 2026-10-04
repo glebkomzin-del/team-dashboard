@@ -1,0 +1,171 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "transfer_operational_go": true,
+  "packet": "SOURCE_ARTIFACT_TRANSFER_ONLY",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "enforcement": "RULES_ONLY",
+  "permit_scope": "Genau ein Transfer-Recovery-Paket unter den folgenden zwingenden Vorbedingungen; keine Target-Freigabe.",
+  "runtime": {
+    "model": "gpt-6-astra",
+    "reasoning_effort": "high",
+    "sandbox": "read-only",
+    "approval": "never",
+    "session_uuid": "01a10469-d0eb-7ca2-902c-5bfea120dbcf",
+    "codex_thread_id_matches": true,
+    "different_from_previous_reviewer": true,
+    "fresh_standalone_review": true,
+    "runtime_header_verified": true,
+    "runtime_header_ref": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-transfer-review-2/stderr-private.txt",
+    "runtime_header_lines": "10-19",
+    "runtime_header_lines_sha256": "9a381bc7cd8f96c89b92efc078dd1976054331b04b50b4aed38b172f7d8744e2",
+    "verification_basis": "Tats\u00e4chlich ausgegebener CLI-Laufzeitheader und \u00fcbereinstimmendes CODEX_THREAD_ID; /root ist keine Desktop-Lead-Identifikation.",
+    "tests": 0,
+    "remote_calls": 0,
+    "mutations": 0,
+    "delegations": 0,
+    "restricted_contents_read": false
+  },
+  "governance": {
+    "skill": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "independent_review": "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md",
+    "actual_paths_read": true
+  },
+  "diagnosis": {
+    "problem_class": "Transportfehler nach erfolgreich validiertem Export.",
+    "evidence": "Der aktuelle upload()-Aufruf \u00fcbernimmt den shell()-Standardtimeout von 60 Sekunden. Der SSH_TIMEOUT ist erhalten. Das entfernte Fragment entspricht nach gesichertem SHA-Beleg exakt den ersten 310242816 Bytes des validierten Archivs.",
+    "accepted": "Die bestehenden Archiv-, Vault- und Mac-Nachweise bleiben f\u00fcr ihren belegten Umfang g\u00fcltig. Der nachtr\u00e4gliche Source-Nachweis best\u00e4tigt weiterhin FROZEN und dieselbe vollst\u00e4ndige 43-Tabellen-Projektion.",
+    "not_accepted": "Der urspr\u00fcngliche Outer-Lauf bleibt FAILED. EXPORTED_AND_VALIDATED best\u00e4tigt weder vollst\u00e4ndigen Servertransport noch Abschluss der gesamten Source-Phase.",
+    "counterargument": "Der bisherige Vertrag verlangt nach jedem Vorw\u00e4rtsfehler ausschlie\u00dflich Source-Recovery. Ohne ausdr\u00fcckliche unabh\u00e4ngige Ausnahme w\u00e4re ein weiteres Append unzul\u00e4ssig.",
+    "resolution": "Die belegte Trennung zwischen g\u00fcltigem Snapshot und gescheitertem Transport tr\u00e4gt die beantragte einmalige Ausnahme. Source-Wiederanlauf und ein zweiter Dump sind f\u00fcr die Erg\u00e4nzung exakt dieser fehlenden Bytes nicht erforderlich."
+  },
+  "explicit_contract_exception": {
+    "source_review": "working-memory/evaluation/source-direct-final-goal-20261004-review.json",
+    "source_review_sha256": "733d87e15a551313b38a5f4a429d39da7dc26334e456d4a2b07237c6b143b61a",
+    "replaced_clause": "Jeder Vorw\u00e4rtsfehler beendet diesen Versuch und aktiviert ausschlie\u00dflich den beschriebenen Recovery-Vertrag.",
+    "decision": "Diese Recovery-only-Klausel und die entsprechende forward_failure-/Timer-Protokollfolge werden ausschlie\u00dflich f\u00fcr den gebundenen SSH_TIMEOUT durch genau dieses einmalige Transferpaket ersetzt. Bei dessen Scheitern gilt wieder der bestehende Source-Partial-Recovery-Vertrag.",
+    "authorization_basis": "Der aktuelle ausdr\u00fcckliche Nutzerauftrag autorisiert die begrenzte technische Korrektur und verlangt diese unabh\u00e4ngige Entscheidung.",
+    "prior_review_preserved": true,
+    "prior_review_ref": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-transfer-review-1/result.json",
+    "prior_review_sha256": "efeffff284207e38b8e8e6f1a32e56736377fb6e491f9d96154460cfbc6539a1",
+    "prior_provenance_gap_resolved": true
+  },
+  "bindings": {
+    "local_root": "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z",
+    "remote_root": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+    "artifact": {
+      "name": "full.dump",
+      "full_bytes": 321266826,
+      "full_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+      "prefix_bytes": 310242816,
+      "prefix_sha256": "b227187232909e326468f812af9f2407f83152824e599a0418276a8fb62a9100",
+      "remaining_bytes": 11024010,
+      "local_size_independently_checked": true,
+      "content_hash_basis": "Gebundene Export-, Mac- und Pr\u00e4fixreceipts; Dump-Inhalt nicht erneut gelesen."
+    },
+    "proof_sha256": {
+      "final-export-receipt.json": "5df0a808bee43826be829326e180f18d4623a3ae60fe85021a49034a445442b1",
+      "offserver-receipt.json": "90b71482988e816d77b5834bb2f6ce3498df2b1e0e1db81611838697c6a096b3",
+      "partial-upload-prefix-proof.json": "544dc6290cc76ab22ab58aa9e7653f37a5c4094dcf07ebc571f03587e26048ff",
+      "partial-upload-before-private.json": "7f47b3d07ca73dc1e4493db6c7397d6b346bca54f2dcf49345e1730061704ab1",
+      "source-direct-final-protocol.json": "968370b45531dc3cc63472f7088dc11badb9f7d3947410911714f802a58336d1",
+      "source-frozen-business-baseline.json": "9a286445ca0ab0b91aba69e58f7748c3b8ba57cb7960f9edd43cb1ded07b1c11",
+      "source-frozen-business-primary.json": "1c3b8fc5fc9798f3309ad4a2cebae9d8258355187448b6bb0271996ac98abd0e",
+      "source-frozen-business-after-upload-error-primary.json": "1c3b8fc5fc9798f3309ad4a2cebae9d8258355187448b6bb0271996ac98abd0e",
+      "source-frozen-after-upload-error-proof.json": "5f22d59cee438c42de1ce5396caf5d254b706f0198f53cdfef75e2db14b196d1",
+      "final-export-attempt.json": "21a03d88084fc4cd0dc658306a8e73e7b9aeca35f3f00572652760f0e6397360",
+      "transport-errors/SSH_TIMEOUT-7f9481035314441889d704a547944c70.json": "3120cab9fb953b7ada88921ef75a5f597ea3240e7b83f8e66662c6579ae1c604"
+    },
+    "current_code": {
+      "all_19_hashes_independently_match_source_review_and_protocol": true,
+      "hash_manifest": "script_hashes im oben SHA-gebundenen Source-Review und Source-Protokoll",
+      "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+      "final_export_once.py": "0e61119c979f38fcb6e00ca275141e73a75e7a9007928066f19497b60d1602e3",
+      "implementation_scope": "Protokollfreigabe f\u00fcr das beschriebene Transferpaket; kein vorhandener neuer Transferhelper wurde als implementiert oder getestet behauptet.",
+      "rerun_final_export_once_allowed": false
+    }
+  },
+  "frozen_validation": {
+    "existing_postfailure_proof": "ACTUAL_SOURCE_STILL_FROZEN_AND_BASELINE_EQUAL",
+    "observed_at": "2026-10-04T00:55:57.836703+00:00",
+    "business_tables": 43,
+    "baseline_and_postfailure_primary_byte_identical": true,
+    "effective_business_dml_and_writer_functions_all_three_api_roles": 0,
+    "running_jobs": 0,
+    "queued_jobs": 51,
+    "unknown_model_calls": 0,
+    "unknown_question_calls": 0,
+    "active_n8n": 0,
+    "outboxes": 0,
+    "backend_stopped": true,
+    "timer_inactive": true,
+    "execution_requirement": "Unmittelbar vor der ersten Transfermutation einmal aktuell read-only best\u00e4tigen: vollst\u00e4ndige Projektion gleich Baseline, effektive API-Schreibrechte null, Backend gestoppt, laufende/unklare Arbeit und Outboxes/n8n null, eigener Timer und Backup-Service inaktiv. Prim\u00e4rantwort vor Assertions unver\u00e4nderlich sichern.",
+    "authentication_boundary": "Vorhandenen autorisierten read-only Beobachtungsweg verwenden; keine neue Login-Lease, Direct-Authentifizierungsprobe oder Credential-\u00c4nderung."
+  },
+  "allowed_budget": {
+    "transfer_packets": 1,
+    "immutable_attempt_marker": 1,
+    "preserve_original_fragment": 1,
+    "exclusive_prefix_candidate": 1,
+    "append_attempts": 1,
+    "append_bytes": 11024010,
+    "append_timeout_seconds": 120,
+    "small_file_uploads": 5,
+    "attempts_per_small_file": 1,
+    "timeout_seconds_per_small_file": 120,
+    "new_source_leases": 0,
+    "new_direct_source_authentication_probes": 0,
+    "new_dumps": 0,
+    "new_freezes": 0,
+    "source_database_or_api_mutations": 0,
+    "target_actions": 0,
+    "automatic_transfer_retries": 0
+  },
+  "execution_conditions": [
+    "Vor \u00c4nderungen exklusiven unver\u00e4nderlichen Versuchseintrag mit diesem Review, Artefaktbindung und Budget anlegen. Vorhandener Marker, fremder Zustand oder unklare Ownership bedeutet DENY.",
+    "Vor dem Verschieben nachweisen, dass der alte lokale SSH-Prozess und der entfernte Upload-Writer beendet sind. Stabile Dateigr\u00f6\u00dfe allein gen\u00fcgt nicht.",
+    "Aktuellen vollst\u00e4ndigen lokalen Archiv-SHA und entfernten Fragment-SHA/Gr\u00f6\u00dfe gegen die Bindungen pr\u00fcfen. Originalfragment ohne \u00dcberschreiben unter dem neuen Namen failed-upload-full.dump erhalten.",
+    "Eine separate Datei full.dump-transfer-candidate exklusiv erstellen und das erhaltene Fragment hineinkopieren. Keine Hardlink-Kopie verwenden. Kandidat vor Append erneut vollst\u00e4ndig gegen Pr\u00e4fix-SHA und Pr\u00e4fixgr\u00f6\u00dfe pr\u00fcfen.",
+    "Mit derselben gepinnten SSH-Konfiguration und lokalem Datei-stdin ab Offset 310242816 genau einmal die restlichen 11024010 Bytes anh\u00e4ngen; Timeout 120 Sekunden. R\u00fcckgabe und verf\u00fcgbare stdout/stderr einschlie\u00dflich Timeout-Ausgaben privat sichern.",
+    "Erst nach vollst\u00e4ndigem Kandidaten-PASS f\u00fcr 321266826 Bytes und den gebundenen Gesamt-SHA atomar als full.dump \u00fcbernehmen. Ein zwischenzeitlich vorhandenes Ziel darf nicht ersetzt werden.",
+    "roles.sql, vault-plaintext.json, toc.txt, final-export-receipt.json und offserver-receipt.json jeweils einmal exklusiv mit h\u00f6chstens 120 Sekunden \u00fcbertragen. Lokale Hashes zuvor privat binden und entfernte Hashes vollst\u00e4ndig vergleichen; keine unbekannten Dateien \u00fcberschreiben.",
+    "Originalfragment, urspr\u00fcnglicher SSH_TIMEOUT und alle bisherigen Receipts bleiben erhalten. W\u00e4hrend des gesamten Pakets keine Source-Wiederaufnahme und keine Target-Operation.",
+    "Abweichung, Timeout oder unvollst\u00e4ndige Evidenz beendet das Paket; keine zweite Append- oder Uploadrunde."
+  ],
+  "completion": {
+    "required_receipt": "Neues unver\u00e4nderliches Phase-Completion-Receipt mit urspr\u00fcnglichem Outer-Status FAILED, Source-Dateitransfer RECOVERED, diesem Review, tats\u00e4chlichen Gr\u00f6\u00dfen/Hashes und erf\u00fcllten Vorbedingungen.",
+    "old_receipts_rewritten": false,
+    "derived_restore_binding": "Darf das unver\u00e4nderte Source-Protokoll, dieses tats\u00e4chliche Transferreview und den vollst\u00e4ndig verifizierten Archiv-SHA referenzieren.",
+    "target_operational_go": false,
+    "next_boundary": "Vor Target-Restore weiterhin frisches wichtiges Target-Review mit tats\u00e4chlichen Transfer- und erforderlichen R\u00fcckkehrbelegen.",
+    "timer_after_success": "Bleibt gem\u00e4\u00df bestehendem Erfolgsvertrag gestoppt."
+  },
+  "failure_recovery": {
+    "on_transfer_failure": "STOP; keine weitere Append-/Transferkorrektur und keine automatische Review-Fix-Schleife.",
+    "source_partial_recovery": "Einmaliger bereits gepr\u00fcfter Source-Partial-Recovery-Pfad, ausschlie\u00dflich bei nachweislich unverbrauchtem bestehendem Recovery-Budget.",
+    "timer_restore": "Eigenen urspr\u00fcnglichen Timerzustand erst nach tats\u00e4chlichem Source-Recovery-PASS und exaktem Ownership-, Unit- und Code-Abgleich einmal wiederherstellen.",
+    "foreign_state_or_recovery_failure": "Sichere Pause/Maintenance erhalten und konkreten Blocker melden; kein blindes Starten."
+  },
+  "counters": {
+    "reset": false,
+    "original_outer_failure_preserved": true,
+    "current_phase_consumption": {
+      "freeze": 1,
+      "readonly_lease": 1,
+      "full_dump": 1,
+      "failed_upload": 1
+    },
+    "prior_blocked_review_is_not_a_transfer_attempt": true,
+    "new_transfer_permit_consumed_on_packet_start": true,
+    "local_transfer_or_recovery_markers_found": false,
+    "complete_controller_history_verified": false,
+    "requirement": "Vor Mutation vorhandene lokale und entfernte Versuchseintr\u00e4ge abgleichen; unbekannte oder verbrauchte Budgets nicht als null behandeln."
+  },
+  "hard_blockers": [],
+  "fail_closed_preconditions": [
+    "Aktueller Frozen-/Baseline-Nachweis fehlt oder weicht ab.",
+    "Alter Upload-Writer l\u00e4uft noch oder sein Ende ist ungekl\u00e4rt.",
+    "Artefakt-, Code-, Ownership- oder Exklusivit\u00e4tsbindung stimmt nicht.",
+    "Transferpermit bereits verbraucht, Recovery-Budget nicht verf\u00fcgbar oder Target bereits begonnen."
+  ]
+}

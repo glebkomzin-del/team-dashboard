@@ -1,0 +1,81 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "milestone": "target-partial-return",
+  "trigger": "LOW_YIELD",
+  "disposition": "CONTINUE_BOUNDED",
+  "operational_target_go": false,
+  "provenance": {
+    "receipt": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-target-partial-return-low-yield-review-1/stderr-private.txt:10-19",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "session": "01a1046e-dabe-71d3-b63c-416563cc7129",
+    "verified": "Akzeptierter nativer CLI-Header gelesen; UUID unterscheidet sich vom Builder und urspr\u00fcnglichen GOAL-Reviewer."
+  },
+  "governance": {
+    "skill": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "reference": "references/independent-review.md",
+    "enforcement": "RULES_ONLY"
+  },
+  "reviewed_hashes": {
+    "final_target_partial_source_return_once.py": "e037ac49be2c21f0cbb4c1a0e39c2fc29b77049776c62ccaea57efb23f723907",
+    "test_final_target_partial_source_return.py": "ff5a55a7c1242d123e10aaa92f1a60aed55ec07323379d809cc77d925164afcf",
+    "target-partial-return-20261004-evidence.json": "c4aa7a274f6efee9f242404604c9ebd0c501c59e970673ba01578e4d9e91e48a"
+  },
+  "accepted_progress": [
+    "Der anf\u00e4ngliche Fixture-mkdir-Blocker ist \u00fcberwunden; Zyklus 2 erreicht die eigentlichen Tests.",
+    "Keine positive vollst\u00e4ndige R\u00fcckkehr abgenommen. Die 25 formal bestandenen Szenarien belegen ohne ursachenspezifische Zuordnung keine vollst\u00e4ndige Negativabdeckung.",
+    "Die f\u00fcnf im urspr\u00fcnglichen Review gebundenen Bestandshelper sind weiterhin hashgleich. LateReturn7, Runtime13 und SourcePartial-Abnahmen bleiben erhalten."
+  ],
+  "findings": [
+    {
+      "class": "Belegter Fixture-Vertragsfehler",
+      "evidence": "test_final_target_partial_source_return.py:38,217-222; final_prewrite_rollback_once.py:342; neuer Helper:363",
+      "finding": "Offline.self.scopes ist eine Liste und verdeckt die geerbte Methode scopes(values). Der tats\u00e4chliche Aufrufvertrag ist dadurch verletzt.",
+      "hypothesis": "Dies erkl\u00e4rt gemeinsame positive Abbr\u00fcche nach Resume und den Timerfall mit stdout=None. Die gel\u00f6schten Prim\u00e4rfehler verhindern eine nachtr\u00e4gliche Laufzeitbest\u00e4tigung. Ein gemeinsames Scheitern vor Sequenzbeginn ist ebenfalls nicht belegt."
+    },
+    {
+      "class": "Belegter produktiver Caller-Vertragsfehler",
+      "evidence": "Neuer Helper:326-327; final_prewrite_rollback_once.py:137-141; neuer Test:40-42",
+      "finding": "Der Stage-Manifest-Pfad liegt au\u00dferhalb ROOT. MacReturnOperations.read behandelt ihn deshalb als lokale Mac-Datei. Nur der Test besitzt eine Sonderbehandlung und verdeckt damit den fehlenden produktiven Remote-Leseweg.",
+      "correction": "Ausschlie\u00dflich im neuen Helper einen exakt begrenzten, SHA-gepr\u00fcften Leseweg erg\u00e4nzen; vorhandenen Caller unver\u00e4ndert lassen."
+    },
+    {
+      "class": "Belegte Pflichtabdeckungsl\u00fccke",
+      "evidence": "Neuer Helper:285-294; neuer Test:231-242; final_restore_once.py:99-100",
+      "finding": "Nach fehlgeschlagenem partiellem API-Stop verweigert der Restore-Zweig laufende eigene APIs bereits vor stop_partial. Dieser urspr\u00fcngliche Positivfall fehlt im Test.",
+      "correction": "Eigene eindeutig gebundene API-Teilzust\u00e4nde sicher zum Stop-Schritt f\u00fchren; best\u00e4tigten Stillstand weiterhin zwingend vor jeder Source-Schreibfreigabe verlangen."
+    },
+    {
+      "class": "Belegl\u00fccke",
+      "evidence": "Evidence tests.cycle_2.primary_limit; neuer Test:282-300",
+      "finding": "Private Ursachen wurden gel\u00f6scht; pauschales PreconditionsError und errors[0] unterscheiden den beabsichtigten Fehler nicht zuverl\u00e4ssig von einem fr\u00fcheren Abbruch."
+    }
+  ],
+  "bounded_followup": {
+    "authority": "Aktueller ausdr\u00fccklicher Nutzerauftrag f\u00fcr genau dieses weitere begrenzte Paket; keine automatische Verl\u00e4ngerung des gescheiterten Pakets.",
+    "packages": 1,
+    "max_offline_cycles": 2,
+    "ownership": "Nur neuer Helper, neuer Test und zugeh\u00f6rige Evidence. Kleine mechanische Integration durch den Lead m\u00f6glich; gr\u00f6\u00dferes Paket beim Builder.",
+    "first_requirement": "Vor dem ersten Lauf vollst\u00e4ndige private Ursachen, Tracebacks, stdout/stderr und Sequenzereignisse fallbezogen au\u00dferhalb von TemporaryDirectory dauerhaft mit 0700/0600 sichern; verschachtelte Host-Prim\u00e4rfehler einschlie\u00dfen.",
+    "approach": "Fixture-Datenfeld umbenennen, belegte Caller-Vertr\u00e4ge gezielt korrigieren und Ursachen unterscheiden. Kein neuer Rahmenbau und keine pauschale Neufassung.",
+    "test_scope": [
+      "Vollst\u00e4ndige urspr\u00fcngliche Positivmatrix einschlie\u00dflich partiellem API-Stop, abgebrochenem Restore, Runtime vor Hostmutation, unvollst\u00e4ndigen Snapshots bei unver\u00e4ndertem Host, jeder der f\u00fcnf Hostdatei\u00e4nderungen, Marker-, Start-, Health- und Ingress-Grenzen.",
+      "Tats\u00e4chlicher Einstiegspunkt und CLI-Erfolg; produktive Lese-/Fehlerwrapper sowie n8n-Aufrufvertrag mit ausschlie\u00dflich simulierten Transporten pr\u00fcfen.",
+      "Jede Ablehnung an ihren konkreten Prim\u00e4rfehler und erreichten Pr\u00fcfpunkt binden; positive Kontrollf\u00e4lle d\u00fcrfen keinen gemeinsamen Vorfehler enthalten.",
+      "Fehlerinjektionen m\u00fcssen ihren vorgesehenen Sequenzpunkt erreichen, vollst\u00e4ndige private Prim\u00e4rdaten erhalten und verbotene Folgeschritte ausschlie\u00dfen.",
+      "Target-Stillstand vor Source-ACL, exakte Wiederherstellung und Readbacks, Health vor Ingress/Resume sowie Timer erst nach vollst\u00e4ndigem SourceReturn-PASS beweisen."
+    ],
+    "invariants": "Originale f\u00fcnf SHA-Bindungen, Frozen43/currentSource, eigene Target-Zust\u00e4nde, Writer-/Frontend-Ausschluss, ACL82, vollst\u00e4ndige Config, Flags, Image, n8n-Versionen/Scopes und Timer-Sicherheit unver\u00e4ndert erhalten.",
+    "stop": "Bei vollst\u00e4ndigem PASS sofort stoppen; sp\u00e4testens nach Zyklus 2 beenden. Ohne vollst\u00e4ndigen Nachweis blockieren, keine weitere automatische Review-Fix-Schleife."
+  },
+  "counters": {
+    "historical_cycles": 2,
+    "historical_status": "FOLLOWUP_FAILED",
+    "historical_budget_remaining": 0,
+    "new_separately_authorized_cycle_limit": 2,
+    "reset": false
+  },
+  "operational_boundary": "Keine Remote-Aktion, Source-/Dump-Wiederholung, neuen Credentials oder Target-Operationen aus diesem Urteil. Source-Fehlerstatus, Z\u00e4hler und bestehender Recovery-only-Vertrag bleiben bestehen; Artifacttransfer ist separat. Vor Target bleibt ein unabh\u00e4ngiges GOAL_GATE \u00fcber tats\u00e4chlichen finalen Code und Artefakthashes erforderlich.",
+  "performed": "Nur lokale Lekt\u00fcre und Hashpr\u00fcfung; keine \u00c4nderungen, Tests, Delegation oder Remote-Aufrufe."
+}
