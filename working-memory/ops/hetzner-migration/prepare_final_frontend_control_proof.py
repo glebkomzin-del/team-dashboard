@@ -1,6 +1,8 @@
-"""LOCAL ONLY assembler for Root's actual read-only observations; never collects remotely.
+"""Local assembler; optional --collect does bounded read-only Source/Host/CLI reads.
 
 Usage: --inputs /absolute/private/input.json --output /new/private/phase-dir
+       --collect /absolute/private/inputs-base-private.json --output /new/private/collection
+                 [--assemble] (candidate remains denied pending actual review)
        --finalize /private/candidate-gate.json --review /actual/astra-review.json
                   --output /new/private/reviewed-dir
        --owner-bundle /private/OWNER-candidate.json --host-directory /opt/.../new-bundle
@@ -33,6 +35,8 @@ Input schema (all refs are {path: absolute, sha256: exact bytes}):
  all transitive original reference bytes must be available and SHA-equal.
  """
 import argparse
+import base64
+import concurrent.futures
 import datetime as dt
 import hashlib
 import importlib.util
@@ -40,6 +44,8 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
+import subprocess
 
 OPS = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('frontend_actual_control', OPS/'frontend-final-promote-control-once.py')
@@ -122,6 +128,26 @@ def one(rows):
     return rows[0]['value']
 def env(container): return dict(x.split('=',1) for x in container['Config']['Env'] if '=' in x)
 def zero(value): return type(value) is int and value == 0
+
+def archive_bindings(inputs, archive):
+    """Reuse accepted historic full-hash observation; no new hash claim from stat.
+
+    The existing final control.load still reads/hashes the real archive bytes.
+    Without accepted observation, small synthetic/local test archives are hashed.
+    """
+    observed=inputs.get('archive_hash_observation')
+    accepted=jsonref(observed) if observed else None
+    if accepted:
+        need(accepted['sha256']==archive['sha256'] and accepted['bytes']==archive['bytes']
+             and archive['hash_kind']=='HISTORICAL_ACCEPTED_FULL_HASH'
+             and archive['hash_observed_at']==accepted['observed_at'], 'Historical archive hash relabeled as fresh')
+    for ref in inputs['archives'].values():
+        path=Path(ref['path'])
+        need(path.is_absolute() and path.is_file() and not path.is_symlink()
+             and not (getattr(path.stat(),'st_flags',0)&0x40000000)
+             and path.stat().st_size==archive['bytes'] and ref['sha256']==archive['sha256'], 'Actual archive location/size differs')
+        if accepted: need(str(path)==accepted['archive'], 'Accepted Mac hash applies to different archive')
+        else: need(digest(path)==ref['sha256'], 'Current archive bytes differ')
 
 def prepare(input_path, output, now=None):
     now = now or dt.datetime.now(dt.timezone.utc)
@@ -221,8 +247,7 @@ def prepare(input_path, output, now=None):
     need(n8n_restore==backup['n8n'], 'Actual archived n8n restore differs from successful backup')
     files=[{'path':name,'sha256':value['sha256']} for name,value in sorted(manifest['files'].items())]
     need(all(not Path(x['path']).is_absolute() and '..' not in Path(x['path']).parts and re.fullmatch('[a-f0-9]{64}',x['sha256']) for x in files), 'Unsafe FULL inventory')
-    for ref in inputs['archives'].values():
-        need(ref['sha256']==archive['sha256'] and digest(ref['path'])==ref['sha256'] and Path(ref['path']).stat().st_size==archive['bytes'], 'Current archive bytes differ')
+    archive_bindings(inputs,archive)
     need(set(inputs['archives'])=={'full','mac'}, 'Archive coverage differs')
     if inputs['action']=='PROMOTE':
         c.check_old({a:front[a] for a in c.ALIASES})
@@ -272,6 +297,7 @@ def prepare(input_path, output, now=None):
               partial_return_after_frontend_forbidden=True,fresh_actual_gate_required=True,writer_opened=False,execution_status='PENDING')}
     # Bind all original records used to derive positives, not only convenient ones.
     historical=[retain(ref) for ref in [*inputs['originals'].values(),*transitive]]
+    if inputs.get('archive_hash_observation'): historical.append(retain(inputs['archive_hash_observation']))
     for k,v in data.items():
         if 'primary_receipts' in v: v['primary_receipts'] += historical
     data['source']['primary_receipts'] += data['writers']['primary_receipts']
@@ -295,6 +321,185 @@ def prepare(input_path, output, now=None):
     write(directory,'preparation-result.json',{'status':'CANDIDATE_ONLY_PENDING_ACTUAL_REVIEW_AND_CONTROL_LOAD','candidate':result,
           'provider_calls':0,'promotion_actions':0,'owner_actions':0,'writer_actions':0,'late_return':'PENDING'})
     return result
+
+def native_code(inputs, queries, host_refs):
+    """One host batch. SELECT, inspect, GET, stat/read only; no Host file writes."""
+    settings={'run':inputs['run_dir'],'queries':queries,'refs':host_refs,
+              'control':inputs['collection']['frontend_control_directory'],
+              'archive':inputs['collection']['host_archive'],'markers':MARKERS,
+              'versions':c.n8n.VERSIONS,'closed_flags':c.owner.CLOSED_FLAGS,
+              'archive_hash_observation':jsonref(inputs['archive_hash_observation']),
+              'manifest_sha256':inputs['originals']['bundle_manifest']['sha256']}
+    return 'SETTINGS='+repr(settings)+'\n'+r'''
+import base64,datetime,hashlib,json,subprocess,urllib.request
+from pathlib import Path
+records=[]
+def call(args,input=None,timeout=90):
+    result=subprocess.run(args,input=input,capture_output=True,timeout=timeout)
+    records.append({'args':args,'input_sha256':hashlib.sha256(input).hexdigest() if input else None,
+                    'exit_code':result.returncode,'stdout_b64':base64.b64encode(result.stdout).decode(),
+                    'stderr_b64':base64.b64encode(result.stderr).decode()})
+    if result.returncode:raise RuntimeError('Read-only command failed; actual primary retained')
+    return result.stdout
+def sql(q,db='dashboard-supabase-20261003-db-1',user='supabase_admin',database='postgres'):
+    return json.loads(call(['docker','exec','-i',db,'psql','-U',user,'-d',database,'-XqAt','-v','ON_ERROR_STOP=1'],input=q.encode()))
+def small(path):
+    p=Path(path)
+    if not p.is_file() or p.is_symlink() or p.stat().st_size>16*1024*1024:raise RuntimeError('Unsafe native primary read')
+    return p.read_bytes()
+try:
+    target={k:sql(('SELECT coalesce(json_agg(x),\'[]\'::json) FROM ('+q.rstrip(';')+') x') if k=='acl' else q)
+            for k,q in SETTINGS['queries'].items() if k!='roles'}
+    target['vault']=sql("SELECT json_build_object('plaintext_sha256',(SELECT encode(extensions.digest(decrypted_secret,'sha256'),'hex') FROM vault.decrypted_secrets),'metadata',(SELECT row_to_json(s) FROM (SELECT id,name,description,created_at,updated_at,encode(nonce,'hex') AS nonce_hex FROM vault.secrets) s))")
+    canonical=json.loads(call(['docker','inspect','dashboard-memory-canonical-draft-canonical-draft-1']))[0]
+    config_body=small('/opt/dashboard-memory-canonical-draft/.local/service.env')
+    config=dict(line.split('=',1) for line in config_body.decode().splitlines() if line and not line.startswith('#'))
+    inventory=[]
+    for cid in call(['docker','ps','-q']).decode().split():
+        value=json.loads(call(['docker','inspect',cid]))[0]
+        if 'dashboard-memory' in value['Name']:inventory.append(value)
+    workflows={};key=json.loads(small('/opt/dashboard-supabase-20261003/n8n-pause-access-1/existing-api-key-private.json'))['apiKey']
+    for wid in SETTINGS['versions']:
+        with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:5678/api/v1/workflows/'+wid,headers={'X-N8N-API-KEY':key}),timeout=20) as response:
+            body=response.read();records.append({'operation':'n8n GET workflow','workflow_id':wid,'http':response.status,'body_b64':base64.b64encode(body).decode()});workflows[wid]=json.loads(body)
+    count=sql("SELECT count(*) FROM execution_entity WHERE \"workflowId\" IN ('nzyaKxs5Om9wuPEc','dashboardDriveMove','dashboardDriveWatch') AND status IN ('new','running','waiting');",'n8n_postgres','n8n','n8n')
+    boxes={}
+    mount=next(x for x in canonical['Mounts'] if x['Destination']=='/app/.local')
+    if mount['Type']!='bind' or mount['Source']!='/opt/dashboard-memory-canonical-draft/.local/cache':raise RuntimeError('Actual outbox mount differs')
+    for rel in ['projections-rc1-20260919/response-outbox','question-outbox']:
+        folder=Path(mount['Source'])/rel
+        if not folder.is_dir():raise RuntimeError('Actual outbox missing')
+        boxes[rel]=len(list(folder.rglob('*.json')))
+    # Do not claim health from a stopped backend. Transport failure retains the batch.
+    with urllib.request.urlopen('http://127.0.0.1:8798/health',timeout=20) as response:
+        body=response.read();records.append({'operation':'canonical GET health','http':response.status,'body_b64':base64.b64encode(body).decode()});health=json.loads(body)
+    paths={k:Path(SETTINGS['run'])/k for k in SETTINGS['markers']}
+    for k in ['frontend-control-attempt.marker','promotion-INTENT.marker','VITE_SUPABASE_URL-INTENT.json','VITE_SUPABASE_ANON_KEY-INTENT.json']:
+        paths[k]=Path(SETTINGS['control'])/k
+    markers={k:path.exists() for k,path in paths.items()}
+    host={}
+    for ref in SETTINGS['refs']:
+        body=small(ref['path'])
+        if hashlib.sha256(body).hexdigest()!=ref['sha256']:raise RuntimeError('Actual immutable Host primary SHA differs')
+        host[ref['path']]=base64.b64encode(body).decode()
+    for name in ['target-runtime-receipt.json','target-runtime-permissions-receipt.json']:
+        path=SETTINGS['run']+'/'+name;host[path]=base64.b64encode(small(path)).decode()
+    artifact=Path(SETTINGS['archive']);stat=artifact.stat();accepted=SETTINGS['archive_hash_observation']
+    if not artifact.is_file() or artifact.is_symlink() or stat.st_size!=accepted['bytes']:raise RuntimeError('Existing native FULL archive metadata differs')
+    archive={'archive':artifact.name,'bytes':stat.st_size,'sha256':accepted['sha256'],'mac_sha256':accepted['sha256'],
+             'manifest_sha256':SETTINGS['manifest_sha256'],'hash_kind':'HISTORICAL_ACCEPTED_FULL_HASH','hash_observed_at':accepted['observed_at'],
+             'current_native_metadata':{'path':str(artifact),'bytes':stat.st_size,'mtime_ns':stat.st_mtime_ns,'ino':stat.st_ino},'archive_rehashed':False}
+    payload={'target':target,'canonical_inspect':canonical,'host_config':config,'health':health,
+             'container_inventory':inventory,'marker_checks':markers,'workflows':workflows,'n8n_running':count,'outboxes':boxes,'archive_current':archive}
+    print(json.dumps({'payload':payload,'process_records':records,'host_primaries':host,'service_env_b64':base64.b64encode(config_body).decode(),
+                      'observed_at':datetime.datetime.now(datetime.timezone.utc).isoformat()}))
+except Exception as error:
+    print(json.dumps({'failed':True,'error_type':type(error).__name__,'error':str(error),'process_records':records,
+                      'observed_at':datetime.datetime.now(datetime.timezone.utc).isoformat()}));raise SystemExit(1)
+'''
+
+def collect(base_path, output, *, assemble=False):
+    """Root invokes after actual resume. No retries, promotion, Auth or remote writes."""
+    import final_phase_common as common
+    from final_quiescence_once import EFFECTIVE_PRIVILEGES_SQL,acl_query
+    from final_target_partial_source_return_once import PartialOperations
+    inputs=json.loads(Path(base_path).read_bytes());need(bool(inputs.get('archive_hash_observation')), 'Accepted FULL hash primary required')
+    directory=private_new(output);old_errors=common.ERROR_DIR;common.ERROR_DIR=directory/'transport-errors'
+    common.ERROR_DIR.mkdir(mode=0o700)
+    operation=PartialOperations(directory);operation.remote=inputs['run_dir']
+    auth="SELECT coalesce(json_agg(json_build_object('id',id::text,'email_sha256',encode(extensions.digest(coalesce(email,''),'sha256'),'hex'),'password_sha256',encode(extensions.digest(coalesce(encrypted_password,''),'sha256'),'hex')) ORDER BY id),'[]'::json) AS value FROM auth.users;"
+    state="SELECT json_build_object('running',(SELECT count(*) FROM public.wm_jobs WHERE state IN ('running','prepared')),'unknown_model',(SELECT count(*) FROM public.wm_model_calls WHERE received_at IS NULL AND redaction_id IS NULL),'unknown_question',(SELECT count(*) FROM public.wm_question_calls WHERE response_json IS NULL AND redaction_id IS NULL),'cron',(SELECT count(*) FROM cron.job WHERE active),'cron_total',(SELECT count(*) FROM cron.job),'queued_http',(SELECT count(*) FROM net.http_request_queue),'config',(SELECT json_agg(c ORDER BY space_id) FROM public.wm_processing_config c)) AS value;"
+    query=(OPS/'business-fingerprint.sql').read_text();need(hashlib.sha256(query.encode()).hexdigest()==c.late.QUERY_SHA,'Actual business query SHA differs')
+    queries={'business':query,'auth':auth,'state':state,'roles':EFFECTIVE_PRIVILEGES_SQL,'acl':acl_query(),
+             'cron':"SELECT coalesce(json_agg(to_jsonb(j) ORDER BY jobid),'[]'::json) AS value FROM cron.job j;"}
+    observations={}
+    def envelope(name,payload,observed_at,primary,additional=()):
+        raw=write(directory,name+'-payload-private.json',payload)
+        observations[name]=write(directory,name+'-envelope-private.json',{'problem_id':c.PROBLEM,'run_dir':inputs['run_dir'],
+             'observed_at':observed_at,'payload':payload,'primary_receipts':[raw,primary,*additional]})
+    try:
+        # Snapshot known native original ref graph. Missing local leaves are read on
+        # the same one Host batch, not fabricated or chased with repeated SSH calls.
+        host_refs={};seen_host=set()
+        def traverse(value):
+            for ref in refs(value):
+                if ref['path'].startswith(inputs['run_dir']+'/'):
+                    if ref['path'] in seen_host: continue
+                    seen_host.add(ref['path'])
+                    host_refs[ref['path']]=ref
+                    local=inputs.get('local_receipts',{}).get(ref['path'])
+                    if local: traverse(jsonref(local))
+        for key,ref in inputs['originals'].items():
+            if key not in ('runtime_error','source_archive','anon_key'):traverse(jsonref(ref))
+        code=native_code(inputs,queries,list(host_refs.values()));compile(code,'actual-native-readonly-batch','exec')
+        write(directory,'native-readonly-batch.py',code.encode())
+        def source_read():
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+                tasks={k:pool.submit(operation.source_sql,q) for k,q in queries.items()}
+                payload={k:task.result() for k,task in tasks.items()}
+            observed=dt.datetime.now(dt.timezone.utc).isoformat()
+            return payload,observed
+        def frontend_read():
+            args={'production_env':['env','ls','production','--format','json'],**{a:['inspect',a,'--format','json'] for a in sorted(c.ALIASES)}}
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+                tasks={k:pool.submit(operation.cli,v) for k,v in args.items()}
+                payload={k:json.loads(task.result()) for k,task in tasks.items()}
+            return payload,dt.datetime.now(dt.timezone.utc).isoformat()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+            source_future=pool.submit(source_read);frontend_future=pool.submit(frontend_read)
+            native_future=pool.submit(common.shell,'python3 -c '+shlex.quote(code),timeout=180)
+            # Persist actual successful SSH stdout before interpreting any data.
+            body=native_future.result();native_primary=write(directory,'native-batch-stdout-private.json',body)
+            native=json.loads(body);need(not native.get('failed'), 'Native batch failed')
+            source,source_time=source_future.result();frontend,front_time=frontend_future.result()
+        for index,(path,encoded) in enumerate(native['host_primaries'].items()):
+            body=base64.b64decode(encoded,validate=True);ref=write(directory,'native-original-'+str(index)+'.raw',body)
+            inputs.setdefault('local_receipts',{})[path]=ref
+            if path==inputs['run_dir']+'/target-runtime-receipt.json':inputs['originals']['runtime_projection']=ref
+            if path==inputs['run_dir']+'/target-runtime-permissions-receipt.json':need(ref['sha256']==inputs['originals']['runtime_recovery']['sha256'],'Original RecoveredRuntime bytes changed')
+        # Canonical frontend receipt/old original marker may be on Mac, separate
+        # from Host runtime markers. Preserve their actual local existence evidence.
+        marker_paths=dict(inputs['collection'].get('frontend_marker_paths',{}))
+        local_control=inputs['collection'].get('local_frontend_control_directory')
+        if local_control:
+            for name in FRONTEND_MARKERS-{'frontend-final-promotion-evidence.json','frontend-final-promotion-started'}:
+                marker_paths[name]=str(Path(local_control)/name)
+        checks={name:{'path':path,'exists':Path(path).exists()} for name,path in marker_paths.items()}
+        for name,check in checks.items():native['payload']['marker_checks'][name]=native['payload']['marker_checks'][name] or check['exists']
+        local_primary=write(directory,'local-marker-metadata-private.json',checks)
+        native['local_marker_receipt']=local_primary
+        accepted=jsonref(inputs['archive_hash_observation']);mac=Path(accepted['archive']);metadata=mac.stat()
+        need(mac.is_file() and not mac.is_symlink() and not (getattr(metadata,'st_flags',0)&0x40000000)
+             and metadata.st_size==accepted['bytes'],'Accepted Mac archive unavailable/size differs')
+        native['payload']['archive_current']['current_mac_metadata']={'path':str(mac),'bytes':metadata.st_size,
+             'mtime_ns':metadata.st_mtime_ns,'ino':metadata.st_ino,'observed_at':dt.datetime.now(dt.timezone.utc).isoformat(),
+             'hash_rechecked':False}
+        combined=write(directory,'native-combined-primary-private.json',native)
+        source_primary=write(directory,'source-batch-primary-private.json',{'payload':source,'query_sha256':{k:hashlib.sha256(v.encode()).hexdigest() for k,v in queries.items()},'observed_at':source_time})
+        front_primary=write(directory,'frontend-batch-primary-private.json',{'payload':frontend,'observed_at':front_time})
+        def raw_records(pattern):
+            return [{'path':str(path),'sha256':digest(path)} for path in sorted(directory.glob(pattern))]
+        envelope('source',source,source_time,source_primary,raw_records('source-query-*.json'))
+        envelope('native',native['payload'],native['observed_at'],combined,[native_primary,local_primary])
+        envelope('frontend',frontend,front_time,front_primary,raw_records('frontend-cli-*.json'))
+        inputs['observations']=observations
+        if inputs['action']=='OWNER':
+            receipt=Path(inputs['collection']['frontend_marker_paths']['frontend-final-promotion-evidence.json'])
+            inputs['promotion_receipt']={'path':str(receipt),'sha256':digest(receipt)}
+        actual_inputs=write(directory,'actual-inputs-private.json',inputs)
+        # Capture all raw API/CLI receipts in the output. No summary replaces them.
+        result={'status':'COLLECTED_ONLY_NO_OPERATIONAL_GO','inputs':actual_inputs,'provider_mutations':0,'auth_calls':0,
+                'source_backend':'OBSERVED_ONLY','native_readonly_batch_calls':1,'archive_rehashed':False,'native_primary':native_primary}
+        if assemble:
+            try:result['candidate']=prepare(actual_inputs['path'],directory/'candidate')
+            except Exception as error:
+                result.update(status='COLLECTED_PREREQUISITES_DENIED',denial_type=type(error).__name__,denial_reason=str(error))
+                write(directory,'collection-result.json',result);raise
+        write(directory,'collection-result.json',result);return actual_inputs
+    except Exception as error:
+        write(directory,'collection-failure-private.json',{'status':'DENIED_NO_GATE','type':type(error).__name__,'cause':str(error),'retry':False})
+        raise
+    finally: common.ERROR_DIR=old_errors
 
 def finalize(candidate_path, review_path, output, now=None):
     now=now or dt.datetime.now(dt.timezone.utc)
@@ -353,10 +558,12 @@ def owner_bundle(candidate_path, host_directory, host_files_path, output):
 
 def main():
     p=argparse.ArgumentParser();group=p.add_mutually_exclusive_group(required=True)
-    group.add_argument('--inputs');group.add_argument('--finalize');group.add_argument('--owner-bundle')
+    group.add_argument('--inputs');group.add_argument('--finalize');group.add_argument('--owner-bundle');group.add_argument('--collect')
+    p.add_argument('--assemble',action='store_true')
     p.add_argument('--review');p.add_argument('--host-directory');p.add_argument('--host-files');p.add_argument('--output',required=True)
     a=p.parse_args();os.umask(0o077)
-    if a.inputs: result=prepare(a.inputs,a.output)
+    if a.collect:result=collect(a.collect,a.output,assemble=a.assemble)
+    elif a.inputs: result=prepare(a.inputs,a.output)
     elif a.finalize: need(bool(a.review),'Actual review path required');result=finalize(a.finalize,a.review,a.output)
     else:
         need(bool(a.host_directory and a.host_files),'Host destination/map required')

@@ -76,6 +76,7 @@ class FakeOps:
     def __init__(self,gate,bodies,observation,clock):
         self.gate,self.bodies,self.obs,self.clock=gate,bodies,copy.deepcopy(observation),clock
         self.calls=[];self.observations=0;self.delay_at=None;self.ambiguous=False;self.crash=False;self.corrupt=False;self.revoke_no_effect=False
+        self.publish_lost=False;self.cleanup_kind='stopped';self.host_current=bodies['runtime_projection'];self.host_values={}
     def batch(self,refs):
         self.calls.append('batch')
         values={**self.bodies,**{'script:'+n:Path(m.__file__).with_name(n).read_bytes() for n in self.gate['script_hashes']}}
@@ -100,10 +101,24 @@ class FakeOps:
         else:
             for a in self.obs['native']['apis'].values():a['running']=True
     def save_host(self,name,value):
-        self.calls.append(('host-save',name))
+        self.calls.append(('host-save',name));self.host_values[name]=copy.deepcopy(value)
         if self.crash and name=='source-closed-readback.json':raise RuntimeError('synthetic crash after ACL close')
-    def publish(self,gate,previous,projection):self.calls.append('publish');return blob(projection)
-    def fail_closed(self):self.calls.append('fail-closed')
+    def publish(self,gate,previous,projection):
+        self.calls.append('publish');self.host_current=blob(projection)
+        if self.publish_lost:raise TimeoutError('successful Host replace; response lost')
+        return self.host_current
+    def fail_closed(self):
+        self.calls.append('fail-closed')
+        if self.cleanup_kind=='failed':raise TimeoutError('cleanup response lost')
+        if self.cleanup_kind=='unknown':return None
+        expected={m.w.CANONICAL:m.IMAGE,**{'dashboard-supabase-20261003-'+n+'-1':'sha256:'+v.split('@sha256:')[1] for n,v in m.p.API_IMAGES.items()}}
+        return {'containers':{n:{'image':image,'running':False} for n,image in expected.items()},'observed_at':self.clock.now.isoformat()}
+    def degrade(self,gate,previous,published,intent,cleanup):
+        self.calls.append('degrade')
+        assert self.host_values['publication-intent.json']==intent
+        degraded=m.degraded_projection(gate,previous,published,intent,cleanup,self.host_current)
+        self.host_current=blob(degraded)
+        return {'status':degraded['status'],'cleanup_status':degraded['cleanup_status'],'sha256':sha(self.host_current)}
 
 
 class ContractTests(unittest.TestCase):
@@ -278,6 +293,64 @@ class ContractTests(unittest.TestCase):
         full=json.loads(self.bodies['full_backup']);full['selfhost']['restore_verified']=None
         self.bodies['full_backup']=blob(full);self.gate['immutable_refs']['full_backup']['sha256']=sha(self.bodies['full_backup'])
         with self.assertRaises(Exception):self.data()
+    def test_host_publish_success_response_lost_cleanup_actual_stopped(self):
+        self.op.publish_lost=True
+        with self.assertRaises(Exception):self.execute()
+        current=json.loads(self.op.host_current)
+        self.assertEqual(current['status'],'TARGET_READONLY_RUNTIME_STOPPED');self.assertIs(current['runtime_active'],False)
+        self.assertIsNone(current['health']);self.assertEqual(current['original_runtime_attempt_status'],'FAILED')
+        historical=json.loads((self.root/'current-evidence'/m.PACKAGE/m.PROJECTION).read_bytes())
+        self.assertEqual(historical['status'],'TARGET_READONLY_RUNTIME_ACTIVE');self.assertEqual(historical['health']['status'],'ok')
+        self.assertEqual(sum(isinstance(x,tuple) and x[0]=='revoke' for x in self.op.calls),1)
+    def test_local_publish_receipt_failure_after_host_publish_reconciles(self):
+        original=m.r.durable
+        def fail_receipt(directory,name,value):
+            if name=='publish-receipt.json':raise OSError('synthetic disk failure after Host publication')
+            return original(directory,name,value)
+        with patch.object(m.r,'durable',side_effect=fail_receipt),self.assertRaises(Exception):self.execute()
+        current=json.loads(self.op.host_current);self.assertEqual(current['status'],'TARGET_READONLY_RUNTIME_STOPPED')
+        self.assertIn('degrade',self.op.calls)
+        self.assertEqual(sum(isinstance(x,tuple) and x[0]=='revoke' for x in self.op.calls),1)
+    def test_lost_publish_failed_or_unknown_cleanup_never_active(self):
+        for kind in ('failed','unknown'):
+            with self.subTest(kind=kind):
+                # Separate entbehrliche test attempt, never reset real markers.
+                if (self.root/'current-evidence'/m.PACKAGE).exists():
+                    import shutil;shutil.rmtree(self.root/'current-evidence'/m.PACKAGE)
+                self.op=FakeOps(self.gate,self.bodies,self.obs,self.clock);self.op.publish_lost=True;self.op.cleanup_kind=kind
+                with self.assertRaises(Exception):self.execute()
+                current=json.loads(self.op.host_current);self.assertEqual(current['status'],'TARGET_RUNTIME_UNKNOWN_REPLAN')
+                self.assertIsNone(current['runtime_active']);self.assertIsNone(current['health'])
+                self.assertEqual(sum(isinstance(x,tuple) and x[0]=='revoke' for x in self.op.calls),1)
+    def test_foreign_projection_after_lost_publish_denied_and_retained(self):
+        original=self.op.publish
+        foreign=blob({'status':'FOREIGN'})
+        def changed(gate,previous,projection):
+            original(gate,previous,projection);self.op.host_current=foreign;raise TimeoutError('lost response plus foreign current writer')
+        self.op.publish=changed
+        with self.assertRaises(Exception):self.execute()
+        self.assertEqual(self.op.host_current,foreign)
+        failure=json.loads(next((self.root/'current-evidence'/m.PACKAGE).glob('failure-*')).read_bytes())
+        self.assertEqual(failure['current_projection_status'],'UNKNOWN_REPLAN_UNRECONCILED')
+    def test_cleanup_positive_readback_strict_images_all_five_false(self):
+        actual=self.op.fail_closed();self.assertEqual(m.cleanup_status(actual),'STOPPED')
+        for bad in (None,False,{}, {'containers':{},'observed_at':NOW.isoformat()}):self.assertEqual(m.cleanup_status(bad),'UNKNOWN')
+        actual['containers'][m.w.CANONICAL]['running']=0;self.assertEqual(m.cleanup_status(actual),'UNKNOWN')
+    def test_bound_previous_bytes_can_be_degraded_without_claiming_publish(self):
+        self.op.publish_lost=True
+        with self.assertRaises(Exception):self.execute()
+        intent=self.op.host_values['publication-intent.json'];published=blob(self.op.host_values[m.PROJECTION])
+        result=m.degraded_projection(self.gate,self.bodies['runtime_projection'],published,intent,self.op.fail_closed(),self.bodies['runtime_projection'])
+        self.assertEqual(result['status'],'TARGET_READONLY_RUNTIME_STOPPED')
+    def test_reconciliation_host_code_compiles_only(self):
+        compile(m.inspect.getsource(m.host_cleanup_readback),'offline-cleanup-readback','exec')
+        compile(m.inspect.getsource(m.host_degrade),'offline-host-degrade','exec')
+    def test_cumulative_advancing_clock_success_and_limit_denial(self):
+        original=self.op.observe
+        def advances(*args):self.clock.now+=dt.timedelta(seconds=30);return original(*args)
+        self.op.observe=advances
+        self.assertEqual(self.execute()['status'],'TARGET_READONLY_RESUMED')
+        self.assertGreater(self.clock.now,NOW)
     def test_original_recovered_history_must_remain_failed(self):
         data=json.loads(self.bodies['recovered_runtime']);data['original_runtime_status']='PASS';self.bodies['recovered_runtime']=blob(data);self.gate['immutable_refs']['recovered_runtime']['sha256']=sha(self.bodies['recovered_runtime'])
         with self.assertRaises(Exception):self.data()

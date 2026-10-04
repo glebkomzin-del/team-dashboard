@@ -6,6 +6,7 @@ Host refs resolve after staging, immutable originals unchanged. Failure blocks u
 Scope: local assembler only, not operational migration or Owner acceptance.
 """
 import copy
+import base64
 import datetime as dt
 import hashlib
 import json
@@ -196,6 +197,68 @@ class PreparationTests(unittest.TestCase):
     def test_backup_manifest_cannot_relabel_other_runtime_receipt(self):
         self.inputs['originals']['runtime_images']=self.f.put('substituted-runtime-images',{'memory':{'image_id':self.f.recovery['corrected_image']},'extra':'new'})
         self.denied()
+
+    def test_accepted_historic_archive_hash_not_rehashed_or_retimestamped(self):
+        archive=self.inputs['archives']['mac'];body=Path(archive['path']).read_bytes()
+        historical=NOW-dt.timedelta(days=1)
+        self.inputs['archive_hash_observation']=self.f.put('accepted-hash',{'archive':archive['path'],'sha256':archive['sha256'],'bytes':len(body),'observed_at':historical.isoformat()})
+        self.native['archive_current'].update(hash_kind='HISTORICAL_ACCEPTED_FULL_HASH',hash_observed_at=historical.isoformat())
+        self.inputs['archives']['full']=archive
+        original_digest=p.digest
+        def digest(path):
+            if str(path)==archive['path']:raise AssertionError('Accepted large archive must not be rehashed')
+            return original_digest(path)
+        with patch.object(p,'digest',side_effect=digest):candidate=self.prepare()
+        self.assertFalse(p.jsonref(candidate)['operational_frontend_go'])
+
+    def test_historical_hash_retimestamped_as_current_denied(self):
+        archive=self.inputs['archives']['mac'];body=Path(archive['path']).read_bytes()
+        self.inputs['archive_hash_observation']=self.f.put('accepted-hash',{'archive':archive['path'],'sha256':archive['sha256'],'bytes':len(body),'observed_at':(NOW-dt.timedelta(days=1)).isoformat()})
+        self.native['archive_current'].update(hash_kind='HISTORICAL_ACCEPTED_FULL_HASH',hash_observed_at=NOW.isoformat())
+        self.denied()
+
+    def test_one_collection_command_uses_three_separately_observed_envelopes(self):
+        import final_phase_common as common
+        import final_target_partial_source_return_once as partial
+        archive=self.inputs['archives']['mac'];body=Path(archive['path']).read_bytes()
+        self.inputs['archive_hash_observation']=self.f.put('accepted-hash',{'archive':archive['path'],'sha256':archive['sha256'],'bytes':len(body),'observed_at':NOW.isoformat()})
+        self.inputs['collection']={'frontend_control_directory':RUN+'/control','host_archive':'/var/backups/synthetic',
+                'frontend_marker_paths':{}}
+        self.inputs['local_receipts']={RUN+'/'+name:self.inputs['originals'][key]
+              for name,key in [('target-runtime-receipt.json','runtime_projection'),('target-runtime-permissions-receipt.json','runtime_recovery')]}
+        self.save_inputs();calls=[];test=self
+        class FakeOperations:
+            def __init__(self,directory):self.directory=directory
+            def source_sql(self,query):
+                if 'writable_tables' in query:key='roles'
+                elif "SELECT 'activity_log'" in query:key='business'
+                elif 'pg_namespace' in query:key='acl'
+                elif 'password_sha256' in query:key='auth'
+                elif 'cron_total' in query:key='state'
+                elif 'to_jsonb(j)' in query:key='cron'
+                else:raise AssertionError('Unexpected read-only Source query')
+                calls.append(('source',key));return test.source[key]
+            def cli(self,args):
+                key='production_env' if args[0]=='env' else args[1]
+                calls.append(('cli',key));return json.dumps(test.front[key])
+        def shell(command,timeout):
+            calls.append(('ssh','one-native-batch'))
+            self.assertIn('8798/health',command);self.assertNotIn('generateLink',command)
+            originals={RUN+'/'+name:base64.b64encode(p.read(self.inputs['originals'][key])).decode()
+                for name,key in [('target-runtime-receipt.json','runtime_projection'),('target-runtime-permissions-receipt.json','runtime_recovery')]}
+            return json.dumps({'payload':self.native,'observed_at':NOW.isoformat(),'host_primaries':originals,'process_records':[]}).encode()
+        with patch.object(partial,'PartialOperations',FakeOperations),patch.object(common,'shell',side_effect=shell),\
+             patch.object(subprocess,'run',side_effect=AssertionError('REAL OPERATIONS FORBIDDEN')):
+            ref=p.collect(self.input_path,self.root/'collection')
+        inputs=p.jsonref(ref)
+        self.assertEqual(len([x for x in calls if x[0]=='ssh']),1)
+        self.assertEqual(len([x for x in calls if x[0]=='source']),6)
+        self.assertEqual(len([x for x in calls if x[0]=='cli']),3)
+        self.assertEqual(set(inputs['observations']),p.OBSERVATIONS)
+        self.assertEqual(len(list((self.root/'collection').glob('native-original-*.raw'))),2)
+        for name,ref in inputs['observations'].items():
+            e=p.jsonref(ref);self.assertTrue(e['observed_at']);self.assertIn('payload',e);self.assertGreaterEqual(len(e['primary_receipts']),2)
+        self.assertFalse((self.root/'collection/candidate-gate.json').exists())
 
     def test_owner_staged_refs_rebase_and_original_bytes_unchanged(self):
         self.owner();candidate=self.prepare()
