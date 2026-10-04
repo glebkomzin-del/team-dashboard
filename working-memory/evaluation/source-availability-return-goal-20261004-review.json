@@ -1,0 +1,114 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "TARGET_PARTIAL_SOURCE_RETURN",
+  "trigger": "GOAL_GATE",
+  "decision": "CONTINUE_BOUNDED",
+  "operational_source_return_go": true,
+  "conditional": true,
+  "execution_ready_now": false,
+  "reviewed_at": "2026-10-04T03:30:56Z",
+  "diagnosis": "Ein einmaliger kontrollierter Source-Return ist der kleinste passende Schritt zur Wiederherstellung der Verfügbarkeit bei blockiertem Frontend. Im geprüften Code wurde kein zusätzlicher Return-Codeblocker festgestellt. Dieses GO gilt ausschließlich nach Erfüllung der unten genannten aktuellen Root-Nachweise; es bestätigt weder einen bereits ausgeführten Return noch den Abschluss der Migration.",
+  "code_blockers": [],
+  "script_hashes": {
+    "final_target_partial_source_return_once.py": "a7067eebfb01bc4ede1884bafb34f6ebfd4352b0e8ff0d6ab78b6eaa702ba3b8",
+    "final_prewrite_rollback_once.py": "c00187109eb75628b2e17dc541ee712c2f9aa8e88483c6c3df6b3eea1f385110",
+    "final_writer_open_once.py": "ebc80b2862f2a7592bf5ab91d897d27a25b1bbb270c0b46e3b3421d76f66fab4",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "n8n_dashboard_pause_once.py": "91711a2b721b6b787867382087d008afa56aa23cccf56ca2f5b3b7e62cc9a94d",
+    "final_quiescence_once.py": "e9b42235755e18b2013f3f6f264ca483aaa2debec7f561a62d62d9ff5fcda1ea",
+    "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb"
+  },
+  "findings": [
+    "Die acht Hashes wurden aus dem tatsächlichen AST-Inventar p.SCRIPTS und den aktuellen lokalen Dateibytes ermittelt.",
+    "RecoveredRuntime und CURRENT_OPERATIONAL_STATE sind durch getrennte tatsächliche Receipts verbunden. Der ursprüngliche Runtime-FAILED-Status und seine Fehlerbytes bleiben erhalten; deren lokaler SHA wurde bestätigt.",
+    "Der korrigierte Runtime-Pfad erhält die alte Dockerfile und das Badimage, setzt den erwarteten statischen Target-Alias und erzeugt die fünf Originalsnapshots vor den Liveänderungen. Der PartialReturn-Vertrag deckt diesen geänderten Hostzustand ab.",
+    "Die frühere Dry-Readiness vom 03:10:16Z prüfte changed=false und canonical_running=false. Sie ist abgelaufen und belegt nicht die aktuelle Return-Bereitschaft nach Runtime-Aktivierung.",
+    "Der lokale Restore-Primärbeleg von 03:26:11Z bestätigt Selfhost-PG/Auth/Vault/Rollen/Konfiguration sowie Canonical-Rekonstruktion. Er enthält noch keinen n8n-Restoreabschluss. Der jüngere lokale Backup-Status 033005 steht auf running/package; vollständiger FULL-/Mac-Erfolg bleibt offen.",
+    "ACL82 werden vor der vollständigen Originalconfig wiederhergestellt. Ab dieser ACL-Freigabe sind ursprüngliche Source-API-Schreibrechte wieder wirksam. Das ist Bestandteil der autorisierten Source-Rückkehr; Target-Stillstand und aktuelle Source-Prüfung müssen davor belegt sein.",
+    "FULL-/Mac-Erfolg, frische Authgleichheit, vollständige Cron-Definitionen und netQueue=0 werden durch diesen PartialReturn-Helper nicht vollständig selbst durchgesetzt. Sie bleiben ausdrückliche Root-Vorbedingungen."
+  ],
+  "root_conditions_before_execution": [
+    "Tatsächlicher Abschluss desselben CurrentRecoveredTarget-FULL: state=ok, selfhost.enabled=true, restore_verified=true, erfolgreiche native PG/Auth/Vault/Rollen/Krypto-Prüfung, Canonical verified=true und abgeschlossener isolierter n8n-Restore einschließlich Credential-Prüfung ohne externes Netz.",
+    "Vollständiges Paket mit tatsächlichem Archiv-SHA und Manifest; anschließend reale Mac-Quittung für dasselbe Archiv, identische Bytes und sämtliche Manifestdateien. Kein Ersatz durch das frühere Hosted-/Source-Backup.",
+    "Backup-Service tatsächlich inactive; eigener Timer inactive und enabled. CurrentRecoveredRuntime weiterhin exakt das bestätigte Image mit allen fünf geschlossenen Flags; keine fremden Runtime-, Host- oder Markerzustände.",
+    "Neue tatsächliche Return-Proof und gebundene externe Writer-Primärbelege höchstens 300 Sekunden alt. Passendes TARGET_PARTIAL_SOURCE_RETURN-Gate mit issued_at/expires_at und höchstens 600 Sekunden Laufzeit; Review-Ergebnis als tatsächliche Datei per SHA binden. Keine umdatierten alten Beobachtungen.",
+    "Alle acht script_hashes lokal und auf dem Host bytegleich; alle Proofreferenzen einzeln SHA-gebunden. Assertions aktiv, kein Python-Optimierungsmodus. Originalhost-Primärbeleg und beide Sätze der fünf Originaldateien vollständig prüfen.",
+    "CurrentSource43=CurrentTarget43=FrozenBaseline mit Query e8ca7870cc965f15fdf1c95ad9d8394a12b04e43eacc08ab49d70853be326254. Ausschließlich enabled normalisieren und ausschließlich wm_backup_records/wm_backup_snapshots ausschließen. ALLCOPY-Primärbeleg für 88 Tabellen/68572 Zeilen an den tatsächlichen Dump binden und inhaltlich prüfen.",
+    "Source: anon/authenticated/service_role jeweils DML=0 und volatile Writer=0, vollständige Config deaktiviert, keine laufenden oder unbekannten Jobs/Aufrufe. Target: Originalconfig, keine laufenden oder unbekannten Jobs/Aufrufe, leere Outboxes.",
+    "Source und Target: strikt ganzzahlig active_cron=0 und netHTTPQueue=0. Beide vollständigen erhaltenen Cron-Definitionen gleich und an Original-COPY-SHA 07c69c2c2bba32f344f07605fbe7c54a0826957ae8fa2690e766f02f94c527d9 gebunden; keine Cron-Änderung.",
+    "Originale Auth-UID sowie E-Mail-/Passworthashes aktuell zwischen Source, Target und Originalarchiv gleich; vorhandene Vault-Originalnachweise erhalten. Keine Account-, Passwort- oder Linkänderung.",
+    "Alle drei originalen n8n-Versionen pausiert, relevante Ausführungen null, Schlüssel und Owner unverändert einschließlich MD5 sowie exakt zwei eigene Zusatzscopes. Vier Target-APIs mit erwarteten Image-IDs, Netzwerken und Ports.",
+    "Beide ursprünglichen Frontend-Aliase aktuell READY, beide VITE-Variablen abwesend, keine Frontend-/Owner-/Writer-Mutation und kein Return-Versuch verbraucht. Frische tatsächliche preflight_partial-Prüfung muss den jetzigen changed=true Runtime-Zweig bestehen."
+  ],
+  "accepted_execution_order": [
+    "Maintenance herstellen.",
+    "Canonical und vier Target-APIs stoppen und tatsächlichen Stillstand beweisen.",
+    "Aktuelle Source43, Rechte, vollständige Config und Frontendzustand erneut prüfen; gepinnte Host-/API-Identitäten, Outboxes und n8n-Ausführungen kontrollieren.",
+    "Originale ACL82 transaktional wiederherstellen und zurücklesen.",
+    "Vollständige Originalconfig wiederherstellen und zurücklesen.",
+    "Fünf Originalhostdateien jeweils atomar wiederherstellen und ausschließlich den eigenen Selfhost-Backupmarker entfernen.",
+    "Exakte Source-BASE einmal mit Originalflags 0/1/1/1/1 starten.",
+    "Health-GET im bestehenden 90-Sekunden-Vertrag vor Wiederherstellung des ursprünglichen Nginx-Ingress bestehen.",
+    "Drei Originalpublikationen über den bestehenden n8n-API-Pfad wiederherstellen und prüfen; ausschließlich zwei eigene Zusatzscopes zurücknehmen.",
+    "Core-PASS belegen; eigenen Backup-Timer zuletzt starten und dessen Zustand zurücklesen; erst danach Abschlussreceipt."
+  ],
+  "backup_failure_decision": {
+    "automatic_exception_granted": false,
+    "criterion": "Dieser Auftrag verlangt ausdrücklich tatsächlichen FULL-/Mac-Erfolg vor Ausführung. Ein Backupfehler erfüllt diese Bedingung nicht und wird als eigener Blocker erhalten. Dieses Review erteilt keinen vorsorglichen Ersatz- oder Ausnahmefreibrief.",
+    "separation": "Ein Backupfehler beweist keinen Source-Return-Codefehler. Eine ausdrücklich gesondert autorisierte Return-Ausnahme müsste den tatsächlichen Fehler, erhaltene Recovery-Artefakte und aktuelle Return-Vorbedingungen konkret binden; sie darf weder FULL-PASS fingieren noch den Frontend-Hardstop umgehen."
+  },
+  "budget": {
+    "source_return_attempts_reported": 0,
+    "local_source_return_attempt_markers_observed": 0,
+    "source_return_attempts_max": 1,
+    "new_full_test_campaigns": 0,
+    "automatic_retries": 0,
+    "frontend_automatic_followups": 0,
+    "historical_counters_reset": false
+  },
+  "failure_endpoint": "Bei Return-Fehler Primärbelege sichern, Maintenance soweit der vorhandene Fehlerpfad erfolgreich ist herstellen und blockiert zurückgeben. Der Fehlerpfad garantiert keine erneute Sperrung bereits restaurierter Source-Rechte oder Originalflags. Tatsächlichen Teilzustand ausdrücklich melden; kein automatischer Resume, Fix, Cleanup oder zweiter Return.",
+  "review_validity": "Gebunden an diese acht Codehashes, den geprüften RecoveredRuntime-Kontext und sämtliche Root-Bedingungen. Nach Backupabschluss aktuelle Zustände neu messen. Falls eine zeitliche Review-Erneuerung erforderlich ist, ausschließlich dieselben Hashes und den tatsächlichen Endzustand gezielt erneuern; keine breite Test-/Reviewkampagne.",
+  "protected_limits": [
+    "Frontend PROMOTED_DEPLOYMENT_ID_AND_READINESS bleibt BLOCKED_RETURN_NO_AUTOMATIC_FOLLOWUP; implementierte unvalidierte Frontend-SHAs und Fehlerbelege bleiben erhalten.",
+    "Bestehende Partial-/Healthy-/Runtime-/Cron-Abnahmen gelten weiterhin für ihre geprüften Aussagen; keine neue Testausführung durch diesen Reviewer.",
+    "Target-Datenbank und Archive behalten; keine Datenrücksetzung, kein Sourceprojektlöschen und kein Frontendrollback oder ENV-Löschen.",
+    "Keine Eingriffe in andere Projekte, keine zusätzlichen Provider-/KI-Tests, kein erzwungener Backloglauf und keine neuen kostenpflichtigen Dienste.",
+    "Die Wiederherstellung ursprünglicher Produktionsflags erlaubt deren natürliches vorheriges Verhalten; sie ist kein Target-Writer-GO.",
+    "Öffentliche Migration und ursprünglicher Owner-Produktionsfluss bleiben unabgenommen."
+  ],
+  "evidence_refs": [
+    "working-memory/ops/hetzner-migration/final_target_partial_source_return_once.py",
+    "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py",
+    "working-memory/ops/hetzner-migration/n8n_dashboard_pause_once.py",
+    "working-memory/ops/hetzner-migration/business-projection-contract.json",
+    "working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-cron-final-goal-1/result.json",
+    "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/target-runtime-permissions-receipt.json",
+    "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/target-runtime-receipt.json",
+    "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/target-current-full-restores-primary-0325.json",
+    "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/target-full-backup-status-033005.json",
+    "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/partial-actual-dry-1131b35a93c54bd2b8beacb9ddca70b7/actual-dry-readiness-receipt.json",
+    "working-memory/evaluation/frontend-control-id-followup-20261004-evidence.json"
+  ],
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "read_only": true,
+    "approval": "never",
+    "session": "01a104f5-8527-7ea3-9fc3-64d40845244b",
+    "runtime": "OpenAI Codex v0.160.0; provider=openai",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-source-availability-return-goal-1/stderr-private.txt:1-35",
+    "identity_evidence": "Tatsächliche erste 35 Headerzeilen gelesen; Modell, Effort, Sandbox und eigene Sitzungs-UUID bestätigt. Eigenständige native Reviewsession, keine Delegation.",
+    "billing_attestation": "Keine neue API-Route oder Abrechnung eingerichtet; der Header allein weist den Abo-Abrechnungsmodus nicht separat nach.",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references_loaded": [
+      "independent-review.md",
+      "recovery.md",
+      "specialist-skills.md"
+    ],
+    "performed": "Lokale Originalcode-, AST-Inventar-, Hash-, Vertrags- und Receiptprüfung. Keine Implementierung, Tests, Remoteoperationen oder Delegation.",
+    "limits": "Hostzustände wurden anhand lokaler Originalbelege geprüft, nicht neu remote beobachtet. Der referenzierte vollständige ALLCOPY-Hostbeleg lag nicht unter dem gleichnamigen lokalen Runpfad vor; dessen aktuelle Bindung bleibt Root-Pflicht.",
+    "enforcement": "RULES_ONLY"
+  },
+  "whole_migration_accepted": false
+}
