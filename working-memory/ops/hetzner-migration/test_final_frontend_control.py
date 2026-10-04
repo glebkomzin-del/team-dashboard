@@ -265,7 +265,7 @@ class FrontendControlTests(unittest.TestCase):
             self.assertEqual(json.loads(req.data),{'type':'magiclink','email':owner['email'],'redirect_to':old_owner.REDIRECT})
             return Response()
         fixture_gate={**gate,'run_dir':str(run)}
-        with patch.object(o.control,'load',return_value=(fixture_gate,values,data,key)),patch.object(old_owner,'ROOT',root),patch.object(old_owner,'LIVE',live),patch.object(o.subprocess,'run',side_effect=sql),patch.object(old_owner.urllib.request,'urlopen',side_effect=http) as http_mock:
+        with patch.object(o.control,'OPS',run),patch.object(o.control,'load',return_value=(fixture_gate,values,data,key)),patch.object(old_owner,'ROOT',root),patch.object(old_owner,'LIVE',live),patch.object(o.subprocess,'run',side_effect=sql),patch.object(old_owner.urllib.request,'urlopen',side_effect=http) as http_mock:
             receipt=o.execute(run,self.f.path,NOW);self.assertEqual(receipt['generated_links'],1);self.assertEqual(len(calls),2);self.assertEqual(http_mock.call_count,1)
             self.assertTrue(receipt['production_browser_proof_pending']);self.assertEqual((run/'target-runtime-receipt.json').read_bytes(),values['runtime_projection'])
             with self.assertRaises(Exception):o.execute(run,self.f.path,NOW)
@@ -351,5 +351,101 @@ class DeploymentIdentityFollowupTests(FrontendControlTests):
         with self.assertRaises(Exception):c.load(self.f.path,'OWNER',NOW)
         c.save(self.root/'owner-id-family.json',{'accepted_id':ACTUAL_ID,'rejected_ids':['dpl_foreign',c.PREVIEW],
                'actual_original_owner_receipt':str(self.root/'host/final-export-20261004T004000Z/owner-link-receipt.json')})
+
+class OwnerHostMarkerContractTests(unittest.TestCase):
+    """Fixed Host marker only; missing positive evidence never starts Auth."""
+    setUp=FrontendControlTests.setUp
+    tearDown=FrontendControlTests.tearDown
+    test_host_ops_equals_run_once=FrontendControlTests.test_owner_real_original_flow_once_on_bound_current_projection
+
+    def host(self):
+        self.f.owner();gate,values,data,key=c.load(self.f.path,'OWNER',NOW)
+        root=self.root/'host';root.mkdir(mode=0o700)
+        run=root/'final-export-20261004T004000Z';run.mkdir(mode=0o700)
+        for name,field in [('target-runtime-receipt.json','runtime_projection'),('target-runtime-permissions-receipt.json','runtime_recovery')]:
+            (run/name).write_bytes(values[field])
+        live=self.root/'live';(live/'.local').mkdir(mode=0o700,parents=True)
+        (live/'.local/service.env').write_text('\n'.join(k+'='+v for k,v in old_owner.CLOSED_FLAGS.items())+'\nMEMORY_ALLOWED_USERS='+UID+'\n')
+        return root,run,live,({**gate,'run_dir':str(run)},values,data,key)
+
+    def test_invalid_missing_foreign_stale_unbound_gate_no_auth(self):
+        root,run,live,bound=self.host()
+        for case in ('missing','invalid','foreign','stale','unbound'):
+            with self.subTest(case=case):
+                gate=copy.deepcopy(self.f.gate)
+                if case=='invalid':gate['action']='PROMOTE'
+                if case=='foreign':gate['run_dir']='/opt/foreign/final-export'
+                if case=='stale':gate['expires_at']=(NOW-dt.timedelta(seconds=1)).isoformat()
+                if case=='unbound':gate['receipt_hashes'].pop(self.f.refs['runtime_projection']['path'])
+                path=self.root/(case+'-gate.json');path.write_text(json.dumps(gate));path.chmod(0o600)
+                if case=='missing':path.unlink()
+                with patch.object(old_owner,'ROOT',root),patch.object(o.control,'load',side_effect=lambda p,a,n:c.load(p,a,n)),patch.object(old_owner,'main') as auth:
+                    with self.assertRaises(Exception):o.execute(run,path,NOW)
+                    auth.assert_not_called()
+                self.assertFalse((run/'owner-recovered-control-attempt.marker').exists())
+
+    def test_unsafe_paths_and_markers_no_auth(self):
+        root,run,live,bound=self.host()
+        cases=[]
+        missing=root/'missing';foreign=self.root/'foreign';foreign.mkdir(mode=0o700)
+        link=root/'run-link';link.symlink_to(run,target_is_directory=True)
+        parent_link=self.root/'parent-link';parent_link.symlink_to(root,target_is_directory=True)
+        cases.extend([missing,foreign,link,parent_link/run.name])
+        for path in cases:
+            with self.subTest(path=str(path)),patch.object(old_owner,'ROOT',root),patch.object(o.control,'load',return_value=bound),patch.object(old_owner,'main') as auth:
+                with self.assertRaises(Exception):o.execute(path,self.f.path,NOW)
+                auth.assert_not_called()
+        run.chmod(0o755)
+        with patch.object(old_owner,'ROOT',root),patch.object(old_owner,'main') as auth:
+            with self.assertRaises(Exception):o.execute(run,self.f.path,NOW)
+            auth.assert_not_called()
+        run.chmod(0o700)
+        marker=run/'owner-recovered-control-attempt.marker';marker.symlink_to(root/'absent')
+        with patch.object(old_owner,'ROOT',root),patch.object(old_owner,'LIVE',live),patch.object(o.control,'load',return_value=bound),patch.object(old_owner,'main') as auth:
+            with self.assertRaises(Exception):o.execute(run,self.f.path,NOW)
+            auth.assert_not_called()
+        self.assertTrue(marker.is_symlink());self.assertFalse((root/'absent').exists())
+
+    def test_marker_write_error_preserved_before_auth(self):
+        root,run,live,bound=self.host();real_open=os.open
+        def fail_marker(path,*args,**kw):
+            if path=='owner-recovered-control-attempt.marker':raise PermissionError('synthetic marker write denied')
+            return real_open(path,*args,**kw)
+        with patch.object(old_owner,'ROOT',root),patch.object(old_owner,'LIVE',live),patch.object(o.control,'OPS',run),patch.object(o.control,'load',return_value=bound),patch.object(o.os,'open',side_effect=fail_marker),patch.object(old_owner,'main') as auth:
+            with self.assertRaisesRegex(PermissionError,'synthetic marker write denied'):o.execute(run,self.f.path,NOW)
+            auth.assert_not_called()
+        records=list((run/'owner-recovered-control-private').glob('marker-error-*.json'))
+        self.assertEqual(len(records),1);record=json.loads(records[0].read_text())
+        self.assertEqual(record,{'type':'PermissionError','cause':'synthetic marker write denied','auth_started':False})
+        self.assertFalse((run/'owner-recovered-control-attempt.marker').exists())
+
+    def test_repo_guard_unchanged(self):
+        with patch.object(c,'OPS',self.root):
+            with self.assertRaisesRegex(Exception,'Noncanonical repo write'):c.save(self.root/'owner-recovered-control-attempt.marker',{})
+        self.assertFalse((self.root/'owner-recovered-control-attempt.marker').exists())
+
+    def test_marker_fsync_failure_preserves_marker_and_blocks_second_auth(self):
+        root,run,live,bound=self.host();real_sync=os.fsync;calls=[]
+        def fail_first(fd):
+            calls.append(fd)
+            if len(calls)==1:raise OSError('synthetic marker fsync failure')
+            return real_sync(fd)
+        with patch.object(old_owner,'ROOT',root),patch.object(old_owner,'LIVE',live),patch.object(o.control,'OPS',run),patch.object(o.control,'load',return_value=bound),patch.object(o.os,'fsync',side_effect=fail_first),patch.object(old_owner,'main') as auth:
+            with self.assertRaisesRegex(OSError,'synthetic marker fsync failure'):o.execute(run,self.f.path,NOW)
+            marker=run/'owner-recovered-control-attempt.marker';before=marker.read_bytes()
+            with self.assertRaisesRegex(Exception,'already attempted'):o.execute(run,self.f.path,NOW)
+            self.assertEqual(marker.read_bytes(),before);auth.assert_not_called()
+        records=list((run/'owner-recovered-control-private').glob('marker-error-*.json'))
+        self.assertEqual(len(records),1);self.assertEqual(json.loads(records[0].read_text())['auth_started'],False)
+
+    def test_exclusive_marker_private_fsync_and_existing_denied(self):
+        root,run,live,bound=self.host()
+        with patch.object(old_owner,'ROOT',root),patch.object(o.os,'fsync',wraps=os.fsync) as synced:
+            o._save_owner_attempt(run,{'synthetic_only':True})
+            self.assertEqual(synced.call_count,2)
+            with self.assertRaises(FileExistsError):o._save_owner_attempt(run,{'replacement':True})
+        marker=run/'owner-recovered-control-attempt.marker'
+        self.assertEqual(marker.stat().st_mode&0o777,0o600)
+        self.assertEqual(json.loads(marker.read_text()),{'synthetic_only':True})
 
 if __name__=='__main__':unittest.main(verbosity=2)

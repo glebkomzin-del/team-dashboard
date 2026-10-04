@@ -20,8 +20,33 @@ import final_owner_link_once as original
 spec=importlib.util.spec_from_file_location('frontend_final_control',Path(__file__).with_name('frontend-final-promote-control-once.py'))
 control=importlib.util.module_from_spec(spec);spec.loader.exec_module(control)
 
+def _owner_run(value):
+    # Inspect the lexical path first: resolve() must never hide a symlink.
+    run=Path(value)
+    control.require(run.is_absolute() and not any(p.is_symlink() for p in (run,*run.parents)),
+                    'Unsafe actual Owner run')
+    control.require(run.is_dir() and run.stat().st_mode&0o777==0o700 and
+                    run.parent==original.ROOT and run==run.resolve(),'Unsafe actual Owner run')
+    return run
+
+def _save_owner_attempt(run,value):
+    run=_owner_run(run)
+    directory_fd=os.open(run,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        opened=os.fstat(directory_fd);expected=run.stat()
+        control.require((opened.st_dev,opened.st_ino)==(expected.st_dev,expected.st_ino) and
+                        opened.st_mode&0o777==0o700,'Unsafe actual Owner run')
+        fd=os.open('owner-recovered-control-attempt.marker',
+                   os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=directory_fd)
+        with os.fdopen(fd,'wb') as stream:
+            stream.write(json.dumps(value,sort_keys=True).encode()+b'\n')
+            stream.flush();os.fsync(stream.fileno())
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
 def execute(run,gate_path,now=None):
-    run=Path(run).resolve();gate,values,data,_=control.load(gate_path,'OWNER',now)
+    run=_owner_run(run);gate,values,data,_=control.load(gate_path,'OWNER',now)
     control.require(str(run)==gate['run_dir'] and run.parent==original.ROOT and not run.is_symlink() and
                     run.is_dir() and run.stat().st_mode&0o077==0,'Unsafe actual Owner run')
     control.require(control.raw(run/'target-runtime-receipt.json')==values['runtime_projection'] and
@@ -30,13 +55,18 @@ def execute(run,gate_path,now=None):
     cfg=dict(l.split('=',1) for l in (original.LIVE/'.local/service.env').read_text().splitlines() if l and not l.startswith('#'))
     control.require(all(cfg.get(k)==v for k,v in original.CLOSED_FLAGS.items()) and
                     cfg['MEMORY_ALLOWED_USERS'].split(',')==data['live']['allowed_users'],'Live original requirements not met')
-    control.require(not any((run/n).exists() for n in ('writer-open-attempt.marker','owner-magiclink-attempt.marker','owner-link-receipt.json',
+    control.require(not any((run/n).exists() or (run/n).is_symlink() for n in ('writer-open-attempt.marker','owner-magiclink-attempt.marker','owner-link-receipt.json',
                     'owner-recovered-control-attempt.marker')),'Owner/writer already attempted')
     directory=control.private_dir(run/'owner-recovered-control-private')
-    control.save(run/'owner-recovered-control-attempt.marker',{'problem_id':control.PROBLEM,'owner_links':1,'automatic_retries':0,
+    try:
+        _save_owner_attempt(run,{'problem_id':control.PROBLEM,'owner_links':1,'automatic_retries':0,
                  'gate_sha256':control.digest(gate_path),'runtime_recovery_sha256':control.sha(values['runtime_recovery']),
                  'runtime_projection_sha256':control.sha(values['runtime_projection']),'original_runtime_attempt_status':'FAILED',
                  'original_error_sha256':control.sha(values['runtime_error'])})
+    except Exception as error:
+        control.save(directory/('marker-error-'+uuid.uuid4().hex+'.json'),
+                     {'type':type(error).__name__,'cause':str(error),'auth_started':False})
+        raise
     # Capture raw SQL/process success as well as failures before original JSON checks.
     def captured_process(args,*,operation,private_errors=None,**kw):
         record={'operation':operation,'exit_code':None,'stdout_b64':None,'stderr_b64':None,'timeout':False}
