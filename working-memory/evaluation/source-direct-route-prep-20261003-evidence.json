@@ -1,0 +1,171 @@
+{
+  "schema": "source-direct-route-prep-evidence-v1",
+  "updated_at": "2026-10-04T00:02:34.690065+00:00",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "FOLLOWUP_FAILED",
+  "milestone": "LOCAL_PREP_OFFLINE_PASS_NOT_MET",
+  "authorization": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-direct-route-review-2/result.json",
+  "review_decision": "CONTINUE_BOUNDED",
+  "review_runtime_header_examined_lines": [
+    10,
+    13,
+    14,
+    15,
+    16,
+    17,
+    19
+  ],
+  "review_session_id": "01a1042a-0d24-75b2-ac2f-1fe2668d1201",
+  "builder_runtime_model_identity": "Not independently established by this package; no model or lead identity claim",
+  "budget": {
+    "unit": "complete_offline_implementation_test_cycles",
+    "maximum": 2,
+    "used": 2,
+    "remaining": 0
+  },
+  "retained_history": {
+    "readonly_pooler_failure": 1,
+    "source_freeze": 1,
+    "real_source_partial_recovery": "PASS",
+    "current_full_dump": 0,
+    "counter_reset": false
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "new_suite_tests": 11,
+      "passed": 10,
+      "errors": 1,
+      "status": "FAILED",
+      "error": "test_main_success_actual_fact_guard_synthetic_only_single_budget: fixture patched pre.run then recursively invoked patched callable with transport keyword; CLI raised privately captured SystemExit",
+      "changes_after": "Corrected main fixture to retain actual run callable; added final entry and readiness checks; tightened direct export fact validation and saved lease-bound receipts"
+    },
+    {
+      "cycle": 2,
+      "new_suite_tests": 14,
+      "passed": 13,
+      "errors": 1,
+      "status": "FAILED",
+      "error": "test_actual_final_direct_branch_tunnel_before_one_lease_cleanup_timeout: ExitStack.enter_context invokes fixture __enter__ mock with one positional argument; zero-argument lambda raised TypeError at final_export_once.py:74 before lease/PSQL checks",
+      "regression_suite": {
+        "file": "test_final_source_export_errors.py",
+        "tests": 3,
+        "passed": 3,
+        "status": "PASS"
+      },
+      "shell_aggregate_exit_code": 0,
+      "shell_aggregate_note": "Final regression command passed; first unittest summary explicitly FAILED(errors=1), so aggregate zero is not package PASS"
+    }
+  ],
+  "validated_offline": [
+    "Immutable original export_source.main imported and exercised with synthetic lease: psql, pg_dump and pg_dumpall exact direct args/env; archive and roles output retained",
+    "TTL guard denies later dump/roles connection starts at 300 seconds; no renewal",
+    "Wrong phase/project/host/port/direct gate/TLS mode/expired gate/code or proof hash denied before marker/HTTP/tunnel",
+    "Exact existing Source pooler argument and read-only options required; password remains only PGPASSWORD",
+    "Actual preflight main with mock transport: one lease, one direct psql query; marker prevents retry; synthetic role facts required",
+    "Wrong synthetic facts, psql nonzero/timeout, HTTP error/timeout preserve private originals and close mock tunnel without PASS receipt",
+    "SSH loopback/strict hostkey/own-child cleanup, occupied port, Popen failure, readiness timeout and early child exit checked with fake sockets/processes",
+    "Existing targeted original and final exporter error fixtures passed, including version/TOC/archive/Vault error capture"
+  ],
+  "open_mandatory_gaps": [
+    "Final direct entry fixture did not reach one-lease/direct-PSQL assertions because its __enter__ mock signature failed; its intended integration criterion remains unverified",
+    "No successful complete offline package: no third correction/test cycle authorized",
+    "Root independent review of actual changed hashes and all fresh operational gates remain outstanding",
+    "No actual direct Source authentication, lease-role facts or full direct export proven; Supavisor cache cause remains hypothesis"
+  ],
+  "script_hashes": {
+    "source_direct_route.py": "742a96258b9f42e55e66cd5dfa1babdaa3afe179eadd767a259d12b893187bcc",
+    "source_direct_preflight_once.py": "800ca78008762edb3dc1734a8dc666e88f38dbe97504486f9ada723e5b7d32ae",
+    "test_source_direct_route.py": "7f925862351566a371d35b1cf2eb7aad1451cfac1b0198f804d7ff4cb7ff0e1b",
+    "final_export_once.py": "0e61119c979f38fcb6e00ca275141e73a75e7a9007928066f19497b60d1602e3",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea"
+  },
+  "immutable_export_verified": true,
+  "changes": {
+    "source_direct_route.py": "New minimal Source-only proof/TTL/exact-libpq adapter and owned loopback SSH child lifecycle",
+    "source_direct_preflight_once.py": "Prepared future single-use gated CLI with private HTTP/PSQL originals and actual-fact PASS guard; never executed against Source",
+    "test_source_direct_route.py": "New offline synthetic behavioral fixtures; one final integration fixture still failing",
+    "final_export_once.py": "Optional --direct-route-gate; lease-bound adapter and tunnel context; existing default route and archive/Vault/offserver/server guards retained"
+  },
+  "receipt_contract": {
+    "schema": "source-direct-gate-v1",
+    "required_fields": [
+      "problem_id",
+      "decision",
+      "phase",
+      "direct_gate",
+      "run_dir",
+      "project",
+      "host",
+      "hostaddr",
+      "port",
+      "sslmode",
+      "ca_sha256",
+      "issued_at",
+      "expires_at",
+      "lease_budget",
+      "probe_budget",
+      "script_hashes",
+      "proof_hashes"
+    ],
+    "preflight_phase": "SOURCE_DIRECT_AUTH_PREFLIGHT",
+    "decision": "CONTINUE_BOUNDED",
+    "script_hashes_required": [
+      "source_direct_route.py",
+      "source_direct_preflight_once.py",
+      "export_source.py",
+      "final_phase_common.py",
+      "final_export_once.py"
+    ],
+    "proof_hashes_required": [
+      "actual-hetzner-direct-db-network.json",
+      "actual-hetzner-direct-db-tls.json"
+    ],
+    "final_route_phase": "SOURCE_DIRECT_FINAL_EXPORT",
+    "final_additional_field": "preflight_receipt_sha256 bound to actual preflight-passed.json; separate fresh Root final gate still required",
+    "lease_bound_fields_derived_only_from_future_actual_lease": [
+      "approved_role",
+      "lease_created_at",
+      "lease_ttl_seconds"
+    ],
+    "future_gate_or_actual_proof_created": false
+  },
+  "operational_actions_this_package": {
+    "network_calls": 0,
+    "ssh_calls": 0,
+    "source_role_api_calls": 0,
+    "source_auth_probes": 0,
+    "source_queries": 0,
+    "source_freezes": 0,
+    "source_dumps": 0,
+    "target_mutations": 0,
+    "timer_changes": 0,
+    "delegation": 0,
+    "git_commits": 0
+  },
+  "scope": "Only the five authorized files; shared unrelated work retained; no export_source.py changes",
+  "versioning": "Root owns versioning; no commit attempted",
+  "recovery": "New files remain unactivated. Root must preserve own final_export_once baseline when reverting the optional integration; no deployment or data changes occurred",
+  "enforcement": "LOCAL_GUARDS_OFFLINE_TESTED_PARTIALLY; no controller-enforcement or independent acceptance claim",
+  "next_action": "STOP. Return exact fixture/integration gap to Root; no automatic third cycle, operational preflight or lease.",
+  "native_process_provenance": {
+    "fresh_thread_id": "01a1042e-ff4f-7ba1-92be-5d6079b1877e",
+    "requested_accepted_configuration": {
+      "model": "gpt-6.1-sol",
+      "reasoning_effort": "medium",
+      "sandbox": "workspace-write",
+      "multi_agent": false,
+      "ephemeral": true,
+      "ignore_user_config": true
+    },
+    "actual_usage": {
+      "input_tokens": 620190,
+      "cached_input_tokens": 550016,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 19196,
+      "reasoning_output_tokens": 2626
+    },
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED"
+  },
+  "root_additional_observed_gap": "POOLER_LINK uses c.HERE.parents[3] (Dashboard Job) instead of original exporter repo path. Actual-path correction required before real auth; no Source API attempted."
+}

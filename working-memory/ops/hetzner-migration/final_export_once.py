@@ -52,8 +52,12 @@ def metadata():
     return {'vault':vault,'edge':edge,'queues':queue}
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--gate-receipt',required=True);a=p.parse_args();os.umask(0o077)
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--gate-receipt',required=True);p.add_argument('--direct-route-gate');a=p.parse_args();os.umask(0o077)
     local,remote=paths(a.name);gate=gate_check(a.gate_receipt,a.name)
+    direct_gate=None
+    if a.direct_route_gate:
+        import source_direct_route as direct_route
+        direct_gate=direct_route.checked_gate(a.direct_route_gate,local,'SOURCE_DIRECT_FINAL_EXPORT')
     freeze=json.loads((local/'freeze-receipt.json').read_text());assert freeze['status']=='FROZEN' and freeze['run_dir']==remote
     assert shell('docker inspect -f '+__import__('shlex').quote('{{.State.Running}}')+' '+CANONICAL).strip()==b'false'
     save(local/'final-export-attempt.json',{'attempt':1,'lease_budget':1,'dump_budget':1})
@@ -63,18 +67,34 @@ def main():
     before=metadata();save(local/'metadata-before-private.json',before)
     shutil.copyfile(PRIVATE/'source/prod-ca-2021.crt',local/'prod-ca-2021.crt')
     spec=importlib.util.spec_from_file_location('verified_source_export',HERE/'export_source.py');mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
-    # Create the single official readonly lease here so failed HTTP originals are preserved.
-    request=urllib.request.Request('https://api.supabase.com/v1/projects/'+PROJECT+'/cli/login-role',data=b'{"read_only":true}',headers={'Authorization':'Bearer '+source_token(),'Content-Type':'application/json'})
-    try:
-        with urllib.request.urlopen(request,timeout=30) as response:body=response.read();lease=json.loads(body)
-    except urllib.error.HTTPError as error:
-        raise private_failure('LOGIN_LEASE_HTTP_ERROR',status=error.code,body=error.read(),headers=str(error.headers)) from None
-    except Exception as error:
-        raise private_failure('LOGIN_LEASE_REQUEST_ERROR',error_type=type(error).__name__,primary_error=str(error)) from None
-    assert isinstance(lease,dict) and all(lease.get(k) for k in ['role','password','ttl_seconds'])
-    import datetime
-    save(local/'login-role.json',{**lease,'created_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'read_only_requested':True})
-    mod.ROOT=local;mod.subprocess=processes;mod.main()
+    # Optional Source route is separately gated; default pooler behavior stays intact.
+    import contextlib
+    with contextlib.ExitStack() as resources:
+        if direct_gate is not None:
+            resources.enter_context(direct_route.OwnedTunnel(local))
+        # Create the single official readonly lease here so failed HTTP originals are preserved.
+        import datetime
+        lease_started=datetime.datetime.now(datetime.timezone.utc)
+        request=urllib.request.Request('https://api.supabase.com/v1/projects/'+PROJECT+'/cli/login-role',data=b'{"read_only":true}',headers={'Authorization':'Bearer '+source_token(),'Content-Type':'application/json'})
+        try:
+            with urllib.request.urlopen(request,timeout=30) as response:
+                body=response.read()
+                if direct_gate is not None:
+                    save(local/'direct-lease-http-private.json',{'status':response.status,'headers':str(response.headers),'body_base64':base64.b64encode(body).decode()})
+                lease=json.loads(body)
+        except urllib.error.HTTPError as error:
+            raise private_failure('LOGIN_LEASE_HTTP_ERROR',status=error.code,body=error.read(),headers=str(error.headers)) from None
+        except Exception as error:
+            raise private_failure('LOGIN_LEASE_REQUEST_ERROR',error_type=type(error).__name__,primary_error=str(error)) from None
+        assert isinstance(lease,dict) and all(lease.get(k) for k in ['role','password','ttl_seconds'])
+        created_at=(lease_started if direct_gate is not None else datetime.datetime.now(datetime.timezone.utc)).isoformat()
+        save(local/'login-role.json',{**lease,'created_at':created_at,'read_only_requested':True})
+        mod.ROOT=local;mod.subprocess=processes
+        if direct_gate is not None:
+            bound={**direct_gate,'approved_role':lease['role'],'lease_created_at':created_at,'lease_ttl_seconds':lease['ttl_seconds']}
+            save(local/'direct-route-lease-private.json',bound)
+            mod.subprocess=direct_route.SourceProcessAdapter(processes,direct_route.DirectRoute(bound,local/'login-role.json',local/'prod-ca-2021.crt',mod.LINK.read_text()))
+        mod.main()
     assert json.loads((local/'dump-result.json').read_text())['returncode']==0
     assert json.loads((local/'roles-result.json').read_text())['returncode']==0
     role=json.loads((local/'role-validation.json').read_text())
