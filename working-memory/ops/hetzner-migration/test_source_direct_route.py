@@ -92,6 +92,21 @@ class Fixtures(unittest.TestCase):
 
 
 class RouteTests(Fixtures):
+    def test_actual_official_readonly_role_accepted_but_unrelated_roles_denied(self):
+        value = self.lease()
+        value['role'] = 'cli_login_supabase_read_only_user'
+        self.gate['approved_role'] = value['role']
+        (self.run_dir / 'login-role.json').write_text(json.dumps(value))
+        self.assertEqual(self.direct().lease()['role'], value['role'])
+        for role in ('supabase_admin', 'postgres', 'cli_login_supabase_read_only_user.extra',
+                     'cli_login_supabase_read_only_user unsafe'):
+            with self.subTest(role=role):
+                value['role'] = role
+                self.gate['approved_role'] = role
+                (self.run_dir / 'login-role.json').write_text(json.dumps(value))
+                with self.assertRaises(RuntimeError):
+                    self.direct().lease()
+
     def test_original_entry_three_connections_preserves_args_env_archive(self):
         self.lease()
         module = self.original()

@@ -171,3 +171,8 @@ NativeDirectBuilder 01a1042e-ff4f-7ba1-92be-5d6079b1877e exactly2offlinecycles:1
 ### 2026-10-04 Direct route fixture correction validated
 
 Fresh native Astrahigh readonly session01a1043b-a28e-7032-8330-e83ec00b3dca grants ONE mechanical followup max2offlinecycles. Original suspected connection-path defect disproved by exact exporter.parents4/preflight.HERE.parents3 equality and actual file existence; both declarations unchanged. Root corrects only __enter__ mock signature plus adds actual-path/no-secret-read test. Firstfollowup15/15PASS, syntax4PASS; existing3exporterror regression retained on unchanged implementation. See source-direct-prep-gap-20261004-review.json and source-direct-prep-followup-20261004-evidence.json. No auth/lease/Sourcefreeze/dump/Target operations. Fresh actualcode/hash independent preflight gate next, then1readonlylease1query while prod remains running. Preserve previous failures/counters, RULES_ONLY.
+
+
+### 2026-10-04 00:19 UTC Direct auth local guard stopped before probe
+
+Fresh Astrahigh session01a10442-e8a2-7b73-b6f3-3a9d235394b9 gives exact preflight GO. Officialreadonlylease1 returned actualrole cli_login_supabase_read_only_user TTL300. OwnSSHtunnel closed normally, authenticatedquery0: local legacy cli_login_postgres pattern incorrectly denied actualrole. Source neverpaused, noDump/Target. Rootexact small correction permits only actual officialreadonlyrole in addition to prior legacy pattern; keeps exact APIrole/TLS/env/TTL/readonly/facts guards.16testsPASS/syntax2PASS; private actuallease/rawAPI and testprimary durable. Oldfailure/counters unchanged. Fresh focused actualcode/hash review before any authenticatedprobe; existinglease may expire naturally, no blind renewal. RULES_ONLY.

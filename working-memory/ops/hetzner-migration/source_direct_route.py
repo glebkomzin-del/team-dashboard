@@ -115,7 +115,8 @@ class DirectRoute:
         value = json.loads(self.lease_path.read_text())
         require(value['read_only_requested'] is True)
         require(type(value['ttl_seconds']) is int and 0 < value['ttl_seconds'] <= 300)
-        require(re.fullmatch(r'cli_login_postgres[a-zA-Z0-9_]*', value['role']) is not None)
+        require(value['role'] == 'cli_login_supabase_read_only_user' or
+                re.fullmatch(r'cli_login_postgres[a-zA-Z0-9_]*', value['role']) is not None)
         require(bool(value['password']))
         created = utc(value['created_at'])
         require(created <= self.clock() and (self.clock() - created).total_seconds() < value['ttl_seconds'], 'DIRECT_LEASE_EXPIRED')
