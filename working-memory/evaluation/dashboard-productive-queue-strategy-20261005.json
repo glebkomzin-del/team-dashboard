@@ -51,5 +51,63 @@
   "checkpoint_minutes_after_scope_extension": 30,
   "package_minutes_after_scope_extension": 45,
   "goal_gate_open": true,
-  "governance_enforcement": "RULES_ONLY"
+  "governance_enforcement": "RULES_ONLY",
+  "additional_live_baseline_deltas": [
+    "hybrid_pipeline.py",
+    "call_budget.py",
+    "openai_provider.py"
+  ],
+  "deployment_must_preserve_live_versions_of": [
+    "hybrid_pipeline.py",
+    "call_budget.py",
+    "openai_provider.py"
+  ],
+  "ui_recovery_entry": {
+    "required": true,
+    "change": "remove showJobs={false} from existing SettingsPage ProcessingPanel",
+    "pre_sha256": "1830f333bf725190ce88322570d8669445681de80c01f61af51db11847e24b60",
+    "candidate_sha256": "31ff12ee28c77b7fdd298bdfa442f686dda40cfb3dbbe6f08c2598a9d599245f",
+    "foreign_untracked_source": true,
+    "source_to_deployed_asset_parity_verified": false,
+    "build_pass": false,
+    "live_baseline_deployment_id": "dpl_4TD7WLeSviGtWxauJPk1x1eC7EoX"
+  },
+  "code_review_execution": {
+    "native_agent_tools_error": "agent thread limit reached",
+    "old_cli_version": "0.152.0",
+    "old_cli_result": "model requires newer Codex version; no review performed",
+    "bundled_cli_path": "/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex",
+    "bundled_cli_version": "0.160.0",
+    "login_status": "Logged in using ChatGPT",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning": "high",
+    "sandbox": "read-only",
+    "ephemeral": true,
+    "execution_started": true,
+    "result_pending": false,
+    "separate_runtime_header_available": false,
+    "private_request_ref": "/private/tmp/dashboard-productive-review-20261005/request.txt",
+    "private_events_ref": "/private/tmp/dashboard-productive-review-20261005/events.jsonl",
+    "result_ref": "/private/tmp/dashboard-productive-review-20261005/result.txt",
+    "decision": "CONTINUE_BOUNDED",
+    "release_go": false
+  },
+  "code_review_blockers": [
+    "NULL lease must explicitly deny archive and be tested",
+    "new function must be bound to actual schema/build/restore package",
+    "original final test receipts and concrete pinned deployment plan missing"
+  ],
+  "canonical_source_path_correction": {
+    "observed_existing_supabase_root": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase",
+    "worker_created_staging_supabase_root": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/supabase",
+    "required": "use one existing canonical source; correct test/receipt paths and preserve foreign files",
+    "resolved": false
+  },
+  "correction_package": {
+    "checkpoint_minutes": 20,
+    "package_minutes": 35,
+    "owner": "repair_empty_source_queue",
+    "instruction_sent_after_review": true,
+    "paid_model_calls_allowed_during_tests": false
+  }
 }
