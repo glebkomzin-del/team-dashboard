@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-10-05T17:28:26.007436+00:00",
+  "rows": [
+    {
+      "file": "index.html",
+      "http_status": 200,
+      "sha256": "c1ae2b95592daea73af0a41959869d24e01f5b82c1ecebda0874b303aff3c806",
+      "equal_candidate": true
+    },
+    {
+      "file": "assets/MemoryApp-CBiVD9yp.js",
+      "http_status": 200,
+      "sha256": "38b78f92bfea0954dc06db344bc9f7e480c6c4b1ba2c06dae395a95aaa918154",
+      "equal_candidate": true
+    },
+    {
+      "file": "assets/index-QFoDufCG.js",
+      "http_status": 200,
+      "sha256": "d609776fc15a7e188f6f86959243ae7cffd77bc01c59804bf6eb5f49db138249",
+      "equal_candidate": true
+    },
+    {
+      "file": "assets/MemoryApp-w3d0z9DS.css",
+      "http_status": 200,
+      "sha256": "0f9568720bea6f3450804c6ff2722408ddce9482d57c9380413c227c3c7856de",
+      "equal_candidate": true
+    },
+    {
+      "file": "assets/index-DsPv-29T.css",
+      "http_status": 200,
+      "sha256": "2c62cf62424d382989c59dabd9a7961689ac5f403151a2729c7fc02f163804ff",
+      "equal_candidate": true
+    },
+    {
+      "file": "icons.svg",
+      "http_status": 200,
+      "sha256": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a",
+      "equal_candidate": true
+    },
+    {
+      "file": "favicon.svg",
+      "http_status": 200,
+      "sha256": "684b657171b876ec6967595e9bab2ba7baef25c5440f7d54e562fc242491c6b5",
+      "equal_candidate": true
+    }
+  ],
+  "all_equal": true
+}

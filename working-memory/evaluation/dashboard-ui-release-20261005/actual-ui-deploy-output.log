@@ -1,0 +1,46 @@
+.vercel/output/config.json: OK
+.vercel/output/static/assets/MemoryApp-CBiVD9yp.js: OK
+.vercel/output/static/assets/MemoryApp-w3d0z9DS.css: OK
+.vercel/output/static/assets/index-DsPv-29T.css: OK
+.vercel/output/static/assets/index-QFoDufCG.js: OK
+.vercel/output/static/favicon.svg: OK
+.vercel/output/static/icons.svg: OK
+.vercel/output/static/index.html: OK
+.vercel/project.json: OK
+vercel.json: OK
+Vercel CLI 54.18.7 (Node.js 22.22.3)
+Retrieving project…
+Deploying glebkomzin-dels-projects/team-dashboard
+Uploading [--------------------] (0.0B/648KB)
+Uploading [=====---------------] (176.5KB/648KB)
+Uploading [==========----------] (332.5KB/648KB)
+Uploading [===============-----] (492.5KB/648KB)
+Uploading [====================] (648.0KB/648KB)
+  Inspect         https://vercel.com/glebkomzin-dels-projects/team-dashboard/BzkSWt562tjB1oSSAcXEoBGg82MB
+  Production      https://team-dashboard-52aatm5tu-glebkomzin-dels-projects.vercel.app
+Building…
+[2K[1A[2K[G  Production      https://team-dashboard-52aatm5tu-glebkomzin-dels-projects.vercel.app
+Completing…
+▲ Aliased         https://team-dashboard-rho.vercel.app
+{
+  "status": "ok",
+  "deployment": {
+    "id": "dpl_BzkSWt562tjB1oSSAcXEoBGg82MB",
+    "url": "https://team-dashboard-52aatm5tu-glebkomzin-dels-projects.vercel.app",
+    "inspectorUrl": "https://vercel.com/glebkomzin-dels-projects/team-dashboard/BzkSWt562tjB1oSSAcXEoBGg82MB",
+    "readyState": "READY",
+    "target": "production",
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_BzkSWt562tjB1oSSAcXEoBGg82MB"
+  },
+  "message": "Deployment team-dashboard-52aatm5tu-glebkomzin-dels-projects.vercel.app ready.",
+  "next": [
+    {
+      "command": "vercel inspect team-dashboard-52aatm5tu-glebkomzin-dels-projects.vercel.app",
+      "when": "Inspect deployment"
+    },
+    {
+      "command": "vercel deploy --prod",
+      "when": "Promote to production"
+    }
+  ]
+}

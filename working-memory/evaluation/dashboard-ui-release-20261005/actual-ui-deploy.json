@@ -1,0 +1,16 @@
+{
+  "started_at": "2026-10-05T17:27:56.378111+00:00",
+  "status": "command_succeeded",
+  "authorization": "DASHBOARD-PROD-20261005; independent UI-only ACCEPT; version1300461",
+  "baseline_deployment": "dpl_4TD7WLeSviGtWxauJPk1x1eC7EoX",
+  "project": "prj_pWCB8TaGLQesLsT9me0jgT0FqcC5",
+  "approved_hashes": {
+    "deploy-after-go.sh": "a25bae2539983bb6487eea1b218fd9cafaf78bfe128115279d9dbab832ffcd9a",
+    "receipt.json": "2afc05d16a50f8fa648fbe130db396ef02c04a15eafc30e3dcf84c4c6aaa5577"
+  },
+  "backend_mutations": 0,
+  "owner_decisions": 0,
+  "exit_code": 0,
+  "finished_at": "2026-10-05T17:28:04.093371+00:00",
+  "output_sha256": "ed2e8e87f8d9d3bedc652856ec7f20705b1f14fe83df84409967515a8fe081be"
+}

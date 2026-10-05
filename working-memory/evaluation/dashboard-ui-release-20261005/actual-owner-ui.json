@@ -1,0 +1,23 @@
+{
+  "deployed": "dpl_BzkSWt562tjB1oSSAcXEoBGg82MB",
+  "checked": "2026-10-05T17:28:33Z",
+  "owner_authenticated": true,
+  "visible_processing_jobs": true,
+  "pending_count": 64,
+  "automatic_processing": "paused",
+  "blocker_title": "Teams Meeting",
+  "blocker_reason": "validation_failed",
+  "recovery_button_visible": true,
+  "owner_decision_performed": false,
+  "technical_and_content_reviews_separate": true,
+  "mac_copy_last_checked_display": "05.10.2026, 19:24",
+  "screenshot_path": "/private/tmp/dashboard-ui-handoff-20261005/ui-job-recovery-visible.jpg",
+  "screenshot_sha256": "dba7132ae3065b44388db529a968309951fac7afedd5b7bc85b96252cb055936",
+  "production_processing_accepted": false,
+  "recovery_preview_title": "Teams Meeting · 23.09.2026",
+  "recovery_options": [
+    "Nur im Archiv behalten"
+  ],
+  "preview_opened": true,
+  "preview_cancelled": true
+}
