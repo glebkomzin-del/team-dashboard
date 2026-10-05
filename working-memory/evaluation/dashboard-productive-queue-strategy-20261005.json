@@ -1,0 +1,55 @@
+{
+  "schema": "dashboard-productive-queue-strategy-v1",
+  "problem_id": "DASHBOARD-PROD-20261005-QUEUE",
+  "recorded_at": "2026-10-05T13:34:28.223211+00:00",
+  "user_goal": "fixe und bringe das dashboard vollumfänglich produktiv",
+  "baseline_commit": "f4467e5",
+  "mandate_commit": "eff5210",
+  "independent_review": {
+    "agent": "/root/productive_queue_goal_review",
+    "mode": "read-only",
+    "decision": "CONTINUE_BOUNDED",
+    "reviewed_scope": "Goal, original live failure and minimum faithful repair strategy; no implementation or production acceptance",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning": "high",
+    "separate_runtime_header_available": false
+  },
+  "direct_evidence": {
+    "observed_at": "2026-10-05T13:28:44Z",
+    "queued": 62,
+    "review": 1,
+    "applied": 104,
+    "blocking_job_id": "a34706df2728e22f1c0b7648cac2a06402982a708df669d5d90fec6eb7c246f5",
+    "source_condition": "Export metadata and Unknown:image placeholder; no available conversational transcript text",
+    "received_model_responses": 2,
+    "empty_meeting_summary": true,
+    "prepared_payload": false,
+    "summary_validation_kept": "1-12 grounded paragraphs required"
+  },
+  "root_disposition": "Implement smallest bounded technical queue completion for positively established known export placeholders using actual stored original/hash and existing service/lease boundary; keep genuine and unknown content on normal path. Existing owner archive_only remains for the specifically reviewed old case; no automated owner impersonation.",
+  "definition": "The export consists exclusively of known placeholders and contains no processable conversational transcript text; this does not assert that the meeting or image lacked content.",
+  "builder_agent": "/root/repair_empty_source_queue",
+  "implementation_scope": [
+    "narrow runtime helper and worker integration",
+    "necessary existing gateway mapping",
+    "necessary SQL queue operation in existing schema structure",
+    "focused original-case and negative/unknown/change tests",
+    "actual isolated PostgreSQL integration if required"
+  ],
+  "positive_evidence_requirements": [
+    "SQL proves condition on stored original and binds actual body hash/state",
+    "original and paid response history preserved",
+    "no classification flag accepted as sufficient proof",
+    "short meaningful speech, greetings, weekday lists, empty model responses alone and changed inputs do not pass exception"
+  ],
+  "boundaries": {
+    "production_mutations_before_exact_code_review": false,
+    "provider_calls_in_offline_package": false,
+    "source_return_or_billing_change": false,
+    "new_privileges_monitoring_services_or_crons": false
+  },
+  "checkpoint_minutes_after_scope_extension": 30,
+  "package_minutes_after_scope_extension": 45,
+  "goal_gate_open": true,
+  "governance_enforcement": "RULES_ONLY"
+}
