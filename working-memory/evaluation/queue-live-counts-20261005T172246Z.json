@@ -1,0 +1,51 @@
+{
+  "observed_at": "2026-10-05T17:22:46.295711+00:00",
+  "read_only": true,
+  "review_jobs": [
+    {
+      "id": "a34706df2728e22f1c0b7648cac2a06402982a708df669d5d90fec6eb7c246f5",
+      "reason": "validation_failed",
+      "event_date": "2026-09-23"
+    }
+  ],
+  "queued_by_event_date": [
+    {
+      "jobs": 2,
+      "event_date": "2026-09-23"
+    },
+    {
+      "jobs": 2,
+      "event_date": "2026-09-24"
+    },
+    {
+      "jobs": 5,
+      "event_date": "2026-09-25"
+    },
+    {
+      "jobs": 8,
+      "event_date": "2026-09-28"
+    },
+    {
+      "jobs": 8,
+      "event_date": "2026-09-29"
+    },
+    {
+      "jobs": 5,
+      "event_date": "2026-09-30"
+    },
+    {
+      "jobs": 11,
+      "event_date": "2026-10-01"
+    },
+    {
+      "jobs": 10,
+      "event_date": "2026-10-02"
+    },
+    {
+      "jobs": 12,
+      "event_date": "2026-10-05"
+    }
+  ],
+  "queued_total": 63,
+  "interpretation": "New genuine intake since 17:01; processing recovery still not published. Event date is not a claim of exact ingestion time."
+}
