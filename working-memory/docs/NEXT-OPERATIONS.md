@@ -8,6 +8,10 @@ Pflichtabnahme vor Abschluss: Ursache anhand ursprünglicher gespeicherter Antwo
 
 Paketbeginn: read-only Explorer untersucht gespeichertes Fehlerresultat und bestehenden Wiederaufnahmeweg; erste Umsetzung erst nach evidenzgebundener Diagnose. Hypothese: ein fachlich/technisch ungültiger Altfall blockiert korrekt chronologisch, nicht CPU/Disk oder Migration. Kleinster entscheidender Nachweis: Fehlervalidierung der ursprünglichen gespeicherten Antwort lokal reproduzieren und im vorgesehenen Recoveryweg auflösen. Interner Diagnose-Checkpoint nach 15 Minuten, Paket nach 30 Minuten; STALL/LOW_YIELD lösen interne unabhängige Neuplanung aus, keine künstliche Nutzerfreigabe. Laufzeitdurchsetzung aktuell RULES_ONLY; echte Gate-/Test-/Reviewbelege getrennt führen.
 
+## Notwendiger Owner-Recovery-Einstieg – 05.10.2026
+
+Im produktiven, authentifizierten Dashboard sind in den Verarbeitungseinstellungen Status und Kosten sichtbar, aber keine Recovery-Aktionen. `SettingsPage.tsx` blendet mit `showJobs={false}` den vorhandenen Bereich aus; die Route `#betrieb` führt ebenfalls zu diesen Einstellungen. Der unabhängige Reviewer hat die Wiederherstellung des vorhandenen Einstiegspunkts als notwendigen Zielblockerfix bestätigt. Ein begrenztes UI-Paket darf nur diese Einbindung und erforderliche Build-/Bereitstellungsnachweise vorbereiten; fremde lokale Frontenddateien bleiben geschützt. Produktionsfreigabe und tatsächlicher Owner-Entscheidungsnachweis sind weiterhin offen.
+
 ## Diagnose und unabhängiger Strategie-Checkpoint – 05.10.2026, 13:34 UTC
 
 Der ursprüngliche Export des Altjobs enthält ausschließlich Metadaten und `Unknown: image`, keine auswertbaren Gesprächsaussagen. Beide bezahlten Antworten sind vollständig gespeichert, aber `meeting_summary=[]`; die unveränderte Pflichtprüfung verlangt 1–12 belegte Absätze. Der bestehende Ownerpfad `archive_only` erhält Original und Callhistorie; Retry/Rebase ohne vorbereiteten Vorschlag bleiben gesperrt. Der reguläre Owner sieht im produktiven Dashboard 361 Originale und 63 unvollständig verarbeitete Quellen; beide Sicherungen sind aktuell.
