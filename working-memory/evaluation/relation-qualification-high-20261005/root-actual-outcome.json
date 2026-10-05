@@ -1,0 +1,19 @@
+{
+  "actual_cost_micro_usd": 93039,
+  "findings": [
+    "periodic withdrawal recognized",
+    "Caroline original anchor structurally invalid",
+    "ambiguous case C produces unsecured work event in isolated replay"
+  ],
+  "http400_actual_micro_usd": null,
+  "http400_reserved_micro_usd": 221248,
+  "independent_strategy_review": "no further Terra effort escalation; prepare different model; paid authority missing",
+  "production_calls": 1505,
+  "published": false,
+  "receipt_sha256": "4680c36a4aa1f36cf92b31c8a88a01a3e13df03da636c8e1b8c2be4aafa4d0d9",
+  "reservation_sha256": "d3bbd3906a6cea318dc2df4122c3cff82cc4b15375859ff4b58d9f4768cc2d39",
+  "response_sha256": "2c6c62a299eae7c5177a2162a937b04e0559af5fab91f2acae671f286a2f5307",
+  "revision": 226,
+  "status": "FAIL",
+  "total_known_additional_micro_usd": 294431
+}

@@ -1,0 +1,22 @@
+services:
+  canonical-draft:
+    build: .
+    image: dashboard-memory:archive-generation-overlay-20261005-5c4c18b8
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8798:8791'
+    env_file: .local/service.env
+    volumes:
+      - ./.local/cache:/app/.local:rw
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1536m
+    cpus: 1.0
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8791/health',timeout=10)"]
+      interval: 60s
+      timeout: 12s
+      retries: 3

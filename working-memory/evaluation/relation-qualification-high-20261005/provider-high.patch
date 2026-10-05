@@ -1,0 +1,11 @@
+--- low/openai_provider.py
++++ high/openai_provider.py
+@@ -11,7 +11,7 @@
+ import urllib.request
+ 
+ MODEL = 'gpt-5.6-terra'
+-REASONING_EFFORT = 'low'  # One explicit qualification; no provider fallback.
++REASONING_EFFORT = 'high'  # One explicit qualification; no provider fallback.
+ 
+ 
+ def normalize(response, model):

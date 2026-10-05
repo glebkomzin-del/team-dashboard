@@ -1,0 +1,50 @@
+{
+  "actual_assessor_exit": 1,
+  "actual_assessor_stdout_sha256": "443134d99924ac41e59cb27e40bcd581963f9bdd07529ee42cae271247811e04",
+  "actual_micro_usd": 32619,
+  "fail_closed_replay": {
+    "checked_relations": 0,
+    "explicit_periodic_withdrawal_in_summary": false,
+    "new_commitments_pending_review": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "script_sha256": "507cb3083e19049591fe6cf7bd3e0ddbefea74a75f4c3e784a5431d7d73ff4f4",
+    "sqlite_exit": 0,
+    "sqlite_new_work_events": 0,
+    "sqlite_original_stdout_sha256": "43d3317eb97726d8b6306a82f94e3def8bb648c39010986ba3d8696faa9f1a2f",
+    "sqlite_pending_review_six_of_nine": 6,
+    "summary_characters": 3889,
+    "summary_paragraphs": 9,
+    "validated_creates_work_nine_observations": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "independent_original_findings": {
+    "A_CSV": "candidate anchor U0167 outside bound original U0160-U0164",
+    "A_Caroline": "response uses U0167 as action rather than U0178 Caroline commitment; original owner and review must remain",
+    "A_periodic": "response none/later empty despite explicit later U0134 retraction of periodic checks U0085/U0088",
+    "B_unrelated": "response none instead of separate unrelated object",
+    "C_unclear": "response none despite ambiguous later referent"
+  },
+  "prior_failed_actual_micro_usd": null,
+  "prior_failed_reserved_micro_usd": 221248,
+  "production_writes": 0,
+  "provider_retries": 0,
+  "receipt_sha256": "5c815f72aa9d2e27c8bc3c44a98d813972157c1f311a3d1e6c54e0be70a80cbd",
+  "request_sha256": "6641f19a2253d7fffc6fb4f9a4cf63eef864ebd12d367538dd9b1babf8e723b3",
+  "response_sha256": "57959af55a9f3bf1d7722351df5d5387f4dd1bfb85d76b6f88c3addb87397937",
+  "runtime_release": "DENY",
+  "source_body_sha256": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "status": "ACTUAL_SIX_SEMANTIC_FAIL_NO_RETRY"
+}

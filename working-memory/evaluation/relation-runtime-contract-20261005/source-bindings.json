@@ -1,0 +1,27 @@
+{
+  "base_image_id": "sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb",
+  "files": [
+    {
+      "name": "hybrid_pipeline.py",
+      "baseline_sha256": "69106e81fae267d40e273051c79a7ab77f551c7a05fe30e886dc3f6d348a55e7",
+      "candidate_sha256": "408de62c44f4462fc6faff64c69505b0c04effc0307649db0c75eac634cbd021"
+    },
+    {
+      "name": "canonical_worker.py",
+      "baseline_sha256": "4e5e9e28362e1a7f6a1a63311428de4e027f7e4e149d189c185e0cb725159acf",
+      "candidate_sha256": "ac2b4e340111dcfa213d951fdb30e9d6d79b30a062149791fefc4510c2ea5312"
+    },
+    {
+      "name": "future_summary.py",
+      "baseline_sha256": "0abd3852b223c9cfb2fd03b4d4f8c8992f6e339187334b86b5c2b133e8c02eb0",
+      "candidate_sha256": "db1614dbb2c23c1a076ecf5502e43c4b74953597f795a821d6eeb73a39c13909"
+    },
+    {
+      "name": "relation_runtime.py",
+      "baseline_sha256": null,
+      "candidate_sha256": "aa8f8626c36cc56295ecc5ea1924ed44510b49e16e5cd1be7e1336da79883aa6"
+    }
+  ],
+  "source_private": "/private/tmp/semantic-relation-runtime-20261005",
+  "target_contract": "V4 plus independent Archive4/47 candidate; no image built"
+}

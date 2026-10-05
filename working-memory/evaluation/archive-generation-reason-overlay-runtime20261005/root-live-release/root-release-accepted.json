@@ -1,0 +1,10 @@
+{
+  "result": "RELEASE_ACCEPTED",
+  "package_manifest_sha256": "1e1e235a15b1e352e62b52fb794416cb16a3ca930330fed14f933a91d9d4d049",
+  "candidate_image_id": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "candidate_pipeline": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "inventory_sha256": "c964a8554fb80bd3cc1ac37e02da6971108898036d9a69af85919f0cbb315d67",
+  "drain_receipt_sha256": "4ae857aeac853aa1cdb89387bb7a37f54610b6d9eb1e3cf7b5264dd90a8c2029",
+  "space_revision": 226,
+  "lead_clear": true
+}

@@ -1,0 +1,141 @@
+{
+  "base_sha256": "7ee44abafe369e746b541e97fb94777ea89dbe4a94a4c9154e9bc9399335ac00",
+  "checks": {
+    "compiled_and_verified": true,
+    "compiled_bounded_cost_blocks": 1,
+    "compiled_recovery_usage_blocks": 1,
+    "human_corrected_task_cancelled": true,
+    "human_entries_digest_unchanged": true,
+    "note_envelope_verified": true,
+    "observation_diff_empty": true,
+    "original_and_source_hash_bound": true,
+    "other_sources_digest_unchanged": true,
+    "other_summary_paragraphs_and_metadata_unchanged": true,
+    "proposal_exactly_unchanged": true,
+    "work_diff_empty": true
+  },
+  "compiled_cost_paths": [
+    "$.entries[220].changes[3].value.provenance"
+  ],
+  "compiled_usage_paths": [
+    [
+      "$.entries[220].changes[3].value.usage",
+      422838
+    ]
+  ],
+  "corrected_paragraph_index": 2,
+  "evidence_ids": [
+    "U0085",
+    "U0088",
+    "U0134",
+    "U0161",
+    "U0162",
+    "U0164"
+  ],
+  "full_23_ledger_sha256": "4cc0203d0619ac7941e21e107707554e46311104f07424cc7ba02984b63a340b",
+  "generation_review_sha256": "8794e22ccccfb099196805bd25f0bdf178e614d461cfa3f25b4e64012e02eb7c",
+  "input_sha256": "b26fdbac4479ccf9c6260558df58584f6ea1a0349f41803f21725467c2fba0d6",
+  "limitations": [
+    "Keine produktive Mutation oder weiterer Provideraufruf durch dieses Paket.",
+    "Beide vorbereiteten Generationen beruhen auf Revision 224 und müssen nach Akzeptanz einer Generation sequenziell neu gebunden werden.",
+    "Owner-Review und produktive Archivansicht sind nicht abgenommen."
+  ],
+  "local_archive_overlay_proof": {
+    "limitation": "Source fields from authoritative journal basis; full archived document metadata row was not included in the b646 capture.",
+    "sha256": "8265f16dfecaac8155ef2bb98505ec61298bc5c982ec68bc764d99833b1c91c5",
+    "verified": true
+  },
+  "new_note_hash": "bfdb89d43aa61c5f0b121755b7a11ba208496b8890a0496bebc63dc1dbc74ba8",
+  "old_note_hash": "fcb2e871c60ff5b6fadf66634c563f3495a2fab80e42d342a70124c0c945befb",
+  "old_paragraphs_unchanged": 4,
+  "pending": [
+    "live_postgres_jsonpath_and_dedupe_readonly_check",
+    "revision_recheck",
+    "backend_stage",
+    "owner_review",
+    "production_archive_summary_flow"
+  ],
+  "postgres_readonly_accounting_proof": {
+    "actual": {
+      "additional_recovery_micro_usd": 74194,
+      "bounded_blocks": 1,
+      "declared_micro_usd": 422838,
+      "matched_original_calls": 23,
+      "receipt_total_micro_usd": 422838,
+      "receipts": 24,
+      "space_revision": 224,
+      "usage_blocks": 1
+    },
+    "compiled_payload_sha256": "02963db8d70def65b5163e2a267a62ab5d09265b24057bd67c3d85b167bef915",
+    "sha256": "21bdf2241a55c12e856249d14c2973597658a60aba7f1983d0875667226b1247"
+  },
+  "prior_human_count": 11,
+  "prior_source_count": 212,
+  "private_artifacts": {
+    "build.py": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/build.py",
+      "sha256": "44937b396513cd17c3f3a2af48b97156e3bb4ff7e28cfeff1dab33dbfcd1867c"
+    },
+    "evidence.json": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/evidence.json",
+      "sha256": "037145c1d04358bd9dba591c5c44ee853a2bc8424c77473f1b12d284cc71e31f"
+    },
+    "generation-compiled.json": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/generation-compiled.json",
+      "sha256": "02963db8d70def65b5163e2a267a62ab5d09265b24057bd67c3d85b167bef915"
+    },
+    "overlay-proof.json": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/overlay-proof.json",
+      "sha256": "8265f16dfecaac8155ef2bb98505ec61298bc5c982ec68bc764d99833b1c91c5"
+    },
+    "postgres-accounting-proof.json": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/postgres-accounting-proof.json",
+      "sha256": "21bdf2241a55c12e856249d14c2973597658a60aba7f1983d0875667226b1247"
+    },
+    "stage-request.json": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/stage-request.json",
+      "sha256": "5cec2a66336da524f1a345d6badfdb77c2c2248a2927fce45f6381fb1ecdf1c3"
+    },
+    "summary.json": {
+      "path": "/private/tmp/semantic-endstate-20261005/manual-summary-recovery/summary.json",
+      "sha256": "6956d0638731d410234f9cb20a1fe3bbac81593be088deec943b5017e094c293"
+    }
+  },
+  "receipts": {
+    "count": 24,
+    "new_actual_micro_usd": 74194,
+    "old_actual_micro_usd": 348644,
+    "total_actual_micro_usd": 422838
+  },
+  "revision": 224,
+  "source_content_hash": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "source_version_id": "b646e5ea710df7286553a751649b468b6d76d6e8e198a1697bc3ce25886f92e5",
+  "stage_request_sha256": "5cec2a66336da524f1a345d6badfdb77c2c2248a2927fce45f6381fb1ecdf1c3",
+  "status": "locally_prepared_only",
+  "validation_packages": [
+    {
+      "criterion": "U0085/U0088 gegen spätere U0134; U0161/U0162/U0164 für Uploadbedingung; vier andere Absätze und übrige Metadaten gleich.",
+      "on_fail": "Kein Stage-Request.",
+      "on_pass": "Geänderte Lesefassung für Generation freigeben.",
+      "question": "Ist genau der falsche dritte Summary-Absatz durch das Original korrigiert?",
+      "result": "passed",
+      "scope": "Original, bezahlte Call-0-Antwort, future_summary.from_value, verify_note und lokaler Archiv-Overlay."
+    },
+    {
+      "criterion": "Proposal exakt gleich, alle anderen Sources und 11 Human-Einträge digestgleich, korrigierter Task cancelled, 0 Observation- und Work-Diff.",
+      "on_fail": "Kein Stage-Request.",
+      "on_pass": "Generation lokal vorbereiten.",
+      "question": "Bleiben akzeptierte Journalinhalte und menschliche Korrektur erhalten?",
+      "result": "passed",
+      "scope": "Rev224 logical_entries, materialize, make_plan, compile_generation, verify_generation, expand_generation."
+    },
+    {
+      "criterion": "23 alte Hash/Usage-Receipts plus neuer Call 23, genau ein bounded Provenance- und Usage-Block; PostgreSQL dedupliziert 23 alte und zählt 74194 microUSD zusätzlich.",
+      "on_fail": "Kein Stage-Request.",
+      "on_pass": "Kostenbeleg für Staging bereitstellen.",
+      "question": "Werden alle 24 bezahlten Calls gebunden und der neue Aufwand genau einmal berechnet?",
+      "result": "passed",
+      "scope": "Gesicherte 23er Ledgerdatei, neue Request/Response/Reservation/Receipt-Dateien und read-only PostgreSQL-Nachweis des Leads."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "actual_runtime_cost_unknown": true,
+  "counted_input_tokens": null,
+  "local_count_error": "RuntimeError",
+  "max_output_tokens": 4000,
+  "model": "gpt-5.6-terra",
+  "prompt_chars": 28323,
+  "prompt_sha256": "6332888f6707cfe2bd8b6cab0be22b31e498017c6c98b2da6793a987afa83540",
+  "provider_calls": 0,
+  "reserve_micro_usd": 164390,
+  "schema_chars": 13902,
+  "schema_sha256": "6328d36845f52148fad2b952fd018106e6f5b786e2b722d8b430caa05851ecd5",
+  "slot_contract": "DurableCalls reserve_call/receive_call existing code; one relation stage attempt; OutcomeUnknown never resends",
+  "status": "OFFLINE_CONSERVATIVE_RESERVATION_ONLY"
+}

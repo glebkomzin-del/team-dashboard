@@ -1,0 +1,11 @@
+{
+  "started_utc": "2026-10-05T22:08:38.219Z",
+  "finished_utc": "2026-10-05T22:09:07.172Z",
+  "duration_ms": 28953,
+  "public_owner_ui": "https://team-dashboard-rho.vercel.app/memory-next#wissen",
+  "disabled_loading_observed": true,
+  "enabled_after_completion": true,
+  "no_alert_observed": true,
+  "earlier_click_control_error_reconciled_by_actual_disabled_ui": true,
+  "first_test_functional_positive_no_45s_measurement": true
+}

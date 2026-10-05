@@ -1,0 +1,108 @@
+--- a/canonical_archive.py
++++ b/canonical_archive.py
+@@ -71,6 +71,23 @@
+       ORDER BY (n.document_id=?) DESC,n.registered_revision DESC,n.id'''
+     try:
+         rows=list(db.execute(query,(document_id,document_id)))
++        # The journal's accepted source generation is authoritative for its
++        # current summary. Immutable archive notes remain in archived_notes.
++        try:
++            active=list(db.execute('''SELECT n.* FROM active_source_notes n
++              JOIN documents noted ON noted.id=n.document_id
++              JOIN documents current ON current.id=?
++              WHERE noted.source_id=current.source_id
++                AND noted.event_date=current.event_date
++                AND noted.body_hash=current.body_hash
++                AND noted.body=current.body
++                AND (noted.id=current.id OR noted.observed_at<=current.observed_at)
++              ORDER BY (n.document_id=?) DESC,n.id''',(document_id,document_id)))
++        except sqlite3.OperationalError as error:
++            if 'no such table: active_source_notes' not in str(error):raise
++            active=[]
++        if active:
++            return active+[row for row in rows if row['origin']!='source_summary']
+         if rows:return rows
+         # A deleted original is absent from the active documents table. Its
+         # independently sanitized derived note remains useful and may still be
+@@ -135,9 +152,11 @@
+     # Keep both snapshots but present the accepted meeting's text first.
+     return sorted(result,key=lambda row:row['origin']!='legacy_meetings')
+ 
+-def rebuild_archive(store,destination,*,through=None):
++def rebuild_archive(store,destination,*,through=None,journal_through=None):
+     space=store.space();ceiling=space['archive_revision'] if through is None else through
+     if type(ceiling) is not int or not 0<=ceiling<=space['archive_revision']:raise ValidationError('Invalid archive snapshot')
++    if journal_through is not None and (type(journal_through) is not int or not 0<=journal_through<=space['revision']):
++        raise ValidationError('Invalid journal snapshot for archive summary')
+     target=Path(destination);target.parent.mkdir(mode=0o700,exist_ok=True,parents=True)
+     fd,name=tempfile.mkstemp(prefix='.'+space['id']+'-archive-',suffix='.sqlite',dir=target.parent);os.close(fd)
+     db=None;revisions=set();counts={'documents':0,'notes':0}
+@@ -169,6 +188,21 @@
+                         db.execute('INSERT INTO archived_notes VALUES (?,?,?,?,?,?,?)',tuple(row[k] for k in ('id','document_id','origin','origin_id','note_json','note_hash'))+(revision,))
+                 counts[kind]+=1
+         if len(revisions)!=ceiling:raise ValidationError('Archive snapshot has missing revisions')
++        db.execute('CREATE TABLE active_source_notes (id TEXT PRIMARY KEY,document_id TEXT NOT NULL REFERENCES documents(id),origin TEXT NOT NULL,origin_id TEXT NOT NULL,note_json TEXT NOT NULL,note_hash TEXT NOT NULL)')
++        if journal_through is not None:
++            from generation_review import logical_entries
++            for entry in logical_entries(store.entries(through=journal_through)):
++                if entry['kind']!='source':continue
++                note=entry['payload'].get('archive_note')
++                if note is None:continue
++                checked=verify_note(note)
++                source=entry['source']
++                document=db.execute('SELECT source_id,event_date,body_hash FROM documents WHERE id=?',(checked['document_id'],)).fetchone()
++                if document is None:continue  # Redacted or no longer present in this archive snapshot.
++                if (checked['origin']!='source_summary' or document['source_id']!=source['source_id']
++                        or document['event_date']!=source['event_date'] or document['body_hash']!=source['content_hash']):
++                    raise ValidationError('Journal summary does not match its immutable original')
++                db.execute('INSERT INTO active_source_notes VALUES (?,?,?,?,?,?)',tuple(checked[k] for k in ('id','document_id','origin','origin_id','note_json','note_hash')))
+         db.execute('CREATE TABLE archive_cursor (space_id TEXT PRIMARY KEY,revision INTEGER NOT NULL)')
+         db.execute('INSERT INTO archive_cursor VALUES (?,?)',(space['id'],ceiling));db.commit()
+         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValidationError('Archive cache integrity failure')
+--- a/journal_service.py
++++ b/journal_service.py
+@@ -115,7 +115,9 @@
+         candidates=[]
+         for path in directory.glob(space_id+'-*.sqlite'):
+             version=path.stem.removeprefix(space_id+'-')
+-            if version.isdigit() and not path.is_symlink():candidates.append((int(version),path))
++            parts=version.split('-')
++            if all(part.isdigit() for part in parts) and len(parts) in (1,2) and not path.is_symlink():
++                candidates.append((tuple(map(int,parts[::-1])),path))
+         for _,path in sorted(candidates,reverse=True)[3:]:
+             if path!=current:
+                 try:path.unlink()
+@@ -124,7 +126,7 @@
+     def _open_projection(self, space, *, archive=False):
+         directory=self.cache/'archive' if archive else self.cache
+         revision=space['archive_revision' if archive else 'revision']
+-        target=directory/f"{space['id']}-{revision}.sqlite"
++        target=directory/(f"{space['id']}-{revision}-{space['revision']}.sqlite" if archive else f"{space['id']}-{revision}.sqlite")
+         lock=self.archive_lock if archive else self.projection_lock
+         opener=open_archive if archive else open_readonly
+         def open_target():
+@@ -140,7 +142,8 @@
+         try:
+             if not target.exists():
+                 builder=rebuild_archive if archive else rebuild
+-                builder(self.store,target,through=revision)
++                if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
++                else:builder(self.store,target,through=revision)
+             db=open_target()
+             self.prune(directory,space['id'],target)
+             return db
+--- a/hybrid_index.py
++++ b/hybrid_index.py
+@@ -141,7 +141,11 @@
+                     row['text'], {'start': row['start'], 'end': row['end'], 'title': row['title']})
+             # Imported notes are navigation aids, never independent evidence.
+             if archive.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='archived_notes'").fetchone():
+-                for row in archive.execute('SELECT * FROM archived_notes ORDER BY registered_revision DESC').fetchall():
++                active_available=bool(archive.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='active_source_notes'").fetchone())
++                active=archive.execute('SELECT * FROM active_source_notes').fetchall() if active_available else []
++                active_documents={row['document_id'] for row in active}
++                archived=archive.execute('SELECT * FROM archived_notes ORDER BY registered_revision DESC').fetchall()
++                for row in [*active,*(r for r in archived if r['origin']!='source_summary' or r['document_id'] not in active_documents)]:
+                     note = dict(row)
+                     parent = archive.execute('SELECT id,source_id,body_hash,event_date,observed_at FROM documents WHERE id=?', (note.get('document_id'),)).fetchone()
+                     if not parent or parent['event_date'] > cutoff or parent['observed_at'] > known_at: continue

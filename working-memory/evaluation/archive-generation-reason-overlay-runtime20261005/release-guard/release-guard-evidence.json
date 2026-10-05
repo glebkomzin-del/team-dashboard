@@ -1,0 +1,28 @@
+{
+  "candidate_guard_sha256": {
+    "capture-inventory.sql": "fd283ce063b49ff7df3ef97eca80d1efad6d06c02b9b62aa62980e30688a12b8",
+    "cutover-template.sql": "4791aa9a5dc8babc2aa7e0e1f0f378d9a8a729b552de200db943189245cc03cb",
+    "deploy-private.py": "463318bad827a74f1e9839c1f7bfccf6178d476ee6de18ff61f9478eea0d893a",
+    "preflight-private.py": "221a1e649cc75239755148172e6449479c1a196b0530b9d168de2e648dc06df8",
+    "render-cutover.py": "b70caff953150eba3ca96bee76c0ea827322688197c45b3c27d4cf7a00ae34ab"
+  },
+  "candidate_image_id": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "package_manifest_sha256": "1e1e235a15b1e352e62b52fb794416cb16a3ca930330fed14f933a91d9d4d049",
+  "remaining": "Independent review, fresh actual Main pause/drain and 59-job inventory, Root-run deploy then healthy image and separate release/cutover. No automatic rollback after new calls.",
+  "remote_stage": "/root/dashboard-archive-generation-reason-overlay-stage-20261005",
+  "source_guard_sha256": {
+    "capture-inventory.sql": "f02e7f99c373a307301666340d185fdffccaf2331369c986c03614a928f532ca",
+    "cutover-template.sql": "3ff24b4bb1dc93dac4d919667406118b7aa8b0339e3ccf75e52122c2088db351",
+    "preflight-private.py": "5f728d56863d7676acfa52025b5f0c24a15ab01d0ab36f592d4977d493ccb44b",
+    "render-cutover.py": "ecfe3ba9efc16d399a4c72d1d58a4b9b09b8c56fbf43c5fc2e5d560eb4bce62b"
+  },
+  "status": "private_review_candidate_no_deployment",
+  "tests": {
+    "current_preflight": "PASS: actual baseline image 2c, 46 schemas; candidate image 8f, 47 schemas; release denied",
+    "deploy_missing_receipt": "exit 1; no backup directory; no runtime write",
+    "isolated_postgres_cutover": "positive retargets 2 unpaid queue rows and preserves 2 paid/archived; changed cohort, running, unknown paid, stale revision, wrong config, running/unknown/empty at capture deny; missing/null/one unknown snapshot deny",
+    "live_read_only_generation_function_acl": "MD5 52e542324b17616d1f912cb0f3ef14f7; service_role true, anon and authenticated false",
+    "live_read_only_unknown_receipts": "0",
+    "synthetic_renderer": "zero renders; one/missing/null deny"
+  }
+}

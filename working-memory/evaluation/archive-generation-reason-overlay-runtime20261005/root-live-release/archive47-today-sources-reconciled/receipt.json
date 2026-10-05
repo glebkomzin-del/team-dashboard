@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T21:23:44.703541+00:00",
+  "completed_utc": "2026-10-05T21:23:46.033419+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 - <<'SOURCE'\nimport json,subprocess\nq=\"SELECT coalesce(json_agg(json_build_object('source_id',a.source_id,'document_id',a.id,'job_id',j.id,'state',j.state,'pipeline',j.pipeline,'body_hash_valid',a.body_hash=encode(sha256(convert_to(a.body,'UTF8')),'hex'),'redaction_id',a.redaction_id) ORDER BY a.source_id),'[]'::json)::text FROM public.wm_archive_documents a LEFT JOIN public.wm_jobs j ON j.space_id=a.space_id AND j.document_id=a.id WHERE a.space_id='96a2dc44-9b9e-4644-b236-c5c1956cd39d' AND a.observed_at >= '2026-10-05T00:00:00Z'\"\nr=subprocess.run(['docker','exec','dashboard-supabase-20261003-db-1','psql','-U','postgres','-d','postgres','-XAt','-v','ON_ERROR_STOP=1','-c',q],capture_output=True,text=True);assert r.returncode==0,r.stderr\nrows=json.loads(r.stdout)\nids=['1XuqhXOGQECS7GMV4HsaN28jBz01VkJfC','1p7wRAO_l9gfcvV2d-IzLimgIV6FXw3SB','176kiTKKWaXzWLoB4xyLbP2zvI6JAnOiU','1IAh4ABioiXlQf16dS0EBe5PlwHOygV3L','1atJd_pliauJcvsWcu5BrCcYNShQ58Xmy','1GO-QJlpaUfuqDoNHPOjck9FLHjU3jZqN','18jmAa5XsOCQCFbeJQgeW-C8xqfeA2V8c','1OlxOfYRaT3TDf59lX_5bCaa-n9qghw8c','1PArMIkuCakJM68c9qz9I5iiAu3_OA_Dm','1CQERSTJF0-HcR5zyKW2x-dXVT0IMvy8v','1h3AL7g1lKLZ-elCvpjMOSvP3vpHKKh-P','1f772c8XHHfZ2qhhZhLoQlpGZMhzdwoHa']\nassert len(rows)==12 and {x['source_id'] for x in rows}=={'drive:'+x for x in ids}\nassert all(x['body_hash_valid'] is True and x['job_id'] and x['redaction_id'] is None and x['state'] in ('queued','archived','applied') for x in rows)\nprint(json.dumps({'result':'TWELVE_EXACT_SOURCES_PRESERVED_POST_ARCHIVE47_INTAKE_RESUME','rows':rows}))\nSOURCE"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "2f0db9a246e52c0c9ecf8c2c9efce198f3871f21e30c479c051477b512e1dbe3",
+      "bytes": 4620
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

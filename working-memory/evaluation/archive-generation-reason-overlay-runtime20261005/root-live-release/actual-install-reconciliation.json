@@ -1,0 +1,30 @@
+{
+  "result": "ACTUAL_RUNTIME47_RECONCILED_AFTER_INSTALL_HEALTH_DEADLINE",
+  "at": "2026-10-05T21:18:56.259541+00:00",
+  "image": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "pipeline": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "revision": 226,
+  "unknown_receipt_count": 0,
+  "after_hashes": {
+    "Dockerfile": "26ddd114ce016b4a0d072199c8c75a241ac765a891b5c682d1656d9d5c290410",
+    "build-manifest.json": "173d0bbb9963aa072e35f1379667f60aaa6bc815fb68bbd7b152f65a56c2ed54",
+    "canonical_archive.py": "a72cf81734b162a6a6df075c7fc101b8efe1bd26b7cf8daf5d029f368abba0d8",
+    "compose.yaml": "efd3db18a1c4399a203744d376f14a116cf2ffd843d5e2fa92ae509e7592967b",
+    "hybrid_index.py": "5c4c18b8f436c6a9e88198e214a3a05270bcf3c2ff6c413d2487161bf5baa72d",
+    "journal_service.py": "dc8af8292f874f1743ad72fa9b8a1434d1f6bdf2b347168c767800964e3e7cb1",
+    "restore_schema.py": "627800affff32a07e255a6f20baffebc6bd9e0dd35a72535b30092b52c8f1346",
+    "schema/20261005202341_generation_review_empty_reason_audit.sql": "2bfdad83ecaf7a797a77fe6b84b91d5c569471735c51303bb4f8241f2d5f93f0"
+  },
+  "before_hashes": {
+    "Dockerfile": "cca2bfa626af28763c29ea29614b20ee2965b0e9ddabd7c1a5d8c746428300f5",
+    "build-manifest.json": "bbb1bda7b73b7dc9f885129c6fec83cdd6b23435ecf493c20dd86f39e254d85c",
+    "canonical_archive.py": "46f1f804756963c8873241af9e375c8482ec6aa3ad72f448553747de4f09d9ef",
+    "compose.yaml": "e22911ec94d218bcbc313f950ce4abb4698c282298a95117d9b4d5e5c0192466",
+    "hybrid_index.py": "4ba02086abcf8df5b7bb6a355b200129336dc2a7abda1bcc39c85198d3c02e8a",
+    "journal_service.py": "6a41f9db55030356f88c826cbed8b7281ed4f1cb01a3cfb65a6b5550cf643546",
+    "restore_schema.py": "5963514dca18c8bcf2f3fc28560063fe4030021251bc43ed44cdf376991838c1",
+    "schema/20261005202341_generation_review_empty_reason_audit.sql": null
+  },
+  "helper_timeout_preserved": true,
+  "no_install_repeat": true
+}

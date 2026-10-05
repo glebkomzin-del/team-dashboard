@@ -1,8 +1,18 @@
 # Dashboard Job wiederherstellen
 
-## Produktiver Runtime-Rückweg der Queue-Reparatur – 05.10.2026
+## Aktueller Runtime-Rückweg – 05.10.2026, 22:16 UTC
 
-Tatsächlicher Backendwechsel 05.10., 18:50:35 UTC und Queue-Cutover 18:52:32 UTC: Das laufende V4-Image ist `sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb`, Compose-Tag `dashboard-memory:queue-placeholder-20261005-b3e22868`. Der normale Start verwendet die dauerhaft aktualisierte `compose.yaml`, kein privates temporäres Override. Der tatsächliche Release-/Sicherungsstand steht ausschließlich in [NEXT-OPERATIONS.md](NEXT-OPERATIONS.md).
+Aktuell läuft Image `sha256:5d5986089ce0824b53d530fd35ffe329eada90eb075c5b217f21e3966456bb52`, Tag `dashboard-memory:work-projection-20261005-a48b8401`, mit Pipeline25995 und47Schemaquellen. Genau zwei Performancequellen wurden geändert; Semantik und DB-Verträge bleiben erhalten. Veröffentlichung und tatsächlicher Cold-Flow stehen in[NEXT-OPERATIONS.md](NEXT-OPERATIONS.md).
+
+Die fünf ursprünglichen Dateien sind mit Hashes in `/root/dashboard-intake-transition-perf-20261005T2157/perf-five-file-before` gesichert. Ihr Image ist `sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471`, Tag `dashboard-memory:archive-generation-reason-overlay-20261005-2bfdad83-v2`. Bei Fehler zuerst aktuellen Stand und Vorherhashes prüfen. Es gibt keine automatische Rücksetzung über neue Daten, Jobs oder bezahlte Antworten. Abgeleitete SQLite-Caches sind getrennt privat gesichert.
+
+Der letzte vollständig geprüfte Datenrückkehrpunkt ist `dashboard-20261005T212531Z.tar.gz`, SHA `317379754cc99ef341e0312c9cf34ca69b37b5f4d8cdeda3b1fe1a4318a2d59d`: Revision226, Archiv871,396Originale,1505Calls, isolierter Restore89Tabellen/Auth/Vault/Rollen/n8n positiv und253Dateien bytegleich auf dem Mac. Das Bundle enthält8f mit47Schemaquellen. Für die neuere5d-Codefassung zusätzlich das exakt gebundene Performance-Releasepaket verwenden.
+
+Beim Vollrestore Paket und Imageidentität prüfen, Writerflags schließen und den bestehenden isolierten Targetweg nutzen. Vor Öffnung `wm_generation_decide` gegen Sollhash52e und Dienstrollen-ACL sowie Originalowner, Humanentscheidungen und Callhistorie prüfen. Diese spezifische Funktionshashabfrage ist im neuen Restorebeleg nicht gesondert ausgeführt. Ein finales Backup nach produktivem Queue-Abfluss steht aus. Source-Supabase bleibt geschlossen.
+
+## Historischer V4-Runtime-Rückweg der Queue-Reparatur – 05.10.2026
+
+Tatsächlicher Backendwechsel 05.10., 18:50:35 UTC und Queue-Cutover 18:52:32 UTC: Das damals laufende V4-Image ist `sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb`, Compose-Tag `dashboard-memory:queue-placeholder-20261005-b3e22868`. Der normale Start verwendet die dauerhaft aktualisierte `compose.yaml`, kein privates temporäres Override. Der tatsächliche Release-/Sicherungsstand steht ausschließlich in [NEXT-OPERATIONS.md](NEXT-OPERATIONS.md).
 
 Das geänderte bestehende Backup nimmt `Dockerfile`, `scheduled_backup.py`, 46 Schemaquellen und das tatsächlich laufende Image als `memory-image.tar` in dasselbe gehashte Bundle auf. Das durch Image-ID gespeicherte Docker-Archiv kann ohne Tag geladen werden. Deshalb nach vollständiger Bundleprüfung und `docker load -i memory-image.tar` die tatsächlich geladene Image-ID gegen die gesicherte Containeridentität prüfen und **erst dann** auf den in der gesicherten Compose-Konfiguration belegten Image-Tag setzen. Für genau dieses V4-Release sind dies die beiden obigen Werte; bei fehlender, abweichender oder unklarer Identität keinen Dienst starten. Anschließend die Runtimequellen gegen das Bundlemanifest prüfen, sämtliche Schreibflags geschlossen halten und den bestehenden isolierten Target-Restoreweg verwenden. Ein erfolgreicher `docker load` allein belegt weder den richtigen Compose-Tag noch eine Datenwiederherstellung. Vorherige Sicherungen ohne `memory-image.tar` nicht als Beleg für diese neue Fähigkeit ausgeben.
 

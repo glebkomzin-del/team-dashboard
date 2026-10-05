@@ -1,0 +1,29 @@
+{
+  "captured_at_utc": "2026-10-05T20:46:59.033760+00:00",
+  "revision": 226,
+  "actual_owner_ui_accepted": true,
+  "command_id": "050b28e0-8973-4cd2-a993-50ae11797ed2",
+  "review_id": "fd5c328e-e41c-45ee-9d78-319784553f95",
+  "base_sha256": "caa0737ce5b08a987f6a0f89430ddbbaf77856b130e719a27ea9ab82e42762b4",
+  "prior225_journal_entries_unchanged": true,
+  "all212_other_sources_unchanged": true,
+  "new_9db_source_preserved": true,
+  "personal_decisions_preserved": 11,
+  "proposal_unchanged": true,
+  "original_source_unchanged": true,
+  "source_summary_note_hash": "bfdb89d43aa61c5f0b121755b7a11ba208496b8890a0496bebc63dc1dbc74ba8",
+  "qualification_costs_not_production_calls": true,
+  "actual_runtime_summary_display_and_search": "pending_archive_overlay_release",
+  "personal_gleb_factual_approval_claimed": false,
+  "summary_passages_literal_original_spans": true,
+  "summary_passages_count": 6,
+  "verified_passage_unit_ids": [
+    "U0085",
+    "U0088",
+    "U0134",
+    "U0161",
+    "U0162",
+    "U0164"
+  ],
+  "note_format_uses_original_spans_instead_of_unit_ids": true
+}

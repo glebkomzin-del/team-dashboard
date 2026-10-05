@@ -1,0 +1,15 @@
+{
+  "status": "isolated_postgres17_pass",
+  "markers": [
+    "BASELINE_MD5:0622bb6e1c04dcd75e5e0774ed502337",
+    "BASELINE_REPRO_OK",
+    "MIGRATION_APPLIED_LOCAL",
+    "POST_MD5:52e542324b17616d1f912cb0f3ef14f7",
+    "ACCEPTANCE_OK",
+    "ROLLBACK_MD5:0622bb6e1c04dcd75e5e0774ed502337"
+  ],
+  "migration_sha256": "2bfdad83ecaf7a797a77fe6b84b91d5c569471735c51303bb4f8241f2d5f93f0",
+  "setup_sha256": "cbe361b5b0d68abbdc858abc330e1ad4ba9b2eb613d813ec7977734f3f4daf10",
+  "scope": "synthetic disposable local database; no production or provider call",
+  "cleanup": "stopped_and_removed"
+}

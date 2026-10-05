@@ -1,0 +1,76 @@
+--- a/journal_projection.py
++++ b/journal_projection.py
+@@ -131,7 +131,7 @@
+     db=None
+     try:
+         db=connect(path)
+-        from generation_review import logical_entries,verify_generation,materialize,expand_generation
++        from generation_review import logical_entries,verify_generation
+         entries=list(store.entries(through=ceiling))
+         checkpoints=[(index,entry) for index,entry in enumerate(entries) if entry['kind']=='redaction']
+         logical=[];start=0
+@@ -153,8 +153,7 @@
+                 record(db,command_id=entry['command_id'],actor_id=entry['actor_id'],command=entry['payload'])
+                 logical.extend(logical_entries([entry]))
+             elif entry['kind']=='generation':
+-                verify_generation(logical,entry['payload'])
+-                generation,logical=materialize(expand_generation(logical,entry['payload']))
++                generation,logical=verify_generation(logical,entry['payload'],_projection=True,_base_projection=db)
+                 try:generation.backup(db)
+                 finally:generation.close()
+             else:raise ValidationError('Unknown journal entry')
+--- a/generation_review.py
++++ b/generation_review.py
+@@ -184,7 +184,7 @@
+     return digest(value)
+ 
+ 
+-def compile_generation(base,plan,*,source_reviews,identity_links,reason,state_hash_format='canonical-knowledge-v1',topic_identity_links=None,source_order_review=None,projection_rules='field-v1'):
++def compile_generation(base,plan,*,source_reviews,identity_links,reason,state_hash_format='canonical-knowledge-v1',topic_identity_links=None,source_order_review=None,projection_rules='field-v1',_retain_projection=False,_base_projection=None):
+     """Validate a fully explicit plan and produce an immutable review package.
+ 
+     Each source addition/removal/change needs a reason keyed by source_id. Every
+@@ -195,7 +195,11 @@
+     if projection_rules not in ('legacy','field-v1'):raise ValidationError('Unknown generation projection rules')
+     if not isinstance(source_reviews,dict) or not isinstance(identity_links,list):raise ValidationError('Invalid generation review input')
+     for value in source_reviews.values():_reason(value)
+-    before_db,old_entries=materialize(base)
++    # Rebuild has already validated and applied this exact logical prefix.
++    # Reuse its live projection rather than replaying every prior source again.
++    if _base_projection is not None and not _retain_projection:
++        raise ValidationError('Borrowed base projection is only valid during verified replay')
++    before_db,old_entries=(_base_projection,base) if _base_projection is not None else materialize(base)
+     after_db=None
+     try:
+         def source_id(entry):
+@@ -328,17 +332,26 @@
+         if state_hash_format is not None:result['state_hash_format']=state_hash_format
+         if projection_rules!='legacy':result['projection_rules']=projection_rules
+         result['review_sha256']=digest(result)
++        if _retain_projection:
++            projection=after_db
++            after_db=None
++            return result,projection,prepared
+         return result
+     finally:
+-        before_db.close()
++        if _base_projection is None:before_db.close()
+         if after_db:after_db.close()
+ 
+ 
+-def verify_generation(base,payload):
++def verify_generation(base,payload,*,_projection=False,_base_projection=None):
+     if not isinstance(payload,dict) or payload.get('format')!=FORMAT:raise ValidationError('Unknown generation format')
+     unsigned={k:v for k,v in payload.items() if k!='review_sha256'}
+     if digest(unsigned)!=payload.get('review_sha256'):raise ValidationError('Generation review checksum mismatch')
+     if digest(base)!=payload.get('base_sha256'):raise ValidationError('Generation base has changed')
+-    checked=compile_generation(base,expand_generation(base,payload),source_reviews=payload['source_reviews'],identity_links=payload['identity_links'],reason=payload['reason'],state_hash_format=payload.get('state_hash_format'),topic_identity_links=payload.get('topic_identity_links'),source_order_review=payload.get('source_order_review'),projection_rules=payload.get('projection_rules','legacy'))
+-    if checked!=payload:raise ValidationError('Generation no longer reproduces the reviewed result')
++    checked=compile_generation(base,expand_generation(base,payload),source_reviews=payload['source_reviews'],identity_links=payload['identity_links'],reason=payload['reason'],state_hash_format=payload.get('state_hash_format'),topic_identity_links=payload.get('topic_identity_links'),source_order_review=payload.get('source_order_review'),projection_rules=payload.get('projection_rules','legacy'),_retain_projection=_projection,_base_projection=_base_projection)
++    if _projection:
++        checked,projection,prepared=checked
++    if checked!=payload:
++        if _projection:projection.close()
++        raise ValidationError('Generation no longer reproduces the reviewed result')
++    if _projection:return projection,prepared
+     return True

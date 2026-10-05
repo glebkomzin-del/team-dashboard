@@ -1,0 +1,11 @@
+{
+  "started_at_utc": "2026-10-05T20:32:47.700121+00:00",
+  "migration_sha256": "2bfdad83ecaf7a797a77fe6b84b91d5c569471735c51303bb4f8241f2d5f93f0",
+  "apply_sql_sha256": "7f824fd482701599358c202632646c053dc5de80fea14499cfdbcb6ad348a297",
+  "old_function_backup_sha256": "9514988eb29c4b964c5858a27062e2e2986be0ddcca5c267cb6146c0c0e00b58",
+  "independent_review_go": true,
+  "completed_at_utc": "2026-10-05T20:32:50.411662+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "0f222c7ed9228ff95e8f88380198333402a787e1c41abc165b40fa0f5e598817",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

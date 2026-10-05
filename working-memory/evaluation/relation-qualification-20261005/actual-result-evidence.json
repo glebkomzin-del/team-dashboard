@@ -1,0 +1,12 @@
+{
+  "status": "FAILED_HTTP400_NO_SEMANTIC_ANSWER_NO_RESEND",
+  "request_sha256": "0a12cc650938dc330b7f784a3571fda44d424b6f9bc8fcd6397c4582f93fc776",
+  "response_sha256": "9d4683c5198126425d0e4d18e07025f17fe3ced743fd14ccdc11656a34cda8d7",
+  "reservation_micro_usd": 221248,
+  "actual_micro_usd": null,
+  "production_model_calls_unchanged": 1505,
+  "qualification_attempts_in_this_package": 1,
+  "provider_attempts": 1,
+  "error_body_unavailable": true,
+  "independent_followup_pending": true
+}

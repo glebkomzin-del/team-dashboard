@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T21:58:35.678845+00:00",
+  "completed_utc": "2026-10-05T22:00:12.669602+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 /root/dashboard-work-projection-stage-20261005/release-root-only.py deploy-once --run-dir /root/dashboard-intake-transition-perf-20261005T2157 --release-sha256 459a5105ebec99efff4cddd38a6debf76e554a210190187d4bbbdd8ce7a3034e"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "5084abe9d755ad0492330fcb798e0dc0272b8861f0de65d044b832364c4933a6",
+      "bytes": 1335
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

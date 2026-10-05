@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T21:18:49.449446+00:00",
+  "completed_utc": "2026-10-05T21:19:02.981004+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 /root/dashboard-archive47-reconcile-and-cutover-20261005.py"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "ad0dcd3ee1dcb642766060a775fde82e0ca52404e175799d3c7d874f6e96773c",
+      "bytes": 2639
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

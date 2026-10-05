@@ -1,0 +1,19 @@
+{
+  "actual_assessment_exit": 1,
+  "actual_micro_usd": null,
+  "actual_receipt_sha256": "a2f6cd75380bc1bf3576c25df92b8834d3431b38815f6f7b7bda0466ea3ce0e0",
+  "actual_reservation_sha256": "e29d12b38f62a13429541b14b743bac6322529cde8907ed0d271eca91ce64b86",
+  "actual_response_result": "HTTP 400, usage_final false, stop_reason null",
+  "actual_response_sha256": "9d4683c5198126425d0e4d18e07025f17fe3ced743fd14ccdc11656a34cda8d7",
+  "candidate_request_sha256": "efa6f5ad6190e1c074ca4248c692dff3866b9e20ef8f651c6cb7b08aaa4eb42c",
+  "official_structured_output_limit": 1000,
+  "offline_assessor_sha256": "e5e8ec15578224fbff50d7024b4911e36cfdffc8aab72226ab31e1259ebe1260",
+  "offline_simulated_test_sha256": "53045bc36e6560b5077d0c51547269ea827b647431b0bf5dd62f208f5e8cd53b",
+  "production_writes": 0,
+  "provider_retries": 0,
+  "remaining": "HTTP error body was not captured by existing provider, so precise rejection reason and actual charge are unknown; no semantic answer exists.",
+  "reserved_micro_usd": 221248,
+  "schema_total_enum_values": 1591,
+  "simulated_assessor_test_exit": 0,
+  "status": "ACTUAL_PROVIDER_HTTP_400_QUALIFICATION_DENIED_NO_RETRY"
+}

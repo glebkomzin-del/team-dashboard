@@ -1,0 +1,14 @@
+{
+  "copied_at": "2026-10-05T21:16:05.149442+00:00",
+  "sources": {
+    "before.json": {
+      "path": "/root/dashboard-intake-transition-archive47-20261005T2104/before.json",
+      "sha256": "53676c659dd6660761b078b6e8aa5f4e1303dcce23dd4a9b4d71a5e5bfa01a68"
+    },
+    "paused.json": {
+      "path": "/root/dashboard-intake-transition-archive47-20261005T2104/paused.json",
+      "sha256": "28bdaa3c67827673d84659628187ebf64ac17f7eaf7cce22ddb03b0c8650d956"
+    }
+  },
+  "strategy": "Independent STALL review: unchanged fresh drain early outside proven minute DriveMove burst; no old positive receipt"
+}

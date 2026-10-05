@@ -1,0 +1,266 @@
+--- a/hybrid_pipeline.py
++++ b/hybrid_pipeline.py
+@@ -13,6 +13,7 @@
+ from hybrid_index import SearchIndex, queries, encode, documents, current_source_documents
+ from hybrid_schema import extraction_schema, alignment_schema, lifecycle_schema
+ import reconcile
++import relation_runtime
+ 
+ ROOT = Path(__file__).parent
+ MAX_CHARS = 220000
+@@ -30,6 +31,7 @@
+              'evaluation/prompt-v9.txt','evaluation/schema-v9.json','evaluation/work-gate-prompt-v9.txt',
+              'evaluation/work-gate-schema-v9.json','evaluation/source-corrections.json')
+     if compact:names += ('compact_reconcile.py','retrieval_context.py','human_decisions.py')
++    names += ('relation_runtime.py','future_summary.py')
+     return ('v11:compact1:gate1:' if compact else 'v10:hybrid1:gate1:')+model+':'+fingerprint(''.join((ROOT/n).read_text() for n in names))[:16]
+ 
+ 
+@@ -319,7 +321,23 @@
+                 from compact_reconcile import GATE_RULES
+                 gate_rules+='\n'+GATE_RULES
+             proposal=stage('gate',gate_rules+'\nKandidaten:\n'+encode(candidates)+'\nBestehende Arbeit:\n'+encode(gate_work)+base,gate_schema,checked_gate,8000)
++        # This separate call proposes only typed relationships among original
++        # units. A model relation is never sufficient to withdraw a new task:
++        # detected replacement/withdrawal/ambiguity remains visible review.
++        selected=relation_runtime.candidates(meeting,proposal['observations'],originals)
++        if selected:
++            def checked_relations(value):
++                return relation_runtime.inspect(value,originals,selected)
++            checked,error=stage('compact-relations',relation_runtime.prompt(originals,selected),
++                                relation_runtime.schema(originals,selected),checked_relations,
++                                min(18000,max(4000,len(selected)*240)),attempts=1)
++            proposal['observations']=relation_runtime.apply_review(
++                proposal['observations'],selected,checked,error,originals)
+         proposal=guard(db,meeting,proposal)
++        from future_summary import from_final_proposal
++        summary,raw['meeting_summary']=from_final_proposal(
++            proposal,originals,meeting['title'],meeting['raw_transcript'])
++        raw['meeting_display_title']=None
+         statistics.update(total_work=len(allwork),selected_work=len(work),queries=len(search_queries),hits=len(hits))
+         for item in proposal['observations']:item['retrieval_provenance']=statistics['search']
+         result=apply(db,job,token,proposal,model=model,usage={'hybrid':statistics})
+@@ -327,6 +345,6 @@
+         following={**meeting,'meeting_date':(date.fromisoformat(meeting['meeting_date'][:10])+timedelta(days=1)).isoformat()}
+         index.persist(documents(db,following,archive_db or '')+current_source_documents(meeting,raw))
+         (folder/'validation.json').write_text(encode(statistics))
+-        return {'job':job,'status':'applied','observations':len(result),'new_work':sum(o['creates_work'] for o in result),'hybrid':statistics}
++        return {'job':job,'status':'applied','observations':len(result),'new_work':sum(o['creates_work'] for o in result),'hybrid':statistics,'summary':summary}
+     except Exception as error:
+         record_failure(db,job,token,error);raise
+--- a/canonical_worker.py
++++ b/canonical_worker.py
+@@ -96,7 +96,9 @@
+                 try:
+                     base.backup(scratch)
+                     meeting={'id':job['id'],'source_id':version['source_id'],'title':version['title'],
+-                             'meeting_date':version['event_date'],'observed_at':version['observed_at'],'raw_transcript':version['transcript']}
++                             'meeting_date':version['event_date'],'observed_at':version['observed_at'],
++                             'raw_transcript':version['transcript'],'content_hash':version['content_hash'],
++                             'expected_revision':job['expected_revision']}
+                     detail=self.store.call('job_detail',job_id=job['id'])
+                     prior_calls=detail.get('calls') if isinstance(detail,dict) else None
+                     if not isinstance(prior_calls,list) or [call.get('index') for call in prior_calls]!=list(range(len(prior_calls))) or any(not call.get('received') for call in prior_calls):
+@@ -118,7 +120,8 @@
+                     if result['status']!='applied':raise ValidationError('Sandbox result not applied')
+                     row=scratch.execute("SELECT proposal_json FROM runs WHERE job_id=? AND outcome='applied'",(result['job'],)).fetchone()
+                     if not row or not calls.primary_responses:raise ValidationError('Missing accepted proposal')
+-                    summary=future_summary.from_response(calls.primary_responses[-1],processor.units(version['transcript']),version['title'],version['transcript'])
++                    summary=result['summary'] if processor.PROMPT_VERSION in ('v10','v11') else future_summary.from_response(
++                        calls.primary_responses[-1],processor.units(version['transcript']),version['title'],version['transcript'])
+                     payload=prepare_source(base,version,json.loads(row['proposal_json']),pipeline=self.pipeline,model=self.model,
+                         provenance={'mode':'automatic_future_source','document_id':document['id'],
+                                     'job_id':job['id'],'context_revision':job['expected_revision']},
+--- a/future_summary.py
++++ b/future_summary.py
+@@ -47,3 +47,41 @@
+     display_title=title_from_response(value.get('meeting_display_title'),originals,transcript)
+     return {'title':title,'display_title':display_title,'ai_summary':'\n\n'.join(texts),'executive_summary':'','topics':[],'key_decisions':[],
+             'participants':[],'summary_evidence':evidence,'link_provenance':{'method':'same_call_source_cited_summary'}}
++
++
++def from_final_proposal(proposal, originals, title, transcript):
++    """Render only post-gate source observations; pending relations stay explicit."""
++    units_by_span={(unit['start'],unit['end'],unit['text']):identifier
++                   for identifier,unit in originals.items()}
++    paragraphs=[]
++    for item in proposal['observations']:
++        evidence_ids=list(dict.fromkeys(units_by_span[(span['start'],span['end'],span['quote'])]
++                                     for span in item['source_spans']))
++        relation=item.get('relation_review')
++        if relation:
++            earlier=[originals[identifier]['text'] for identifier in relation['evidence_ids']
++                     if identifier in evidence_ids]
++            if not earlier:raise ValidationError('Pending relation lacks final source evidence')
++            body='Beziehung zwischen Originalaussagen fachlich offen: '+' | '.join(earlier)
++        else:
++            # The accepted observation is the final post-gate claim; never use
++            # the extraction call's preliminary meeting_summary here.
++            body=item['claim']
++        paragraphs.append({'text':body,'evidence_ids':evidence_ids})
++    if not paragraphs:
++        if not originals:raise ValidationError('Empty source cannot form a source-grounded summary')
++        first=next(iter(originals))
++        paragraphs=[{'text':'Keine abschließend geprüfte Einzelbeobachtung; Originalstelle: '+originals[first]['text'],
++                     'evidence_ids':[first]}]
++    if sum(len(p['text']) for p in paragraphs)>12000:
++        raise ValidationError('Final source-grounded summary too long; source retained for review')
++    if len(paragraphs)>12:
++        chunks=[paragraphs[i::12] for i in range(12)]
++        paragraphs=[{'text':'\n'.join(p['text'] for p in chunk),
++                     'evidence_ids':list(dict.fromkeys(identifier for p in chunk for identifier in p['evidence_ids']))}
++                    for chunk in chunks if chunk]
++    response={'content':[{'type':'text','text':json.dumps({'meeting_summary':paragraphs,
++                                                         'meeting_display_title':None},ensure_ascii=False)}]}
++    summary=from_response(response,originals,title,transcript)
++    summary['link_provenance']={'method':'post_gate_final_observations_original_ids'}
++    return summary,paragraphs
+--- /dev/null
++++ b/relation_runtime.py
+@@ -0,0 +1,146 @@
++"""Conservative, source-bound relation stage for new meeting candidates only.
++
++Model relation labels are proposals, never independent proof of a withdrawal.
++"""
++import hashlib
++import json
++import copy
++
++from memory import ValidationError, fingerprint
++
++RELATIONS = ('none', 'confirmed', 'independent', 'expressly_withdrawn', 'replaced', 'unclear')
++ID_FIELDS = ('earlier_ids', 'later_ids', 'object_ids', 'action_ids',
++             'prerequisite_ids', 'replacement_ids', 'competing_ids')
++FIELDS = {'candidate_id', 'relation', *ID_FIELDS}
++REVIEW_RELATIONS = {'expressly_withdrawn', 'replaced', 'unclear'}
++
++
++def digest(value):
++    return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
++                                     separators=(',', ':')).encode()).hexdigest()
++
++
++def candidates(meeting, observations, originals):
++    """Only current-source new action candidates; no historical work update."""
++    source_hash = fingerprint(meeting['raw_transcript'])
++    if (meeting.get('content_hash') != source_hash or type(meeting.get('expected_revision')) is not int
++            or not isinstance(meeting.get('id'), str) or not meeting['id']):
++        raise ValidationError('Relation source identity or revision unavailable')
++    selected = []
++    for index, item in enumerate(observations):
++        if item.get('kind') != 'commitment' or item.get('update', 'none') != 'none' or item.get('update_target'):
++            continue
++        original_ids = [unit_id for unit_id, unit in originals.items()
++                        if any(unit['start'] == span.get('start') and unit['end'] == span.get('end')
++                               and unit['text'] == span.get('quote') for span in item.get('source_spans', []))]
++        if not original_ids:
++            raise ValidationError('New candidate lacks exact original span binding')
++        scope = {'job_id': meeting['id'], 'source_id': meeting['source_id'], 'content_hash': source_hash,
++                 'expected_revision': meeting['expected_revision'], 'index': index,
++                 'source_ids': original_ids, 'source_candidate': item}
++        selected.append({'index': index, 'candidate_id': digest(scope),
++                         'source_ids': original_ids, 'source_hash': source_hash})
++    return selected
++
++
++def schema(originals, selected):
++    ids = sorted(originals)
++    id_array = {'type': 'array', 'uniqueItems': True,
++                'items': {'type': 'string', 'enum': ids}}
++    properties = {'candidate_id': {'type': 'string', 'enum': [x['candidate_id'] for x in selected]},
++                  'relation': {'type': 'string', 'enum': list(RELATIONS)}}
++    properties.update({name: id_array for name in ID_FIELDS})
++    return {'type': 'object', 'additionalProperties': False, 'required': ['relations'],
++            'properties': {'relations': {'type': 'array', 'minItems': len(selected),
++                                        'maxItems': len(selected),
++                                        'items': {'type': 'object', 'additionalProperties': False,
++                                                  'required': sorted(FIELDS), 'properties': properties}}}}
++
++
++def prompt(originals, selected):
++    """No extraction summary, old work/gate, free final statement, or prior model prose."""
++    exposed = [{'candidate_id': row['candidate_id'], 'source_ids': row['source_ids']}
++               for row in selected]
++    original_texts = {identifier: unit['text'] for identifier, unit in originals.items()}
++    return ('Prüfe ausschließlich Beziehungen zwischen Aussagen dieses Originals. '
++            'Jede Relation ist ein prüfbedürftiger Vorschlag, keine Arbeitsfreigabe. '
++            'Gib jeden candidate_id genau einmal zurück; verwende nur Original-IDs. '
++            'none heißt keine spätere Aussage zu dieser Handlung erkannt. '
++            'Bestätigte eigenständige Zusagen nicht mit einer anderen Handlung vermischen. '
++            'Keine Zusammenfassung, freien Zitate, endgültigen Aussagen, Owner, Aufgaben oder Bedingungen ausgeben.\n'
++            'Kandidaten (IDs aus bereits ausgewählten Originalstellen):\n'
++            + json.dumps(exposed, ensure_ascii=False, sort_keys=True)
++            + '\nOriginalstellen:\n' + json.dumps(original_texts, ensure_ascii=False, sort_keys=True))
++
++
++def inspect(value, originals, selected):
++    """Checks structure/identity, not semantic truth. Invalid means every candidate review."""
++    try:
++        if not isinstance(value, dict) or set(value) != {'relations'} or not isinstance(value['relations'], list):
++            raise ValueError('invalid relation envelope')
++        rows = value['relations']
++        expected = {item['candidate_id']: item for item in selected}
++        if len(rows) != len(expected) or any(not isinstance(row, dict) for row in rows):
++            raise ValueError('relation coverage changed')
++        if {row.get('candidate_id') for row in rows} != set(expected):
++            raise ValueError('relation candidate identity changed')
++        checked = {}
++        for row in rows:
++            if set(row) != FIELDS or row['relation'] not in RELATIONS:
++                raise ValueError('free or invalid relation field')
++            identifiers = {}
++            for name in ID_FIELDS:
++                ids = row[name]
++                if (not isinstance(ids, list) or any(not isinstance(i, str) or i not in originals for i in ids)
++                        or len(ids) != len(set(ids))):
++                    raise ValueError('unknown or repeated original ID')
++                identifiers[name] = ids
++            earlier, later = identifiers['earlier_ids'], identifiers['later_ids']
++            if not earlier or not set(expected[row['candidate_id']]['source_ids']) <= set(earlier):
++                raise ValueError('new candidate source proof missing')
++            relation = row['relation']
++            if relation == 'none':
++                if later or any(identifiers[name] for name in ID_FIELDS if name != 'earlier_ids'):
++                    raise ValueError('none relation has extra evidence')
++            else:
++                if not later or max(originals[i]['start'] for i in earlier) >= min(originals[i]['start'] for i in later):
++                    raise ValueError('later original evidence missing or reversed')
++                if relation in ('confirmed', 'independent', 'expressly_withdrawn', 'replaced'):
++                    if not identifiers['object_ids'] or not identifiers['action_ids'] or not identifiers['prerequisite_ids']:
++                        raise ValueError('positive object/action/prerequisite evidence missing')
++                    if not set(identifiers['object_ids']) & set(earlier) or not set(identifiers['object_ids']) & set(later):
++                        raise ValueError('object evidence must cite both sides')
++                if relation == 'replaced' and not identifiers['replacement_ids']:
++                    raise ValueError('replacement evidence missing')
++                if relation == 'unclear' and not identifiers['competing_ids']:
++                    raise ValueError('ambiguity referents missing')
++            checked[row['candidate_id']] = row
++        return checked, None
++    except (AttributeError, KeyError, TypeError, ValueError) as error:
++        return {}, str(error)
++
++
++def apply_review(observations, selected, checked, error, originals):
++    """No source, owner, task or condition rewrite. Review blocks only affected work."""
++    result = copy.deepcopy(observations)
++    for candidate in selected:
++        row = checked.get(candidate['candidate_id'])
++        if error or row is None or row['relation'] in REVIEW_RELATIONS:
++            item = result[candidate['index']]
++            item['required_review'] = True
++            item['change_score'] = min(item.get('change_score', 1), 1)
++            item['confidence_reason'] = 'Beziehung zwischen Originalstellen fachlich zu prüfen.'
++            item['action_uncertainty'] = 'Mögliche Änderung der neuen Zusage im selben Original; Originalstellen fachlich prüfen.'
++            ids = candidate['source_ids'] if row is None else list(dict.fromkeys(row['earlier_ids'] + row['later_ids']))
++            item['relation_review'] = {'status': 'pending', 'relation': None if row is None else row['relation'],
++                                       'candidate_id': candidate['candidate_id'],
++                                       'source_hash': candidate['source_hash'], 'evidence_ids': ids}
++            existing = {(span['start'], span['end']) for span in item['source_spans']}
++            for identifier in ids:
++                unit = originals[identifier]
++                if (unit['start'], unit['end']) not in existing:
++                    item['source_spans'].append({'start': unit['start'], 'end': unit['end'], 'quote': unit['text']})
++                if unit['text'] not in item['quotes']:
++                    item['quotes'].append(unit['text'])
++        # none/confirmed/independent are inert: the existing gate alone decides.
++    return result
