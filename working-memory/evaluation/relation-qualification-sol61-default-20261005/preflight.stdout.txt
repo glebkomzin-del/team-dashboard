@@ -1,0 +1,1 @@
+{"bindings_sha256": "ed48fa373449a917174db5155e1a73f3961fdbb2e2dbed0255c6426fff62752c", "live": null, "request_sha256": "b8e14586cc637dcb4ee6bd8d0a6323be8602f01bf99886633ffd23215eccac93", "result": "QUALIFICATION_PREFLIGHT_PASS"}

@@ -1,0 +1,7 @@
+test_actual_responses_transport_explicit_default_even_if_project_fast (__main__.DefaultDeltaOffline.test_actual_responses_transport_explicit_default_even_if_project_fast) ... ok
+test_preflight_and_missing_invalid_authority_denied (__main__.DefaultDeltaOffline.test_preflight_and_missing_invalid_authority_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.003s
+
+OK
