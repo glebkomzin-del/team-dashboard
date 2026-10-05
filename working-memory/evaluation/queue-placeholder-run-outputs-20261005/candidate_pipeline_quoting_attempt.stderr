@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from canonical_worker import pipeline_version; print(pipeline_version(gpt-5.6-terra))
+                                                                          ^^^
+NameError: name 'gpt' is not defined

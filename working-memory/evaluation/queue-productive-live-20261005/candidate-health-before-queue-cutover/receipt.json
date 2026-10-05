@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T18:51:53.705871+00:00",
+  "completed_utc": "2026-10-05T18:51:55.951600+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 - <<'SOURCE'\nimport json,subprocess,urllib.request\nq=\"SELECT json_build_object('revision',(SELECT revision FROM public.wm_spaces WHERE id='96a2dc44-9b9e-4644-b236-c5c1956cd39d'),'calls',(SELECT count(*) FROM public.wm_model_calls WHERE space_id='96a2dc44-9b9e-4644-b236-c5c1956cd39d'),'queued',(SELECT count(*) FROM public.wm_jobs WHERE space_id='96a2dc44-9b9e-4644-b236-c5c1956cd39d' AND state='queued'),'review',(SELECT count(*) FROM public.wm_jobs WHERE space_id='96a2dc44-9b9e-4644-b236-c5c1956cd39d' AND state='review'),'applied',(SELECT count(*) FROM public.wm_jobs WHERE space_id='96a2dc44-9b9e-4644-b236-c5c1956cd39d' AND state='applied'))::text\"\nr=subprocess.run(['docker','exec','dashboard-supabase-20261003-db-1','psql','-U','postgres','-d','postgres','-XAt','-v','ON_ERROR_STOP=1','-c',q],capture_output=True,text=True);assert r.returncode==0,r.stderr\nfacts=json.loads(r.stdout);assert facts=={'revision':221,'calls':1447,'queued':63,'review':1,'applied':104},facts\nhealth={}\nfor url in ['http://127.0.0.1:8798/health','https://178-105-167-26.nip.io/dashboard-memory/health','https://178-105-167-26.nip.io/dashboard-memory-draft/health']:\n with urllib.request.urlopen(url,timeout=20) as response:health[url]=response.status\nassert set(health.values())=={200}\nprint(json.dumps({'result':'CANDIDATE_HEALTHY_UNCHANGED_JOB_AND_PAID_HISTORY','facts':facts,'health':health}))\nSOURCE"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "50a208cb714f17f51ac2f728accd4250817b1f8273a3df75262d2da2193b3023",
+      "bytes": 328
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

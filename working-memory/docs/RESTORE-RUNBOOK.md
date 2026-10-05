@@ -1,5 +1,13 @@
 # Dashboard Job wiederherstellen
 
+## Produktiver Runtime-Rückweg der Queue-Reparatur – 05.10.2026
+
+Tatsächlicher Backendwechsel 05.10., 18:50:35 UTC und Queue-Cutover 18:52:32 UTC: Das laufende V4-Image ist `sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb`, Compose-Tag `dashboard-memory:queue-placeholder-20261005-b3e22868`. Der normale Start verwendet die dauerhaft aktualisierte `compose.yaml`, kein privates temporäres Override. Der tatsächliche Release-/Sicherungsstand steht ausschließlich in [NEXT-OPERATIONS.md](NEXT-OPERATIONS.md).
+
+Das geänderte bestehende Backup nimmt `Dockerfile`, `scheduled_backup.py`, 46 Schemaquellen und das tatsächlich laufende Image als `memory-image.tar` in dasselbe gehashte Bundle auf. Das durch Image-ID gespeicherte Docker-Archiv kann ohne Tag geladen werden. Deshalb nach vollständiger Bundleprüfung und `docker load -i memory-image.tar` die tatsächlich geladene Image-ID gegen die gesicherte Containeridentität prüfen und **erst dann** auf den in der gesicherten Compose-Konfiguration belegten Image-Tag setzen. Für genau dieses V4-Release sind dies die beiden obigen Werte; bei fehlender, abweichender oder unklarer Identität keinen Dienst starten. Anschließend die Runtimequellen gegen das Bundlemanifest prüfen, sämtliche Schreibflags geschlossen halten und den bestehenden isolierten Target-Restoreweg verwenden. Ein erfolgreicher `docker load` allein belegt weder den richtigen Compose-Tag noch eine Datenwiederherstellung. Vorherige Sicherungen ohne `memory-image.tar` nicht als Beleg für diese neue Fähigkeit ausgeben.
+
+Vor dem atomaren Queue-/Configwechsel darf der gebundene Hostvertrag `rollback-before-cutover` ausschließlich die hashgeprüften ursprünglichen Gateway-/Runtime-/Dockerfile-/Compose-/Backupquellen und das ursprüngliche Image wiederherstellen. Nach dem Queuewechsel keine automatische Rücksetzung über neue Jobs, Originale oder bezahlte Antworten; zuerst nur betroffene Verarbeitung halten und den tatsächlichen Targetstand prüfen. Source-Supabase bleibt geschlossen.
+
 ## Gültiger Wiederherstellungsweg nach Hetzner-Cutover – 04.10.2026
 
 Der aktuelle Betrieb und seine tatsächlichen Sicherungsquittungen stehen in [NEXT-OPERATIONS.md](NEXT-OPERATIONS.md). Datenbank, Auth und kanonisches Backend liegen jetzt auf Hetzner. Seit der erfolgreichen Writer-Öffnung darf das alte Source-Supabase weder als aktueller Datenstand verbunden noch durch `final_prewrite_rollback_once.py` reaktiviert werden. Die folgenden älteren Supabase-Wiederanlaufhinweise gelten ausschließlich für ihren ausdrücklich historischen Stand.

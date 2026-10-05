@@ -1,0 +1,10 @@
+test_caller_reactivated_between_workflow_and_caller_read_denied (working-memory.evaluation.queue-intake-transition-20261005.test_intake_transition.Contract.test_caller_reactivated_between_workflow_and_caller_read_denied) ... ok
+test_missing_unknown_or_foreign_evidence_denied (working-memory.evaluation.queue-intake-transition-20261005.test_intake_transition.Contract.test_missing_unknown_or_foreign_evidence_denied) ... ok
+test_new_start_between_pause_and_first_sample_denied (working-memory.evaluation.queue-intake-transition-20261005.test_intake_transition.Contract.test_new_start_between_pause_and_first_sample_denied) ... ok
+test_positive_known_inflight_completed_no_new_start (working-memory.evaluation.queue-intake-transition-20261005.test_intake_transition.Contract.test_positive_known_inflight_completed_no_new_start) ... ok
+test_stale_request_and_original_version_change_denied (working-memory.evaluation.queue-intake-transition-20261005.test_intake_transition.Contract.test_stale_request_and_original_version_change_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+OK

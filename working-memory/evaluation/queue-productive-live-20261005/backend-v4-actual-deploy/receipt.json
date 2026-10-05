@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T18:49:08.988143+00:00",
+  "completed_utc": "2026-10-05T18:50:35.290681+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "DASHBOARD_INTAKE_DRAIN_RECEIPT=/root/dashboard-intake-transition-root-20261005T1848/drain-receipt.json DASHBOARD_INTAKE_DRAIN_SHA256=cff4050b7263092f840828bc4922dfb0e1172600e6bac975c272416798d9233d bash /root/dashboard-queue-deploy-stage-20261005-b3e22868/activate.sh deploy"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "8973640edbefd45098f6b4678624ce1b2e52b7e71c589d18c3c9f06a63ffe825",
+      "bytes": 251
+    },
+    "stderr": {
+      "sha256": "853e18f36b6b4154fb8773a3d079341fbaac78600208cedeefdb72b5db09cdf1",
+      "bytes": 288
+    }
+  }
+}

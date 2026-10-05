@@ -1,0 +1,59 @@
+--- /dev/null
++++ b/migrations/20261005133858_archive_verified_image_placeholder_job.sql
+@@ -0,0 +1,56 @@
++begin;
++
++-- The canonical worker may close only a claimed, unpaid Tactiq image placeholder.
++-- This does not assert that the meeting had no content; the archived export stays intact.
++create function public.wm_archive_image_placeholder_job(
++  p_space_id uuid, p_job_id text, p_lease_token uuid, p_body_hash text
++)
++returns jsonb
++language plpgsql
++set search_path to ''
++as $function$
++declare s public.wm_spaces%rowtype; c public.wm_processing_config%rowtype;
++ j public.wm_jobs%rowtype; d public.wm_archive_documents%rowtype; lines text[];
++begin
++ select * into s from public.wm_spaces where id=p_space_id for update;
++ if not found or s.state is null or s.state='retired' or s.revision is null then
++   raise exception 'Space unavailable' using errcode='40001'; end if;
++ select * into c from public.wm_processing_config where space_id=p_space_id;
++ select * into j from public.wm_jobs where space_id=p_space_id and id=p_job_id for update;
++ if not found or c.space_id is null or c.enabled is distinct from true or c.automatic_from is null
++    or j.state is distinct from 'running' or p_lease_token is null or j.lease_token is null
++    or j.lease_token is distinct from p_lease_token or j.lease_until is null
++    or j.lease_until<=clock_timestamp() or j.pipeline is null or c.pipeline is null
++    or j.pipeline is distinct from c.pipeline or j.event_date is null or j.event_date<c.automatic_from
++    or j.expected_revision is distinct from s.revision
++    or j.prepared_payload is not null or j.redaction_id is not null
++    or exists(select 1 from public.wm_model_calls m where m.space_id=p_space_id and m.job_id=p_job_id) then
++   raise exception 'Placeholder job state changed or has model calls' using errcode='40001';
++ end if;
++ select * into d from public.wm_archive_documents where space_id=p_space_id and id=j.document_id;
++ if not found or d.redaction_id is not null or d.body is null or d.source_id is distinct from j.source_id
++    or d.body_hash is distinct from p_body_hash
++    or d.body_hash is distinct from encode(extensions.digest(convert_to(d.body,'UTF8'),'sha256'),'hex')
++    or j.id is distinct from encode(extensions.digest(convert_to(d.source_id||':'||d.body_hash,'UTF8'),'sha256'),'hex')
++    or exists(select 1 from public.wm_source_versions v where v.space_id=p_space_id and v.source_id=j.source_id)
++    or exists(select 1 from public.wm_archive_documents other
++      where other.space_id=p_space_id and other.source_id=j.source_id and other.body_hash is distinct from d.body_hash) then
++   raise exception 'Placeholder original changed or has another generation' using errcode='40001';
++ end if;
++ lines:=string_to_array(trim(trailing E'\n' from replace(d.body,E'\r\n',E'\n')),E'\n');
++ if array_length(lines,1) is distinct from 5
++    or lines[1] !~ '^Meeting Titel: .*[^[:space:]].*$' or lines[2] !~ '^Teilnehmer: .*$'
++    or lines[3] !~ '^Datum: .*[^[:space:]].*$' or lines[4] !~ '^Beginn: .*[^[:space:]].*$'
++    or lines[5] !~ '^\[[0-9]{2}:[0-9]{2}:[0-9]{2}\] Unknown: (image|Bild)$' then
++   raise exception 'Original contains unknown or transcribed content' using errcode='40001';
++ end if;
++ update public.wm_jobs set state='archived',reason='verified_image_placeholder',updated_at=clock_timestamp()
++  where space_id=p_space_id and id=p_job_id returning * into j;
++ return jsonb_build_object('state',j.state,'reason',j.reason,'job_id',j.id,
++   'document_id',j.document_id,'body_hash',d.body_hash);
++end; $function$;
++
++revoke all on function public.wm_archive_image_placeholder_job(uuid,text,uuid,text) from public, anon, authenticated;
++grant execute on function public.wm_archive_image_placeholder_job(uuid,text,uuid,text) to service_role;
++
++commit;

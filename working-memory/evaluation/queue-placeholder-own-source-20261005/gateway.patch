@@ -1,0 +1,11 @@
+--- a/functions/working-memory-journal/handler.ts
++++ b/functions/working-memory-journal/handler.ts
+@@ -256,6 +256,8 @@
+           && input.diagnostic && typeof input.diagnostic === 'object' && !Array.isArray(input.diagnostic))
+           return json(await rest('rpc/wm_pause_transport_job', {...job,p_failure_id:input.failure_id,p_diagnostic:input.diagnostic}))
+         if (input.op === 'publish_job') return json(await rest('rpc/wm_publish_job', job))
++        if (input.op === 'archive_image_placeholder_job' && typeof input.body_hash === 'string' && hash.test(input.body_hash))
++          return json(await rest('rpc/wm_archive_image_placeholder_job', { ...job, p_body_hash: input.body_hash }))
+         if (input.op === 'prepare_job' && input.payload && typeof input.payload === 'object' && !Array.isArray(input.payload))
+           return json(await rest('rpc/wm_prepare_job', { ...job, p_payload: input.payload }))
+         if (input.op === 'pause_job' && typeof input.reason === 'string' &&

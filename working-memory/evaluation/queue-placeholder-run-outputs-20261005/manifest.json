@@ -1,0 +1,98 @@
+{
+  "source_sha256": {
+    "worker": "4e5e9e28362e1a7f6a1a63311428de4e027f7e4e149d189c185e0cb725159acf",
+    "migration": "22ac14542d1f2ec8a025e831b5f8c7f4fb23de7ea1dbf3a19a726e6ed99a5f5d",
+    "gateway": "7607e565e4e92040cf2567e2775439bd5c146115b3cf125db1b3c269d9a2b52b",
+    "restore": "c9aaf64f8670ef86ef44854ce322dbf31fa9d32cbd51c13beda8fe3853bb4cba"
+  },
+  "records": [
+    {
+      "label": "python6",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_image_placeholder_queue",
+        "test_restore_schema"
+      ],
+      "cwd": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory",
+      "exit": 0,
+      "stdout_path": "/private/tmp/dashboard-queue-deploy-proof/python6.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_path": "/private/tmp/dashboard-queue-deploy-proof/python6.stderr",
+      "stderr_sha256": "842fe6991ed03a5bb12fc706aa929b08f1f0d3c9b94525c0bb8d00bf34758034",
+      "at_utc": "2026-10-05T17:25:37.988865+00:00"
+    },
+    {
+      "label": "deno_check",
+      "command": [
+        "deno",
+        "check",
+        "handler.ts",
+        "handler_image_placeholder_test.ts"
+      ],
+      "cwd": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/functions/working-memory-journal",
+      "exit": 0,
+      "stdout_path": "/private/tmp/dashboard-queue-deploy-proof/deno_check.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_path": "/private/tmp/dashboard-queue-deploy-proof/deno_check.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "at_utc": "2026-10-05T17:25:39.843107+00:00"
+    },
+    {
+      "label": "deno_test",
+      "command": [
+        "deno",
+        "test",
+        "--no-prompt",
+        "--allow-all",
+        "./handler_image_placeholder_test.ts"
+      ],
+      "cwd": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/functions/working-memory-journal",
+      "exit": 0,
+      "stdout_path": "/private/tmp/dashboard-queue-deploy-proof/deno_test.stdout",
+      "stdout_sha256": "d5290a803cab4241e6e33dfeb17b5e8ee6ab615faa61d9f231e66c40c40d89eb",
+      "stderr_path": "/private/tmp/dashboard-queue-deploy-proof/deno_test.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "at_utc": "2026-10-05T17:25:40.062608+00:00"
+    },
+    {
+      "label": "postgres17",
+      "command": [
+        "ssh",
+        "-T",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "root@178.105.167.26",
+        "set -eu; docker create -i --name dashboard-placeholder-4b07122c77c2 --network none --memory 512m --cpus 1 --user postgres --entrypoint sh a9946f08d31e -c 'initdb -D /tmp/pg -U postgres --no-instructions >/dev/null && pg_ctl -D /tmp/pg -o '\"'\"'-k /tmp'\"'\"' -w start >/dev/null && psql -h /tmp -U postgres -d postgres -v ON_ERROR_STOP=1 -c '\"'\"'create role service_role; create role anon; create role authenticated;'\"'\"' >/dev/null && psql -h /tmp -U postgres -d postgres -v ON_ERROR_STOP=1 -f -' >/dev/null; trap 'docker rm -f dashboard-placeholder-4b07122c77c2 >/dev/null 2>&1 || true' EXIT; docker inspect dashboard-placeholder-4b07122c77c2 --format 'isolation network={{.HostConfig.NetworkMode}} memory={{.HostConfig.Memory}} nano_cpus={{.HostConfig.NanoCpus}} mounts={{len .Mounts}} ports={{json .HostConfig.PortBindings}}'; docker start -ai dashboard-placeholder-4b07122c77c2"
+      ],
+      "cwd": null,
+      "exit": 0,
+      "stdout_path": "/private/tmp/dashboard-queue-deploy-proof/postgres17.stdout",
+      "stdout_sha256": "1fb95af46aabc5f57bf4cb2888aef422dfdde8e3d9721f0a031421bab5df6b3e",
+      "stderr_path": "/private/tmp/dashboard-queue-deploy-proof/postgres17.stderr",
+      "stderr_sha256": "7de6bf66471df01568f905a7e72bcebf3c67f3a80f5aa491e738b5ca509a3196",
+      "at_utc": "2026-10-05T17:26:01.794138+00:00"
+    },
+    {
+      "label": "postgres_cleanup",
+      "command": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "root@178.105.167.26",
+        "docker ps -a --format \"{{.Names}}\" | grep \"^dashboard-placeholder-\" || true"
+      ],
+      "cwd": null,
+      "exit": 0,
+      "stdout_path": "/private/tmp/dashboard-queue-deploy-proof/postgres_cleanup.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_path": "/private/tmp/dashboard-queue-deploy-proof/postgres_cleanup.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "at_utc": "2026-10-05T17:26:02.431436+00:00"
+    }
+  ]
+}

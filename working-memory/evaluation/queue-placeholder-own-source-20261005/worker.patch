@@ -1,0 +1,39 @@
+--- a/working-memory/canonical_worker.py
++++ b/working-memory/canonical_worker.py
+@@ -4,6 +4,7 @@
+ published against a changed context, and no ambiguous paid call is repeated.
+ """
+ import json
++import re
+ from pathlib import Path
+ import tempfile
+ from uuid import uuid4
+@@ -19,6 +20,18 @@
+ from gateway_journal import TransientGateway
+ from pipeline_runtime import diagnostic,pause_transient,recover_transport_pause
+ from review_api import open_readonly
++
++_IMAGE_LINE = re.compile(r'\[\d{2}:\d{2}:\d{2}\] Unknown: (?:image|Bild)')
++
++def verified_image_placeholder(body):
++    """Only the observed Tactiq metadata envelope plus one image marker."""
++    if not isinstance(body,str):return False
++    lines=body.splitlines()
++    return (len(lines)==5
++            and all(lines[i].startswith(label) for i,label in
++                    enumerate(('Meeting Titel: ','Teilnehmer: ','Datum: ','Beginn: ')))
++            and all(lines[i].split(': ',1)[1].strip() for i in (0,2,3))
++            and _IMAGE_LINE.fullmatch(lines[4]) is not None)
+ 
+ def pipeline_version(model):
+     text=''.join((Path(__file__).parent/name).read_text() for name in
+@@ -71,6 +84,9 @@
+             config=status.get('config') or {}
+             if not config.get('enabled') or not config.get('automatic_from') or version['event_date']<config['automatic_from']:
+                 raise ValidationError('Historical or disabled source cannot reach the model')
++            if verified_image_placeholder(version['transcript']):
++                return self.store.call('archive_image_placeholder_job',job_id=job['id'],lease_token=lease,
++                                       body_hash=document['body_hash'])
+             identity={'role':'owner','id':self.store.space()['owner_id']}
+             self.service.cache.mkdir(parents=True,exist_ok=True,mode=0o700)
+             with tempfile.TemporaryDirectory(prefix='worker-',dir=self.service.cache) as tmp:

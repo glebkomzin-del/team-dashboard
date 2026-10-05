@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T18:48:15.665262+00:00",
+  "completed_utc": "2026-10-05T18:48:24.010217+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 /root/dashboard-intake-transition-prep-20261005.py drain --run-dir /root/dashboard-intake-transition-root-20261005T1848"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "e1359cf96096a16416e0d6926311c491ac44990d08a35c482b604de5b9cc750b",
+      "bytes": 96
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

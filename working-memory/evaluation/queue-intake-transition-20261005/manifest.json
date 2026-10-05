@@ -1,0 +1,22 @@
+{
+  "problem_id": "DASHBOARD-PROD-20261005-INTAKE-TRANSITION",
+  "created_at_utc": "2026-10-05T18:11:08.615451+00:00",
+  "state": "prepared_readonly_preflight_only_no_production_pause_or_resume",
+  "file_sha256": {
+    "intake_transition.py": "703e216b264e27d66cb0b144930e9883da5c4e1e3b80038813c6dc40c2a17a99",
+    "prepare_scope_option.py": "9b27d77d8bf70076ab0d82f0e40bcf12c8a8be5a22932bcbd18d46714ef7d923",
+    "test_intake_transition.py": "25c938377e0a624e8250167c9d3ed3e16135004d4253c39383c465559a4d73c3",
+    "README.md": "e82ba2d51a644fcf997c87f3cb26e5829bec1f97fd18883a0361dbd1910973f5",
+    "test-output.txt": "e707d5f94b541b121af508436999aa859763167c9f3d7428c6a42debf6792f8c"
+  },
+  "host_helper_path": "/root/dashboard-intake-transition-prep-20261005.py",
+  "host_helper_sha256": "703e216b264e27d66cb0b144930e9883da5c4e1e3b80038813c6dc40c2a17a99",
+  "host_preflight_result": "PREFLIGHT_UI_CAPTURE_READY",
+  "host_preflight_private_path": "/root/dashboard-intake-transition-20261005-readonly-4/before.json",
+  "host_preflight_sha256": "2a34e25a014baa8b08c55f448baab0b98c0382f68fbdeababda47d8ac79b6149",
+  "api_preflight_result": "DENY: existing key lacks workflow:activate/deactivate",
+  "scope_option_private_path": "/root/dashboard-intake-transition-scope-option-20261005",
+  "scope_option_executed": false,
+  "contract_tests": "5 passed; synthetic true, false, unknown, stale, foreign, version, new start, caller reactivation, companion deactivation, ongoing request",
+  "live_pause_drain_resume_executed": false
+}

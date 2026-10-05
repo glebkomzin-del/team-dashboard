@@ -1,0 +1,66 @@
+{
+  "created_at_utc": "2026-10-05T18:00:40.510009+00:00",
+  "prior_failure_preserved": true,
+  "v3_image": "sha256:b93bcb874d9c1777b51106a7333c44eac3f9823c9f58a18d009f481d0827b6fb",
+  "v3_package_manifest_sha256": "00cdd57e26646101d745b70a264b31d3b67c3fe4ce1ef4c4d7ed69cd08f1de13",
+  "v3_restore_sha256": "5963514dca18c8bcf2f3fc28560063fe4030021251bc43ed44cdf376991838c1",
+  "test_scope": "Actual CLI in isolated image and temporary schema copies, no network/mounts/live env; host preflight read-only and fake receipt deny",
+  "results": [
+    {
+      "case": "candidate_restore_plan",
+      "exit": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0910f9532e5a70fb3aee26cfee2dade5dae7503969d4ac3bd4551593e0d532da"
+    },
+    {
+      "case": "candidate_restore_plan_fixed",
+      "exit": 0,
+      "stdout_sha256": "551fd053f7af7dbc96362812f375e776a5a0b0e523010bc527ccd71876103bc3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "restore_v3_positive",
+      "exit": 0,
+      "stdout_sha256": "5c55fd5b433856a6135e9c5071e0962b70d70bbe213e0f287dcca273957ac782",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "restore_v3_missing",
+      "exit": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8a2bd501aed7d1d370166996d14e987fe4de8f28cf7fc9fa4920001e25c561c6"
+    },
+    {
+      "case": "restore_v3_changed",
+      "exit": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9763b4b8b232d44d40560397b6d2b2a8012c74d263856b240dd708916b287940"
+    },
+    {
+      "case": "restore_v3_pipeline",
+      "exit": 0,
+      "stdout_sha256": "a71471bb8a21357500ca404040314998267f56b6d0c76adc9b16e50ac4aea24e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "host_v3_preflight",
+      "exit": 0,
+      "stdout_sha256": "a465a066f1eb46ed9709579bdcf046cc52bff1d4430eea41c73204c39e183b88",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "host_v3_deploy",
+      "exit": 1,
+      "stdout_sha256": "a465a066f1eb46ed9709579bdcf046cc52bff1d4430eea41c73204c39e183b88",
+      "stderr_sha256": "66d05f42140f89afb2dfe0f305c6a7db7112ea1d2b566c29642674e94d470999"
+    },
+    {
+      "case": "host_v3_cutover",
+      "exit": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "66d05f42140f89afb2dfe0f305c6a7db7112ea1d2b566c29642674e94d470999"
+    }
+  ],
+  "restore_plan_sha256": "612767ea6eb90b2e610659adf856ae4f28258af289128ede1a2750b8081c5899",
+  "schema_sources": 46
+}

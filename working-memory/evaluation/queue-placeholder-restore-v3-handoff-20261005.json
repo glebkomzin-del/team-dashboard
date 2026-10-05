@@ -1,0 +1,45 @@
+{
+  "problem_id": "DASHBOARD-PROD-20261005-QUEUE-RESTORE-RUNTIME",
+  "status": "implemented_and_isolated_image_validated_not_deployed",
+  "at_utc": "2026-10-05T18:05:56.792732+00:00",
+  "source_sha256": {
+    "workspace_restore": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/restore_schema.py",
+      "sha256": "5963514dca18c8bcf2f3fc28560063fe4030021251bc43ed44cdf376991838c1"
+    },
+    "workspace_restore_tests": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_restore_schema.py",
+      "sha256": "cab0eacca5965a5af1513f19ddd11c1e30da84c0ab6f63425c4010c36d9094a0"
+    },
+    "original_reviewed_migration": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261005133858_archive_verified_image_placeholder_job.sql",
+      "sha256": "22ac14542d1f2ec8a025e831b5f8c7f4fb23de7ea1dbf3a19a726e6ed99a5f5d"
+    },
+    "restore_patch": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-restore-runtime.patch",
+      "sha256": "dcd9ea2c6276e681a916849ab8b652bc068d2d8f22dff8cf17777a2ee7172c18"
+    },
+    "v3_contract": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-deploy-contract-v3-20261005.md",
+      "sha256": "875dad413db1226c02ef0f20f840ba34bd3a2dcc010c453545474fb826b69325"
+    },
+    "v3_hold_script": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-host-activate-v3-20261005.sh",
+      "sha256": "079c2e429fd5508f44087eaf909a443d6853cc18c0216f8149371077fdd2ab0a"
+    },
+    "v3_output_manifest": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-run-outputs-20261005/restore-v3-manifest.json",
+      "sha256": "659fab3d8b86fa580b01a5a10147727ba5f44e936f0772a42c1d8da7cd184219"
+    }
+  },
+  "package_path_local": "/private/tmp/dashboard-queue-deploy-package-v3",
+  "package_path_host": "/root/dashboard-queue-deploy-stage-20261005-00cdd57e/package",
+  "package_manifest_sha256": "00cdd57e26646101d745b70a264b31d3b67c3fe4ce1ef4c4d7ed69cd08f1de13",
+  "candidate_image": "sha256:b93bcb874d9c1777b51106a7333c44eac3f9823c9f58a18d009f481d0827b6fb",
+  "candidate_pipeline": "v11:compact1:gate1:gpt-5.6-terra:3086726206f9074d:canonical1:7c67663689250e1c",
+  "generated_restore_plan_sha256": "612767ea6eb90b2e610659adf856ae4f28258af289128ede1a2750b8081c5899",
+  "original_failure": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-run-outputs-20261005/candidate_restore_plan.stderr",
+  "actual_tests": "Workspace test_restore_schema 5/5; V3 isolated image CLI plan 46 sources with October once exit0; missing/changed October exit1; candidate pipeline exit0; host preflight exit0, deploy/cutover fake receipt exit1",
+  "open": "Intake pause/drain positive validator and actual owner session absent; host script remains explicit HOLD; no production deploy/queue/owner action. Independent code gate for V3 required before GO.",
+  "pinned_presource_sha256": "11664c0219a0d9b2224fc1f213c3c3c425653ac78fac8f40b8125da9fa6d8174"
+}
