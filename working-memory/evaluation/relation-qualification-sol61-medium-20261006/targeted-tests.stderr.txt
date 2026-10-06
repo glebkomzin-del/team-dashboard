@@ -1,0 +1,9 @@
+test_completed_final_and_exact_payload (__main__.MediumOffline.test_completed_final_and_exact_payload) ... ok
+test_failed_provider_and_bad_metadata_no_secret_copy (__main__.MediumOffline.test_failed_provider_and_bad_metadata_no_secret_copy) ... ok
+test_incomplete_known_usage_and_saved_high_regression (__main__.MediumOffline.test_incomplete_known_usage_and_saved_high_regression) ... ok
+test_lost_transport_new_authority_absent_and_full_history (__main__.MediumOffline.test_lost_transport_new_authority_absent_and_full_history) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK

@@ -1,0 +1,22 @@
+{
+  "frozen_manifest_sha256": "cb899d9b832d2ed37e212d83d68945a0848af5a5a34d038fc324e39a0f7702f6",
+  "new_private_root": "/private/tmp/semantic-relation-sol61-medium-qualification-20261006",
+  "new_private_source_sha256": {
+    "provider/openai_provider.py": "a47574584a242c324cd5cde2abe533498486fb2ab9a1ee9f10b293792f1ba1dc",
+    "runner/qualify_once.py": "3c250c1b5782ad5ec56710edf4da29aaf69e705b1646a16adf7ca847174fc7bc"
+  },
+  "old_private_root": "/private/tmp/semantic-relation-sol61-default-qualification-20261005",
+  "old_private_source_sha256": {
+    "provider/openai_provider.py": "0bba05e4231a77af65d8ed66ab7ef25922e7f7ba8c15564e806ea7fe65964953",
+    "runner/qualify_once.py": "e4bfade4536498e1fe3999b05ebcba3dabba12593010a76f716dbe74c3980644"
+  },
+  "production_writes": 0,
+  "provider_calls": 0,
+  "scope": "source delta and offline test/freezer sources only; no private request, expected, originals, responses or credentials",
+  "tests_rerun": false,
+  "versionable_source_sha256": {
+    "freeze_medium.py": "8a1d6afb7564e1c6b5cad42274a6f84acd1c6d82ac18d64047514498eccbc922",
+    "provider-runner.delta.patch": "739c57b5a8a89ac6111f78852f2d47c4550a441477b436b6309723a3cb0c5979",
+    "test_medium.py": "fe58fd22cd088ffbf860c479c641ed84218daf62d4783c160682a571d722b007"
+  }
+}

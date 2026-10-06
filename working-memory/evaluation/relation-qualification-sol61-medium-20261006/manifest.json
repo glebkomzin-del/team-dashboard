@@ -1,0 +1,132 @@
+{
+  "candidate_count": 6,
+  "case_count": 3,
+  "expected_private_sha256": "d9f105645d2014a0c1e4c078ace726f0c8a6217bedc6cd8e743593c10ada2964",
+  "model": "gpt-6.1-sol",
+  "old_normalized_sol61_incomplete_reason": "UNKNOWN",
+  "old_normalized_sol61_returned_service_tier": "UNKNOWN",
+  "old_normalized_sol61_semantics": "NO_FINAL_CONTENT",
+  "old_normalized_sol61_terminal_status": "UNKNOWN",
+  "old_sol61high_receipt_sha256": "dba931fa60157287950623f4dd513357cf87aea07acbf2ae87953120931ea93f",
+  "old_sol61high_response_sha256": "a6ea1e73de70cac429c79e45978f78fdb0047b3402cc99080ae1acddb65de897",
+  "original_units": 197,
+  "output_sha256": {
+    "freeze.exit.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "freeze.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "freeze.stdout.txt": "27cabb5551cfdc5cb2feadf6ab096ee2da442ffe650e7cb2464cba05bd80e80c",
+    "preflight.exit.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "preflight.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preflight.stdout.txt": "ee07ab15c2b3eb42e8e8c147cc7c3699bb2edfaa4941657f86e180c290965022",
+    "send-no-new-approval.exit.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "send-no-new-approval.stderr.txt": "3b68e9314cc0a2adfb88e357e917ff8766669304b6ae8e4e0dcb8f09647a34e4",
+    "send-no-new-approval.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "targeted-tests.exit.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "targeted-tests.stderr.txt": "4fc5a9479a541e082ec1d26aeeeffd599e042baaf692f8941ea721e0967b39d6",
+    "targeted-tests.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "pending": [
+    "independent delta review",
+    "fresh direct user approval of this specific medium request and cost"
+  ],
+  "previous_default_bindings_sha256": "ed48fa373449a917174db5155e1a73f3961fdbb2e2dbed0255c6426fff62752c",
+  "previous_default_request_sha256": "b8e14586cc637dcb4ee6bd8d0a6323be8602f01bf99886633ffd23215eccac93",
+  "previous_unsent_default_manifest_sha256": "9b451b3419126a1e83cbb079ab1bdf7f2dd4dc1a97f6875b2fd76f570becb20c",
+  "prior_attempts": {
+    "endstate": {
+      "actual_micro_usd": 74194,
+      "reserved_micro_usd": 159808,
+      "sha256": {
+        "receipt.json": "b3d2437fbb92e14bc4d1ab1201b4c5c7e17ec23c8dfff8ba0e516393e332c61b",
+        "reservation.json": "084fa4fe7e2d5d40d7edcbca26e0559ab36303f649999d5f77bd41053818b923",
+        "response.json": "fd3232aedc2ca8ff492f4209992cb33642ac13255e142566b7904791136130d6"
+      },
+      "state": "known"
+    },
+    "high": {
+      "actual_micro_usd": 93039,
+      "reserved_micro_usd": 190068,
+      "sha256": {
+        "receipt.json": "4680c36a4aa1f36cf92b31c8a88a01a3e13df03da636c8e1b8c2be4aafa4d0d9",
+        "reservation.json": "d3bbd3906a6cea318dc2df4122c3cff82cc4b15375859ff4b58d9f4768cc2d39",
+        "response.json": "2c6c62a299eae7c5177a2162a937b04e0559af5fab91f2acae671f286a2f5307"
+      },
+      "state": "known"
+    },
+    "http400": {
+      "actual_micro_usd": null,
+      "reserved_micro_usd": 221248,
+      "sha256": {
+        "receipt.json": "a2f6cd75380bc1bf3576c25df92b8834d3431b38815f6f7b7bda0466ea3ce0e0",
+        "reservation.json": "e29d12b38f62a13429541b14b743bac6322529cde8907ed0d271eca91ce64b86",
+        "response.json": "9d4683c5198126425d0e4d18e07025f17fe3ced743fd14ccdc11656a34cda8d7"
+      },
+      "state": "outcome_or_usage_unknown"
+    },
+    "low": {
+      "actual_micro_usd": 62403,
+      "reserved_micro_usd": 190068,
+      "sha256": {
+        "receipt.json": "6238477c12aa9e40637a8490fa1ee0a9b5c5714862e7c1ba8ae1fcbc796724e2",
+        "reservation.json": "5a11138dd9a6cb8263e8edda97bdd8c44ad54e111fa27c9ef4b9028713db9d36",
+        "response.json": "3cee3cf314611b80d0aeae3c4762476b813586e0f7736ed2613f19df00060df7"
+      },
+      "state": "known"
+    },
+    "relationprobe": {
+      "actual_micro_usd": 32176,
+      "reserved_micro_usd": 126405,
+      "sha256": {
+        "receipt.json": "3c9a85e8e5e5b0c1faa5dda5e5656b036ec6e967e81b4546928672ff74c480bd",
+        "reservation.json": "d4cc04dcda2749c462da2de2525c492cdcda7ed3b411a4db83ac6dae18ac385e",
+        "response.json": "a33159426b1ec6324eab7821f787637df2bd4b3582b588c76a1a3a4b77b98b17"
+      },
+      "state": "known"
+    },
+    "sol61high": {
+      "actual_micro_usd": 104459,
+      "reserved_micro_usd": 191475,
+      "sha256": {
+        "receipt.json": "dba931fa60157287950623f4dd513357cf87aea07acbf2ae87953120931ea93f",
+        "reservation.json": "3ea20dde012bd1f269e7ad786f34dc8ceb89ad96958a15722af898d150630b32",
+        "response.json": "a6ea1e73de70cac429c79e45978f78fdb0047b3402cc99080ae1acddb65de897"
+      },
+      "state": "outcome_or_usage_unknown"
+    },
+    "wirefix": {
+      "actual_micro_usd": 32619,
+      "reserved_micro_usd": 190068,
+      "sha256": {
+        "receipt.json": "5c815f72aa9d2e27c8bc3c44a98d813972157c1f311a3d1e6c54e0be70a80cbd",
+        "reservation.json": "ce68e46a55064d6712502709141236300f5b34a15516d8f28c673e15ab46e11e",
+        "response.json": "57959af55a9f3bf1d7722351df5d5387f4dd1bfb85d76b6f88c3addb87397937"
+      },
+      "state": "known"
+    }
+  },
+  "prior_http400_actual_micro_usd": null,
+  "prior_http400_reserved_micro_usd": 221248,
+  "prior_known_micro_usd": 398890,
+  "private_file_sha256": {
+    "expected-private/expected.json": "d9f105645d2014a0c1e4c078ace726f0c8a6217bedc6cd8e743593c10ada2964",
+    "freeze_medium.py": "8a1d6afb7564e1c6b5cad42274a6f84acd1c6d82ac18d64047514498eccbc922",
+    "provider/openai_provider.py": "a47574584a242c324cd5cde2abe533498486fb2ab9a1ee9f10b293792f1ba1dc",
+    "request/bindings.json": "0e2015fed0f27dded368f04f30ce23eb4a9a414ed9c9c0b5c911c5c569dc9417",
+    "request/request.json": "5e0dbf95cb573e388ff33962fe521b1c7150bbab800e2d980d20f0962f96b6a5",
+    "runner/cost_sol61.py": "909bf2e6d9557ac47a65f4bd2a7c75f07d35c070eb8cfa8664abdb5a0832425c",
+    "runner/qualify_once.py": "3c250c1b5782ad5ec56710edf4da29aaf69e705b1646a16adf7ca847174fc7bc",
+    "runner/test_medium.py": "fe58fd22cd088ffbf860c479c641ed84218daf62d4783c160682a571d722b007",
+    "runtime/canonical_worker.py": "ac2b4e340111dcfa213d951fdb30e9d6d79b30a062149791fefc4510c2ea5312",
+    "runtime/future_summary.py": "24f9a7510a7aebb0f15fd47f72886c6ee8eaf46a698455354380b9c4ab130aba",
+    "runtime/hybrid_pipeline.py": "ba601ac68ec1da8e2481736afd4531b145db90647a2da0cc5c15b343d8feb679",
+    "runtime/relation_runtime.py": "4a957276cdc0f620ce63bcd53279d32b7835916c92c1e25a98ef79129519c234"
+  },
+  "private_root": "/private/tmp/semantic-relation-sol61-medium-qualification-20261006",
+  "production_writes": 0,
+  "provider_calls_in_package": 0,
+  "reasoning_effort": "medium",
+  "request_delta": "reasoning_effort high to medium only",
+  "response_tier": "default explicitly requested, returned tier retained independently",
+  "single_cap_micro_usd": 250000,
+  "single_reserve_micro_usd": 191475,
+  "status": "PREPARED_UNSENT_MEDIUM_NO_USER_AUTHORITY"
+}
