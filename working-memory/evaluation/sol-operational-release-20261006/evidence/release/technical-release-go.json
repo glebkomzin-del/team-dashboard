@@ -1,0 +1,22 @@
+{
+  "result": "TECHNICAL_RELEASE_GO",
+  "reviewer": "/root/token_counter_strategy_gate",
+  "scope": "conditional technical delta installation/cutover; actual productive closure remains open",
+  "package_manifest_sha256": "1f90242e339ceee69372665d4b846ed1825d1c20637b383fcac779bcac05ae7c",
+  "image_id": "sha256:349617c5502c674ed951878118b70656bf3cf5789715e3ba59fcca0e0cebb0d7",
+  "deploy_script_sha256": "c90faab7fc989b2e415974784b9109a0a13fc2a0c13aa2a51874174c392da293",
+  "sql_sha256": {
+    "capture-inventory.sql": "fd283ce063b49ff7df3ef97eca80d1efad6d06c02b9b62aa62980e30688a12b8",
+    "cutover-template.sql": "36f036b15c8e297bd6cf33ed57bd344e25585dea4d9d8c9bbcd9b147b7018d90"
+  },
+  "enable_sql_sha256": "6fbb3952666528c60c9c7e9cece5e07b683af1d7e62d39303de40b6d7d8e5ba0",
+  "conditions": [
+    "fresh positive original Main pause and drain",
+    "exact unchanged base identity and guarded unpaid queue",
+    "exact healthy new image before retarget",
+    "original Main active again before enable"
+  ],
+  "reviewer_writes": 0,
+  "reviewer_provider_calls": 0,
+  "at": "2026-10-06T08:30:19.651855+00:00"
+}

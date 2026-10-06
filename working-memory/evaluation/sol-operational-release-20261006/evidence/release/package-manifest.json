@@ -1,0 +1,28 @@
+{
+  "backend_manifest_sha256": "9a9a0b1016a2b271682eedbb0c2c9aaa809d12af15b4ff2155b2f9266bc807e6",
+  "base_image_id": "sha256:0bc7b0e106e0625218289bf3a21de1bfb2ca587cc7e970babd522dcd27f59e92",
+  "base_tag": "dashboard-memory:sol-operational-20261006-cd564ee70b",
+  "build_manifest_base_sha256": "c1f25ebd92ef813de5c2c2d9a95851e177b280e642096ebb9cc25f147e13ddc6",
+  "candidate_pipeline": "v11:compact1:gate1:gpt-6.1-sol:03ab172405e37721:canonical1:42317499c5d8a62a",
+  "candidate_tag": "dashboard-memory:sol-counter-fix-20261006-9a9a0b1016",
+  "compose_base_sha256": "fcab3bc3e30f72bcb54db51a526f1012bd46c48d14773a7cbfb4a0da5b057420",
+  "environment_sha256": "fb927a2d83abc6e2979467e9e4400de280c600f0e46b02568ef2df0e51c77116",
+  "file_sha256": {
+    "Dockerfile": "a6d2442fa0be66fcc75eeefeaf96ef7913df978753e944975d8aac1d6034a78b",
+    "backend-manifest.json": "9a9a0b1016a2b271682eedbb0c2c9aaa809d12af15b4ff2155b2f9266bc807e6",
+    "base-build-manifest.json": "c1f25ebd92ef813de5c2c2d9a95851e177b280e642096ebb9cc25f147e13ddc6",
+    "build-manifest.json": "313c648519acedd693632837ddab54cf4b65a7198bd49734db628360c61e1a31",
+    "compose.yaml": "9ba60a2389a13ecb3c9765cd6fdcaa3d4f4fa86d57068e9eb207011742a1904e",
+    "openai_provider.py": "aa54834e68f4d1af2ae3e7e610bf0ee154234ef26c9b48dbdde3e957cad87054",
+    "server.py": "0b529e2bd179b2e49680dc4f445300d51c23dac93d720e46596a1387b37945bc"
+  },
+  "gateway_base_sha256": "a8af67d59c2f6b7deaa526b1b1dade0b578b9ee18f61cab456e01b9bc260d888",
+  "kind": "sol-token-counter-root-package",
+  "production_release_gate": "DENY_pending_independent_technical_review",
+  "runtime_delta": [
+    "openai_provider.py",
+    "server.py"
+  ],
+  "runtime_sources": 139,
+  "schema_sources": 48
+}

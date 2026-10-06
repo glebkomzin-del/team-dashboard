@@ -1,6 +1,14 @@
 # Dashboard Job wiederherstellen
 
-## Aktueller Runtime-Rückweg – 05.10.2026, 22:16 UTC
+## Aktueller Sol-Runtime-Rückweg – 06.10.2026, 08:55 UTC
+
+Aktuell läuft Image `sha256:349617c5502c674ed951878118b70656bf3cf5789715e3ba59fcca0e0cebb0d7`, Tag `dashboard-memory:sol-counter-fix-20261006-9a9a0b1016`, mit48gebundenen Schemaquellen und Pipeline `v11:compact1:gate1:gpt-6.1-sol:03ab172405e37721:canonical1:42317499c5d8a62a`. Der ursprüngliche n8nMain bleibt mit Versiond7211499 unverändert aktiv. Aktuelle Daten-/Queue- und tatsächliche Abnahmen stehen allein in [NEXT-OPERATIONS.md](NEXT-OPERATIONS.md).
+
+Der letzte Zweidateienwechsel baut auf dem exakten V3Image0bc7b0e1 auf; Source-/Patch-/Build-/Installbelege liegen privat unter `/private/tmp/dashboard-sol-operational-20261006/` und `/private/tmp/dashboard-sol-root-token-fix-20261006/`, serverseitiger gebundener Einbau unter `/root/dashboard-sol-token-fix-stage-20261006/`. Der dortige physische Vorherdump327949479Bytes ist ein privater Rückkehrpunkt, kein abschließend getesteter Gesamtrestore. Datenbank, Gateway und Environment wurden durch den Counterfix nicht geändert. Die neue Migration48 liegt autoritativ im Parentprojekt unter `supabase/migrations/20261006103000_isolate_processing_job_failures.sql`, SHA958d2ace29452beb4f7de9d10c748f331d462692aa9980e8b367b0ca34fec68c.
+
+Nach bereits erfolgter Sol-Verarbeitung keine automatische Code-/Pipeline-Rücksetzung oder Retarget über bezahlte Jobs. Aktuelle Originale, Antworten, Kosten, Humanentscheidungen und Isolationsaudits erhalten. Bei einem echten gemeinsamen Fehler nur den betroffenen Writer halten; Queue-/Source-/Lease-/Revisionsbindung vor einem neuen Wiederanlauf prüfen. Historische Isolationsaudits werden im Backup auch dann bewahrt, wenn ihre aktuellen Ausnahmebedingungen nicht mehr gelten. Ein aktueller getesteter349/Schema48-Gesamtbackup samt Mac-Kopie steht noch aus. Der erfolgreich beendete tägliche Backupzyklus06.10.01:47UTC allein bestätigt diese erst später veröffentlichte Runtime nicht. Source-Supabase bleibt geschlossen.
+
+## Historischer Performance-Runtime-Rückweg – 05.10.2026, 22:16 UTC
 
 Aktuell läuft Image `sha256:5d5986089ce0824b53d530fd35ffe329eada90eb075c5b217f21e3966456bb52`, Tag `dashboard-memory:work-projection-20261005-a48b8401`, mit Pipeline25995 und47Schemaquellen. Genau zwei Performancequellen wurden geändert; Semantik und DB-Verträge bleiben erhalten. Veröffentlichung und tatsächlicher Cold-Flow stehen in[NEXT-OPERATIONS.md](NEXT-OPERATIONS.md).
 

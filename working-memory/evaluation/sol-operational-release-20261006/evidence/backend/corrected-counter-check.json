@@ -1,0 +1,1 @@
+{"endpoint": "responses/input_tokens", "fields": ["input", "model", "reasoning", "text", "truncation"], "generation": false, "http_status": 200, "object": "response.input_tokens", "valid_count": true, "wire_sha256": "74b89f77cc0c8033c81ac3d1e4c48e7fe8f32ea52b0b3e5257445f4b55704685"}

@@ -1,0 +1,73 @@
+{
+  "sources": [
+    {
+      "path": "src/features/working-memory/ProcessingPanel.tsx",
+      "baseline_sha256": "459e3cb4be70f3c980aac4a1e62b1fcc83323b46e5e36962e1f306af44f59f39",
+      "source_sha256": "459e3cb4be70f3c980aac4a1e62b1fcc83323b46e5e36962e1f306af44f59f39"
+    },
+    {
+      "path": "src/features/working-memory/processing-status.ts",
+      "baseline_sha256": "e6a04962f3556515a9c67d5186a7e8602c0ea93899b5366078f785b3c3f8cff5",
+      "source_sha256": "12d25ccd25d2b7a2465351aea8ee90fd0f48355ac99c6d895b2824751b049e37"
+    },
+    {
+      "path": "src/pages/MemoryApp.tsx",
+      "baseline_sha256": "416faead097751dcf96b9984e0dafeb52ab9fcd82a4130fa3e26d3f7cbcf5a83",
+      "source_sha256": "416faead097751dcf96b9984e0dafeb52ab9fcd82a4130fa3e26d3f7cbcf5a83"
+    },
+    {
+      "path": "tests/processing-status.test.mjs",
+      "baseline_sha256": "10e2b5102c62b776330b3a5509f73e424e24e4c79bd33f10cf89e939c3e0339e",
+      "source_sha256": "51385b978a35369632b42b2a90cd586188a2f417c8222aa5cb8253ca5854a470"
+    }
+  ],
+  "source_count": 91,
+  "changed_sources": [
+    "src/features/working-memory/processing-status.ts"
+  ],
+  "all_other_source_equal": true,
+  "css_equal": true,
+  "index_equal_after_memory_chunk_normalization": true,
+  "candidate_files": [
+    {
+      "path": ".vercel/output/config.json",
+      "sha256": "3c2f196016d90c9ff3caf99917c197dd4573b7998795bada5825bb77d9b90fab"
+    },
+    {
+      "path": ".vercel/output/static/assets/MemoryApp-1PspEYgV.js",
+      "sha256": "6574525b92f4e1c176b61456784c8186f2e4d0bf9e2f8a1b1dc83bf5fe0bee9e"
+    },
+    {
+      "path": ".vercel/output/static/assets/MemoryApp-w3d0z9DS.css",
+      "sha256": "0f9568720bea6f3450804c6ff2722408ddce9482d57c9380413c227c3c7856de"
+    },
+    {
+      "path": ".vercel/output/static/assets/index-BnoLcPKw.js",
+      "sha256": "accd197bc1d49ac6fcbdbde039dae5cb8e33aa635a7c480785438e353b303816"
+    },
+    {
+      "path": ".vercel/output/static/assets/index-DsPv-29T.css",
+      "sha256": "2c62cf62424d382989c59dabd9a7961689ac5f403151a2729c7fc02f163804ff"
+    },
+    {
+      "path": ".vercel/output/static/favicon.svg",
+      "sha256": "684b657171b876ec6967595e9bab2ba7baef25c5440f7d54e562fc242491c6b5"
+    },
+    {
+      "path": ".vercel/output/static/icons.svg",
+      "sha256": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a"
+    },
+    {
+      "path": ".vercel/output/static/index.html",
+      "sha256": "4e72ec4c069be0e59ce67350bad6c7d43af38b802eaf08e868496d4bc02be348"
+    },
+    {
+      "path": ".vercel/project.json",
+      "sha256": "eeb83226ad0619d05caa9b2b95b8b728bf41cba3ece5b345ca14b2773c1c08e3"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "eaa431e17362d103c7f6c475fbb10fe400ed030cd13319dfed711e6e96a6778c"
+    }
+  ]
+}

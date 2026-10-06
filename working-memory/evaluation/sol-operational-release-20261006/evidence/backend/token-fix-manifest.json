@@ -1,0 +1,24 @@
+{
+  "base_image_id": "sha256:0bc7b0e106e0625218289bf3a21de1bfb2ca587cc7e970babd522dcd27f59e92",
+  "changed_files": {
+    "openai_provider.py": {
+      "frozen_v3_sha256": "9f968119b1f0580b89f4656232c13c48dad2197fad2e18d418d73607a79fd8bc",
+      "new_sha256": "aa54834e68f4d1af2ae3e7e610bf0ee154234ef26c9b48dbdde3e957cad87054"
+    },
+    "server.py": {
+      "frozen_v3_sha256": "3cde7428a6100472a5c54fd80062a65ca2834ac4792c0c02f969474964df979f",
+      "new_sha256": "0b529e2bd179b2e49680dc4f445300d51c23dac93d720e46596a1387b37945bc"
+    }
+  },
+  "corrected_counter_check_sha256": "26b0c70349a034c8709967e0c26e5058fdd1cf56b23d796d1ba3f65ad264ab1c",
+  "frozen_v3_manifest_sha256": "cd564ee70bd4886497a5483e0e79e7936faab456dcc1085e43e94abcff044b83",
+  "kind": "private_token_counter_fix",
+  "new_pipeline": "v11:compact1:gate1:gpt-6.1-sol:03ab172405e37721:canonical1:42317499c5d8a62a",
+  "patch_sha256": "100ff634bac71608d561e68efba8c844a930d26875eaab26cecc7b59c5341b8d",
+  "production_mutations": 0,
+  "provider_generation_requests": 0,
+  "test_exit": 0,
+  "test_source_sha256": "27b045af5776c52d1509c54bdcd73ab134b0aad2ec3531d88e9743531d766eaf",
+  "test_stderr_sha256": "1f11b6e880045ee35de832b81b45d06257342e13b5c79bbf0034379d4ca220b9",
+  "test_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

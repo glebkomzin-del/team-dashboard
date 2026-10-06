@@ -1,0 +1,153 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "matter": {
+            "type": "string"
+          },
+          "matter_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "commitment",
+              "dependency",
+              "fact",
+              "decision",
+              "question",
+              "risk",
+              "idea",
+              "status"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "owner": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "commitment_strength": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "accepted_request",
+              "reported",
+              "conditional",
+              "not_applicable"
+            ]
+          },
+          "due_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "update_target": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "update": {
+            "type": "string",
+            "enum": [
+              "none",
+              "progress",
+              "done",
+              "reopened",
+              "owner_changed",
+              "date_changed"
+            ]
+          },
+          "uncertainty": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required_review": {
+            "type": "boolean"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "action_uncertainty": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "condition_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "work_state": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "open",
+              "waiting",
+              "done"
+            ]
+          },
+          "state_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "matter",
+          "matter_id",
+          "kind",
+          "title",
+          "claim",
+          "owner",
+          "commitment_strength",
+          "due_text",
+          "update_target",
+          "update",
+          "evidence_ids",
+          "uncertainty",
+          "required_review",
+          "action_uncertainty",
+          "condition_text",
+          "work_state",
+          "state_evidence_ids"
+        ]
+      }
+    },
+    "coverage_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "observations",
+    "coverage_notes"
+  ]
+}
