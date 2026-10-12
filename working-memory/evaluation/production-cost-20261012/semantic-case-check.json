@@ -1,0 +1,14 @@
+{
+  "original_hash": "c4b157d9bd7026d7738dfcec3b7ed1e0dddb549fe36c13357be7fc1fcf04ec44",
+  "original_chars": 64985,
+  "all_64_summary_passages_equal_original_slices": true,
+  "semantic_check_by": "Hauptagent gegen Original und sichtbare gespeicherte Zusammenfassung",
+  "confirmed_points": [
+    "Übergabe an Jan Philipp und 350-400 Berichte als Bericht Glebs",
+    "26.10. als Termin,1-2Kernberichte als bestätigter nächsterSchritt",
+    "69,2%Pflegestand als Faruk-Aussage",
+    "BeginnAnfangNovember abhängigTradeNet-Lieferung,AbschlussnurPrognose",
+    "zentralerInfoortnurIdee/Gedankenauftrag,keinefertigeUmsetzung"
+  ],
+  "scope": "ein heutiger vollständigerOriginal-/Summary-Fall,keinegenerelleKI-Zuverlässigkeitsabnahme"
+}

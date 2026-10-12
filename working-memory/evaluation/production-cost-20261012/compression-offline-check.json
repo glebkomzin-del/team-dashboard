@@ -1,0 +1,16 @@
+[
+  {
+    "level": 9,
+    "seconds": 3.74,
+    "bytes": 18403977,
+    "restored_bytes": 71992240,
+    "sha256_equal": true
+  },
+  {
+    "level": 1,
+    "seconds": 0.51,
+    "bytes": 22693072,
+    "restored_bytes": 71992240,
+    "sha256_equal": true
+  }
+]

@@ -1,0 +1,10 @@
+--- openai_provider.py
++++ openai_provider.py
+@@ -150,6 +150,7 @@
+     return {'model': model, 'input': [{'role': 'user', 'content': prompt}],
+             'reasoning': {'effort': REASONING_EFFORT}, 'truncation': 'disabled',
+             'service_tier': 'default',
++            'prompt_cache_options': {'mode': 'explicit'},
+             'text': {'format': {'type': 'json_schema', 'name': 'meeting_result',
+                                 'strict': True, 'schema': schema}}}
+ 

@@ -1,0 +1,12 @@
+--- durable_calls.py
++++ durable_calls.py
+@@ -53,7 +53,8 @@
+         effective=self.schema if schema is None else schema
+         value={'model':model,'prompt':prompt,'max_tokens':max_tokens,'schema':effective}
+         if model == 'gpt-6.1-sol':
+-            value['transport']={'reasoning_effort':'medium','service_tier':'default'}
++            value['transport']={'reasoning_effort':'medium','service_tier':'default',
++                                'prompt_cache_options':{'mode':'explicit'}}
+         if self.by_hash is not None: value['scope']=self.request_scope
+         request=encode(value)
+         previous = self.by_hash.get(sha(request)) if self.by_hash is not None else None

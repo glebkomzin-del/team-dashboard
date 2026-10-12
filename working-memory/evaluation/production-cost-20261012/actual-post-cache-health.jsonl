@@ -1,0 +1,5 @@
+{"url": "http://127.0.0.1:8798/health", "http_status": 200, "body": {"status": "ok", "mode": "production"}}
+{"url": "https://178-105-167-26.nip.io/dashboard-memory/health", "http_status": 200, "body": {"status": "ok", "mode": "production"}}
+{"url": "https://178-105-167-26.nip.io/dashboard-memory-draft/health", "http_status": 200, "body": {"status": "ok", "mode": "production"}}
+{"url": "http://127.0.0.1:8798/review", "without_auth": 401, "denied": true}
+{"url": "http://127.0.0.1:8798/archive", "without_auth": 401, "denied": true}

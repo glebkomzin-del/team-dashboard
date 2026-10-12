@@ -1,0 +1,58 @@
+{
+  "state": "ok",
+  "started_at": "2026-10-12T15:51:14.324976+00:00",
+  "last_success_at": "2026-10-12T16:29:54.141185+00:00",
+  "invocation_id": "5761e308e35743919cc74d728617deb0",
+  "phase": "package",
+  "finished_at": "2026-10-12T16:29:54.141168+00:00",
+  "archive": "dashboard-20261012T155114Z.tar.gz",
+  "bytes": 3100145408,
+  "sha256": "fbe7cbe1edb18f4569baf2f6105c532714fbe78ee35832ec4361aa0a493055c9",
+  "canonical": {
+    "verified": true,
+    "space_id": "96a2dc44-9b9e-4644-b236-c5c1956cd39d",
+    "revision": 313,
+    "archive_revision": 975,
+    "documents": 433,
+    "notes": 542,
+    "observations": 3594,
+    "queue_records": {
+      "config": 1,
+      "job": 200,
+      "call": 4821,
+      "job_decision": 518,
+      "generation_review": 25,
+      "search_document": 23918,
+      "search_snapshot": 152,
+      "search_result": 8272,
+      "question": 11,
+      "question_call": 65,
+      "conversation": 2,
+      "pipeline_recovery": 10,
+      "job_isolation": 20
+    },
+    "model_api_calls": 0
+  },
+  "n8n": {
+    "workflows": 15,
+    "credentials": 6,
+    "active": 0,
+    "published": 0,
+    "credential_decryption_verified": true,
+    "google_refresh_token_preserved": true,
+    "external_network": false,
+    "model_calls": 0
+  },
+  "restore_barrier": {
+    "restore_ledger_persisted": true,
+    "retention_policy": "14-latest-plus-8-observed-weeks",
+    "minimum_deletion_revision": 0,
+    "last_attested_at": "2026-10-12T15:57:44.001958+00:00"
+  },
+  "selfhost": {
+    "enabled": true,
+    "tables_verified": 90,
+    "dump_sha256": "2e588bc73dd55db2b3103fa8abaafc3a48f0269ddac9518cd545f25755ca19ac",
+    "restore_verified": true
+  }
+}

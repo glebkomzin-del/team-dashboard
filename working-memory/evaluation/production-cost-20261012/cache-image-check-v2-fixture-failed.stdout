@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<stdin>", line 59, in <module>
+  File "/app/question_calls.py", line 53, in __call__
+    self.index=max(self.index,int(record['call_index'])+1)
+                                  ~~~~~~^^^^^^^^^^^^^^
+KeyError: 'call_index'

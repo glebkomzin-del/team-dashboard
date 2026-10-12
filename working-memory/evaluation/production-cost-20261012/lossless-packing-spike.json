@@ -1,0 +1,14 @@
+{
+  "case_job_id": "85f9e46fb36d580c86aee8fc436f4ff308d1d779451d6193500a359bbdbe0870",
+  "case_call_index": 76,
+  "old_catalog_characters": 602780,
+  "flat_catalog_characters": 605939,
+  "saved_percent_characters": -0.52,
+  "all_work_preserved": 501,
+  "all_archive_hits_preserved": 851,
+  "roundtrip_identical": true,
+  "model_called": false,
+  "token_saving_measured": false,
+  "quality_accepted": false,
+  "published": false
+}
