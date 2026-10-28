@@ -43,4 +43,4 @@ Abschließende Sicherung auf dem bestehenden Server: `/opt/dashboard-memory-cano
 
 Nach Sicherung und wiederhergestelltem Normalbetrieb wurden 811589632 freie Serverbytes beobachtet. Für 24 ausschließlich temporäre `archive.sqlite`-Arbeitskopien dieses Durchlaufs sind 1571074048 Bytes mit einzelnen Prüfsummen erfasst. Bereinigung wartet auf Glebs ausdrückliche Freigabe nach Regel 14; Originale, Modellbelege, Ergebnisse und Sicherungen sind ausgenommen. Beleg: `audit/scratch-cleanup-plan.json`.
 
-Das Paket wird ausschließlich lokal gesichert; kein Push. Fremde Änderungen und fremde vorgemerkte Dateien bleiben außerhalb dieses Pakets.
+Das Paket ist ausschließlich lokal committet und vollständig zurückgelesen; kein Push. Alle 979 fremden Indexdatensätze einschließlich sechs fremder vorgemerkter Änderungen blieben unverändert.
