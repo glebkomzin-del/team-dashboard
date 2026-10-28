@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "canonical_index": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/INDEX.md",
+  "canonical_store": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/knowledge/verarbeitung",
+  "active_entries": 19,
+  "types": {
+    "entscheidung": 9,
+    "verworfen": 5,
+    "annahme": 2,
+    "offene-frage": 2,
+    "hypothese": 1
+  },
+  "knowledge_check_errors": 0,
+  "knowledge_check_warnings": 0,
+  "local_backup": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/processing-repair-20261028/audit/private/knowledge-20261029-01a18271.tar.gz",
+  "backup_sha256": "a92d062edc10f315451b9865a235f253405c2dd961c006066512979685154f33",
+  "readback_files": 31,
+  "legacy_version_preserved": true,
+  "global_codex_memories_modified": false,
+  "server_changes_performed": false,
+  "created_at": "2026-10-29T00:40:54.558275"
+}
