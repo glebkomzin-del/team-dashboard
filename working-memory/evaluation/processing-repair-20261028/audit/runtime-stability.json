@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "running": true,
+  "oom_killed": false,
+  "restart_count": 0,
+  "database": {
+    "revision": 362,
+    "selected_applied": 22,
+    "sources": 349,
+    "running_jobs": 1
+  },
+  "original_resources_match": true,
+  "free_bytes": 811589632,
+  "read_only": true
+}

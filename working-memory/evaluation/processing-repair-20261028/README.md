@@ -1,78 +1,46 @@
-# Verarbeitung: Reparaturprüfung 28.10.2026
+# Verarbeitung: Abschluss am 29.10.2026
 
-## Produktives Ergebnis nach Glebs Freigabe „Ja“
+## Ergebnis
 
-Die geprüfte Korrektur und Zusatzdiagnose sind auf dem Server eingespielt (`dashboard-memory:processing-repair-20261028`). Beide betroffenen Quellen und ihre Zusammenfassungen wurden getrennt über die vorhandenen geprüften Funktionen übernommen und zurückgelesen: GCO auf Stand 339, Reporting auf Stand 340. Zwei Archivnotizhashes stimmen mit den geprüften gespeicherten Antworten überein. Die elf persönlichen Entscheidungen bleiben erhalten.
+**Alle 22 ausdrücklich beauftragten Quellen sind regulär verarbeitet, geprüft übernommen und samt Zusammenfassungen zurückgelesen.** Endstand der Übernahme: Revision 362, 349 Quellversionen. Alle elf ursprünglichen persönlichen Entscheidungen bleiben erhalten. Keine verbliebene Ablehnung innerhalb dieser 22 Ziele.
 
-Aktuell: **0 `validation_failed`, 22 verbleibende `provider_outcome_unknown`**. Die automatische Verarbeitung und sämtliche ursprünglichen Betriebsflags sind wiederhergestellt. Während der Reparatur keine neuen Modell- oder Frageaufrufe: Zähler unverändert bei 5.782 beziehungsweise 65. Laufende Codehashes entsprechen den geprüften Kandidaten; öffentliche Serverprüfung `/dashboard-memory/health`: HTTP 200, `status=ok`, `mode=production`.
+Die automatische Verarbeitung, Annahme neuer Quellen, Frageverarbeitung und ursprüngliche Originallöschung sind wieder eingeschaltet; der Lesemodus ist aus. Die ursprünglichen Ressourcen sind vollständig wiederhergestellt: eine CPU, 1,5 GiB RAM, ursprüngliches Swaplimit. Dienstgesundheit intern und öffentlich HTTP 200, Produktionsmodus; nach Neustart kein Absturz, keine Neustartschleife. Die Automatik hat bereits einen weiteren, nicht zu diesen 22 gehörenden Auftrag aufgenommen.
 
-Die öffentliche Dashboardseite lädt im Browser. Eine angemeldete Browserabnahme ist hier nicht belegt: Der Prüf-Browser verlangt eine Anmeldung; Zugangsdaten wurden nicht verwendet. Die erfolgreiche Übernahme ist serverseitig und anhand der gespeicherten Zustände belegt.
+Der vom tatsächlichen Dashboardserver verwendete Cache ist auf Stand 362 bestätigt: 349 Quellen einschließlich aller 22 Ziel-IDs, vier menschliche Entscheidungen und sieben Planungsentscheidungen, SQLite-Schnellprüfung `ok`. Diese Prüfung wurde nach der Wiederherstellung wiederholt. Ein angemeldeter Browserabruf ist weiterhin nicht belegt; Zugangsdaten wurden dort nicht eingegeben.
 
-Sicherung: 706.679.003 Bytes auf dem bestehenden Server, SHA-256 `19662added3659ea456c68084ef76f2813998f98075d87ec849740244acd2178`, vollständiges Archiv-Rücklesen erfolgreich. Keine Wiederherstellung in eine neue Datenbank behauptet. Beim ersten Wartungsstart verhinderte die Kombination aus Lesemodus und aktiviertem Originallöschen den Start; die fehlende temporäre Einstellung wurde korrigiert, mit echter Startregression geprüft und der Dienst erfolgreich erneut gestartet. Danach 7 Deploymenttests grün; kein Datenverlust oder zusätzlich ausgelöster KI-Aufruf.
+Dashboard: https://team-dashboard-rho.vercel.app/memory-next
 
-Belege: `audit/production-result.json`, `audit/backup-result.json`, `audit/adoption-readback.json`, `audit/generation-readback.json`; private Phasenausgaben unter `deploy/private/`. Die folgenden Abschnitte dokumentieren Vorbereitung und Prüfung vor der Übernahme.
+## Kosten und Belege
 
-Auftrag: Die im Dashboard gemeldeten 24 unvollständigen Quellen untersuchen und die konkrete Fehlerursache reparieren. Bestehende Quellen, Schutzprüfungen und fremde Arbeitsstände erhalten. Gleb hat neue KI-Aufrufe ausdrücklich abgelehnt.
+Aus den eindeutigen Nutzungsbelegen berechnete neue KI-Kosten für diese 22 Quellen: **5.812318 USD**, gerundet 5,81 USD. 1207 neue normale Belegplätze plus sieben Belege des ersten Quellenlaufs; bekannte Antworten/Importe nicht doppelt gezählt. Die belegten erfolglosen Versuche sind enthalten. Ungeklärte historische Kosten werden nicht als null ausgegeben. Keine synthetischen kostenpflichtigen Providerproben.
 
-## Aktuell bestätigter Befund
+- `audit/reprocess22-final.json`: vollständige Abnahme aller 22, Original-/Zusammenfassungshashes, angenommene Generationen, erhaltene Entscheidungen und eindeutige Kostenbereiche.
+- `audit/cache-final.json`: tatsächlich fertiger Dashboardcache nach Neustart.
+- `audit/runtime-restored.json`, `audit/runtime-stability.json`: ursprüngliche Betriebsflags/Ressourcen, unveränderte Codehashes, gesunder Dienst und alle 22 weiterhin übernommen.
+- `audit/backup-final.json`: abschließende serverlokale Datenbanksicherung mit vollständigem Archiv-Rücklesen.
 
-Rein lesende Produktionsabfragen am 28.10.2026:
+## Konkrete Korrekturen und normale Wiederholungen
 
-- 24 Aufträge im Zustand `review`: 22 `provider_outcome_unknown`, 2 `validation_failed`.
-- 22 Empfangsfehler enthalten eine gespeicherte Fehlerantwort mit `error=ValueError`, `terminal_status=null`, leerem Inhalt und einem Flex-Versuch. Die genaue ursprüngliche Stream-Fehlermeldung ist nicht gespeichert.
-- 16 dieser 22 Quellen scheiterten beim ersten Aufruf; 6 haben frühere Teilergebnisse. Keiner der 22 Aufträge hat `prepared_payload`.
-- Die zwei Inhaltsprüfungen betreffen GCO JF (`7b4057c2`) und Regelmäßiger Austausch Reportingthemen (`a77d73b4`), beide vom 13.10.2026.
-- Andere Quellen wurden bis 28.10.2026 erfolgreich übernommen. Die isolierten Quellen belegen keinen Stillstand der gesamten Verarbeitung.
+Vor dem Auftrag für 22 Quellen wurden zwei weitere Inhaltsprüfungen aus vorhandenen Antworten repariert: GCO JF auf Stand 339 und Reporting auf Stand 340, jeweils mit Zusammenfassung. Eine bereits vom Gate gesperrte Aufgabenänderung wurde fälschlich nochmals wie eine wirksame Änderung geprüft. Die minimale Speicherkorrektur erhält abgelehntes Wissen ohne Aufgabenwirkung; echte Bereichsgrenzen und Belege bleiben geschützt. Diese Phase hatte keine neuen KI-Aufrufe. Belege: `audit/production-result.json`, `replay/README.md`.
 
-## Begrenzte lokale Arbeit
+Das geprüfte Image `dashboard-memory:processing-repair-20261028` enthält diese Korrektur und sichere technische Streamdiagnose. Modelle, Tarife und normale Wiederholungspolitik wurden nicht global geändert. Die genaue ursprüngliche Ursache der 22 alten ValueError-Streamabschlüsse ist nicht nachträglich belegt.
 
-1. Den tatsächlich laufenden Provideradapter unverändert nach `baseline/` exportieren; SHA-256 in `baseline-manifest.json`.
-2. Verlust technischer Fehlercodes im Streamparser mit künstlichen Antworten reproduzieren und minimal korrigieren. Keine Erweiterung automatischer Wiederholungen.
-3. Die zwei vorhandenen Prüfablehnungen ohne neue KI-Aufrufe gegen gespeicherte Antworten untersuchen.
-4. Lokale Prüfungen ausführen. Kein Erfolg der 24 Quellen aus einem Parser-Test ableiten.
+Die anschließende Anweisung „die 22 Quellen durch die Pipeline ganz normal“ autorisierte deren echte vollständige KI-Auswertung. Historische Vorgängerstände, vorhandene Suche, komplette Originale, normale Inhaltsprüfungen und Zusammenfassungen wurden verwendet. Jede Annahme war atomar an Originalhash, Raumstand, Auftrag und Lease gebunden.
 
-Abnahme: Der lokale Adapter erhält sichere technische Fehlercodes, unterscheidet unvollständigen Stream und Statuswiderspruch und akzeptiert weiterhin nur vollständige gültige Antworten. Keine Ausgabe von Schlüsseln, Prompts oder freien Providerfehlermeldungen. Prüfungen: `python3 -m unittest discover -s meeting-os/working-memory/evaluation/processing-repair-20261028/provider -p 'test_*.py'` vom übergeordneten Projektordner.
+- Der anfängliche 32-Beleg-Weg wurde durch den vorhandenen normalen Kostenweg ersetzt. 32 schon bezahlte Antworten wurden ohne erneute Provideranfrage geprüft übernommen. Keine Datenbank-Schemaänderung.
+- Quelle 15 wurde wegen einer fälschlich als Aufgabenfrist behandelten Gesprächszeit korrekt abgewiesen. Genau ein geprüfter vollständiger weiterer Normalversuch war erfolgreich; alte Antworten und beide Kostenbereiche bleiben erhalten.
+- Quelle 16 erreichte nachweislich das Ausgabelimit 24.000. Eine exakt gebundene Extraktionsantwort durfte bis 48.000 ausgeben und wurde vollständig. Danach stoppte eine konservative Kontextschätzung vor dem nächsten Modellaufruf: 1.062.612 gegen 1.050.000. Providerfreier Replay rekonstruierte den unveränderten Prompt; die tatsächliche Zählung ergab 258.657 Eingabetokens. Mit 59.736 Ausgabe und 4.096 Reserve waren es 322.489, innerhalb derselben Grenze. Derselbe Versuch wurde mit allen 123 bekannten Antworten fortgesetzt; keine erneute bezahlte Extraktion, keine Kürzung von Originalen/Kandidaten und keine gelockerte Inhaltsprüfung.
 
-## Ausgeführte lokale Prüfung
+Details und aktuelle Tests: `reprocess/README.md`, `reprocess/context-report.md`. Die besonderen Fortsetzungen betreffen nur die geprüften Originale; der installierte globale Verarbeitungsalgorithmus wurde dafür nicht ausgetauscht.
 
-Lead-Prüfung: `python3 -m unittest discover -s meeting-os/working-memory/evaluation/processing-repair-20261028/provider -p 'test_*.py'`: 6 Tests bestanden, Exit 0. Der isolierte Kandidat steht unter `provider/`; der laufende Dienst wurde nicht verändert. Diese Abnahme betrifft nur die technische Fehlerdiagnose, nicht die Wiederherstellung der 24 Quellen.
+## Prüfungen
 
-Der zweite Kandidat `replay/overlay/memory.py` korrigiert einen konkret reproduzierten Fehler: Eine vom Gate bereits abgelehnte, prüfpflichtige Aufgabenänderung mit widersprüchlicher Themenzuordnung wurde trotz bereits gesperrter Wirkung nochmals wie eine wirksame Aufgabenänderung behandelt. Die Korrektur erhält diese Beobachtung im ursprünglichen bekannten Wissensbereich; wirksame Änderungen in einem fremden Bereich werden weiterhin abgelehnt. Unbekannte Aufgaben und erfundene Belege bleiben ebenfalls gesperrt.
+Lead und unabhängige Prüfer: 29 Korrekturtests, sieben Deploymenttests sowie zuletzt 38 Operator-/Capturetests, jeweils erfolgreich. Echte historische Ablehnungen vor Korrektur und Erfolg danach; echte lesende PostgreSQL-Positiv-/Negativtests; vollständig providerfreier Kontext-Replay; unabhängige Plan-/Ergebnisprüfungen ohne offene Blocker. Aktuelle produktive Abnahme aller 22: PASS.
 
-Lead-Prüfungen des zweiten Kandidaten:
+## Sicherung und Arbeitsstand
 
-- `python3 -m unittest discover -s meeting-os/working-memory/evaluation/processing-repair-20261028/replay -p 'test_scope.py'`: zuletzt 6 Tests bestanden, Exit 0.
-- `python3 meeting-os/working-memory/evaluation/processing-repair-20261028/replay/check_memory.py`: 17 bestehende Tests bestanden, nachweislich mit dem Kandidaten geladen, Exit 0.
-- `python3 meeting-os/working-memory/evaluation/processing-repair-20261028/replay/validate_saved.py`: beide vollständigen historischen Vorschläge scheitern im unveränderten Original an `Work update belongs to a different matter`, Exit 0 für die erwartete Reproduktion.
-- Derselbe Befehl mit `--candidate`: beide Vorschläge bestehen mit 31 beziehungsweise 36 Beobachtungen, jeweils ohne Arbeitsereignis für die abgelehnte Aufgabenänderung, Exit 0.
+Abschließende Sicherung auf dem bestehenden Server: `/opt/dashboard-memory-canonical-draft/.local/recovery/reprocess22-20261028/final-362/production-after22-rev362.dump`, 810415779 Bytes, SHA-256 `beced3c273d5c610c758cddbcdc7fc4cc6c4e399658c44ceb05da3ad1b6f4ca9`. Vollständiges Rücklesen mit `pg_restore --file=/dev/null` erfolgreich. Eine Wiederherstellung in eine neue Datenbank wurde nicht getestet. Die zuvor geprüfte Sicherung vor der Reparatur bleibt ebenfalls erhalten; keine externe Hochladung.
 
-Diese Wiederholungen sind vom Netzwerk und von Unterprozessen abgeschottet. Sie verwenden bestehende Antworten; kein neuer KI-Aufruf.
+Nach Sicherung und wiederhergestelltem Normalbetrieb wurden 811589632 freie Serverbytes beobachtet. Für 24 ausschließlich temporäre `archive.sqlite`-Arbeitskopien dieses Durchlaufs sind 1571074048 Bytes mit einzelnen Prüfsummen erfasst. Bereinigung wartet auf Glebs ausdrückliche Freigabe nach Regel 14; Originale, Modellbelege, Ergebnisse und Sicherungen sind ausgenommen. Beleg: `audit/scratch-cleanup-plan.json`.
 
-Lead-Prüfung `replay/current_preview.py`: aktueller Journalstand 337 mit allen historischen Ergebnisprüfsummen unverändert rekonstruiert. Kombinierte lokale Wiederherstellungsvorschau kompiliert und verifiziert: 324 bestehende Quellen und 11 menschliche Entscheidungen bleiben erhalten, zwei Quellen kommen hinzu. Kandidatenhash `e822eb293d6d87cc74f0df5671e4d656c060c81ccce6502860b7c142803c2316`; Vorschauhash `b5e633b79f268174018089997b6b356e9fd1a61618087c9e5fcca50f2c20f076`.
-
-Die kombinierte Vorschau ersetzt keinen produktiven Übernahmeablauf: Das bestehende Entscheidungssystem bindet jeweils genau einen betroffenen Auftrag. Deshalb wurden zusätzlich zwei aufeinanderfolgende Vorschauen samt Zusammenfassungen vorbereitet und geprüft. Nach einer Datenübernahme wäre allein das alte Programm kein sicherer Rückweg, weil dessen alte Prüfung die neu aufgenommenen Wissensbeobachtungen wieder ablehnen würde.
-
-Lead-Prüfung `replay/sequential_preview.py`: Exit 0, vollständig PASS. GCO ist einzeln an Stand 337→338 gebunden, Reporting an 338→339. Die Zusammenfassungen mit sechs beziehungsweise vier belegten Absätzen sind aus vorhandenen Antworten rekonstruiert und geprüft. Alle elf persönlichen Entscheidungen bleiben erhalten. Eine ebenfalls geprüfte Gegengeneration stellt die ursprünglichen logischen Einträge wieder her; dies ist keine Behauptung einer vollständigen Rücksetzung aller Auftrags-/Auditmetadaten.
-
-## Freigegebener Übernahmeumfang
-
-- Im bestehenden Dienst ausschließlich `replay/overlay/memory.py` und die sichere Zusatzdiagnose `provider/openai_provider.py` übernehmen; vorhandene Modell-, Kosten- und Wiederholungsregeln erhalten. Neue Pipelinekennung regelkonform konfigurieren und zurücklesen.
-- Die zwei gespeicherten Ergebnisse einzeln über die vorhandenen geprüften Entscheidungsfunktionen übernehmen, jeweils mit frischen Revisions-, Original-, Vorschauhash- und Auftragsstandprüfungen. Beide Zusammenfassungen über die vorhandene idempotente Archivnotizfunktion speichern.
-- Nach jedem Schritt Arbeitsstand, Auftrag und Archiv zurücklesen; abschließend die reale Dashboardanzeige prüfen. Bei verändertem Ausgangsstand zunächst neue Offline-Vorschauen erstellen. Kein blindes Zurücksetzen der Warteschlange und keine direkten Tabellenupdates.
-- Keine neuen KI-Aufrufe. Die 22 Empfangsfehler bleiben offen; fehlende Antworten werden nicht erfunden oder als wiederhergestellt gemeldet.
-
-Der ausführliche Ablauf samt Rückweggrenzen steht in `replay/README.md`. Die oben dokumentierte produktive Übernahme ist inzwischen ausgeführt; eine angemeldete Browserabnahme bleibt nicht belegt.
-
-## Unabhängige Ergebnisprüfung
-
-Ergebnis: **PASS für lokale Korrekturen und vorbereitete Offline-Wiederherstellung**, keine blockierenden Codebefunde. Der frische schreibgeschützte Prüfer bestätigte selbst 29 Tests, 123 Request-/Response-Prüfsummen sowie beide echten vollständigen Vorschläge vor und nach Korrektur. Sequenz, Zusammenfassungen und Gegenentwurf wurden zusätzlich anhand von Code und Ergebnisartefakten geprüft. Das ursprüngliche Gesamtziel ist nur teilweise erreicht: zwei Quellen sind lokal wiederherstellbar; die produktive Übernahme und weitere 22 unvollständige Quellen bleiben offen.
-
-Rückweghinweis aus dem Review: Die Gegengeneration stellt die ursprünglichen logischen Inhalte wieder her, setzt aber abgeschlossene Auftragszustände nicht zurück und entfernt separat gespeicherte Archivnotizen nicht. Sie ist kein vollständiges Datenbank-Undo. Auch die Ergebnisprüfung belegt keine produktive Browserabnahme.
-
-## Noch offene Wiederherstellung
-
-Zwei Quellen sind produktiv wiederhergestellt. Die verbleibenden 22 Quellen wurden nicht neu gestartet; ihre fehlenden Antworten wurden nicht erfunden. Zusätzliche KI-Aufrufe bleiben nicht freigegeben. Die Ablehnungsprüfungen bleiben wirksam. Die eigentliche Ursache der 22 verlorenen Streamantworten ist noch nicht belegt.
-
-Die historische Journalbasis bis Revision 313 beziehungsweise 314 ist per SELECT vollständig belegt. Das ermöglicht die weitere Offline-Rekonstruktion der zwei Inhaltsprüfungen; fehlende temporäre SQLite-Dateien sind allein kein Abbruchgrund. Historische Suchergebnisse müssen dabei ebenfalls aus gespeicherten Daten kommen; produktive Such-RPCs mit möglichem Schreibeffekt sind ausgeschlossen.
-
-Offizielle technische Referenzen: [Responses-Streamereignisse](https://developers.openai.com/api/reference/resources/responses/streaming-events), [Flex-Verarbeitung](https://developers.openai.com/api/docs/guides/flex-processing). Die Dokumentation belegt die Schnittstelle, nicht die tatsächliche Ursache der 22 Produktionsfehler.
+Das Paket wird ausschließlich lokal gesichert; kein Push. Fremde Änderungen und fremde vorgemerkte Dateien bleiben außerhalb dieses Pakets.

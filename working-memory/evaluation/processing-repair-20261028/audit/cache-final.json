@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "path": "/app/.local/projections-rc1-20260919/96a2dc44-9b9e-4644-b236-c5c1956cd39d-362.sqlite",
+  "cursor": [
+    [
+      "96a2dc44-9b9e-4644-b236-c5c1956cd39d",
+      362
+    ]
+  ],
+  "sources": 349,
+  "selected_sources": 22,
+  "human_decisions": 4,
+  "planning_events": 7,
+  "quick_check": "ok",
+  "read_only": true
+}

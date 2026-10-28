@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "path": "/opt/dashboard-memory-canonical-draft/.local/recovery/reprocess22-20261028/final-362/production-after22-rev362.dump",
+  "bytes": 810415779,
+  "sha256": "beced3c273d5c610c758cddbcdc7fc4cc6c4e399658c44ceb05da3ad1b6f4ca9",
+  "revision": 362,
+  "archive_readback_verified": true,
+  "restored_database_tested": false,
+  "created_at": "2026-10-28T23:03:02.142107+00:00",
+  "free_bytes_before": 1754476544,
+  "server_local_only": true
+}
