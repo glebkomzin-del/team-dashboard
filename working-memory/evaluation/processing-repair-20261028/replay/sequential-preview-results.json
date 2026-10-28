@@ -1,0 +1,41 @@
+{
+  "base_revision": 338,
+  "memory_sha256": "e822eb293d6d87cc74f0df5671e4d656c060c81ccce6502860b7c142803c2316",
+  "existing_notes": 0,
+  "steps": [
+    {
+      "job": "7b4057c2",
+      "expected_revision": 338,
+      "expected_next_revision": 339,
+      "review_sha256": "4c9bd49460fa0bd814052a1ffd82efe537a4a74c34c18214ae208bee20fe57bc",
+      "new_sources": 1,
+      "personal_decisions_preserved": 11,
+      "summary_paragraphs": 6,
+      "note_id": "693c8e3cf067f1965c6565e2437a6d3e5133e9f793cf15154dffe4f04b1e668e",
+      "summary_verified": "PASS",
+      "compile": "PASS",
+      "verify": "PASS"
+    },
+    {
+      "job": "a77d73b4",
+      "expected_revision": 339,
+      "expected_next_revision": 340,
+      "review_sha256": "3cc0076570e4e0dfd2992cf50ace305960fd82cd52c5ede3f0dd099944eaee60",
+      "new_sources": 1,
+      "personal_decisions_preserved": 11,
+      "summary_paragraphs": 4,
+      "note_id": "28354e64592f5bff7ea80d56ff1feee0eff86ee2afc63fbe52d8dc8002729098",
+      "summary_verified": "PASS",
+      "compile": "PASS",
+      "verify": "PASS"
+    }
+  ],
+  "rollback": {
+    "compile": "PASS",
+    "verify": "PASS",
+    "original_logical_entries_restored": true,
+    "personal_decisions_preserved": 11,
+    "review_sha256": "67e87246aa80766ee1d931c35f55ba4f6c89f05baf0bdf643d78b78ed7f3f582"
+  },
+  "status": "PASS"
+}

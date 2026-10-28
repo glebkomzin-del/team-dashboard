@@ -1,0 +1,19 @@
+{
+  "image": "dashboard-memory:processing-repair-20261028",
+  "revision": 340,
+  "automatic_processing_enabled": true,
+  "original_service_flags_restored": true,
+  "applied_sources": ["7b4057c2", "a77d73b4"],
+  "saved_summaries_verified": 2,
+  "remaining_review": 22,
+  "validation_failed": 0,
+  "model_call_count_before_and_after": 5782,
+  "question_call_count_before_and_after": 65,
+  "new_model_calls": 0,
+  "new_question_calls": 0,
+  "public_server_health": "PASS",
+  "public_dashboard_browser_load": "PASS",
+  "authenticated_browser_acceptance": "not_verified_login_required",
+  "memory_sha256": "e822eb293d6d87cc74f0df5671e4d656c060c81ccce6502860b7c142803c2316",
+  "provider_sha256": "fe6dc8e07c5e90bacca8e1b6b364b97fab2715d1589209ea457a909d4a92c0d3"
+}
