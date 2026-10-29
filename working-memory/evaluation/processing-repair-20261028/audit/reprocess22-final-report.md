@@ -14,4 +14,4 @@
 
 Belege: reprocess22-final.json, cache-final.json, runtime-restored.json, runtime-stability.json, backup-final.json. Lokale Paketsicherung vollständig zurückgelesen; fremder Index bleibt unverändert, kein Push.
 
-Grenzen: angemeldeter Browserabruf nicht durchgeführt. Exakte Ursache der alten ValueError-Streamfehler nicht nachträglich behauptet. 24 temporäre Archivkopien (1.571.074.048 Bytes) warten gemäß Regel14 auf ausdrückliche Löschfreigabe; Ergebnisse, Originale, Modellbelege und Sicherungen sind von dieser Bereinigung ausgenommen.
+Grenzen: angemeldeter Browserabruf nicht durchgeführt. Exakte Ursache der alten ValueError-Streamfehler nicht nachträglich behauptet. Die 24 temporären Archivkopien wurden am 29.10.2026 nach ausdrücklicher Freigabe und erneuter vollständiger Prüfsummenkontrolle entfernt; 1.571.074.048 Bytes freigegeben. Ergebnisse, Originale, Modellbelege und Sicherungen blieben unangetastet. Beleg: scratch-cleanup-result.json.
