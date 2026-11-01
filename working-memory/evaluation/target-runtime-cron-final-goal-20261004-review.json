@@ -1,0 +1,99 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "PERMISSIONS_ONLY_TARGET_COMPLETION",
+  "decision": "CONTINUE_BOUNDED",
+  "operational_target_go": true,
+  "reviewed_at": "2026-10-04T03:08:10Z",
+  "diagnosis": "Cron-Vertragskorrektur für den tatsächlichen Hashstand akzeptiert. Alle vier Guards verlangen jetzt strikt ganzzahlig active_cron=0. Der tatsächliche Diff enthält ausschließlich diese vier Änderungen und die notwendige PARTIAL_SHA-Anpassung. Kein weiterer Codeblocker im gezielten Review festgestellt. Dieses bedingte technische GO ersetzt weder frische operative Primärbelege noch tatsächliche PartialReturn-Dry-Readiness.",
+  "code_blockers": [],
+  "script_hashes": {
+    "final_target_runtime_permissions_followup_once.py": "882ded14f80af132914670fd04ef79b5ed1c317b0c72efe9653db7797f62460f",
+    "test_final_target_runtime_permissions_followup.py": "3ebaf02401e7e2a87ce389c73c3dbdc6a492d02afcbceaf516bf8b8992aa4a26",
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "final_target_partial_source_return_once.py": "a7067eebfb01bc4ede1884bafb34f6ebfd4352b0e8ff0d6ab78b6eaa702ba3b8"
+  },
+  "transitive_hashes": {
+    "final_prewrite_rollback_once.py": "c00187109eb75628b2e17dc541ee712c2f9aa8e88483c6c3df6b3eea1f385110",
+    "final_writer_open_once.py": "ebc80b2862f2a7592bf5ab91d897d27a25b1bbb270c0b46e3b3421d76f66fab4",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "n8n_dashboard_pause_once.py": "91711a2b721b6b787867382087d008afa56aa23cccf56ca2f5b3b7e62cc9a94d",
+    "final_quiescence_once.py": "e9b42235755e18b2013f3f6f264ca483aaa2debec7f561a62d62d9ff5fcda1ea",
+    "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "test_final_cron_contract.py": "e78bcc47f183e43fd630d615df1a745d9010a301fd35b0e284718bd878ac23ef"
+  },
+  "validation": {
+    "actual_diff_and_syntax": "Originalbytes gegen aktuelle Dateien verglichen; Syntax ohne Import oder Ausführung geprüft. Hashes entsprechen dem Auftrag.",
+    "existing_narrow_run": "Eine vorhandene Invocation, vier Testmethoden, 55 PASS-Primärbelege: 54 Guardfälle einschließlich vier positiver Fälle sowie eine Source-Ablehnung nach Target-Stopp.",
+    "coverage_review": "Tatsächliche Source-Guards, vollständiges eingebettetes Target-Python und PartialReturn-execute geprüft. Aktive und fehlerhafte Cron-Zählwerte werden vor Grants abgelehnt; Source wird nach Target-Stopp erneut geprüft.",
+    "artifact_integrity": "Alle 218 Dateien des engen privaten Artefaktmanifests stimmen. Originalkopien der drei geänderten Helper stimmen mit den zuvor geprüften Hashes.",
+    "protected69": "68 unverändert; ausschließlich final_prewrite_rollback_once.py geändert.",
+    "source19": "18 unverändert; ausschließlich final_prewrite_rollback_once.py geändert. Kein ZEROdiff und keine Wiederverwendung des alten Source-only-Gates.",
+    "reviewer_test_invocations": 0,
+    "limits": "Synthetische Guardbelege beweisen den lokalen Vertrag. Frische operative Zustände, Hostveröffentlichung, Imagebuild, Recovery und FULL/Mac-Abnahme wurden hier nicht ausgeführt."
+  },
+  "accepted_continuity": {
+    "previous_reviews": [
+      "working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permissions-final-goal-1/result.json",
+      "working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permissions-base-final-goal-1/result.json",
+      "working-memory/.local/hetzner-migration-20261003/current-evidence/native-cron-contract-adjudication-1/result.json"
+    ],
+    "unchanged_acceptances": "Unbeeinflusste Permissions36/5888-, Runtime13-, Healthy7- und Partial48-Abnahmen bleiben für ihre geprüften Aussagen bestehen; keine Wiederholung der Gesamtmatrix.",
+    "source19_exception": "Die ausdrücklich benannte Cron-Ausnahme umfasst zwangsläufig die bestehende Source19-Mitgliedschaft von final_prewrite_rollback_once.py. Der bereits abgeschlossene Originalexport und sein unverändertes Gate bleiben historische Belege.",
+    "runtime_contract": "FROM-Alias samt ID-Preflight, USER10001:10001, COPY --chmod=0644, Base-Layers+1 und drei Default-Nonroot-SHA-Prüfungen vor Liveänderungen bleiben erhalten.",
+    "historical_status": "Originalrestore1 PASS mit 88 Tabellen/68572 Zeilen und Originalruntime1 FAILED bleiben unverändert."
+  },
+  "root_preconditions_before_dispatch": [
+    "Alle neun Hosthelper transitiv an diesen Stand binden. Vor atomarer Veröffentlichung exakte bisherige Hostkopien erhalten. Die ausführbare Permissions-script_hashes-Map muss exakt den vier obigen Schlüsseln entsprechen.",
+    "Frische tatsächliche PartialReturn-Dry-Readiness und Permissions-Proof bereitstellen: aktuelle Primärbelege höchstens 300 Sekunden, Gate und dieses Review höchstens 600 Sekunden alt. Python ohne deaktivierte Assertions.",
+    "Source43=Target43=eingefrorene Baseline; alle drei Source-Rollen ohne DML-/volatile-Writerrechte; vollständige Source-Config deaktiviert und native Target-Config originalgetreu; active_cron=0, netQueue=0, keine laufende oder unbekannte Arbeit und leere Outboxes.",
+    "Vollständige aktuelle Cron-Definitionen müssen zwischen Source und Target sowie mit dem Original-COPY übereinstimmen. Zwei erhaltene deaktivierte Definitionen sind zulässig; keine Definition löschen oder ändern.",
+    "Originale n8n-Versionen unverändert und pausiert, aktive Ausführungen null, exakt zwei eigene Scopes, ursprüngliche fünf Hostdateien und gestoppte Source-Basis; vier APIs mit gebundenen Images, Netzwerken und Ports.",
+    "Eigener Timer inaktiv und weiterhin enabled, kein laufendes Backup; alte Frontend-Aliase READY, beide VITE-Variablen abwesend, keine bekannten Root-Writer.",
+    "Alle 15 Permissions-HOSTreferenzen und deren einzelne Primär-SHAs inhaltlich prüfen. Originalbaseline auf dem Mac unverändert erhalten; tatsächliche Hostprojektion einschließlich erreichbarer Baseline-Primärdatei durch verifizierte Kopie herstellen.",
+    "Vault-Metadaten und Klartextgleichheit sowie Source-/Target-/Original-Authhashes für Passwort, E-Mail und UID des ursprünglichen Nutzers bestätigen. Originalfehlerbytes und FAILED-Historie unverändert erhalten.",
+    "Base-Alias muss weiterhin rt.BASE entsprechen. Alte Dockerfile und Badimage erhalten; fünf Originalsnapshots sichern; Health-GET im bestehenden 90-Sekunden-Vertrag vor Nginx."
+  ],
+  "budget": {
+    "permission_full_test_cycles_remaining": 0,
+    "cron_narrow_test_invocations_remaining": 0,
+    "corrected_image_builds_max": 1,
+    "host_completion_dispatches_max": 1,
+    "additional_operational_attempts_granted": 0,
+    "further_automatic_fix_loops": 0,
+    "consumption_limit": "Die genannten operativen Restbudgets werden aus den vorhandenen Belegen übernommen; vor Dispatch muss Root weiterhin fehlenden Verbrauch bestätigen."
+  },
+  "completion_and_recovery": {
+    "current_projection": "Erst tatsächlicher Erfolg erlaubt RecoveredRuntime und CURRENT_OPERATIONAL_STATE mit Recovery-SHA, Originalfehler-SHA und ursprünglichem Runtime-FAILED.",
+    "independent_remaining_criterion": "Anschließend tatsächliches CurrentRecoveredTarget-FULL mit isolierter Prüfung von nativePG/Auth/Vault/Rollen/Krypto/Canonical/n8n und identischem vollständigem Archiv auf dem Mac. Keine vorweggenommene Abnahme.",
+    "frontend": "PROMOTED_DEPLOYMENT_ID_AND_READINESS bleibt BLOCKED_RETURN_NO_AUTOMATIC_FOLLOWUP. Kein Promote-, Owner- oder Writer-GO; keine weitere automatische Frontend-Reparatur-/Reviewschleife.",
+    "availability": "Bei fortbestehender Frontend-Blockade nach dem unabhängigen Target-/FULL-/Mac-Kriterium kontrollierte Source-Rückkehr unter frischen tatsächlichen Belegen und passendem GOAL_GATE. Dieses Review ist kein ausführbares SourceReturn-Gate.",
+    "failure_endpoint": "Nach Permissions-Fehler höchstens ein bestehender sicherer PartialReturn mit dann frischen Belegen; andernfalls Maintenance und blockierte Rückgabe ohne Fixschleife.",
+    "late_return": "Auch eine spätere gesunde Rückkehr verlangt aktuelle Uhrzeitprüfung, sämtliche acht Return-Helperhashes und strikt active_cron=0.",
+    "prohibited": "Keine Wiederholung von Lease/Dump/Freeze/Restore/Vault/ACL-/Config-/API-Vorstufen, kein Authreset, kein Sourceprojektlöschen, keine Cron-Definitionsänderung und keine Eingriffe in andere Projekte.",
+    "whole_migration_accepted": false
+  },
+  "evidence": {
+    "cron_followup": "working-memory/evaluation/cron-contract-followup-20261004-evidence.json",
+    "cron_followup_sha256": "cc46a628e51c10eac78b04b4d38447639febf34717433266fd3537e73b84338c",
+    "private_manifest": "working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/private-artifacts-sha256.json",
+    "private_manifest_sha256": "326d332bdf978445b120896b2dcea7d7f70db94db0e6b8c1165734ecc61a0560",
+    "frontend_block": "working-memory/evaluation/frontend-control-id-followup-20261004-evidence.json"
+  },
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "approval": "never",
+    "session": "01a104e0-2553-77e2-b3ef-625d06559906",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-cron-final-goal-1/stderr-private.txt:1-35",
+    "independence": "Eigener tatsächlicher Header zuerst gelesen; frische eigenständige lokale Root-Reviewsession, verschieden von den vorherigen Reviewern und dem Builder.",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references_loaded": [
+      "independent-review.md",
+      "recovery.md",
+      "specialist-skills.md"
+    ],
+    "performed": "Lokale Datei-, Diff-, AST-, Hash- und Primärbelegprüfung. Keine Implementierung, Delegation, Tests oder Remoteoperationen.",
+    "enforcement": "RULES_ONLY"
+  }
+}

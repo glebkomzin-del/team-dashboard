@@ -44,6 +44,7 @@ import { ActionsPage } from './pages/ActionsPage'
 import { InboxPage } from './pages/InboxPage'
 import { CommandCenterPage } from './pages/CommandCenterPage'
 import { KiPage } from './pages/KiPage'
+import { WorkingMemoryPage } from './pages/WorkingMemoryPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 
 
@@ -108,6 +109,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
   const getPageFromHash = (): Page => {
     const raw = window.location.hash.replace('#', '')
     const map: Record<string, Page> = { dashboard: 'uebersicht', uebersicht: 'uebersicht', notizen: 'sitzungen', protokoll: 'protokoll', projekte: 'projekte', ki: 'ki', textsuche: 'textsuche', sitzungen: 'sitzungen', aktionen: 'aktionen', inbox: 'inbox' }
+    if (import.meta.env.DEV && raw === 'arbeitsgedaechtnis') return 'arbeitsgedaechtnis'
     return map[raw] || 'uebersicht'
   }
   const [page, setPageRaw] = useState<Page>(getPageFromHash)
@@ -912,6 +914,7 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
 
   const navSections: { label: string; items: { key: Page; label: string; icon: string; count?: number }[] }[] = [
     { label: 'ÜBERBLICK', items: [
+      ...(import.meta.env.DEV ? [{ key: 'arbeitsgedaechtnis' as Page, label: 'Arbeitsgedächtnis', icon: '◷' }] : []),
       { key: 'uebersicht', label: 'Command Center', icon: '⬡' },
       { key: 'inbox', label: 'Inbox', icon: '⬇' },
       { key: 'sitzungen', label: 'Meetings', icon: '☰' },
@@ -998,6 +1001,8 @@ function Dashboard({ onLogout, theme, setTheme }: { onLogout: () => void; theme:
         </header>
 
         <main data-testid="main-content" className="flex-1 min-h-0 px-6 pt-6 pb-6 overflow-x-auto overflow-y-scroll">
+
+          {import.meta.env.DEV && page === 'arbeitsgedaechtnis' && <WorkingMemoryPage />}
 
           {/* ═══ COMMAND CENTER / ÜBERSICHT ═══ */}
           {page === 'uebersicht' && <CommandCenterPage meetings={meetings} todos={todos} blockers={blockers} chatInput={chatInput} setChatInput={setChatInput} handleChat={handleChat} setPage={setPage} setActionTab={setActionTab} setEditTodo={setEditTodo} setViewTodo={setViewTodo} setViewMeeting={setViewMeeting} setViewBlocker={setViewBlocker} handleQuickStatusToggle={handleQuickStatusToggle} />}

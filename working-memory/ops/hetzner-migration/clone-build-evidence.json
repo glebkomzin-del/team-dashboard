@@ -1,0 +1,24 @@
+{
+  "base_live_image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f",
+  "live_container_id_unchanged": true,
+  "clone_image": "sha256:a069a5c9435e0d050437c7c16bc2c7502808e3eda825fa90497a91def907261f",
+  "origin_only_changes": {
+    "access.py": {
+      "before_sha256": "6bf63cb14037daecd52a7e67493afcdf0b8e42e95b7eaa1bafd5349e3ba0b918",
+      "after_sha256": "58164da22cfd7d8ff8cf5e6727a0e69e856e5c33906944470394555551f9a14b"
+    },
+    "gateway_journal.py": {
+      "before_sha256": "ac00662a53d08c8a521a9087d0bec8c54f76d3ae9441b9c232d6eb026bc45313",
+      "after_sha256": "5713cb5bb663cf17bbdea17f4f74cd78f6798f81a130106f72daa1b391bfab5d"
+    }
+  },
+  "clone_url": "http://127.0.0.1:8799",
+  "private_target_backend_url": "http://api-gw:8000",
+  "future_production_and_host_backup_url": "https://178-105-167-26.nip.io/supabase",
+  "intake": false,
+  "automatic": false,
+  "qa": false,
+  "read_only": true,
+  "provider_secrets_forwarded": false,
+  "verification_pending": true
+}

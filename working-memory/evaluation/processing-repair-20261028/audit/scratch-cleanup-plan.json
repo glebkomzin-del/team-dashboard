@@ -1,0 +1,156 @@
+{
+  "files": [
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/be7fb8106f5a1f88882ae75160bc236dd09549697e0155ed7048eb70fa6e8e90/archive.sqlite",
+      "job": "be7fb8106f5a1f88882ae75160bc236dd09549697e0155ed7048eb70fa6e8e90",
+      "bytes": 65155072,
+      "sha256": "8c3c2719691be3f62c10bb6d5a107b4712eff4b435c7010cb51b7ca2a4a10c7a"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/a40913ae86af726d46406c98cfef93e562f69c268c206934a5b3d408d8299548/archive.sqlite",
+      "job": "a40913ae86af726d46406c98cfef93e562f69c268c206934a5b3d408d8299548",
+      "bytes": 65155072,
+      "sha256": "2cacb61714ff07b302abd6443c4df22b5c26182e2c2c3a30780aacc9d6175215"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/ff9988a8e7a229927f6848e97f1a849ba7eb098a9def5e064336b83d7b6d5139/archive.sqlite",
+      "job": "ff9988a8e7a229927f6848e97f1a849ba7eb098a9def5e064336b83d7b6d5139",
+      "bytes": 65196032,
+      "sha256": "69a7859c525fc8819408562c396b2f312067214c306b31db54a2968ae9bc5051"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/49769acd22c7a6a035eac90afb39fb1df2520c7f0268192df4f6093ed9982031/archive.sqlite",
+      "job": "49769acd22c7a6a035eac90afb39fb1df2520c7f0268192df4f6093ed9982031",
+      "bytes": 65220608,
+      "sha256": "4c2c5d3fb67f87422848ac9e3504cfbdb5971c6f79ec0ca9461a9e0df5f5c14d"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/d1b7890a582993bb82943d2275102c5f79fe81e9634e81be66d4c6c13f9b71c2/archive.sqlite",
+      "job": "d1b7890a582993bb82943d2275102c5f79fe81e9634e81be66d4c6c13f9b71c2",
+      "bytes": 65236992,
+      "sha256": "f0f098024dba0b6d7a2a7c7a2908e924858c9bba5df2e6d7f41b9a8d23caad92"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/96142571ddde2ceed04bdb39f7de34e8ca925abbc06415fac91541d9aa970f4b/archive.sqlite",
+      "job": "96142571ddde2ceed04bdb39f7de34e8ca925abbc06415fac91541d9aa970f4b",
+      "bytes": 65269760,
+      "sha256": "dd7766bbe89c08781d21de525f8009f02d7fa0d43f859c6194c5eca579da4a9f"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/61dbcd680a9bf8ee0f5925fdc19aa7029bb49d7d57e625e67cc1cd81f87122ca/archive.sqlite",
+      "job": "61dbcd680a9bf8ee0f5925fdc19aa7029bb49d7d57e625e67cc1cd81f87122ca",
+      "bytes": 65286144,
+      "sha256": "e0faa666f4c5460ba6543d242454eda36c4480b56a88bb61ab0a378ad2b7f45b"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/1bb33af10d4901e0a61824c6323211396577e23d999062e4df76908b9d32f7a4/archive.sqlite",
+      "job": "1bb33af10d4901e0a61824c6323211396577e23d999062e4df76908b9d32f7a4",
+      "bytes": 65310720,
+      "sha256": "dcb1bebf0b241a3a861d91c777e296b4a9b0f57a113772185a6fcb1538be5c70"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/ce28adbc88167e016048fa4e410613b8c9d129494888a6f77738d95c21a28063/archive.sqlite",
+      "job": "ce28adbc88167e016048fa4e410613b8c9d129494888a6f77738d95c21a28063",
+      "bytes": 65335296,
+      "sha256": "c4cf8824aa8b7e70cb60856c4aa7b8dfd368af51af03f08e8ace93b298c7e41a"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/d50c49b43b439959fcc31364ad29f9b397213a2342ecc1b06459248ce66b33e8/archive.sqlite",
+      "job": "d50c49b43b439959fcc31364ad29f9b397213a2342ecc1b06459248ce66b33e8",
+      "bytes": 65376256,
+      "sha256": "57a930f07e75a631dfb75c95c23c1ecaafb56b92100cb7e87468589e4161f4dd"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/b1718deb8bcc868dd81f46519abdccd22d336850fa59a3d0bdda65fa8c5f3ba3/archive.sqlite",
+      "job": "b1718deb8bcc868dd81f46519abdccd22d336850fa59a3d0bdda65fa8c5f3ba3",
+      "bytes": 65425408,
+      "sha256": "2b3a8f07f08f508434533c5b4e184ed0fce731bd11819b205232f42e841e44fb"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/08f653e4aed268e23c703ae5d8b3c1b2108f2e1bc5b9675a3f9d3a63f4b51422/archive.sqlite",
+      "job": "08f653e4aed268e23c703ae5d8b3c1b2108f2e1bc5b9675a3f9d3a63f4b51422",
+      "bytes": 65458176,
+      "sha256": "bcac9e1212245c0db09f09d5b3b8149dfa82fd9f4a4db67091021c37a08ca3ec"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/5bd9551c9edb091db91cec5d08ac387e7adb315052ed7798a309af53aa9a4eff/archive.sqlite",
+      "job": "5bd9551c9edb091db91cec5d08ac387e7adb315052ed7798a309af53aa9a4eff",
+      "bytes": 65482752,
+      "sha256": "6f030edfb5789c87a275f4c9f3a1e00c1ef5e6df651c8e6b4c7582edd6fc0247"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/448340dd0ef7f0a7af2cda85e1190a05ccc6400a33bf1c689672380b91af08e4/archive.sqlite",
+      "job": "448340dd0ef7f0a7af2cda85e1190a05ccc6400a33bf1c689672380b91af08e4",
+      "bytes": 65515520,
+      "sha256": "1aa7f4cea19a354b947341d819ab71f825e78ecfae308d059a5ae5140c5eb822"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/f09befd74b16f5d6032a56de408f17aeb1abf458d0f0b828ddcab36534f435ae/archive.sqlite",
+      "job": "f09befd74b16f5d6032a56de408f17aeb1abf458d0f0b828ddcab36534f435ae",
+      "bytes": 65536000,
+      "sha256": "a68513bd15b7c8ff567953cac259911517742062f4df104b72c4cdeee76f9419"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/f09befd74b16f5d6032a56de408f17aeb1abf458d0f0b828ddcab36534f435ae/attempts/38e226bc-f718-5e41-b927-d0da7b10c982/archive.sqlite",
+      "job": "f09befd74b16f5d6032a56de408f17aeb1abf458d0f0b828ddcab36534f435ae",
+      "bytes": 65536000,
+      "sha256": "a68513bd15b7c8ff567953cac259911517742062f4df104b72c4cdeee76f9419"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/9266439fe8c4bb320db97d2a4bb1c4f16b5badb43f9bebf51c2f2191df6a61f7/archive.sqlite",
+      "job": "9266439fe8c4bb320db97d2a4bb1c4f16b5badb43f9bebf51c2f2191df6a61f7",
+      "bytes": 65581056,
+      "sha256": "9ea309b133d7a0234f684298d8e3948a627185154e97abe5e388cdd4bd625c93"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/9266439fe8c4bb320db97d2a4bb1c4f16b5badb43f9bebf51c2f2191df6a61f7/attempts/e9a2a394-dab8-5585-b7ee-7570223ac4b8/archive.sqlite",
+      "job": "9266439fe8c4bb320db97d2a4bb1c4f16b5badb43f9bebf51c2f2191df6a61f7",
+      "bytes": 65581056,
+      "sha256": "7afd66ffefa516bab2fc1610335813ea3e510e2b2b1d3a58b14ef40357b87fb2"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/674a3693aa06f0df55b0e1b32f50b0512d5897e35d0f7403ac60c86d9e425281/archive.sqlite",
+      "job": "674a3693aa06f0df55b0e1b32f50b0512d5897e35d0f7403ac60c86d9e425281",
+      "bytes": 65642496,
+      "sha256": "6610d85b2f8bbc2f758e21f83fdc483a9d1967a2608af6aac2b61cc07627978d"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/8066e3c214faed1fa2f5f408f5db32b99d3422d7b7d3669ed874dc695e2ca2b7/archive.sqlite",
+      "job": "8066e3c214faed1fa2f5f408f5db32b99d3422d7b7d3669ed874dc695e2ca2b7",
+      "bytes": 65683456,
+      "sha256": "2007789b0b601562da935ecde353924fbd11a3a296f9a7fde99bfdcaa6b3443a"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/265b6d593a273ac34d5bed8f5104719c92fa00b9eecc9cc807177f087b0be8af/archive.sqlite",
+      "job": "265b6d593a273ac34d5bed8f5104719c92fa00b9eecc9cc807177f087b0be8af",
+      "bytes": 65720320,
+      "sha256": "5569579c9036cb94bda6e2d2307cb7484a0e421893433747d413bf433929ed99"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/26b13764aab6514b5b8019fc83230f94db84db87df5092857a05ffdd04d22f30/archive.sqlite",
+      "job": "26b13764aab6514b5b8019fc83230f94db84db87df5092857a05ffdd04d22f30",
+      "bytes": 65753088,
+      "sha256": "65fac8c9d21bcc46dd306094e51551ea7547b011af07569bcf1637ee09a91d71"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/0260b2c88ca109a61ee9b21cf855aa707065397c80a43c85fbd67f97d5d9091b/archive.sqlite",
+      "job": "0260b2c88ca109a61ee9b21cf855aa707065397c80a43c85fbd67f97d5d9091b",
+      "bytes": 65785856,
+      "sha256": "93537dd3bb59d443fc54ef95f579d40481eba46b12401b3666dce03c6af340fe"
+    },
+    {
+      "path": "/app/.local/projections-rc1-20260919/worker-reprocess22/f07a9d9d5d0b4f69c7b3ecb3ac62de96302bf604a94a80b36445a1f532df7280/archive.sqlite",
+      "job": "f07a9d9d5d0b4f69c7b3ecb3ac62de96302bf604a94a80b36445a1f532df7280",
+      "bytes": 65830912,
+      "sha256": "dac6f7a0467c9f2b261ef14c85780d54cb1f86c14453c37c0a2df2076ff58ac1"
+    }
+  ],
+  "count": 24,
+  "bytes": 1571074048,
+  "scope": "Only duplicate archive.sqlite scratch copies for the22 completed originals; no canonical data, model receipts, original documents or backups.",
+  "status": "AWAITING_USER_APPROVAL",
+  "targets_sha256": "4e2aa5384e80a4f290a439c31d05cd68dbe1eb3da0c00d0435643fd1e9292ff6",
+  "verified_backup_sha256": "beced3c273d5c610c758cddbcdc7fc4cc6c4e399658c44ceb05da3ad1b6f4ca9",
+  "created_at": "2026-10-28T23:13:52.012870+00:00",
+  "manifest_sha256": "768be63bc2b40387a5e5ca07f9c8d3eb8bfdd6e043dc4a2931403dc8d8f38679"
+}

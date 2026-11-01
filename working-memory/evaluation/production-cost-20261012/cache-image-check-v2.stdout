@@ -1,0 +1,1 @@
+{"question_transport_identity": true, "question_unknown_not_resent": true, "image_sources_match": true, "payload_invariants": true, "transport_identity_includes_cache_mode": true, "saved_response_reused_once": true, "unknown_not_resent": true, "real_provider_calls": 0, "pipeline": "v11:compact1:gate1:gpt-6.1-sol:753caadf3fb8fea4:canonical1:023a8c7cae48980c"}

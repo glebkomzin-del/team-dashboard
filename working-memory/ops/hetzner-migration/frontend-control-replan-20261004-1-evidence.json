@@ -1,0 +1,110 @@
+{
+  "problem_id": "PROMOTED_DEPLOYMENT_ID_AND_READINESS",
+  "cutover_problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "LOCAL_TARGETED_VALIDATED",
+  "updated_at": "2026-10-04T15:30:29.636076+00:00",
+  "operational_go": false,
+  "changed_file_hashes": {
+    "working-memory/ops/hetzner-migration/test_final_frontend_control.py": "5eb06f17a1cf010df22ed533936e3d235240125629bf8d0c22e7f951a444002a"
+  },
+  "unchanged_control_owner_helpers": {
+    "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py": "1369324ddaa6975c00dd9092d98ea32fe5ec6f747b1f34918ca210b3bd44d3cb",
+    "working-memory/ops/hetzner-migration/final_owner_link_recovered_once.py": "a9dc82446af0827b14190296689cc49bd2224dfdc12c466c675a82184a7ba8f7",
+    "working-memory/ops/hetzner-migration/frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "working-memory/ops/hetzner-migration/final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50"
+  },
+  "validation": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "-v",
+      "test_final_frontend_control.DeploymentIdentityFollowupTests.test_new_id_pending_then_ready",
+      "test_final_frontend_control.DeploymentIdentityFollowupTests.test_alias_mismatch_or_expiry_stops_without_second_mutation",
+      "test_final_frontend_control.DeploymentIdentityFollowupTests.test_owner_actual_receipt_id_accepts_and_mismatch_denies"
+    ],
+    "env": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONPATH": "working-memory/ops/hetzner-migration",
+      "FRONTEND_CONTROL_EVIDENCE_DIR": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/frontend-control-replan-20261004-1"
+    },
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0,
+    "inherited_old25_not_run": true,
+    "cases": [
+      "NEW_ID_BUILDING_old_aliases_then_same_NEW_ID_READY_both_aliases_one_promotion",
+      "exact_index_assets_headers_12_checks",
+      "private0755_denied",
+      "alias-fail",
+      "READY-expiry",
+      "old-preview",
+      "index-byte-change",
+      "missing-create",
+      "ambiguous-create",
+      "env-timeout_unknown_ownership",
+      "foreign-env_unknown_ownership",
+      "actual_execute_receipt_to_original_Owner_helper_once",
+      "Owner_foreign_alias_ID",
+      "Owner_old_preview_alias_ID",
+      "bad_recovery",
+      "missing_receipt"
+    ],
+    "synthetic_only": true,
+    "actual_production_promotion_owner_sdk_executed": false,
+    "stderr": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/frontend-control-replan-20261004-1/round-1.stderr",
+    "stdout": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/frontend-control-replan-20261004-1/round-1.stdout"
+  },
+  "counterhistory": {
+    "prior_invocation": 1,
+    "prior_fail": 1,
+    "prior_not_run": 2,
+    "prior_evidence": "working-memory/evaluation/frontend-control-id-followup-20261004-evidence.json",
+    "current_phase_invocations": 1,
+    "current_phase_failed_rounds": 0,
+    "total_targeted_invocations": 2,
+    "unknown_other_counters": true,
+    "review": "Lead supplied /root/frontend_control_replan_current CONTINUE_BOUNDED"
+  },
+  "protected": {
+    "direct_map": {
+      "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py": "1369324ddaa6975c00dd9092d98ea32fe5ec6f747b1f34918ca210b3bd44d3cb",
+      "working-memory/ops/hetzner-migration/final_owner_link_recovered_once.py": "a9dc82446af0827b14190296689cc49bd2224dfdc12c466c675a82184a7ba8f7",
+      "working-memory/ops/hetzner-migration/frontend-target-artifact.json": "f1c11b1f683f53b0dbc5e6c793350a25b9156a957787f0b0c335a1029c95829f",
+      "working-memory/ops/hetzner-migration/frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+      "working-memory/ops/hetzner-migration/final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50"
+    },
+    "current_map": {
+      "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py": "1369324ddaa6975c00dd9092d98ea32fe5ec6f747b1f34918ca210b3bd44d3cb",
+      "working-memory/ops/hetzner-migration/final_owner_link_recovered_once.py": "a9dc82446af0827b14190296689cc49bd2224dfdc12c466c675a82184a7ba8f7",
+      "working-memory/ops/hetzner-migration/frontend-target-artifact.json": "f1c11b1f683f53b0dbc5e6c793350a25b9156a957787f0b0c335a1029c95829f",
+      "working-memory/ops/hetzner-migration/frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+      "working-memory/ops/hetzner-migration/final_owner_link_once.py": "b2c3907652a69bb52e2f303e9e77ebdae0eb51be17c3da9542c70a6ac3b04c50"
+    },
+    "direct_mismatches": [],
+    "legacy68": "Accepted unchanged map reused from working-memory/evaluation/frontend-control-id-followup-20261004-evidence.json; no current broad revalidation claim",
+    "old42": "Not modified; historical accepted immutable evidence retained; no current all42 hash claim",
+    "broad_hash_diagnostics": "Two local hash reads stopped after no output; did not complete; no validation retry or external operation",
+    "source_runtime_guards_artifact_edits": false,
+    "parallel_Lead_changes": "Excluded from package claims"
+  },
+  "budget": {
+    "checkpoint_minutes": 15,
+    "test_rounds_consumed": 1,
+    "provider_calls": 0,
+    "external_cost": 0,
+    "model_calls": 0,
+    "unknown_global_cost": true
+  },
+  "decisions": [
+    "Explicit fixture control0700; guard unchanged",
+    "actual execute receipt and final ready-poll aliases feed Owner",
+    "No production helper change",
+    "Lead owns commit/status"
+  ],
+  "remaining": [
+    "Fresh independent actual-hash review before Promote/Owner",
+    "Real controlled promotion and original Owner/auth/SDK flow",
+    "Writer and full migration acceptance"
+  ]
+}

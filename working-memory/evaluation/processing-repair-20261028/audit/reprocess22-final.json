@@ -1,0 +1,668 @@
+{
+  "status": "PASS",
+  "all_22_complete": true,
+  "applied": 22,
+  "target_count": 22,
+  "revision": 362,
+  "source_versions": 349,
+  "expected_final_revision": 362,
+  "expected_final_source_versions": 349,
+  "personal_decisions": 11,
+  "rows": [
+    {
+      "job": "be7fb810",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "bounded_receipts": true
+      },
+      "calls": 7,
+      "actual_micro_usd": 13753
+    },
+    {
+      "job": "a40913ae",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "fdc09e0d-5e05-561d-aced-c5e24a9e1cf3",
+          "start_index": 1,
+          "end_index": 57,
+          "calls": 57,
+          "actual_micro_usd": 241490
+        }
+      ],
+      "calls": 57,
+      "actual_micro_usd": 241490
+    },
+    {
+      "job": "ff9988a8",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "f2ff71a6-210c-5a25-b414-652fb9c7c4e4",
+          "start_index": 1,
+          "end_index": 46,
+          "calls": 46,
+          "actual_micro_usd": 205134
+        }
+      ],
+      "calls": 46,
+      "actual_micro_usd": 205134
+    },
+    {
+      "job": "49769acd",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "8849a9ea-8597-5475-b77e-599ec9e515aa",
+          "start_index": 1,
+          "end_index": 17,
+          "calls": 17,
+          "actual_micro_usd": 74804
+        }
+      ],
+      "calls": 17,
+      "actual_micro_usd": 74804
+    },
+    {
+      "job": "d1b7890a",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "e421e7be-fc89-5055-bb4e-0b40fc7cb1d4",
+          "start_index": 1,
+          "end_index": 48,
+          "calls": 48,
+          "actual_micro_usd": 219126
+        }
+      ],
+      "calls": 48,
+      "actual_micro_usd": 219126
+    },
+    {
+      "job": "96142571",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "cf894267-efa3-555f-ae5d-e2de633bbc3b",
+          "start_index": 42,
+          "end_index": 80,
+          "calls": 39,
+          "actual_micro_usd": 183036
+        }
+      ],
+      "calls": 39,
+      "actual_micro_usd": 183036
+    },
+    {
+      "job": "61dbcd68",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "19083fe6-049a-5eb7-a79c-917a49f9fd30",
+          "start_index": 29,
+          "end_index": 60,
+          "calls": 32,
+          "actual_micro_usd": 173721
+        }
+      ],
+      "calls": 32,
+      "actual_micro_usd": 173721
+    },
+    {
+      "job": "1bb33af1",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "4f6c4b92-868e-5157-9306-1dbb5429d2a2",
+          "start_index": 25,
+          "end_index": 48,
+          "calls": 24,
+          "actual_micro_usd": 142223
+        }
+      ],
+      "calls": 24,
+      "actual_micro_usd": 142223
+    },
+    {
+      "job": "ce28adbc",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "a6a644fa-42fc-5d58-a276-37c0bfd76285",
+          "start_index": 1,
+          "end_index": 68,
+          "calls": 68,
+          "actual_micro_usd": 337608
+        }
+      ],
+      "calls": 68,
+      "actual_micro_usd": 337608
+    },
+    {
+      "job": "d50c49b4",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "afad4cab-0f43-5525-9ec9-e02f43bb6563",
+          "start_index": 1,
+          "end_index": 98,
+          "calls": 98,
+          "actual_micro_usd": 638106
+        }
+      ],
+      "calls": 98,
+      "actual_micro_usd": 638106
+    },
+    {
+      "job": "b1718deb",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "fcc62341-9457-58f9-9b40-a60a01b63bc3",
+          "start_index": 1,
+          "end_index": 42,
+          "calls": 42,
+          "actual_micro_usd": 204144
+        }
+      ],
+      "calls": 42,
+      "actual_micro_usd": 204144
+    },
+    {
+      "job": "08f653e4",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "0b192166-83cf-5ff2-9c3d-58b7ff58d230",
+          "start_index": 1,
+          "end_index": 49,
+          "calls": 49,
+          "actual_micro_usd": 205159
+        }
+      ],
+      "calls": 49,
+      "actual_micro_usd": 205159
+    },
+    {
+      "job": "5bd9551c",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "388a0146-8664-50af-8d01-79cfec797ed9",
+          "start_index": 51,
+          "end_index": 103,
+          "calls": 53,
+          "actual_micro_usd": 234126
+        }
+      ],
+      "calls": 53,
+      "actual_micro_usd": 234126
+    },
+    {
+      "job": "448340dd",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "f6ccdb05-c57d-58e5-a7ea-4004708e6d1d",
+          "start_index": 1,
+          "end_index": 25,
+          "calls": 25,
+          "actual_micro_usd": 116218
+        }
+      ],
+      "calls": 25,
+      "actual_micro_usd": 116218
+    },
+    {
+      "job": "f09befd7",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "reviewed_attempt": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "3d73cd1a-de34-5734-8e5d-b7fecae79bc4",
+          "start_index": 1,
+          "end_index": 66,
+          "calls": 66,
+          "actual_micro_usd": 328876
+        },
+        {
+          "command_id": "38e226bc-f718-5e41-b927-d0da7b10c982",
+          "start_index": 67,
+          "end_index": 139,
+          "calls": 73,
+          "actual_micro_usd": 336947
+        }
+      ],
+      "calls": 139,
+      "actual_micro_usd": 665823
+    },
+    {
+      "job": "9266439f",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "reviewed_attempt": true,
+        "token_limit_override": true,
+        "context_continuation": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "context_counts": [
+        {
+          "stage": "compact-0",
+          "input_tokens": 258657,
+          "max_output_tokens": 59736,
+          "call_index": 125
+        }
+      ],
+      "attempt_ranges": [
+        {
+          "command_id": "78f9b89c-e2ca-5c25-a92c-c7a0e42db29a",
+          "start_index": 1,
+          "end_index": 1,
+          "calls": 1,
+          "actual_micro_usd": 149115
+        },
+        {
+          "command_id": "e9a2a394-dab8-5585-b7ee-7570223ac4b8",
+          "start_index": 2,
+          "end_index": 132,
+          "calls": 131,
+          "actual_micro_usd": 505857
+        }
+      ],
+      "calls": 132,
+      "actual_micro_usd": 654972
+    },
+    {
+      "job": "674a3693",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "ff795a92-ea37-5b8c-8729-187bccf08cdd",
+          "start_index": 1,
+          "end_index": 72,
+          "calls": 72,
+          "actual_micro_usd": 298720
+        }
+      ],
+      "calls": 72,
+      "actual_micro_usd": 298720
+    },
+    {
+      "job": "8066e3c2",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "bcfbd3a8-0657-5855-9557-19c524724489",
+          "start_index": 1,
+          "end_index": 65,
+          "calls": 65,
+          "actual_micro_usd": 296228
+        }
+      ],
+      "calls": 65,
+      "actual_micro_usd": 296228
+    },
+    {
+      "job": "265b6d59",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "b172e3f0-64f2-5458-b0dc-45d572662758",
+          "start_index": 1,
+          "end_index": 50,
+          "calls": 50,
+          "actual_micro_usd": 244028
+        }
+      ],
+      "calls": 50,
+      "actual_micro_usd": 244028
+    },
+    {
+      "job": "26b13764",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "539a4d74-e5fc-56f3-a1a4-9df2613b02ff",
+          "start_index": 1,
+          "end_index": 67,
+          "calls": 67,
+          "actual_micro_usd": 291018
+        }
+      ],
+      "calls": 67,
+      "actual_micro_usd": 291018
+    },
+    {
+      "job": "0260b2c8",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "2fdca766-f367-51a9-a6d1-db79bfe53910",
+          "start_index": 71,
+          "end_index": 138,
+          "calls": 68,
+          "actual_micro_usd": 316797
+        }
+      ],
+      "calls": 68,
+      "actual_micro_usd": 316797
+    },
+    {
+      "job": "f07a9d9d",
+      "state": "applied",
+      "checks": {
+        "original": true,
+        "source_version": true,
+        "artifact": true,
+        "summary": true,
+        "accepted_generation": true,
+        "personal_decisions": true,
+        "new_source": true,
+        "owner_audit": true,
+        "attempt_ranges": true,
+        "normal_receipts": true
+      },
+      "attempt_ranges": [
+        {
+          "command_id": "9e596092-38cd-5399-8dd1-40e4eff04b0f",
+          "start_index": 9,
+          "end_index": 24,
+          "calls": 16,
+          "actual_micro_usd": 56084
+        }
+      ],
+      "calls": 16,
+      "actual_micro_usd": 56084
+    }
+  ],
+  "new_normal_calls": 1207,
+  "normal_received_calls": 1207,
+  "normal_actual_micro_usd": 5798565,
+  "bounded_calls": 7,
+  "bounded_actual_micro_usd": 13753,
+  "combined_actual_micro_usd": 5812318,
+  "cost_note": "Distinct normal ledger slots plus be7 bounded receipts; imported/replayed answers counted once. Pending source cost included.",
+  "runtime_flags": {
+    "MEMORY_READ_ONLY": "1",
+    "MEMORY_AUTOMATIC_ENABLED": "0",
+    "MEMORY_INTAKE_ENABLED": "0",
+    "MEMORY_QA_ENABLED": "0",
+    "MEMORY_ORIGINAL_DELETION_ENABLED": "0"
+  },
+  "original_flags": {
+    "MEMORY_READ_ONLY": "0",
+    "MEMORY_AUTOMATIC_ENABLED": "1",
+    "MEMORY_INTAKE_ENABLED": "1",
+    "MEMORY_QA_ENABLED": "1",
+    "MEMORY_ORIGINAL_DELETION_ENABLED": "1"
+  },
+  "resources": {
+    "NanoCpus": 2000000000,
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "Memory": 4294967296,
+    "MemorySwap": 4294967296,
+    "MemoryReservation": 0
+  },
+  "original_resources": {
+    "NanoCpus": 1000000000,
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "Memory": 1610612736,
+    "MemorySwap": 3221225472,
+    "MemoryReservation": 0
+  },
+  "original_runtime_restored": false,
+  "health_status": 200,
+  "job_states": {
+    "archived": 12,
+    "applied": 243
+  },
+  "errors": [],
+  "read_only": true,
+  "limits": "Metadata/readback audit; does not replace prior full generation verification or authenticated browser acceptance."
+}

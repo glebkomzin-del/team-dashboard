@@ -1,0 +1,11 @@
+{
+  "receipt.json": "2afc05d16a50f8fa648fbe130db396ef02c04a15eafc30e3dcf84c4c6aaa5577",
+  "ui-two-lines.patch": "bd92812a0c9f44ae94808769e0a4e42bdb8435b771a679692142351b23568c4a",
+  "pnpm-build-original-output.log": "391bd5992dcbb565a0a99c34c4b4088cb41522de94ee42b87d585f3cb9bee993",
+  "pnpm-build-exit-and-artifacts.json": "cc643dc88a3288157ab553c53e47b59d4eacedf9eb6afab08d552c0cd9e6c306",
+  "deploy-after-go.sh": "a25bae2539983bb6487eea1b218fd9cafaf78bfe128115279d9dbab832ffcd9a",
+  "candidate-SHA256SUMS": "6feb72ed686afd324642ac6decb723b8da8efcae17dc90969e7d8772370191bd",
+  "candidate-vercel.json": "eaa431e17362d103c7f6c475fbb10fe400ed030cd13319dfed711e6e96a6778c",
+  "candidate-.vercel-output-config.json": "3c2f196016d90c9ff3caf99917c197dd4573b7998795bada5825bb77d9b90fab",
+  "candidate-.vercel-project.json": "eeb83226ad0619d05caa9b2b95b8b728bf41cba3ece5b345ca14b2773c1c08e3"
+}

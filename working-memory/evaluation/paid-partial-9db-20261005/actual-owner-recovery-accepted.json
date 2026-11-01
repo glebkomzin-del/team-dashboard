@@ -1,0 +1,22 @@
+{
+  "revision": 225,
+  "job_calls": 4,
+  "job_state": "applied",
+  "review_state": "accepted",
+  "unknown_calls": 0,
+  "decision_reason": "",
+  "source_versions": 1,
+  "job_audit_reason": "Technischer Auditvermerk: Generation uebernommen; keine zusaetzliche Begruendung angegeben",
+  "processing_enabled": false,
+  "all_model_call_rows": 1505,
+  "decision_command_id": "34c1faeb-eb1e-48f4-b284-dab40ec1f2ea",
+  "job_actual_micro_usd": 34726,
+  "job_applied_revision": 225,
+  "original_request_reason": "",
+  "captured_at_utc": "2026-10-05T20:35:29.261403+00:00",
+  "actual_owner_ui_accepted": true,
+  "prior224_journal_entries_equal": true,
+  "human_entries_preserved": 11,
+  "provider_calls_during_recovery": 0,
+  "personal_gleb_acceptance_claimed": false
+}

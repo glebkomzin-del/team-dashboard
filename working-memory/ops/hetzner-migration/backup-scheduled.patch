@@ -1,0 +1,180 @@
+--- a/working-memory/scheduled_backup.py
++++ b/working-memory/scheduled_backup.py
+@@ -8,6 +8,7 @@
+ import fcntl,hashlib,json,os
+ from pathlib import Path
+ import secrets,shutil,subprocess,tarfile,tempfile,time
++from urllib.parse import urlparse
+ 
+ from canonical_backup import export,checksum,private_json,verify
+ from canonical_restore import generate as generate_restore
+@@ -21,6 +22,150 @@
+ DEFAULT_QUESTION_OUTBOX=Path('/app/.local/question-outbox')
+ APP_UID=10001
+ APP_GID=10001
++
++
++SELFHOST_ROOT=Path('/opt/dashboard-supabase-20261003')
++SELFHOST_CONTAINER='dashboard-supabase-20261003-db-1'
++SELFHOST_FINGERPRINT_SQL="""
++SELECT json_build_object(
++ 'tables', (SELECT json_object_agg(format('%I.%I',n.nspname,c.relname),
++   (xpath('/row/n/text()',query_to_xml(format('select count(*) as n from %I.%I',n.nspname,c.relname),false,true,'')))[1]::text::bigint)
++   FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
++   WHERE c.relkind IN ('r','p') AND n.nspname NOT LIKE 'pg_%' AND n.nspname <> 'information_schema'
++   AND NOT EXISTS (SELECT 1 FROM pg_depend d JOIN pg_extension e ON e.oid=d.refobjid
++     WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e'
++       AND NOT c.oid=ANY(coalesce(e.extconfig,ARRAY[]::oid[])))),
++ 'auth_users', (SELECT md5(coalesce(string_agg(md5(to_jsonb(u)::text),'' ORDER BY id),'')) FROM auth.users u),
++ 'vault', (SELECT md5(coalesce(string_agg(id::text||md5(decrypted_secret),'' ORDER BY id),'')) FROM vault.decrypted_secrets),
++ 'roles', (SELECT json_object_agg(rolname,json_build_array(rolsuper,rolinherit,rolcreaterole,rolcreatedb,rolcanlogin,rolreplication,rolbypassrls,md5(rolpassword)))
++   FROM pg_authid WHERE rolname NOT LIKE 'pg_%'));
++"""
++
++
++def selfhost_enabled(cfg):
++    marker=ROOT/'.local/selfhost-backup.json'
++    if marker.exists():
++        value=json.loads(marker.read_text())
++        if not isinstance(value,dict) or type(value.get('enabled')) is not bool:
++            raise RuntimeError('Invalid selfhost backup activation marker')
++        if value['enabled']:return True
++    # A switched gateway must never receive a hosted-only successful backup.
++    host=urlparse(cfg.get('SUPABASE_URL','')).hostname or ''
++    if not host.endswith('.supabase.co'):
++        raise RuntimeError('Selfhost origin requires an enabled full backup adapter')
++    return False
++
++
++def restore_roles_sql(body,existing):
++    # pg_dumpall emits one CREATE ROLE per line. Preserve ALTER (passwords,
++    # attributes) and memberships; skip only bootstrap roles already present.
++    return b''.join(line for line in body.splitlines(keepends=True)
++                    if line.rstrip().decode() not in {'CREATE ROLE '+name+';' for name in existing})
++
++
++def selfhost_psql(pg,sql,database='postgres'):
++    return run(['docker','exec',pg,'psql','-X','-qAt','-U','supabase_admin','-d',database,
++                '-v','ON_ERROR_STOP=1','-c',sql],timeout=600)
++
++
++def selfhost_restore(folder,pg,expected):
++    isolated=folder/'isolated-restore';isolated.mkdir(mode=0o700)
++    pgdata=isolated/'pgdata';pgdata.mkdir(mode=0o700)
++    pgconfig=isolated/'pg-config';shutil.copytree(folder/'configuration/pg-config',pgconfig)
++    # docker cp may map source ownership to root. Private modes stay intact;
++    # only this disposable copy belongs to the actual image's postgres account.
++    owner=json.loads((folder/'runtime-image.json').read_text())['postgres_account']
++    for path in [pgconfig,*pgconfig.rglob('*')]:os.chown(path,owner['uid'],owner['gid'])
++    name='dashboard-selfhost-restore-'+secrets.token_hex(6)
++    environment=isolated/'postgres.env'
++    environment.write_text('POSTGRES_PASSWORD='+secrets.token_hex(32)+'\nPGPORT=5432\nPOSTGRES_PORT=5432\nPOSTGRES_DB=postgres\n')
++    environment.chmod(0o600)
++    try:
++        run(['docker','run','-d','--pull=never','--name',name,'--network','none','--memory=1g','--cpus=1',
++             '--env-file',str(environment),'--mount','type=bind,source='+str(pgdata)+',target=/var/lib/postgresql/data',
++             '--mount','type=bind,source='+str(pgconfig)+',target=/etc/postgresql-custom',pg['Image'],
++             *pg['Config']['Cmd'],'-c','cron.launch_active_jobs=off'])
++        for attempt in range(180):
++            ready=subprocess.run(['docker','exec',name,'pg_isready','-h','127.0.0.1','-U','supabase_admin','-d','postgres'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
++            if ready.returncode==0:break
++            time.sleep(.5)
++        else:raise RuntimeError('Isolated selfhost restore database not ready')
++        existing=selfhost_psql(name,'SELECT quote_ident(rolname) FROM pg_roles').decode().splitlines()
++        roles=restore_roles_sql((folder/'roles.sql').read_bytes(),existing)
++        # Role statements contain passwords: never log SQL or stderr, including
++        # failed ALTER statements. The private backup is the recovery authority.
++        result=subprocess.run(['docker','exec','-i',name,'psql','-X','-q','-U','supabase_admin','-d','postgres','-v','ON_ERROR_STOP=1'],input=roles,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=180)
++        if result.returncode:raise RuntimeError('Isolated selfhost role restore failed')
++        # Use an empty database rather than --clean: bootstrap-only objects
++        # can otherwise survive outside the dump and alter the recovered schema.
++        selfhost_psql(name,'DROP DATABASE postgres WITH (FORCE)','template1')
++        selfhost_psql(name,'CREATE DATABASE postgres TEMPLATE template0 OWNER postgres','template1')
++        with (folder/'postgres.dump').open('rb') as stream:
++            result=subprocess.run(['docker','exec','-i',name,'pg_restore','-U','supabase_admin','-d','postgres','--exit-on-error'],stdin=stream,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=900)
++        if result.returncode:raise RuntimeError('Isolated selfhost database restore failed')
++        actual=json.loads(selfhost_psql(name,SELFHOST_FINGERPRINT_SQL))
++        if actual!=expected:raise RuntimeError('Isolated selfhost tables, Auth, Vault or role fingerprint mismatch')
++        config=folder/'configuration'
++        return {'tables':actual['tables'],'auth_users_verified':True,'vault_decryption_verified':True,
++                'roles_verified':True,'external_network':False,'services_started':['postgres'],
++                'dump_sha256':checksum(folder/'postgres.dump'),'roles_sha256':checksum(folder/'roles.sql'),
++                'configuration_sha256':{str(p.relative_to(config)):checksum(p) for p in sorted(config.rglob('*')) if p.is_file()}}
++    finally:
++        subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
++        shutil.rmtree(isolated,ignore_errors=True)
++
++
++def backup_selfhost(folder,cfg):
++    if not selfhost_enabled(cfg):return {'enabled':False}
++    pg=container(SELFHOST_CONTAINER)
++    if not pg.get('State',{}).get('Running') or not pg['Config']['Image'].startswith('supabase/postgres:17.'):
++        raise RuntimeError('Selfhost PG17 target is unavailable')
++    target=folder/'selfhost';target.mkdir(mode=0o700)
++    config=target/'configuration';config.mkdir(mode=0o700)
++    for name in ('.private.env','compose.yaml','upstream-manifest.json','upstream','functions'):
++        source=SELFHOST_ROOT/name
++        if source.is_symlink() or not source.exists():raise RuntimeError('Selfhost recovery configuration missing')
++        if source.is_dir():
++            if any(p.is_symlink() for p in source.rglob('*')):raise RuntimeError('Selfhost configuration contains unsupported symlink')
++            shutil.copytree(source,config/name)
++        else:shutil.copy2(source,config/name)
++    # Includes pgsodium_root.key: DB dumps alone cannot decrypt Vault secrets.
++    run(['docker','cp','-a',pg['Id']+':/etc/postgresql-custom',str(config/'pg-config')])
++    for path in config.rglob('*'):
++        if path.is_symlink() or not (path.is_file() or path.is_dir()):raise RuntimeError('Selfhost configuration contains unsupported file')
++        path.chmod(0o700 if path.is_dir() else 0o600)
++    values=env_file(config/'.private.env')
++    if not all(values.get(k,'').strip("'\"") for k in ('POSTGRES_PASSWORD','JWT_SECRET','ANON_KEY','SERVICE_ROLE_KEY','SMTP_USER','SMTP_PASS')):
++        raise RuntimeError('Selfhost private configuration incomplete')
++    if not (config/'pg-config/pgsodium_root.key').is_file():raise RuntimeError('Selfhost Vault recovery key missing')
++    database_bytes=int(selfhost_psql(pg['Id'],'SELECT pg_database_size(current_database())').strip())
++    if shutil.disk_usage(folder).free < max(3_000_000_000,database_bytes*4):
++        raise RuntimeError('Insufficient disk space for selfhost backup and isolated restore')
++    owner={'uid':int(run(['docker','exec',pg['Id'],'id','-u','postgres']).strip()),
++           'gid':int(run(['docker','exec',pg['Id'],'id','-g','postgres']).strip())}
++    private_json(target/'runtime-image.json',{'image_id':pg['Image'],'configured_image':pg['Config']['Image'],
++                                            'command':pg['Config']['Cmd'],'postgres_account':owner})
++    session=subprocess.Popen(['docker','exec','-i',pg['Id'],'psql','-X','-qAt','-U','supabase_admin','-d','postgres','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
++    try:
++        session.stdin.write(b'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;\nSELECT pg_export_snapshot();\n');session.stdin.flush()
++        snapshot=session.stdout.readline().decode().strip()
++        if not snapshot or not all(c in '0123456789ABCDEFabcdef-' for c in snapshot):raise RuntimeError('Selfhost backup snapshot unavailable')
++        session.stdin.write(SELFHOST_FINGERPRINT_SQL.encode()+b'\n');session.stdin.flush()
++        expected=json.loads(session.stdout.readline())
++        with (target/'postgres.dump').open('xb') as stream:
++            run(['docker','exec',pg['Id'],'pg_dump','-U','supabase_admin','-d','postgres','--format=custom','--snapshot='+snapshot],stdout=stream,timeout=900)
++            stream.flush();os.fsync(stream.fileno())
++    finally:
++        if session.poll() is None:
++            session.stdin.close();session.wait(timeout=30)
++    with (target/'roles.sql').open('xb') as stream:
++        run(['docker','exec',pg['Id'],'pg_dumpall','-U','supabase_admin','--roles-only'],stdout=stream,timeout=180)
++        stream.flush();os.fsync(stream.fileno())
++    private_json(target/'source-fingerprint.json',expected)
++    receipt=selfhost_restore(target,pg,expected)
++    private_json(target/'restore-check.json',receipt)
++    return {'enabled':True,'tables_verified':len(receipt['tables']),
++            'dump_sha256':receipt['dump_sha256'],'restore_verified':True}
+ 
+ 
+ def host_cache_path(container_path):
+@@ -197,6 +342,9 @@
+         report['phase']='canonical_export'
+         status(report)
+         cfg=env_file(ROOT/'.local/service.env')
++        report['phase']='selfhost_dump_restore'
++        status(report)
++        selfhost=backup_selfhost(folder,cfg)
+         store=GatewayJournal(cfg['SUPABASE_URL'],cfg['SUPABASE_PUBLISHABLE_KEY'],cfg['MEMORY_JOURNAL_TOKEN'],cfg['MEMORY_SPACE_ID'])
+         if previous.get('snapshot_cleanup_id'):
+             store.call('backup_release',snapshot_id=previous['snapshot_cleanup_id'])
+@@ -259,7 +407,7 @@
+         try:os.fsync(fd)
+         finally:os.close(fd)
+         report.update(state='ok',finished_at=datetime.now(timezone.utc).isoformat(),last_success_at=datetime.now(timezone.utc).isoformat(),
+-                      archive=artifact.name,bytes=artifact.stat().st_size,sha256=checksum(artifact),canonical=canonical,n8n=n8n_restore,restore_barrier=barrier)
++                      archive=artifact.name,bytes=artifact.stat().st_size,sha256=checksum(artifact),canonical=canonical,n8n=n8n_restore,restore_barrier=barrier,selfhost=selfhost)
+         status(report);prune(datetime.now(timezone.utc));return report
+     except Exception as error:
+         report.update(state='failed',finished_at=datetime.now(timezone.utc).isoformat(),error_type=type(error).__name__)

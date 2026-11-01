@@ -1,0 +1,62 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003",
+  "scope": "temporary read-only source export access only",
+  "trigger": "GOAL_GATE",
+  "disposition": "CONTINUE_BOUNDED",
+  "reviewer_task": "/root/migration_export_gate",
+  "review_role_binding": "astra-reviewer tool definition fixes gpt-6-astra/high; independent fresh fork none",
+  "reviewed_git_revision": "016e9c991724face8251638bae20a5a75abfc92a",
+  "reviewed_status_sha256": "89ec28062e0801d0ebec548c4a8f68d4b9dfde9e93185944e0511f1856ffe9f5",
+  "runtime_enforcement": "RULES_ONLY",
+  "source_project": "lghwikeotbkmojyyjglz",
+  "basis": [
+    "User approval for controlled complete migration",
+    "CLI 2.101.0 stored Management API access verified with projects list exit0 containing source project",
+    "https://supabase.com/docs/reference/api/v1-create-login-role",
+    "https://www.postgresql.org/docs/17/app-pgdump.html"
+  ],
+  "permitted": "One read_only:true login-role API request, private credentials, TLS identity/permission check, complete PG17 export with row_security=off",
+  "stop_conditions": [
+    "Unexpected write permissions",
+    "Missing complete Auth or application export rights",
+    "Existing finite package budget exhausted"
+  ],
+  "forbidden": [
+    "Password reset",
+    "Automatic write-role fallback or permission widening",
+    "Network unban",
+    "enable-row-security dump workaround",
+    "Production cutover"
+  ],
+  "budget": "At most two export/integrity cycles within existing phase2 package budget",
+  "cleanup_limits": [
+    "TTL does not prove automatic role deletion",
+    "Never bulk-delete CLI login roles",
+    "Only drop own genuinely new role; preexisting shared role must not be removed"
+  ],
+  "acceptance_limits": [
+    "Full export not yet accepted",
+    "Target restore not yet accepted",
+    "Production cutover not yet accepted"
+  ],
+  "prior_export_cycles": "0 reported by implementing worker, no technical controller receipt",
+  "supplement": {
+    "disposition": "CONTINUE_BOUNDED",
+    "reviewer_task": "/root/migration_export_gate",
+    "scope": "one equivalent renewal after actual TTL expiry and trusted CA readiness",
+    "basis": [
+      "https://www.postgresql.org/docs/17/sql-set-role.html",
+      "https://www.postgresql.org/docs/17/sql-createrole.html"
+    ],
+    "required": [
+      "Server-time expiry proof",
+      "Actual role attributes and SET membership",
+      "SET ROLE supabase_read_only_user plus explicit transaction_read_only=on",
+      "Effective SQL write privileges and complete Auth/application readability",
+      "TLS verify-full and dump row_security=off"
+    ],
+    "budget": "One additional read_only:true API credential request only; no counter reset; within at most2 existing export/integrity cycles",
+    "stop": "Second access window failing requires evidenced blocker; no third automatic renewal or review-fix loop",
+    "provenance_limits": "API201,TTL300 and live-role attributes relayed by builder, not independently re-read by reviewer"
+  }
+}

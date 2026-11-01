@@ -1,0 +1,160 @@
+{
+  "problem_id": "PROMOTED_DEPLOYMENT_ID_AND_READINESS",
+  "cutover_problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "BLOCKED_RETURN_NO_AUTOMATIC_FOLLOWUP",
+  "updated_at": "2026-10-04T02:59:03.121680+00:00",
+  "mode": "BOUNDED_BUILDER_LOCAL_ONLY",
+  "operational_go": false,
+  "delegation": false,
+  "commits_created": false,
+  "authorizing_review": {
+    "path": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-frontend-control-final-goal-1/result.json",
+    "sha256": "a3757ff8b4cba9527ac6682932f39a009f22a97d484582d89185bb078b4ee920",
+    "session": "01a104cd-279c-73e3-b4da-a40c64a51e7f",
+    "decision": "CHANGE_APPROACH"
+  },
+  "budget": {
+    "packages_consumed": 1,
+    "full_cycles_remaining": 0,
+    "targeted_invocations_allowed": 1,
+    "targeted_invocations_consumed": 1,
+    "further_automatic_invocations": 0
+  },
+  "owned_file_hashes": {
+    "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py": "1369324ddaa6975c00dd9092d98ea32fe5ec6f747b1f34918ca210b3bd44d3cb",
+    "working-memory/ops/hetzner-migration/test_final_frontend_control.py": "40fcb87c4efa6bcd5ef71e863b7e650ae8e7869962a3db73ba68144b5b9c353b"
+  },
+  "owner_helper": {
+    "edited": false,
+    "path": "working-memory/ops/hetzner-migration/final_owner_link_recovered_once.py",
+    "sha256": "a9dc82446af0827b14190296689cc49bd2224dfdc12c466c675a82184a7ba8f7",
+    "reason": "OWNER canonical identity guard is in shared control.load; wrapper unchanged"
+  },
+  "implementation": {
+    "status": "IMPLEMENTED_UNVALIDATED",
+    "actual_cli54_parser": "Full stdout/stderr saved before parsing exact creation inspectorUrl; frozen scope/project and non-PREVIEW dpl identity anchored, exact result URL inspected",
+    "readiness": "180 seconds monotonic deadline; each inspect bounded by remaining time; original rollback aliases permitted while pending, foreign identities stop; no second promotion",
+    "canonical": "production_deployment_id, promote_result_url, promoted_url, readiness_count and promote-primary SHA retained; OWNER aliases compared to SHA-bound canonical ID with artifact/recovery requirements",
+    "ownership": "Both original ENV booleans and existing return ownership semantics preserved"
+  },
+  "validation": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "-v",
+      "-f",
+      "test_final_frontend_control.DeploymentIdentityFollowupTests.test_new_id_pending_then_ready",
+      "test_final_frontend_control.DeploymentIdentityFollowupTests.test_alias_mismatch_or_expiry_stops_without_second_mutation",
+      "test_final_frontend_control.DeploymentIdentityFollowupTests.test_owner_actual_receipt_id_accepts_and_mismatch_denies"
+    ],
+    "invocations": 1,
+    "selected_families": 3,
+    "methods_executed": 1,
+    "passed": 0,
+    "errors": 1,
+    "remaining_families_not_run": 2,
+    "full25_suite_executed": false,
+    "question": "Does the new promotion identity progress from pending to READY, stop on foreign alias/expiry, and constrain OWNER to receipt ID?",
+    "failure_endpoint": "First failure; failfast stopped; no code correction or second run",
+    "cause": "Harness omitted restrictive umask. FakeOps private_dir created parents; intermediate control directory became 0755 and execute refused Unsafe private directory before load/promotion. Underlying deployment identity behavior remains unvalidated.",
+    "stdout": "/private/tmp/frontend-control-id-followup-muqukfyj/stdout-private.txt",
+    "stderr": "/private/tmp/frontend-control-id-followup-muqukfyj/stderr-private.txt",
+    "result": "/private/tmp/frontend-control-id-followup-muqukfyj/result.json",
+    "result_sha256": "e93fa497dc02e31e997bfca6e361feba5543068ccd12cd080a5ac5463c2d9c60",
+    "private_security": "Retained private evidence directories normalized to 0700/files0600 after failed run; this was evidence protection, not a test retry"
+  },
+  "prior1558": {
+    "count": 1558,
+    "mismatches": []
+  },
+  "protected": {
+    "original_count": 69,
+    "adjusted_count": 68,
+    "excluded_root_context": {
+      "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py": {
+        "prior_sha256": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+        "package_start_sha256": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+        "current_sha256": "c00187109eb75628b2e17dc541ee712c2f9aa8e88483c6c3df6b3eea1f385110"
+      },
+      "working-memory/ops/hetzner-migration/final_target_partial_source_return_once.py": {
+        "prior_sha256": null,
+        "package_start_sha256": null,
+        "current_sha256": "a7067eebfb01bc4ede1884bafb34f6ebfd4352b0e8ff0d6ab78b6eaa702ba3b8"
+      }
+    },
+    "adjusted_mismatches": [],
+    "proof": "/private/tmp/frontend-control-id-followup-muqukfyj/protected-adjusted.json",
+    "source19_count": 19,
+    "source19_proof": "/private/tmp/frontend-control-id-followup-muqukfyj/source19-check.json",
+    "frozen7_count": 7,
+    "frozen7_mismatches": [],
+    "source104_archive_sha_matches": true,
+    "tracked_inventory_changes_during_package": [
+      "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py",
+      "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py",
+      "working-memory/ops/hetzner-migration/test_final_frontend_control.py"
+    ],
+    "source19_original_inventory_mismatches": [
+      "final_prewrite_rollback_once.py"
+    ],
+    "source19_root_owned_changes": [
+      "final_prewrite_rollback_once.py"
+    ],
+    "source19_adjusted_count": 18,
+    "source19_adjusted_mismatches": [],
+    "adjusted_scope_note": "Original protected69 inventory contains final_prewrite_rollback_once.py but not final_target_partial_source_return_once.py: 68 unchanged files after explicit exclusions. Source19 contains Root-owned prewrite: 18 unchanged plus separately reported Root context. Neither Root-owned helper was written by Builder.",
+    "builder_owned_changes_during_package": [
+      "working-memory/ops/hetzner-migration/frontend-final-promote-control-once.py",
+      "working-memory/ops/hetzner-migration/test_final_frontend_control.py"
+    ],
+    "root_owned_changes_during_package": [
+      "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py"
+    ]
+  },
+  "private_primaries": {
+    "directory": "/private/tmp/frontend-control-id-followup-muqukfyj",
+    "inventory": "/private/tmp/frontend-control-id-followup-muqukfyj/all-private-file-hashes.json",
+    "inventory_sha256": "1a480fd4a49c5b7381533226d3df5fc2092475de0d3f6103a4bc48e4bcb4f97c",
+    "files_sealed": 42,
+    "retained_outside_TempDirectory": true,
+    "modes": "0700 directories, 0600 files",
+    "diff": "/private/tmp/frontend-control-id-followup-muqukfyj/owned.diff",
+    "diff_sha256": "07a14ef1cf12a4062f6aae44134bf4c8548d5376d66bcafc392a1f8bff439c75"
+  },
+  "cli_primary": {
+    "path": "/Users/glebkomzin/.hermes/node/lib/node_modules/vercel/dist/commands-bulk.js",
+    "sha256": "150bbfe7e314609937a6abfb2f7b97953a3ee232341fbba48b03910316cbdb4d",
+    "inspected_lines": [
+      "46462-46493 creation path",
+      "33500-33578 exact inspectorUrl normalization",
+      "33579-33695 read-only inspect",
+      "33794-33843 actual inspect JSON name/contextName fields and exit codes"
+    ]
+  },
+  "production_operations": {
+    "network_calls": 0,
+    "env_adds": 0,
+    "promotions": 0,
+    "owner_links": 0,
+    "browser_flows": 0,
+    "source_returns": 0,
+    "writer_opens": 0
+  },
+  "not_source_loop": true,
+  "root_cron_contract": "Independent Root-owned changes; not overwritten or treated as Builder failure; no Source recovery budget reset",
+  "remaining_required": [
+    "Root decision on blocked bounded package; no automatic followup",
+    "Fresh independent actual-hash GOAL_GATE before any Promote or OWNER dispatch",
+    "Actual recovered healthy runtime and current projection; Source frozen and timer held",
+    "Actual FULL backup/isolated restores and same Mac inventory",
+    "Actual promotion and original Owner/SDK production flow remain future mandatory scope"
+  ],
+  "skills_read": [
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/recovery.md"
+  ],
+  "native_provenance": "No new model route or API used; this turn does not expose independent runtime model/effort attestation",
+  "enforcement": "No operational GO or runtime protection claimed"
+}

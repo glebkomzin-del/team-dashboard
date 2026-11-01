@@ -1,0 +1,87 @@
+{
+  "package": "SEMANTIC-ENDSTATE-20261005",
+  "status": "local_candidate_review_required",
+  "live_baseline": "/opt/dashboard-memory-canonical-draft",
+  "production_image": "2c935de2",
+  "production_pipeline": "canonical1:7c676636",
+  "files": [
+    {
+      "path": "hybrid_pipeline.py",
+      "baseline_sha256": "69106e81fae267d40e273051c79a7ab77f551c7a05fe30e886dc3f6d348a55e7",
+      "patched_sha256": "1779092983f50c782583314743c4219985ddd4e75b9bd5df894a9fbcd0a4dc18"
+    },
+    {
+      "path": "processor.py",
+      "baseline_sha256": "fd737fbe246f31ffd11f1bcfc128f1ea30382c83220829964f68a66c9a7b38ce",
+      "patched_sha256": "bdd9a60ec60e65d9ca6e2790295788bf17bde0e7641aacc9b26b6f221051dd01"
+    },
+    {
+      "path": "future_summary.py",
+      "baseline_sha256": "0abd3852b223c9cfb2fd03b4d4f8c8992f6e339187334b86b5c2b133e8c02eb0",
+      "patched_sha256": "e54702ff44bbc12689a95ef602d053abc68d184e1dc321bd5e649e44222ab34d"
+    },
+    {
+      "path": "canonical_worker.py",
+      "baseline_sha256": "4e5e9e28362e1a7f6a1a63311428de4e027f7e4e149d189c185e0cb725159acf",
+      "patched_sha256": "d1750a27a72ff64ca5525702218af7c0f4ac7661c8262c5aa81d9eadaa17ac24"
+    },
+    {
+      "path": "canonical_archive.py",
+      "baseline_sha256": "46f1f804756963c8873241af9e375c8482ec6aa3ad72f448553747de4f09d9ef",
+      "patched_sha256": "a72cf81734b162a6a6df075c7fc101b8efe1bd26b7cf8daf5d029f368abba0d8"
+    },
+    {
+      "path": "journal_service.py",
+      "baseline_sha256": "6a41f9db55030356f88c826cbed8b7281ed4f1cb01a3cfb65a6b5550cf643546",
+      "patched_sha256": "dc8af8292f874f1743ad72fa9b8a1434d1f6bdf2b347168c767800964e3e7cb1"
+    },
+    {
+      "path": "hybrid_index.py",
+      "baseline_sha256": "4ba02086abcf8df5b7bb6a355b200129336dc2a7abda1bcc39c85198d3c02e8a",
+      "patched_sha256": "5c4c18b8f436c6a9e88198e214a3a05270bcf3c2ff6c413d2487161bf5baa72d"
+    },
+    {
+      "path": "evaluation/endstate-gate-schema-v1.json",
+      "baseline_sha256": null,
+      "patched_sha256": "ef944841d82d0207df6fcbd3f80a63534badfe857f31c39f231ec1f6102a04b5"
+    },
+    {
+      "path": "evaluation/endstate-gate-prompt-v1.txt",
+      "baseline_sha256": null,
+      "patched_sha256": "346aa5fc4f71495544e4e4e7422dfbce23a9988ef28ca8ae90d5db4a50d4e021"
+    }
+  ],
+  "patch_sha256": "7f78fc2b5058edaa8fed65ec053a1a2011a2e048881448c4c82951e14aa10358",
+  "private_replay_prompt_sha256": "81cf75f5269a3ca6e5ada2e0a4ab9f94afa2290ce0b899523e59dc6984f5ed3d",
+  "private_source_body_sha256": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "saved_paid_calls": 23,
+  "saved_call_ledger_micro_usd": 348644,
+  "review_assets": [
+    {
+      "path": "evaluation/semantic-endstate-20261005/replay.py",
+      "sha256": "92603a0fabf21c4267ee9c7ac4dbc0dd505af3555fd4c31dee8a9b0a5b69545f"
+    },
+    {
+      "path": "evaluation/semantic-endstate-20261005/test_endstate.py",
+      "sha256": "e25aa78512450b835a121a4be1a41bf85e4796ec020e33a45c205e29f24e5ad6"
+    },
+    {
+      "path": "evaluation/semantic-endstate-20261005/test_archive_generation.py",
+      "sha256": "86712ed6c2234a7828ca56eecd140a6f0e54cf29bb1a0060e5807a22bf64175e"
+    },
+    {
+      "path": "test_hybrid.py",
+      "sha256": "31d3bfcef99c5a93f3d5e587310b1b6dee234d21b1ac0e31f087f6b306fcbf80"
+    }
+  ],
+  "private_replay_schema_sha256": "ef944841d82d0207df6fcbd3f80a63534badfe857f31c39f231ec1f6102a04b5",
+  "private_replay_input_sha256": "b26fdbac4479ccf9c6260558df58584f6ea1a0349f41803f21725467c2fba0d6",
+  "reference_correction": {
+    "reason": "Preserve saved pending reviews of independent commitments; require corrected contradictory paragraph 2 with U0134; independent semantic Original review remains mandatory",
+    "product_patch_unchanged": true,
+    "new_test_count": 5,
+    "exit_code": 0,
+    "tests_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests_stderr_sha256": "a2e97b7515932007aa3d038fcfa41fdd107cb2467ff84d182512ff3c7e24f045"
+  }
+}

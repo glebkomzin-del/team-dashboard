@@ -30,3 +30,4 @@ bundle.html
 *.njsproj
 *.sln
 *.sw?
+.worktrees/

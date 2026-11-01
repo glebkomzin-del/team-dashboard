@@ -1,0 +1,65 @@
+--- a/src/features/working-memory/processing-status.ts
++++ b/src/features/working-memory/processing-status.ts
+@@ -45,7 +45,8 @@
+   if (workerState === 'starting' || workerState === 'ready') {
+     return { kind: 'configured', message: 'Automatische Verarbeitung ist eingerichtet und wird gestartet.' }
+   }
+-  if (workerState === 'paused' || workerState === 'disabled') {
++  if (workerState === 'disabled') return { kind: 'unknown', message: 'Automatik ist eingeschaltet; der gemeldete ausgeschaltete Workerstatus bestätigt den aktuellen Verarbeitungsstand nicht.' }
++  if (workerState === 'paused') {
+     return { kind: 'paused', message: 'Automatische Verarbeitung ist angehalten.' }
+   }
+   if (workerState === 'waiting') return { kind: 'waiting', message: 'Automatik ist eingeschaltet und wartet auf den nächsten Verarbeitungsschritt. Ein Abschluss ist noch nicht bestätigt.' }
+@@ -89,8 +90,9 @@
+ 
+ export function operationsStatus(operations: Operations | undefined): ProcessingStatus {
+   const processing = operations?.processing
+-  const status = processingStatus(processing === undefined ? undefined : processing.config?.enabled ?? null, operations?.worker.state)
+-  if (processing?.config?.enabled === true && status.kind !== 'unknown') {
++  let status = processingStatus(processing === undefined ? undefined : processing.config?.enabled ?? null, operations?.worker.state)
++  if (processing?.config?.enabled === true && operations?.worker.state === 'disabled' && (operations.read_only === true || operations.mode === 'readonly')) status = { kind: 'paused', message: 'Automatische Verarbeitung ist im Lesemodus ausgeschaltet.' }
++  if (processing?.config?.enabled === true && (status.kind !== 'unknown' || operations?.worker.state === 'disabled')) {
+     const fence = processingFence(processing)
+     if (fence === true) return { kind: 'paused', message: 'Weitere Quellen warten auf die Klärung eines nicht isolierten Verarbeitungsschritts.' }
+     if (fence === undefined && status.kind !== 'paused') return { kind: 'unknown', message: 'Ob eine weitere Quelle die Verarbeitung blockiert, ist derzeit nicht bestätigt.' }
+--- a/tests/processing-status.test.mjs
++++ b/tests/processing-status.test.mjs
+@@ -10,7 +10,7 @@
+   assert.equal(processingStatus(true, 'ready').kind, 'configured')
+   assert.equal(processingStatus(true, 'running').kind, 'running')
+   assert.equal(processingStatus(true, 'paused').kind, 'paused')
+-  assert.equal(processingStatus(true, 'disabled').kind, 'paused')
++  assert.equal(processingStatus(true, 'disabled').kind, 'unknown')
+   assert.equal(processingStatus(true, 'unavailable').kind, 'unknown')
+   assert.equal(processingStatus(true, 'unexpected').kind, 'unknown')
+ })
+@@ -194,3 +194,29 @@
+   assert.equal(operationsStatus(data).kind, 'unknown')
+   assert.match(processingReason(data.worker.reason), /technische Störung/)
+ })
++
++
++test('an enabled configuration with a preceding disabled worker report never proves a halt or progress', () => {
++  const data = operations([job('running', false)], { worker: 'disabled', isolated_count: 0 })
++  data.processing.blocking_job = null
++  data.processing.accounted_micro_usd = 314144
++  assert.equal(operationsStatus(data).kind, 'unknown')
++  assert.match(operationsStatus(data).message, /bestätigt den aktuellen Verarbeitungsstand nicht/)
++  for (const readOnly of [undefined, false]) {
++    data.read_only = readOnly
++    assert.equal(operationsStatus(data).kind, 'unknown')
++  }
++  data.read_only = true
++  assert.equal(operationsStatus(data).kind, 'paused')
++  delete data.read_only
++  data.mode = 'readonly'
++  assert.equal(operationsStatus(data).kind, 'paused')
++  data.mode = 'production'
++  data.processing.blocking_job = hiddenBlocker('provider_shared_failure')
++  assert.equal(operationsStatus(data).kind, 'paused')
++  data.processing.blocking_job = null
++  data.processing.config.enabled = false
++  assert.equal(operationsStatus(data).kind, 'paused')
++  delete data.processing
++  assert.equal(operationsStatus(data).kind, 'unknown')
++})

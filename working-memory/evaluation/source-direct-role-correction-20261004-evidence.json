@@ -1,0 +1,27 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "LOCAL_ROLE_GUARD_CORRECTION_PASSED_AUTH_NOT_ATTEMPTED",
+  "actual_api_role": "cli_login_supabase_read_only_user",
+  "lease_created_at": "2026-10-04T00:18:40.453395+00:00",
+  "ttl_seconds": 300,
+  "leases": 1,
+  "authenticated_probes": 0,
+  "source_freeze": 0,
+  "full_dump": 0,
+  "target_mutations": 0,
+  "failure": "Actual official readonly API role cli_login_supabase_read_only_user was excluded by legacy cli_login_postgres-prefix assertion. Exact API role added; current facts/TLS/readonly/env/exact bound role guards retained.",
+  "private_lease_http_sha256": "5de3bfd1f325457ede3338080900d792b960b9fbcb9fd66b0812abb0101696d0",
+  "test_primary": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/direct-role-correction-tests.txt",
+  "test_primary_sha256": "75408baee87239bccf77fbbdba2091ae8aaca8c6d6a3ee3d93a3bd5617b9e5f4",
+  "tests_passed": 16,
+  "syntax_passed": true,
+  "correction_cycles_used": 1,
+  "script_hashes": {
+    "source_direct_route.py": "1cb323399a8e215727110d1519ed634fb4cde2c73fc4fc652b79da0d8eadbef7",
+    "test_source_direct_route.py": "d5a84fa1b20aa590d8a230615c7897fc3ae325a29c0713b55df7f0667e9f489c",
+    "source_direct_preflight_once.py": "800ca78008762edb3dc1734a8dc666e88f38dbe97504486f9ada723e5b7d32ae",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea"
+  },
+  "operational_go": false,
+  "enforcement": "RULES_ONLY"
+}

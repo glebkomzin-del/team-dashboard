@@ -1,0 +1,122 @@
+--- frozen-v3/openai_provider.py
++++ token-fix/openai_provider.py
+@@ -6,12 +6,24 @@
+ import json
+ import os
+ from pathlib import Path
++import sys
+ import time
+ import urllib.error
+ import urllib.request
++from durable_calls import SharedProviderFailure
+ 
+ MODEL = 'gpt-6.1-sol'
+ REASONING_EFFORT = 'medium'  # Standard production reasoning; no provider fallback.
++
++
++class CounterUnavailable(SharedProviderFailure):
++    def __init__(self, kind, http_status=None):
++        self.kind = kind
++        self.http_status = http_status
++        diagnostic = {'component': 'input_token_counter', 'type': kind,
++                      'http_status': http_status}
++        print(json.dumps(diagnostic, separators=(',', ':')), file=sys.stderr, flush=True)
++        super().__init__('Provider input token count unavailable')
+ 
+ 
+ def _metadata_text(value, limit=80):
+@@ -154,13 +166,28 @@
+ def count_input_tokens(prompt, model, schema):
+     if model != MODEL or not isinstance(schema, dict):
+         raise ValueError('Unsupported counting input')
++    # The count endpoint accepts only this subset of the generation request.
++    # In particular, service_tier belongs to generation, not token counting.
++    generation = response_input(prompt, model, schema)
++    counting = {name: generation[name] for name in ('model', 'input', 'reasoning', 'text', 'truncation')}
++    try:
++        key = api_key()
++    except (RuntimeError, ValueError, OSError):
++        raise CounterUnavailable('credential') from None
+     req = urllib.request.Request('https://api.openai.com/v1/responses/input_tokens',
+-        data=json.dumps(response_input(prompt, model, schema)).encode(),
+-        headers={'Authorization': 'Bearer '+api_key(), 'Content-Type': 'application/json'})
+-    with urllib.request.urlopen(req, timeout=30) as response: result = json.load(response)
+-    count = result.get('input_tokens')
+-    if result.get('object') != 'response.input_tokens' or type(count) is not int or count <= 0:
+-        raise ValueError('Invalid provider token count; generation stopped')
++        data=json.dumps(counting).encode(),
++        headers={'Authorization': 'Bearer '+key, 'Content-Type': 'application/json'})
++    try:
++        with urllib.request.urlopen(req, timeout=30) as response: result = json.load(response)
++    except urllib.error.HTTPError as error:
++        status = error.code if type(error.code) is int else None
++        error.close()
++        raise CounterUnavailable('http', status) from None
++    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
++        raise CounterUnavailable('transport') from None
++    count = result.get('input_tokens') if isinstance(result, dict) else None
++    if not isinstance(result, dict) or result.get('object') != 'response.input_tokens' or type(count) is not int or count <= 0:
++        raise CounterUnavailable('invalid_count')
+     return count
+ 
+ 
+--- frozen-v3/server.py
++++ token-fix/server.py
+@@ -6,6 +6,7 @@
+ import re
+ import sys
+ import traceback
++from urllib.error import HTTPError
+ from pathlib import Path
+ import threading
+ import time
+@@ -90,8 +91,25 @@
+       for frame in traceback.extract_tb(error.__traceback__)[-8:]]
+     diagnostic={'component':'canonical_worker','error_type':type(error).__name__,
+       'attempt':attempt,'frames':frames}
++    if isinstance(error,TransientGateway):
++        gateway=getattr(error,'diagnostic',{})
++        diagnostic['gateway']={key:gateway.get(key) for key in
++          ('op','type','http_status','sqlstate','attempts')}
++    elif isinstance(error,HTTPError):
++        diagnostic['http_status']=error.code if type(error.code) is int else None
+     print(json.dumps(diagnostic,separators=(',',':')),file=sys.stderr,flush=True)
+     return diagnostic
++
++def retain_worker_transient(status,recent):
++    """Keep a prior transient visible only while the same leased job blocks."""
++    if (not recent or not isinstance(status,dict) or status.get('state')!='waiting'
++            or status.get('reason')!='earlier_job_leased'
++            or not isinstance(status.get('job_id'),str)):
++        return status,None
++    job_id=status['job_id']
++    if recent.get('job_id') not in (None,job_id):return status,None
++    recent={**recent,'job_id':job_id}
++    return {**status,'previous_transient':recent['diagnostic']},recent
+ 
+ def backup_status(path):
+     try:
+@@ -431,15 +449,19 @@
+ def work():
+     global WORKER_STATUS
+     if JOURNAL:
+-        worker=None;failures=0
++        worker=None;failures=0;recent_transient=None
+         while not STOP.is_set():
+             try:
+                 if worker is None:worker=CanonicalWorker(JOURNAL,MODEL)
+-                WORKER_STATUS=worker.step();failures=0;delay=5
++                result=worker.step()
++                WORKER_STATUS,recent_transient=retain_worker_transient(result,recent_transient)
++                failures=0;delay=5
+             except (TransientGateway,OSError) as error:
+                 failures+=1;delay=min(60,5*2**min(failures-1,4))
+-                WORKER_STATUS={'state':'unavailable','reason':'storage_unavailable','retryable':True,'transient':True,
+-                  'retry_in_seconds':delay,'error_type':type(error).__name__}
++                diagnostic=worker_error(error,failures)
++                recent_transient={'diagnostic':diagnostic,'job_id':None}
++                WORKER_STATUS={'state':'unavailable','reason':'worker_transient','retryable':True,'transient':True,
++                  'retry_in_seconds':delay,'error_type':type(error).__name__,'diagnostic':diagnostic}
+             except JournalUnavailable as error:
+                 failures+=1;delay=min(60,5*2**min(failures-1,4))
+                 WORKER_STATUS={'state':'unavailable','reason':'storage_unavailable','retryable':True,'transient':False,

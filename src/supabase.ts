@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
-
-// Konfigurierbar über .env (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY);
-// die Fallbacks halten den Build ohne .env lauffähig (Anon-Key ist öffentlich).
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://lghwikeotbkmojyyjglz.supabase.co'
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnaHdpa2VvdGJrbW9qeXlqZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTUyNDMsImV4cCI6MjA5MjI3MTI0M30.pyWWro6BNGf_BeBNi3W-IgrTPGOVZymAjemO-ZVO8TM'
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, getSession, SUPABASE_URL } from './auth'
+export { supabase, signIn, signOut, resetPassword, getSession, onAuthStateChange } from './auth'
 
 // ── Types matching DB schema ──
 export interface DbTeamMember { id: string; name: string; member_type: string; email: string | null }
@@ -260,32 +254,6 @@ export async function insertOpenItem(fields: { title: string; description?: stri
   const { data, error } = await supabase.from('open_items').insert(fields).select().single()
   if (error) throw error
   return data as DbOpenItem
-}
-
-// ── Auth ──
-export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) throw error
-  return data
-}
-
-export async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  if (error) throw error
-}
-
-export async function resetPassword(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email)
-  if (error) throw error
-}
-
-export async function getSession() {
-  const { data } = await supabase.auth.getSession()
-  return data.session
-}
-
-export function onAuthStateChange(callback: (session: any) => void) {
-  return supabase.auth.onAuthStateChange((_event, session) => callback(session))
 }
 
 // Nightly job toggle

@@ -1,0 +1,8 @@
+{
+  "openai_provider.py": "ebdcb0bb6944f144a34e438103877e68ad66fa89de00de9dca15c4cdef97d5ad",
+  "durable_calls.py": "2ba9ff6c70ab7639882275e699ec1839c98a0a184ae9ba48d1dcf936f14f732f",
+  "canonical_worker.py": "0764edd0f301e6f2a66b690a7c1f073f7af01d473eedc3814f30716dd6b882c7",
+  "hybrid_pipeline.py": "f5baf779de040a64759ffee04ce8493b43bed0a64b72890d081d8c771de1bcfa",
+  "processor.py": "76fb213e98d8593f10e9cea8cf0867d06e000d1f5244457a43fa96a5cc3c0e34",
+  "job_recovery.py": "f18c5e30a28f831d10635a7d7505c751b58858a772a7337a1aa1bb53fc8c4b44"
+}

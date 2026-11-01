@@ -1,0 +1,32 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-PUBLIC-API",
+  "trigger": "GOAL_GATE",
+  "reviewer": "/root/public_api_gate",
+  "role_binding": "astra-reviewer fixed gpt-6-astra/high",
+  "mode": "read-only",
+  "runtime_enforcement": "RULES_ONLY",
+  "disposition": "CONTINUE_BOUNDED",
+  "reviewed_revision": "5c4648da44c9ee60f489add83dfb567d7160e7b9",
+  "manifest_sha256": "22a0fea32cba2ac7bb7ddf2cefe01af112f397a76e13e41650a1fb97d649ec28",
+  "original_nginx_sha256": "bed7ff8f2bb5cb78ffddf4744c3eefb2fed28476a1d783b7b184bcae8e2ad497",
+  "snippet_sha256": "13d29ef97ccd84ad8d31f850e8d28e250457b445192045fbefb91e529bea453d",
+  "allowed": "one guarded Nginx publication + health/RLS/legacy/existing-route verification; then one actualOwner readonly browserflow/WrongOwnerDenied",
+  "excluded": "Sourcefreeze/finalrestore/Productionalias/env/writerchange",
+  "gaps": "Original303Location absent; sessionbootstrap alone not interactive login/publicRecovery; Host/Docker restart not tested",
+  "execution_result": {
+    "nginx_cycle": 1,
+    "result": "PUBLIC_STAGE_API_PASSED",
+    "commit": "62338d1",
+    "updated_nginx_sha256": "7cfba8642673162a182f67926bc26dbb0def8bdafecd7952e7ee5c524511fe51",
+    "source_and_target_revisions_and_jobs_unchanged": true,
+    "frontend_flow": {
+      "result": "READONLY_OWNER_FLOW_PASSED",
+      "commit": "691758b",
+      "receipt": "ops/hetzner-migration/frontend-integration-evidence.json",
+      "cycles_used": 1,
+      "owner_overview_archive_summary_same_original": true,
+      "wrong_owner_denied": true,
+      "interactive_login_or_recovery_claimed": false
+    }
+  }
+}

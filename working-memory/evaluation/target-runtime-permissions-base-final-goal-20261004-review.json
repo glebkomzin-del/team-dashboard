@@ -1,0 +1,52 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "PERMISSIONS_ONLY_TARGET_COMPLETION",
+  "decision": "CONTINUE_BOUNDED",
+  "operational_target_go": true,
+  "reviewed_at": "2026-10-04T02:36:23Z",
+  "diagnosis": "FROM_BASE_REFERENCE geschlossen. Der tatsächliche Diff gegen c4f3e08 enthält ausschließlich BASE_ALIAS, dessen Verwendung in FROM, den Alias-ID-Preflight und die synthetische Aliaszuordnung. Alle vier committed Ausgangshashes entsprechen dem vorherigen Review; alle vier aktuellen Hashes stimmen mit dem Auftrag überein. Der Alias-ID-Check liegt vor Attempt-Marker und erster Mutation. COPY --chmod=0644 bleibt erhalten.",
+  "code_blockers": [],
+  "prior_review": {
+    "path": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permissions-final-goal-1/result.json",
+    "sha256": "f08fe20924cb503191f838dbf836c41f9ed2b742ef9c08bca9b864872d69ef54",
+    "preserved": "Sämtliche unveränderten Whole-helper-, Recovery-, Proof-, Reihenfolge- und CURRENT_OPERATIONAL_STATE-Abnahmen sowie bisherigen Stage-/Runtime13-/Healthy7-Abnahmen bleiben gültig. Die früher geprüften 36 Fälle, 5888 Artefakte und 69 geschützten Dateien werden als bestehende Evidenz übernommen, hier nicht erneut geprüft."
+  },
+  "script_hashes": {
+    "final_target_runtime_permissions_followup_once.py": "dd9c283bb73680964d7e18e215bbb02f2dc4afb084e5adcee0271513666bfa2d",
+    "test_final_target_runtime_permissions_followup.py": "3ebaf02401e7e2a87ce389c73c3dbdc6a492d02afcbceaf516bf8b8992aa4a26",
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "final_target_partial_source_return_once.py": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319"
+  },
+  "root_preconditions_before_operation": [
+    "Alle Voraussetzungen des vorherigen Reviews bleiben verbindlich. Root bestätigt die tatsächlichen Primärbelege inhaltlich und bindet sämtliche 15 Referenzen einschließlich ihrer Primärbelege; aktuelle Beobachtungen höchstens 300 Sekunden, Gate und Review höchstens 600 Sekunden alt.",
+    "Source43, Target43 und eingefrorene Baseline müssen übereinstimmen; Source bleibt eingefroren, Writer und Frontend ungeöffnet. Originalauth, Vault, vollständige Config, Vorstufen, Timer und leere Arbeit bleiben gemäß bestehendem Vertrag belegt.",
+    "Die tatsächlichen aktuellen Image-Metadaten vor Ausführung auffrischen; dashboard-canonical-baseline:hz20261003 muss auf rt.BASE zeigen. Originalhost, Sourceimage, Originalartefakt und ausführbare PartialReturn-Bindungen müssen unverändert beziehungsweise frisch gültig sein.",
+    "Alle neun Host-Abhängigkeiten und Originalhashes bereitstellen. Das Execution-Gate muss exakt dieselbe Vierdateien-script_hashes-Map enthalten. Python ohne deaktivierte Assertions ausführen.",
+    "Alte Dockerfile und Badimage erhalten. Default-Nonroot-Lesbarkeit mit drei SHA-Prüfungen und Base-Layers+1 vor Hoständerungen nachweisen; Health innerhalb des bestehenden 90-Sekunden-Fensters vor Nginx."
+  ],
+  "budget": {
+    "prior_offline_cycles_consumed": 2,
+    "full_offline_cycles_remaining": 0,
+    "new_full_test_campaign": false,
+    "corrected_image_builds": 1,
+    "host_completion_dispatches": 1,
+    "further_automatic_fix_loops": 0
+  },
+  "history_and_scope": "Originalrestore1 PASS und Originalruntime1 FAILED bleiben erhalten. Erst tatsächlicher Erfolg rechtfertigt RecoveredRuntime und CURRENT_OPERATIONAL_STATE mit Originalfehler-SHA und Recovery-SHA. Kein GO für Frontend, Owner oder Writer. Target-FULL-Backup und separate Mac-Sicherung bleiben dem anschließend gesondert autorisierten Umfang zugeordnet. Keine Wiederholung von Lease/Dump/Freeze/Restore/Vault/ACL/Config/API-Start.",
+  "failure_endpoint": "Nach operativem Fehler höchstens einmal bestehender PartialReturn mit dann frischen sicheren Belegen und ausgeschlossenem Writer-/Frontendwechsel; andernfalls Maintenance und blockierte Rückgabe. Keine weitere automatische Reparaturschleife.",
+  "validation_limits": "Dieses Review bestätigt Korrekturdiff und Hashbindungen. Aktuelle operative Root-Belege und tatsächlicher Build-/Hosterfolg wurden hier nicht geprüft. Keine Tests, Implementierung, Delegation oder Remoteoperationen ausgeführt.",
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "session": "01a104c3-e954-7f71-9096-05783eeb3531",
+    "runtime_header": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permissions-base-final-goal-1/stderr-private.txt:1-35",
+    "independence": "Frischer eigenständiger lokaler Reviewlauf; eigener tatsächlicher Header geprüft, Session verschieden vom vorherigen Reviewer.",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references_loaded": [
+      "independent-review.md",
+      "recovery.md"
+    ],
+    "enforcement": "RULES_ONLY"
+  }
+}

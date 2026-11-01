@@ -1,0 +1,85 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-STAGE-WRITE-REPLAY",
+  "alias_of": "HZ-MIGRATION-20261003-STAGE-WRITE",
+  "original_failed_cycles": 1,
+  "followup_cycle": 1,
+  "cases": {
+    "owner_target_refresh": {
+      "http": 200,
+      "bytes": 1787,
+      "sha256": "e3f98fe108344195754e3e8df20d3eebc148208bf49c0ecf85cb10976b9d69fa"
+    },
+    "wrong_target_refresh": {
+      "http": 200,
+      "bytes": 1882,
+      "sha256": "3cb13090795014dccaa4c860e656bd95dccb3c2bc5055d5323adef7360c4fd70"
+    },
+    "append": {
+      "http": 200,
+      "bytes": 31,
+      "sha256": "681c36e3abdbeb7c4e5b8e7d26257feadf86e967834da044a9c3872c71a7fbdf"
+    },
+    "exact_replay": {
+      "http": 200,
+      "bytes": 30,
+      "sha256": "03aa5056fbe273e0de410e460f679d660257c826e3fa8572c0dcec99dc816ae8"
+    },
+    "changed_replay": {
+      "http": 409,
+      "bytes": 29,
+      "sha256": "4d6a11fe89597d9a780aaadde598ffba89af2515c4957def7d23110286a53ac9"
+    },
+    "stale_revision": {
+      "http": 409,
+      "bytes": 29,
+      "sha256": "4d6a11fe89597d9a780aaadde598ffba89af2515c4957def7d23110286a53ac9"
+    },
+    "wrong_actor": {
+      "http": 403,
+      "bytes": 26,
+      "sha256": "2ec75347705edb2b9c36a71e853a6a9aeed6d88b75cb4f47dec90bfdb881189d"
+    },
+    "wrong_scope": {
+      "http": 403,
+      "bytes": 26,
+      "sha256": "991128429eac39e8b44ba1025495bcfc45dfb57eda4b1980dd2a9df16324f479"
+    },
+    "wrong_owner_rls": {
+      "http": 200,
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "browser_direct_rpc_denied": {
+      "http": 403,
+      "bytes": 96,
+      "sha256": "7ebaf9b19c97e05c289215cb5da0ffb91b01856a75d18b17e5d1472b20192bed"
+    },
+    "journal_readback": {
+      "http": 200,
+      "bytes": 974,
+      "sha256": "935bdf8c301da81d45ad7c26e77cb2a72320f066547a8e4d09c06fec152201d9"
+    },
+    "owner_rls": {
+      "http": 200,
+      "bytes": 47,
+      "sha256": "021a04f25164b0bcb82f022fc3698b70287e5f6cbe054a22556a797f1d77925d"
+    },
+    "health": {
+      "http": 200,
+      "bytes": 107,
+      "sha256": "0ec97e3267c99ff6bc3be68a60070d106f5b334fa6ab1391bf766d9d2bdfdfe2"
+    }
+  },
+  "status": "STAGE_WRITE_FOLLOWUP_PASSED",
+  "source_mutation": false,
+  "provider_calls": 0,
+  "disposable_space_final_revision": 2,
+  "disposable_journal_rows": 2,
+  "other_container_identities_unchanged": true,
+  "existing_business_aggregates_unchanged": true,
+  "disposable_token_disabled": true,
+  "compose_sha256": "381502e83e9310054219c578aee1cd0720294d7bcd37a95c5cef441f6f2c52ab",
+  "harness_sha256": "5c5041f0c0d0f30b0fa46e1e5aca1179ebfc8a4149b459d81d5ffb5816d9957b",
+  "private_original_path": "/opt/dashboard-supabase-20261003/stage-write-replay-followup-1",
+  "historical_failure_preserved": true
+}

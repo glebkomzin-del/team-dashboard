@@ -1,0 +1,11 @@
+{
+  "acl_entries": 214,
+  "table_objects": 44,
+  "function_objects": 91,
+  "files": {
+    "freeze-original-acl.json": "307e24c2d8185b11406d003c674fb29f9bab25183ffe60f358f4cd3d2ea8dea6",
+    "freeze-restore-acl.sql": "e4656fda9ab85f41d9e46f7c57a0b52003657956e0649ea927709e6d85519d3e",
+    "freeze.sql": "5d7c996ab040e4d830dea41802f487fc71690800eeb080341ab5521c2be87634"
+  },
+  "executed": false
+}

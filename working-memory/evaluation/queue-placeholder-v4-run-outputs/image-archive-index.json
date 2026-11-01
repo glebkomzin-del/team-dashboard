@@ -1,0 +1,33 @@
+{
+  "tar_sha256": "060075ba676c66a32df5e41621a5a902735d4a035c8be858189e919a12853106",
+  "index": {
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "manifests": [
+      {
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "digest": "sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb",
+        "size": 856
+      }
+    ]
+  },
+  "docker_manifest": [
+    {
+      "Config": "blobs/sha256/4eb561aee045a3445e76a76c98123e9c0c91fed6ac9de5d2e47b2067e3a5ea90",
+      "RepoTags": null,
+      "Layers": [
+        "blobs/sha256/bf7af0229701decd1b9f42143504fc8f69e5664c37e57001d198e731e4f86c2e",
+        "blobs/sha256/8b7daa2a21064e506832f135e69b267479622f67beb1897f2df220ad8eef9272",
+        "blobs/sha256/251a1a59bad4d421f8ce86b036c9cec99a71dfd906fd7b14e2243becfc21aa5c",
+        "blobs/sha256/6481b8613ac8f6ab3e8cd0c701bf2c6ff555589a47799c9a3e3b856e9be2bb99",
+        "blobs/sha256/bb82c3901dc731fe21278122d58d3a5a7c3567b45b4fc340a7010243140759f6",
+        "blobs/sha256/0eaf626634b9a8db1421da531e1830acfe6de5a6a58725da9c6bb2ff4aa72145",
+        "blobs/sha256/d36787f4f8c9d81d3ae5c2bf5be561f05fd7757f3a6092eed21df87be3a7a10d",
+        "blobs/sha256/866e0c7d8adc107b843284ef5cfd0e138719cc6fff17e9bc6fe30e6caa7ba8c5",
+        "blobs/sha256/89a585bb3ae6326a40724e05802868fd9ef435abe8c5594908339d4f737a11b7",
+        "blobs/sha256/8a12faad4d798cbbffa7fe8255dfda58735291409971bdf13d57e747dbf7b265",
+        "blobs/sha256/0b4ce17b3711f6b6202756bf87eb366cc8de6fa1a09c54f616baa37748bacb4f"
+      ]
+    }
+  ]
+}

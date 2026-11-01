@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-06T08:52:36.435278+00:00",
+  "scope": "Synthetic Root CUA exact candidate-stale-disabled-01 only; no production processing evidence",
+  "manifest_sha256": "75fb3126680ae964474531dcfa3cefbff28d87ee9c7ac583fbc5ece0b885409d",
+  "checks": [
+    {
+      "case": "stale-disabled",
+      "surfaces": [
+        "overview",
+        "processing settings"
+      ],
+      "result": "enabled plus old disabled explicitly unconfirmed, no halted/progress claim"
+    },
+    {
+      "case": "readonly-disabled",
+      "surfaces": [
+        "global banner",
+        "processing settings"
+      ],
+      "result": "actual readonly remains switched off"
+    }
+  ],
+  "limitations": [
+    "Two initial guessed text/heading waits did not match; subsequent fresh AX evidence verifies actual rendered text. No retries or API actions."
+  ],
+  "files": {
+    "ui-stale-disabled-overview.ax.txt": "57c67861c46810924a929234c067bae4ed92f88345163e0680670d061c21a733",
+    "ui-stale-disabled-overview.png": "369679e277a772cf587d2d853eeb2698fc7cce3e359f2a4414db14b91a014fc4",
+    "ui-stale-disabled-panel.ax.txt": "1fc5e69366dc88aa436f33600f9591cec62307223df4e7599f9821e0a186a8a6",
+    "ui-readonly-disabled.ax.txt": "1fd491ff7b5c381a88d1f09bdd116d58894eb47a6a5d622d83947fd376188a68",
+    "ui-readonly-disabled.png": "90d2b674aa9b10bc6287a3db410b5c059aac032b81f4746c2f1a9a93f2ae5853"
+  }
+}

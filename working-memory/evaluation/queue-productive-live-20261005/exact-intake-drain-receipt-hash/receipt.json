@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T18:48:36.964886+00:00",
+  "completed_utc": "2026-10-05T18:48:37.806316+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "sha256sum /root/dashboard-intake-transition-root-20261005T1848/drain-receipt.json"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "be0f8ae1f81640f60ed3d30f3581d77bcd33d0f28dd188110d8a06ac7c8f3d57",
+      "bytes": 138
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

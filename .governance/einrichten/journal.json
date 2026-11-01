@@ -1,0 +1,637 @@
+{
+  "schema_version": 1,
+  "root": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job",
+  "status": "complete",
+  "targets": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "VISION.md",
+    "ROADMAP.md",
+    "STATUS.md",
+    "funktionen",
+    "wissen",
+    "knowledge",
+    ".governance/vorlagen",
+    ".governance/einrichten-inventar.json",
+    ".governance/alt-v3",
+    "INDEX.md",
+    ".governance/version"
+  ],
+  "before": {
+    "AGENTS.md": null,
+    "CLAUDE.md": null,
+    "VISION.md": null,
+    "ROADMAP.md": null,
+    "STATUS.md": [
+      "file",
+      420,
+      "ea0ed83f225f90c78212b66fdd8b66b0dc8b646fbcddfd041081cfa7645212ec"
+    ],
+    "funktionen": null,
+    "wissen": null,
+    "knowledge": [
+      "dir",
+      493,
+      {
+        "inbox": [
+          "dir",
+          493,
+          {
+            "_node.md": [
+              "file",
+              420,
+              "2ca0814aef0cb6eac07cad62692f055b2b94fbef68ebf1ef35396295ed93f359"
+            ]
+          }
+        ],
+        "produkt": [
+          "dir",
+          493,
+          {
+            "_node.md": [
+              "file",
+              420,
+              "967fefc7aa0ac810517ea09bdb8e6c20fba2673f015912617ce63370df23e8dd"
+            ]
+          }
+        ],
+        "verarbeitung": [
+          "dir",
+          493,
+          {
+            "A-20261029-002744-6796-exakter-eingabetoken-count.md": [
+              "file",
+              420,
+              "0b0a859ef352999301980d059e7f3717990bbb242c63ddf3d5003159b376e750"
+            ],
+            "A-20261029-002744-b8c1-kosten-aus-nutzungsbelegen.md": [
+              "file",
+              420,
+              "94d038c1c8bcf3345ca94a8f28119d349d0ed31cef1edfd80ac653a95d548153"
+            ],
+            "A-20261029-003132-39f5-exaktcount-anfragegleichheit.md": [
+              "file",
+              420,
+              "a58860bf66504207b7acb8bb3787a0aeeae2bdd9747566406f9f5ae7c2cdd3d7"
+            ],
+            "A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich.md": [
+              "file",
+              420,
+              "61069525aae8a99f7a2f46d8483c9345ccb9cc85ca00de26525e47956769defd"
+            ],
+            "D-20261029-002925-e233-regulaerer-22-quellen-auftrag.md": [
+              "file",
+              420,
+              "7399d870f22884ef3aed59de0ae9bfd13ee8e5f26a09c949603c6873106059c4"
+            ],
+            "D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit.md": [
+              "file",
+              420,
+              "8ac65897cd42b3f9a677d927bca333a98b974c288212136c159b9ba7e8781f34"
+            ],
+            "D-20261029-003133-71d1-normaler-dauerhafter-kostenweg.md": [
+              "file",
+              420,
+              "8db2ac8e3da3c3dc8f89cf766e327207d2fa8861c7c6d05a720bafe8c77c0a41"
+            ],
+            "D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch.md": [
+              "file",
+              420,
+              "20d299f0339b6838c5228c95ba2068cbad6c53faeeaa282f3ac15e7872d794b8"
+            ],
+            "D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung.md": [
+              "file",
+              420,
+              "9c2cf503e22f74a32e3a067dc378fa42bcd8317bb59f39167e55ba024b141c5d"
+            ],
+            "D-20261029-003134-2610-normalbetrieb-nach-vollpruefung.md": [
+              "file",
+              420,
+              "32c543c5eaffdb2bba7b5a821250980ae1568b96e1d9a7d0fdc8fe9ce816186e"
+            ],
+            "D-20261029-003134-276a-archivkopien-bis-loeschfreigabe.md": [
+              "file",
+              420,
+              "30a306cc1715616e57432fbec747aeb92a9556087dd32c42c6371cf9f14f714f"
+            ],
+            "D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung.md": [
+              "file",
+              420,
+              "5b142c7d8c86057da7c4a5dd112dabe5c06b377e1396cbf66d79db27bde96d7b"
+            ],
+            "D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge.md": [
+              "file",
+              420,
+              "b93310a7a7de222750342a06c6f8c36aa6a06390d20df7642c21afa37ae9f973"
+            ],
+            "D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix.md": [
+              "file",
+              420,
+              "6c5e32d6f95f51f4bcf3ecb4ff2f22bac67a8c8165565ac7f2d7b2ad8a9e8af4"
+            ],
+            "D-20261029-091358-2648-freigabe-nur-24-archivkopien.md": [
+              "file",
+              420,
+              "d586d37fc9aa7cee1422ae3a09468acfc643c424f01af230de6d5e365680427f"
+            ],
+            "F-20261029-002744-0f73-angemeldete-browserabnahme.md": [
+              "file",
+              420,
+              "bca2ffa6fe8b0df2e538e9185bdc082356933f8d5bbf27cf9fed351b964ec38e"
+            ],
+            "F-20261029-003133-2c14-historische-streamursachen-unbekannt.md": [
+              "file",
+              420,
+              "6e0e5458397a90aa6eacfa86dc123598da01da0d76d49fc732ff15ec31f130f5"
+            ],
+            "F-20261029-003133-5c3b-browser-und-passwortabnahme.md": [
+              "file",
+              420,
+              "c845e27d25dabf621a83ce29c14a7d078882a2a890f044de7f72226376c03cd0"
+            ],
+            "H-20261029-002743-3643-urspruengliche-streamursache.md": [
+              "file",
+              420,
+              "95a22f22e8102878c67e353c4d267f5bdf2b0f1bbd1b6f3510456a13697e2a98"
+            ],
+            "H-20261029-002744-2619-sandbox-io-error.md": [
+              "file",
+              420,
+              "b5e9976265a449bd4c2b1240bfcd3ab86d856f6e7f72e6602e56c22c0eb349ba"
+            ],
+            "V-20261029-002744-06e7-datumvalidator-lockern.md": [
+              "file",
+              420,
+              "7773eb811dd13ca8c17bf1127ed52689a97c8124a0d76ac0c63330a6869bc0c9"
+            ],
+            "V-20261029-002744-3d64-verlustbehaftete-katalogkuerzung.md": [
+              "file",
+              420,
+              "b0358ed6a285910e57aa8024e94e3e1cd0a4fc2079862fed75787e1decaa4254"
+            ],
+            "V-20261029-002744-4365-32-beleg-importweg.md": [
+              "file",
+              420,
+              "66a071609657709ba7c69cebe8f9e9337e5d12ce20aa76ac6e3def3486389faf"
+            ],
+            "V-20261029-002744-5f7f-blindes-reset-und-fastretry.md": [
+              "file",
+              420,
+              "1c0cc9c2393686f2a8cbde86bbf1ab51950670f02af1fcb4a2ee5558df6f3c5d"
+            ],
+            "V-20261029-002744-a102-synthetische-providerprobe.md": [
+              "file",
+              420,
+              "cc8dc26a7c1ed9632e8939ae8a79535b4fce0986f5fdc17c3f6414b1af1d635d"
+            ],
+            "V-20261029-002744-fc15-32-belegweg.md": [
+              "file",
+              420,
+              "092f9cc58ab51b65d5b80aae5dc09efe7224a29659106b86d7417c0ea96e18a4"
+            ],
+            "V-20261029-003132-3a0f-manueller-32er-vollpipelineweg.md": [
+              "file",
+              420,
+              "0a4a810c95c79aa15a79b7a477a0bf56f7dcc32b999309187e440513a95427d6"
+            ],
+            "V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung.md": [
+              "file",
+              420,
+              "45f858ab53c0ccd33f8235e2308d5b9a2670f1a514c5d314d4d42b65a5510bbe"
+            ],
+            "_node.md": [
+              "file",
+              420,
+              "cb48d0fc891895c39cc2030a137812aa3fe8956c28a5ed364e61c75aeaa5b139"
+            ]
+          }
+        ]
+      }
+    ],
+    ".governance/vorlagen": null,
+    ".governance/einrichten-inventar.json": null,
+    ".governance/alt-v3": null,
+    "INDEX.md": [
+      "file",
+      420,
+      "55616fdde1e12e7ebd4f391f81d50074d65a9e592fee1fd8e5162270391c6bea"
+    ],
+    ".governance/version": null
+  },
+  "after": {
+    "AGENTS.md": [
+      "file",
+      420,
+      "9f301e1e3458f5b052dec5b62b9d19e4fcdda0df98a235009a7ba36ef7d004ba"
+    ],
+    "CLAUDE.md": [
+      "file",
+      420,
+      "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    ],
+    "VISION.md": [
+      "file",
+      420,
+      "50df989090e12b2b3a1b8fb1ee787e6b9714dc5130f613b9be871a1cc4990cfb"
+    ],
+    "ROADMAP.md": [
+      "file",
+      420,
+      "47b02fef9941a84ffb7b6005a738600d6eca0043ae2e2f7bb8a022179eb701f6"
+    ],
+    "STATUS.md": [
+      "file",
+      420,
+      "1f6c21fd539b1f96ec0f60f868da6e04bbd05d801d34edef5cc943b5ea2ff55a"
+    ],
+    "funktionen": [
+      "dir",
+      493,
+      {}
+    ],
+    "wissen": [
+      "dir",
+      493,
+      {
+        "inbox": [
+          "dir",
+          493,
+          {
+            "_node.md": [
+              "file",
+              420,
+              "2ca0814aef0cb6eac07cad62692f055b2b94fbef68ebf1ef35396295ed93f359"
+            ]
+          }
+        ],
+        "produkt": [
+          "dir",
+          493,
+          {
+            "_node.md": [
+              "file",
+              420,
+              "967fefc7aa0ac810517ea09bdb8e6c20fba2673f015912617ce63370df23e8dd"
+            ]
+          }
+        ],
+        "verarbeitung": [
+          "dir",
+          493,
+          {
+            "A-20261029-002744-6796-exakter-eingabetoken-count.md": [
+              "file",
+              420,
+              "0b0a859ef352999301980d059e7f3717990bbb242c63ddf3d5003159b376e750"
+            ],
+            "A-20261029-002744-b8c1-kosten-aus-nutzungsbelegen.md": [
+              "file",
+              420,
+              "94d038c1c8bcf3345ca94a8f28119d349d0ed31cef1edfd80ac653a95d548153"
+            ],
+            "A-20261029-003132-39f5-exaktcount-anfragegleichheit.md": [
+              "file",
+              420,
+              "a58860bf66504207b7acb8bb3787a0aeeae2bdd9747566406f9f5ae7c2cdd3d7"
+            ],
+            "A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich.md": [
+              "file",
+              420,
+              "61069525aae8a99f7a2f46d8483c9345ccb9cc85ca00de26525e47956769defd"
+            ],
+            "D-20261029-002925-e233-regulaerer-22-quellen-auftrag.md": [
+              "file",
+              420,
+              "7399d870f22884ef3aed59de0ae9bfd13ee8e5f26a09c949603c6873106059c4"
+            ],
+            "D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit.md": [
+              "file",
+              420,
+              "8ac65897cd42b3f9a677d927bca333a98b974c288212136c159b9ba7e8781f34"
+            ],
+            "D-20261029-003133-71d1-normaler-dauerhafter-kostenweg.md": [
+              "file",
+              420,
+              "8db2ac8e3da3c3dc8f89cf766e327207d2fa8861c7c6d05a720bafe8c77c0a41"
+            ],
+            "D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch.md": [
+              "file",
+              420,
+              "20d299f0339b6838c5228c95ba2068cbad6c53faeeaa282f3ac15e7872d794b8"
+            ],
+            "D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung.md": [
+              "file",
+              420,
+              "9c2cf503e22f74a32e3a067dc378fa42bcd8317bb59f39167e55ba024b141c5d"
+            ],
+            "D-20261029-003134-2610-normalbetrieb-nach-vollpruefung.md": [
+              "file",
+              420,
+              "32c543c5eaffdb2bba7b5a821250980ae1568b96e1d9a7d0fdc8fe9ce816186e"
+            ],
+            "D-20261029-003134-276a-archivkopien-bis-loeschfreigabe.md": [
+              "file",
+              420,
+              "30a306cc1715616e57432fbec747aeb92a9556087dd32c42c6371cf9f14f714f"
+            ],
+            "D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung.md": [
+              "file",
+              420,
+              "5b142c7d8c86057da7c4a5dd112dabe5c06b377e1396cbf66d79db27bde96d7b"
+            ],
+            "D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge.md": [
+              "file",
+              420,
+              "b93310a7a7de222750342a06c6f8c36aa6a06390d20df7642c21afa37ae9f973"
+            ],
+            "D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix.md": [
+              "file",
+              420,
+              "6c5e32d6f95f51f4bcf3ecb4ff2f22bac67a8c8165565ac7f2d7b2ad8a9e8af4"
+            ],
+            "D-20261029-091358-2648-freigabe-nur-24-archivkopien.md": [
+              "file",
+              420,
+              "d586d37fc9aa7cee1422ae3a09468acfc643c424f01af230de6d5e365680427f"
+            ],
+            "F-20261029-002744-0f73-angemeldete-browserabnahme.md": [
+              "file",
+              420,
+              "bca2ffa6fe8b0df2e538e9185bdc082356933f8d5bbf27cf9fed351b964ec38e"
+            ],
+            "F-20261029-003133-2c14-historische-streamursachen-unbekannt.md": [
+              "file",
+              420,
+              "6e0e5458397a90aa6eacfa86dc123598da01da0d76d49fc732ff15ec31f130f5"
+            ],
+            "F-20261029-003133-5c3b-browser-und-passwortabnahme.md": [
+              "file",
+              420,
+              "c845e27d25dabf621a83ce29c14a7d078882a2a890f044de7f72226376c03cd0"
+            ],
+            "H-20261029-002743-3643-urspruengliche-streamursache.md": [
+              "file",
+              420,
+              "95a22f22e8102878c67e353c4d267f5bdf2b0f1bbd1b6f3510456a13697e2a98"
+            ],
+            "H-20261029-002744-2619-sandbox-io-error.md": [
+              "file",
+              420,
+              "b5e9976265a449bd4c2b1240bfcd3ab86d856f6e7f72e6602e56c22c0eb349ba"
+            ],
+            "V-20261029-002744-06e7-datumvalidator-lockern.md": [
+              "file",
+              420,
+              "7773eb811dd13ca8c17bf1127ed52689a97c8124a0d76ac0c63330a6869bc0c9"
+            ],
+            "V-20261029-002744-3d64-verlustbehaftete-katalogkuerzung.md": [
+              "file",
+              420,
+              "b0358ed6a285910e57aa8024e94e3e1cd0a4fc2079862fed75787e1decaa4254"
+            ],
+            "V-20261029-002744-4365-32-beleg-importweg.md": [
+              "file",
+              420,
+              "66a071609657709ba7c69cebe8f9e9337e5d12ce20aa76ac6e3def3486389faf"
+            ],
+            "V-20261029-002744-5f7f-blindes-reset-und-fastretry.md": [
+              "file",
+              420,
+              "1c0cc9c2393686f2a8cbde86bbf1ab51950670f02af1fcb4a2ee5558df6f3c5d"
+            ],
+            "V-20261029-002744-a102-synthetische-providerprobe.md": [
+              "file",
+              420,
+              "cc8dc26a7c1ed9632e8939ae8a79535b4fce0986f5fdc17c3f6414b1af1d635d"
+            ],
+            "V-20261029-002744-fc15-32-belegweg.md": [
+              "file",
+              420,
+              "092f9cc58ab51b65d5b80aae5dc09efe7224a29659106b86d7417c0ea96e18a4"
+            ],
+            "V-20261029-003132-3a0f-manueller-32er-vollpipelineweg.md": [
+              "file",
+              420,
+              "0a4a810c95c79aa15a79b7a477a0bf56f7dcc32b999309187e440513a95427d6"
+            ],
+            "V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung.md": [
+              "file",
+              420,
+              "45f858ab53c0ccd33f8235e2308d5b9a2670f1a514c5d314d4d42b65a5510bbe"
+            ],
+            "_node.md": [
+              "file",
+              420,
+              "cb48d0fc891895c39cc2030a137812aa3fe8956c28a5ed364e61c75aeaa5b139"
+            ]
+          }
+        ]
+      }
+    ],
+    "knowledge": [
+      "link",
+      "wissen"
+    ],
+    ".governance/vorlagen": [
+      "dir",
+      493,
+      {
+        "funktion.md": [
+          "file",
+          420,
+          "e48315858298959aab0974c1efdf1effee2ebb4ff77c2a15d5cad51ad7d379e9"
+        ]
+      }
+    ],
+    ".governance/einrichten-inventar.json": [
+      "file",
+      420,
+      "32e21db0d9ad6f1ca557ec0a09fcbb8a268d296e92ebbbc8ca8fc47ff6fa8bf1"
+    ],
+    ".governance/alt-v3": [
+      "dir",
+      493,
+      {
+        ".DS_Store": [
+          "link",
+          "../../.DS_Store"
+        ],
+        ".claude": [
+          "link",
+          "../../.claude"
+        ],
+        ".codex": [
+          "link",
+          "../../.codex"
+        ],
+        ".governance": [
+          "link",
+          ".."
+        ],
+        ".mcp.json": [
+          "link",
+          "../../.mcp.json"
+        ],
+        ".playwright-mcp": [
+          "link",
+          "../../.playwright-mcp"
+        ],
+        ":memory:.ses": [
+          "link",
+          "../../:memory:.ses"
+        ],
+        "Chat-Export_Claude-Code-Setup_2026-10-08_bis_12.md": [
+          "link",
+          "../../Chat-Export_Claude-Code-Setup_2026-10-08_bis_12.md"
+        ],
+        "DECISIONS.md": [
+          "link",
+          "../../DECISIONS.md"
+        ],
+        "DUBLETTEN_INVENTUR_20260708.md": [
+          "link",
+          "../../DUBLETTEN_INVENTUR_20260708.md"
+        ],
+        "DUBLETTEN_INVENTUR_RAW_CHUNKS_20260708.md": [
+          "link",
+          "../../DUBLETTEN_INVENTUR_RAW_CHUNKS_20260708.md"
+        ],
+        "INDEX.md": [
+          "file",
+          420,
+          "55616fdde1e12e7ebd4f391f81d50074d65a9e592fee1fd8e5162270391c6bea"
+        ],
+        "INVENTUR_LEDGER.md": [
+          "link",
+          "../../INVENTUR_LEDGER.md"
+        ],
+        "INVENTUR_REPORT.md": [
+          "link",
+          "../../INVENTUR_REPORT.md"
+        ],
+        "PROJECT_STRUCTURE.md": [
+          "link",
+          "../../PROJECT_STRUCTURE.md"
+        ],
+        "PROMPT_datenbereinigung_items.md": [
+          "link",
+          "../../PROMPT_datenbereinigung_items.md"
+        ],
+        "PROMPT_resolution_vorschlaege_inbox.md": [
+          "link",
+          "../../PROMPT_resolution_vorschlaege_inbox.md"
+        ],
+        "STATUS.md": [
+          "file",
+          420,
+          "ea0ed83f225f90c78212b66fdd8b66b0dc8b646fbcddfd041081cfa7645212ec"
+        ],
+        "Synapse_Bestandsaufnahme.docx": [
+          "link",
+          "../../Synapse_Bestandsaufnahme.docx"
+        ],
+        "Synapse_KI-Suchsystem_Dokumentation.docx": [
+          "link",
+          "../../Synapse_KI-Suchsystem_Dokumentation.docx"
+        ],
+        "_archiv_alter_root_build_20260708": [
+          "link",
+          "../../_archiv_alter_root_build_20260708"
+        ],
+        "_archiv_legacy_functions_20260708": [
+          "link",
+          "../../_archiv_legacy_functions_20260708"
+        ],
+        "after_login.png": [
+          "link",
+          "../../after_login.png"
+        ],
+        "dashboard-logic-20260907.png": [
+          "link",
+          "../../dashboard-logic-20260907.png"
+        ],
+        "dashboard-mobile-390.png": [
+          "link",
+          "../../dashboard-mobile-390.png"
+        ],
+        "dashboard-mobile-dialog-390.png": [
+          "link",
+          "../../dashboard-mobile-dialog-390.png"
+        ],
+        "dashboard-navigation-light-20260907.png": [
+          "link",
+          "../../dashboard-navigation-light-20260907.png"
+        ],
+        "dashboard-navigation-mobile-20260907.png": [
+          "link",
+          "../../dashboard-navigation-mobile-20260907.png"
+        ],
+        "dashboard-settings-light-20260907.png": [
+          "link",
+          "../../dashboard-settings-light-20260907.png"
+        ],
+        "dashboard-todos-design-20260907.png": [
+          "link",
+          "../../dashboard-todos-design-20260907.png"
+        ],
+        "graphify-out": [
+          "link",
+          "../../graphify-out"
+        ],
+        "knowledge": [
+          "link",
+          "../../knowledge"
+        ],
+        "logic-explanations": [
+          "link",
+          "../../logic-explanations"
+        ],
+        "make-home.png": [
+          "link",
+          "../../make-home.png"
+        ],
+        "make-logged-in.png": [
+          "link",
+          "../../make-logged-in.png"
+        ],
+        "meeting-os": [
+          "link",
+          "../../meeting-os"
+        ],
+        "outputs": [
+          "link",
+          "../../outputs"
+        ],
+        "projekt_detail.png": [
+          "link",
+          "../../projekt_detail.png"
+        ],
+        "projekt_neu_dialog.png": [
+          "link",
+          "../../projekt_neu_dialog.png"
+        ],
+        "projekte_kanban.png": [
+          "link",
+          "../../projekte_kanban.png"
+        ],
+        "projekte_tabelle.png": [
+          "link",
+          "../../projekte_tabelle.png"
+        ],
+        "supabase": [
+          "link",
+          "../../supabase"
+        ]
+      }
+    ],
+    "INDEX.md": null,
+    ".governance/version": [
+      "file",
+      420,
+      "5ca797740e932dd836206d2b4bea825c83bc47e25e45006d0a2b62fe71be40b6"
+    ]
+  },
+  "created_dirs": [],
+  "inflight": ".governance/version",
+  "registered": false
+}

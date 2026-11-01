@@ -1,0 +1,31 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "RUNTIME_FAILED_IMAGE_FILE_PERMISSION",
+  "observed_at": "2026-10-04T02:01:39.468710+00:00",
+  "target_restore_attempts": 1,
+  "target_restore_allcopy_pass": {
+    "tables": 88,
+    "rows": 68572
+  },
+  "readonly_runtime_attempts": 1,
+  "readonly_runtime_pass": false,
+  "target_writer_attempts": 0,
+  "frontend_promotions": 0,
+  "source_remains_frozen": true,
+  "actual_failed_boundary": "Runtime main line131, cat under inherited USER10001:10001",
+  "diagnosis": {
+    "image_code_files": "600/root:root",
+    "stderr": "cat: /app/access.py: Permission denied",
+    "host_5_original_unchanged": true,
+    "source_backend_stopped": true,
+    "host_runtime_snapshots_absent": true,
+    "backup_marker_absent": true
+  },
+  "private_primaries": [
+    "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/runtime-image-permission-primary-private.json",
+    "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/target-runtime-permission-diagnosis.json"
+  ],
+  "no_automatic_runtime_retry": true,
+  "original_failure_preserved": true,
+  "runtime_enforcement": "RULES_ONLY"
+}

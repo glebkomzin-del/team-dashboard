@@ -1,0 +1,7 @@
+{
+  "path": "/opt/dashboard-memory-canonical-draft/.local/recovery/processing-repair-20261028-lead/production-before.dump",
+  "bytes": 706679003,
+  "sha256": "19662added3659ea456c68084ef76f2813998f98075d87ec849740244acd2178",
+  "full_archive_read": "PASS",
+  "restore_into_database": "not_run"
+}

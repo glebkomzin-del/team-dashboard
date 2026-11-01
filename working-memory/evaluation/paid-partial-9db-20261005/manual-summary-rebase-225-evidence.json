@@ -1,0 +1,18 @@
+{
+  "expected_revision": 225,
+  "review_id": "fd5c328e-e41c-45ee-9d78-319784553f95",
+  "job_id": null,
+  "stage_request_sha256": "45ffc389b534ac6d5587357f7a1ebc08a6f1f1dc37e550fe853c4d5c1435ad81",
+  "compiled_review_sha256": "de35ba90343f2fc9d425f3101189523b2ec1f617078c93cae68b4b51e155a22d",
+  "source_count": 213,
+  "unaffected_sources": 212,
+  "new_9db_source_preserved": true,
+  "human_entries_preserved": 11,
+  "work_diff": 0,
+  "observation_diff": 0,
+  "prior224_journal_entries_unchanged": true,
+  "base_sha256": "9b062a062c68e59a553728f25a306addfaea79eaf69324c52d2e2f2e23d6773b",
+  "provider_calls": 0,
+  "qualification_expenses_separate": 106370,
+  "stage_not_sent": true
+}

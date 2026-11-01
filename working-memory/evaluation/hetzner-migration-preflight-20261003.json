@@ -1,0 +1,45 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-CUTOVER",
+  "measured_at": "2026-10-03T18:28:00Z",
+  "source": "live Supabase SQL connector + target SSH read-only",
+  "source_job_states": {
+    "queued": 51,
+    "review": 1,
+    "applied": 104
+  },
+  "source_processing_enabled": true,
+  "production_space": {
+    "revision": 221,
+    "archive_revision": 857
+  },
+  "second_space": {
+    "revision": 6,
+    "archive_revision": 0
+  },
+  "runtime_automation_flags": {
+    "MEMORY_INTAKE_ENABLED": "1",
+    "MEMORY_AUTOMATIC_ENABLED": "1"
+  },
+  "runtime_outbox_json_files": {
+    "projections-rc1-20260919/response-outbox": 0,
+    "question-outbox": 0
+  },
+  "active_dashboard_workflows": [
+    "nzyaKxs5Om9wuPEc",
+    "dashboardDriveMove",
+    "dashboardDriveWatch"
+  ],
+  "wm_append_acl": [
+    "postgres:EXECUTE",
+    "service_role:EXECUTE"
+  ],
+  "wm_enqueue_acl": [
+    "postgres:EXECUTE",
+    "service_role:EXECUTE"
+  ],
+  "wm_append_security_definer": false,
+  "wm_enqueue_security_definer": false,
+  "freeze_not_performed": true,
+  "important_boundary": "repeat current jobs/outboxes/workflows before final freeze; queued/review preserved, no migration-triggered extra model processing",
+  "single_writer_design_status": "not yet independently accepted"
+}

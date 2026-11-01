@@ -1,0 +1,249 @@
+--- frozen-unsent-sol61-default/provider/openai_provider.py
++++ prepared-unsent-sol61-medium/provider/openai_provider.py
+@@ -11,14 +11,31 @@
+ import urllib.request
+ 
+ MODEL = 'gpt-6.1-sol'
+-REASONING_EFFORT = 'high'  # One explicit qualification; no provider fallback.
++REASONING_EFFORT = 'medium'  # One prospective qualification; no provider fallback.
++
++
++def _metadata_text(value, limit=80):
++    """Only bounded, non-prose terminal metadata; never copy error messages."""
++    return value if isinstance(value, str) and 0 < len(value) <= limit and all(
++        character.isascii() and (character.isalnum() or character in '._-') for character in value
++    ) else None
+ 
+ 
+ def normalize(response, model):
+     result = {'provider': 'openai', 'id': response.get('id'),
+               'model': response.get('model'), 'content': [],
+               'usage': response.get('usage') or {}, 'usage_final': False,
+-              'stop_reason': None, 'reasoning_effort': REASONING_EFFORT}
++              'stop_reason': None, 'reasoning_effort': REASONING_EFFORT,
++              'requested_service_tier': 'default',
++              'returned_service_tier': _metadata_text(response.get('service_tier')),
++              'terminal_status': _metadata_text(response.get('status')),
++              'incomplete_reason': None, 'provider_error_code': None}
++    details = response.get('incomplete_details')
++    if isinstance(details, dict):
++        result['incomplete_reason'] = _metadata_text(details.get('reason'))
++    error_detail = response.get('error')
++    if isinstance(error_detail, dict):
++        result['provider_error_code'] = _metadata_text(error_detail.get('code'))
+     if response.get('model') != model:
+         result['error'] = 'Unexpected provider model'
+         return result
+@@ -26,6 +43,9 @@
+     result['usage_final'] = status in ('completed', 'incomplete', 'failed') and isinstance(response.get('usage'), dict)
+     if status != 'completed':
+         result['error'] = 'Provider response not completed'
++        return result
++    if result['returned_service_tier'] != 'default':
++        result['error'] = 'Requested standard service tier not confirmed'
+         return result
+     output = response.get('output')
+     if not isinstance(output, list) or not output:
+@@ -108,7 +128,10 @@
+     except Exception as error:
+         # Never persist provider error bodies, which may contain private input.
+         return {'provider': 'openai', 'content': [], 'usage': {},
+-                'usage_final': False, 'stop_reason': None, 'error': type(error).__name__}
++                'usage_final': False, 'stop_reason': None, 'error': type(error).__name__,
++                'requested_service_tier': 'default', 'returned_service_tier': None,
++                'terminal_status': None, 'incomplete_reason': None,
++                'provider_error_code': None, 'reasoning_effort': REASONING_EFFORT}
+ 
+ 
+ def response_input(prompt, model, schema):
+@@ -165,6 +188,10 @@
+         error.close()
+     except Exception as error:
+         result = {'error': type(error).__name__, 'usage_final': False, 'stop_reason': None}
++    for name in ('returned_service_tier','terminal_status','incomplete_reason','provider_error_code'):
++        result.setdefault(name, None)
++    result.setdefault('requested_service_tier','default')
++    result.setdefault('reasoning_effort',REASONING_EFFORT)
+     result['elapsed_seconds'] = round(time.monotonic() - started, 3)
+     return result
+ 
+--- frozen-unsent-sol61-default/runner/qualify_once.py
++++ prepared-unsent-sol61-medium/runner/qualify_once.py
+@@ -17,11 +17,11 @@
+ import urllib.error
+ import urllib.request
+ 
+-REQUEST_SHA = 'b8e14586cc637dcb4ee6bd8d0a6323be8602f01bf99886633ffd23215eccac93'
+-BINDINGS_SHA = 'ed48fa373449a917174db5155e1a73f3961fdbb2e2dbed0255c6426fff62752c'
+-PROVIDER_SHA = '0bba05e4231a77af65d8ed66ab7ef25922e7f7ba8c15564e806ea7fe65964953'
++REQUEST_SHA = '5e0dbf95cb573e388ff33962fe521b1c7150bbab800e2d980d20f0962f96b6a5'
++BINDINGS_SHA = '0e2015fed0f27dded368f04f30ce23eb4a9a414ed9c9c0b5c911c5c569dc9417'
++PROVIDER_SHA = 'a47574584a242c324cd5cde2abe533498486fb2ab9a1ee9f10b293792f1ba1dc'
+ COST_SHA = '909bf2e6d9557ac47a65f4bd2a7c75f07d35c070eb8cfa8664abdb5a0832425c'
+-PRIOR_ATTEMPTS_SHA = '8043dd2007d2f314d94fb4ffa0ca4feae1d534c4e8c9a30abcd13db4cbedbf3b'
++PRIOR_ATTEMPTS_SHA = 'bb37fecfdebeefe3fc56fa11cfde2fefbe33563089c42a7f090d0020fc23287c'
+ ACCESS_SHA = 'ddf8ad90e2201c8a36c4657ef12f349158a577de894507c73c5e4533c4e64bb8'
+ CAP_MICRO_USD = 250000
+ RESERVE_MICRO_USD = 191475
+@@ -57,10 +57,11 @@
+     request=json.loads(request_path.read_text())
+     bindings=json.loads(bindings_path.read_text())
+     if (set(request) != {'model','max_tokens','prompt','schema','reasoning_effort'}
+-            or request['model'] != 'gpt-6.1-sol' or request['reasoning_effort'] != 'high'
+-            or bindings.get('reasoning_effort') != 'high'
++            or request['model'] != 'gpt-6.1-sol' or request['reasoning_effort'] != 'medium'
++            or bindings.get('reasoning_effort') != 'medium'
+             or bindings.get('service_tier') != 'default'
+-            or bindings.get('previous_sol61_bindings_sha256') != 'df3a91ee2e9720c9779063e4e2e490027cff936939ff89bf34ae484a3501c5a2'
++            or bindings.get('previous_sol61_default_request_sha256') != 'b8e14586cc637dcb4ee6bd8d0a6323be8602f01bf99886633ffd23215eccac93'
++            or bindings.get('previous_sol61_default_bindings_sha256') != 'ed48fa373449a917174db5155e1a73f3961fdbb2e2dbed0255c6426fff62752c'
+             or request['max_tokens'] != 8000 or bindings['source_body_sha256'] != SOURCE_SHA
+             or bindings['fixture_revision'] != REVISION or bindings['request_sha256'] != REQUEST_SHA
+             or hashlib.sha256(request['prompt'].encode()).hexdigest() != bindings['prompt_sha256']):
+@@ -81,7 +82,7 @@
+     if len(bindings['cases']) != 3 or sum(len(item['candidates']) for item in bindings['cases']) != 6:
+         raise ValueError('Qualification cohort changed')
+     attempts = bindings.get('prior_attempts')
+-    if not isinstance(attempts, dict) or set(attempts) != {'endstate','relationprobe','http400','wirefix','low','high'}:
++    if not isinstance(attempts, dict) or set(attempts) != {'endstate','relationprobe','http400','wirefix','low','high','sol61high'}:
+         raise ValueError('Prior qualification history incomplete')
+     if hashlib.sha256(json.dumps(attempts,ensure_ascii=False,sort_keys=True,
+                                   separators=(',',':')).encode()).hexdigest() != PRIOR_ATTEMPTS_SHA:
+@@ -92,10 +93,12 @@
+         for filename, wanted in evidence['sha256'].items():
+             if digest(root.parent/'prior-attempts'/name/filename) != wanted:
+                 raise ValueError('Prior attempt bytes missing or changed')
+-    if ({name: attempts[name].get('actual_micro_usd') for name in ('endstate','relationprobe','wirefix','low','high')}
+-            != {'endstate':74194,'relationprobe':32176,'wirefix':32619,'low':62403,'high':93039}
++    if ({name: attempts[name].get('actual_micro_usd') for name in ('endstate','relationprobe','wirefix','low','high','sol61high')}
++            != {'endstate':74194,'relationprobe':32176,'wirefix':32619,'low':62403,'high':93039,'sol61high':104459}
+             or attempts['http400'].get('actual_micro_usd') is not None
+-            or attempts['http400'].get('reserved_micro_usd') != 221248):
++            or attempts['http400'].get('reserved_micro_usd') != 221248
++            or attempts['sol61high'].get('reserved_micro_usd') != 191475
++            or attempts['sol61high'].get('state') != 'outcome_or_usage_unknown'):
+         raise ValueError('Prior cost history changed')
+     live_state = None
+     if live:
+@@ -114,12 +117,13 @@
+ 
+ def validate_user_authority(authority, *, request_sha=REQUEST_SHA, reserve=RESERVE_MICRO_USD):
+     if (not isinstance(authority,dict) or set(authority) !=
+-            {'status','approval_source','provenance','request_sha256','model','approved_cap_micro_usd',
++            {'status','approval_source','provenance','request_sha256','model','reasoning_effort','approved_cap_micro_usd',
+              'max_attempts','scope'}
+             or authority['status'] != 'USER_APPROVED'
+             or authority['approval_source'] != 'direct_user'
+             or not isinstance(authority['provenance'],str) or not authority['provenance'].strip()
+             or authority['request_sha256'] != request_sha or authority['model'] != 'gpt-6.1-sol'
++            or authority.get('reasoning_effort') != 'medium'
+             or authority['scope'] != 'single_paid_model_comparison'
+             or type(authority['max_attempts']) is not int or authority['max_attempts'] != 1
+             or type(authority['approved_cap_micro_usd']) is not int
+@@ -164,6 +168,42 @@
+     if attempts != 1:
+         raise RuntimeError('Provider transport count unknown')
+     return result
++
++
++def classify_result(response, usage_micro_usd, model, *, historical_actual=None):
++    """Keep billing, terminal delivery, final answer, and semantics distinct."""
++    status = response.get('terminal_status')
++    status = status if status in ('completed', 'incomplete', 'failed') else None
++    returned = response.get('returned_service_tier')
++    known_cost = (usage_micro_usd(response, model) if returned == 'default' else None)
++    cost_source = 'final_usage_standard_estimate' if known_cost is not None else 'unknown'
++    if historical_actual is not None:
++        if type(historical_actual) is not int or historical_actual < 0:
++            raise ValueError('Invalid historical receipt cost')
++        if known_cost is not None and known_cost != historical_actual:
++            raise ValueError('Historical receipt and final usage disagree')
++        known_cost = historical_actual
++        cost_source = 'historical_receipt_known'
++    complete = (status == 'completed' and returned == 'default'
++                and response.get('stop_reason') == 'end_turn'
++                and isinstance(response.get('content'), list) and bool(response['content']))
++    if complete and known_cost is not None:
++        state = 'known_complete'
++    elif status == 'incomplete':
++        state = 'known_incomplete'
++    elif status == 'failed':
++        state = 'known_failed'
++    else:
++        state = 'outcome_or_usage_unknown'
++    return {'actual_micro_usd': known_cost, 'cost_knowledge': cost_source,
++            'transport_outcome': 'provider_terminal_received' if status else 'unknown_after_transport',
++            'terminal_status': status,
++            'incomplete_reason': response.get('incomplete_reason'),
++            'provider_error_code': response.get('provider_error_code'),
++            'requested_service_tier': 'default', 'returned_service_tier': returned,
++            'completeness': 'complete_final_answer' if complete else 'no_final_answer',
++            'semantic_assessment': 'PENDING_OFFLINE_REVIEW' if complete else 'NOT_POSSIBLE_NO_FINAL_ANSWER',
++            'state': state}
+ 
+ 
+ def send_once(root,runtime_dir,provider_path,cost_path,access_path,review_receipt,user_approval):
+@@ -185,10 +225,13 @@
+             or review.get('user_approval_sha256') != digest(approval_path)
+             or review.get('model_access_readonly_sha256') != ACCESS_SHA
+             or review.get('prior_attempts_sha256') != PRIOR_ATTEMPTS_SHA
+-            or review.get('prior_known_micro_usd') != 294431
++            or review.get('reasoning_effort') != 'medium'
++            or review.get('prior_known_micro_usd') != 398890
+             or 'prior_http400_actual_micro_usd' not in review
+             or review['prior_http400_actual_micro_usd'] is not None
+-            or review.get('prior_http400_reserved_micro_usd') != 221248):
++            or review.get('prior_http400_reserved_micro_usd') != 221248
++            or review.get('prior_sol61high_response_sha256') != 'a6ea1e73de70cac429c79e45978f78fdb0047b3402cc99080ae1acddb65de897'
++            or review.get('prior_sol61high_receipt_sha256') != 'dba931fa60157287950623f4dd513357cf87aea07acbf2ae87953120931ea93f'):
+         raise ValueError('Independent release receipt absent or unbound')
+     request,bindings,live=preflight(root,runtime_dir,provider_path,cost_path,access_path,live=True)
+     sys.path.insert(0,'/app')
+@@ -196,7 +239,7 @@
+     if spec is None or spec.loader is None:raise ValueError('Private provider adapter unavailable')
+     provider=importlib.util.module_from_spec(spec)
+     spec.loader.exec_module(provider)
+-    if provider.REASONING_EFFORT != 'high':raise ValueError('High reasoning mode not explicit')
++    if provider.REASONING_EFFORT != 'medium':raise ValueError('Medium reasoning mode not explicit')
+     if provider.response_input(request['prompt'],request['model'],request['schema']).get('service_tier') != 'default':
+         raise ValueError('Explicit default service tier missing')
+     provider_request=provider.request
+@@ -209,13 +252,15 @@
+     reserve=reserve_micro_usd(request['prompt'],request['model'],request['max_tokens'],request['schema'])
+     if type(reserve) is not int or reserve != RESERVE_MICRO_USD:
+         raise ValueError('Invalid conservative cost reservation')
+-    record={'qualification_probe':'SEMANTIC-RELATION-SOL61-HIGH-20261005',
++    record={'qualification_probe':'SEMANTIC-RELATION-SOL61-MEDIUM-20261006',
+             'request_hash':sha(encode(request)), 'frozen_request_file_sha256':REQUEST_SHA,
+             'bindings_sha256':BINDINGS_SHA,'provider_adapter_sha256':PROVIDER_SHA,
+             'cost_adapter_sha256':COST_SHA,'user_approval_sha256':digest(approval_path),
+             'model_access_readonly_sha256':ACCESS_SHA,'single_cap_micro_usd':CAP_MICRO_USD,
+-            'reasoning_effort':'high','service_tier':'default','prior_attempts_sha256':PRIOR_ATTEMPTS_SHA,
+-            'prior_known_micro_usd':294431,
++            'reasoning_effort':'medium','service_tier':'default','prior_attempts_sha256':PRIOR_ATTEMPTS_SHA,
++            'prior_known_micro_usd':398890,
++            'prior_sol61high_response_sha256':'a6ea1e73de70cac429c79e45978f78fdb0047b3402cc99080ae1acddb65de897',
++            'prior_sol61high_receipt_sha256':'dba931fa60157287950623f4dd513357cf87aea07acbf2ae87953120931ea93f',
+             'prior_http400_reserved_micro_usd':221248,'prior_http400_actual_micro_usd':None,
+             'model':request['model'],
+             'reserved_micro_usd':reserve,'state':'reserved',
+@@ -234,16 +279,15 @@
+         atomic_private(root/'transport-unknown.json',{'state':'outcome_unknown_no_resend','error_type':type(error).__name__})
+         raise
+     atomic_private(root/'response.json',response)
+-    actual=usage_micro_usd(response,request['model'])
+-    receipt={**record,'response_hash':sha(encode(response)),'actual_micro_usd':actual,
++    outcome=classify_result(response,usage_micro_usd,request['model'])
++    receipt={**record,'response_hash':sha(encode(response)),**outcome,
+              'usage':response.get('usage',{}),
+-             'state':'known' if actual is not None and response.get('stop_reason')=='end_turn' else 'outcome_or_usage_unknown',
+              'stop_reason':response.get('stop_reason'),
+              'received_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+     atomic_private(root/'receipt.json',receipt)
+     print(encode({key:receipt[key] for key in ('qualification_probe','request_hash','response_hash',
+                                                'reserved_micro_usd','actual_micro_usd','state','stop_reason')}))
+-    return 0 if receipt['state']=='known' else 2
++    return 0 if receipt['state']=='known_complete' else 2
+ 
+ 
+ if __name__ == '__main__':

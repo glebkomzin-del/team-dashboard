@@ -1,0 +1,15 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "LOW_YIELD",
+  "decision": "CONTINUE_BOUNDED",
+  "review_uuid": "01a1048d-20ec-7942-a923-d9f238bddcd2",
+  "model": "gpt-6-astra",
+  "effort": "high",
+  "sandbox": "read-only",
+  "primary_result": {
+    "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-target-final-integration-review-1/result.json",
+    "sha256": "dcee2f1498658e1cae6ddb7d139124635c8e48d55d041c52bab6e8831dd1791c"
+  },
+  "judgment": "**CONTINUE_BOUNDED** f\u00fcr `HZ-MIGRATION-20261003-FINAL-CUTOVER`: genau eine mechanische Fixture-Korrektur und **ein vollst\u00e4ndiger zus\u00e4tzlicher Offline-Lauf**.\n\nDie Ursache ist best\u00e4tigt: [Offline.cli](</Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/ops/hetzner-migration/test_final_target_partial_source_return.py:192>) fordert weiterhin `--json`; der Helper verwendet korrekt `--format json`. Beide Fehlerprimaries zeigen `events=[]`, vier Commands und diesen CLI-Aufruf. REST-Pin, Netzwerkmengen und Wrapperimport entsprechen den lokalen Live-Metadaten.\n\nErlaubt ist ausschlie\u00dflich der Austausch dieser Assertion auf `['env','ls','production','--format','json']`. Keine Assertions entfernen, Kriterien lockern oder weitere Produktions\u00e4nderungen durchf\u00fchren.\n\n- Historie bleibt erhalten: urspr\u00fcngliche **2 Fehlzyklen**, Folgepaket **2 Zyklen mit abschlie\u00dfend 47 PASS**, anschlie\u00dfend **2 Integrationsfehll\u00e4ufe** samt beiden Primaries und Fallverzeichnissen.\n- Alle **69 gesch\u00fctzten Dateien**, einschlie\u00dflich beider **19er-Source-Inventare**, sind hashgleich. Fr\u00fchere Runtime13-/HealthyReturn7-/SourceRecovery-Abnahmen werden dadurch nicht wieder ge\u00f6ffnet.\n- Weiterer Implementierungsblocker im gepr\u00fcften \u00c4nderungsumfang: keiner belegt. Ein PASS ist noch ausstehend.\n- Bei Fehlschlag: Paket endet blockiert; keine automatische Reparatur-/Testschleife.\n\nVersionsbindung:\n\n```text\nHelper unver\u00e4ndert:\nb04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319\nTest nach exakt erlaubter Einzeilen\u00e4nderung:\nd480d54f5271e16b33e4daa13488ee1c0a605ff561957cfca79a844e946eb028\n```\n\nBei PASS folgt ein **separates frisches, hashgebundenes GOAL_REVIEW f\u00fcr TARGET_RESTORE_READONLY_RUNTIME** mit aktuellen Originalbelegen. **operationalTargetGo=false** bleibt bestehen.\n\nHeader best\u00e4tigt Astra/high/read-only, UUID `01a1048d-20ec-7942-a923-d9f238bddcd2`. Governance am angegebenen Benutzerpfad geladen. Keine \u00c4nderungen, Tests, Delegation oder Remote-Aufrufe ausgef\u00fchrt.",
+  "target_go": false
+}

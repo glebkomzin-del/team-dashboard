@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily verified Dashboard Job backup
+
+[Timer]
+OnCalendar=*-*-* 03:10:00 Europe/Berlin
+RandomizedDelaySec=10min
+Persistent=true
+Unit=dashboard-job-backup.service
+
+[Install]
+WantedBy=timers.target

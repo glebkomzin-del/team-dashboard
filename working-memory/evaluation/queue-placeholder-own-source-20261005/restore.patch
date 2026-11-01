@@ -1,0 +1,54 @@
+--- a/working-memory/restore_schema.py
++++ b/working-memory/restore_schema.py
+@@ -8,6 +8,7 @@
+ from __future__ import annotations
+ 
+ import argparse
++import hashlib
+ import os
+ from pathlib import Path
+ import subprocess
+@@ -15,7 +16,10 @@
+ import tempfile
+ 
+ 
+-ROOT = Path(__file__).resolve().parents[2]
++SOURCE_PATH = Path(__file__).resolve()
++# The workspace has two parents above working-memory; the runtime copy lives
++# directly in /app and uses its packaged /app/schema first.
++ROOT = SOURCE_PATH.parents[2] if len(SOURCE_PATH.parents) > 2 else SOURCE_PATH.parent
+ 
+ 
+ def default_migrations_dir() -> Path:
+@@ -46,6 +50,8 @@
+ ARCHIVE_ONLY_DELETION = "20260919230755_archive_only_source_deletion.sql"
+ RC2_TAIL = (PIPELINE_CUTOVER, QUESTION_BACKUP_REFERENCES, RECOVERY_COSTS, ACTIVE_ARCHIVE_ENVELOPE, DELETED_DRIVE_MANIFEST, ARCHIVE_ONLY_DELETION)
+ MEMORY_TAIL = ("20260920160000_pipeline_recovery_diagnostics.sql", "20260920161000_memory_conversations.sql", "20260920162000_memory_conversation_backup.sql", "20260920163000_call_replay_reservation.sql", "20260920164000_job_detail_request_hash.sql", "20260920165000_working_memory_search_work_candidates.sql", "20260920166000_working_memory_search_lexical_candidates.sql", "20260920174816_working_memory_search_vector_index_scan.sql", "20260920202135_working_memory_search_timeout.sql", "20260920210540_working_memory_search_put_timeout.sql")
++IMAGE_PLACEHOLDER = "20261005133858_archive_verified_image_placeholder_job.sql"
++IMAGE_PLACEHOLDER_SHA256 = "22ac14542d1f2ec8a025e831b5f8c7f4fb23de7ea1dbf3a19a726e6ed99a5f5d"
+ RC2_DELETIONS = (DELETION_LEDGER, DELETION_PURGE, DELETION_SANITIZED_RECEIPTS, QUESTION_DELETION_EPOCH, DELETION_REIMPORT_STATUS)
+ 
+ 
+@@ -78,7 +84,7 @@
+ 
+ 
+ def migration_paths(directory: Path) -> list[Path]:
+-    """Return the canonical September RC2 set, in its explicit restore order."""
++    """Return the reviewed RC2 set and the required current queue guard."""
+     directory = directory.resolve()
+     if not directory.is_dir():
+         raise ValueError(f"Migration directory is unavailable: {directory}")
+@@ -107,10 +113,12 @@
+     if reimport_status.is_symlink() or not reimport_status.is_file():
+         raise ValueError(f"Required RC2 migration is missing: {DELETION_REIMPORT_STATUS}")
+     paths.append(reimport_status)
+-    for name in (*RC2_TAIL, *MEMORY_TAIL):
++    for name in (*RC2_TAIL, *MEMORY_TAIL, IMAGE_PLACEHOLDER):
+         tail = directory / name
+         if tail.is_symlink() or not tail.is_file():
+             raise ValueError(f"Required RC2 migration is missing: {name}")
++        if name == IMAGE_PLACEHOLDER and hashlib.sha256(tail.read_bytes()).hexdigest() != IMAGE_PLACEHOLDER_SHA256:
++            raise ValueError(f"Required RC2 migration changed: {name}")
+         paths.append(tail)
+     names = {path.name for path in paths}
+     for required in (BRIDGE_BEFORE, BACKUP_REFERENCES, SEQUENTIAL_HYDRATION, *RC2_DELETIONS):

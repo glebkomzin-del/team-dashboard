@@ -1,0 +1,86 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": [
+    "LOW_YIELD",
+    "FOLLOWUP_FAILED"
+  ],
+  "operational_go": false,
+  "enforcement": "RULES_ONLY",
+  "runtime": {
+    "model": "gpt-6-astra",
+    "reasoning": "high",
+    "sandbox": "read-only",
+    "session_id": "01a1043b-a28e-7032-8330-e83ec00b3dca",
+    "previous_review_session_id": "01a1042a-0d24-75b2-ac2f-1fe2668d1201",
+    "header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-direct-prep-gap-review-1/stderr-private.txt"
+  },
+  "governance": {
+    "confirmed_skill": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "reference": "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md",
+    "resumption_basis": "Die ausdrückliche aktuelle Nutzeranweisung eröffnet genau dieses begrenzte Korrekturpaket. Keine automatische zweite Review-Fix-Schleife und keine erneute Genehmigungsfrage."
+  },
+  "accepted_progress": [
+    "Neue Direct-Route-PREP: dokumentiert 10/11, danach 13/14 bestandene Tests sowie 3/3 Exportfehler-Regressionstests.",
+    "Die fünf im PREP-Beleg aufgeführten Dateihashes stimmen mit den aktuell gelesenen Dateien überein.",
+    "Der verbleibende TypeError entsteht im __enter__-Mock vor Lease und PSQL. Er belegt keinen fehlgeschlagenen Source-Authentifizierungsversuch."
+  ],
+  "corrected_finding": {
+    "path_defect_confirmed": false,
+    "actual_exporter_declaration": "LINK = Path(__file__).resolve().parents[4] / 'supabase/.temp/pooler-url'",
+    "actual_preflight_declaration": "POOLER_LINK = c.HERE.parents[3] / 'supabase/.temp/pooler-url'",
+    "current_paths_equal": true,
+    "current_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/.temp/pooler-url",
+    "current_file_exists": true,
+    "proposed_repo_path_exists": false,
+    "conclusion": "Die vorgeschlagene Änderung auf c.HERE.parents[2] wäre eine Regression. Beide vorhandenen Deklarationen unverändert lassen."
+  },
+  "remaining_gap": "Der finale Direct-Entry-Test erreicht wegen der Mock-Signatur seine Assertions zu Tunnel, genau einer Lease, PSQL und Cleanup noch nicht. Ein ungemockter Gleichheitstest der tatsächlichen LINK-Pfade fehlt.",
+  "bounded_followup": {
+    "packages": 1,
+    "maximum_cycles": 2,
+    "scope": [
+      "Ausschließlich die __enter__-Mock-Signatur so korrigieren, dass sie das von ExitStack übergebene Argument akzeptiert.",
+      "Einen Pfadgleichheitstest außerhalb der Fixtures mit gepatchtem POOLER_LINK hinzufügen: tatsächliches preflight.POOLER_LINK gegen unverändertes exporter.LINK; Dateiexistenz prüfen, Inhalte nicht lesen.",
+      "Alle bestehenden 14 Tests und den zusätzlichen Pfadtest bestehen lassen; keine Fälle entfernen oder abschwächen.",
+      "Syntaxprüfung der betroffenen Python-Dateien durchführen und Testergebnisse an die abschließenden Datei-SHA256 binden."
+    ],
+    "retained_validation": "Die vorhandenen 3/3 Regressionsergebnisse bleiben für ihre unveränderte Implementierung anerkannt.",
+    "stop": "Bei vollständigem PASS sofort stoppen. Spätestens nach zwei Zyklen ohne vollständiges Ergebnis blockieren; keine automatische weitere Review-Fix-Runde.",
+    "forbidden": [
+      "Remote-Aufrufe",
+      "Source-API",
+      "Lease",
+      "Authentifizierung",
+      "Freeze",
+      "Dump",
+      "Target-Änderungen",
+      "Exporter-Änderungen"
+    ]
+  },
+  "next_hash_gate_conditions": [
+    "Frisches unabhängiges gezieltes Review des tatsächlichen Codes, Diffs, vollständigen Testergebnisses und abschließenden Hashsatzes.",
+    "Unveränderter export_source.py-SHA256: 3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea.",
+    "Vor realem Preflight separat gültiges SOURCE_DIRECT_AUTH_PREFLIGHT-Gate mit aktuellen Code-, CA- und Netzwerk-/TLS-Belegbindungen sowie unverbrauchtem Einmalmarker.",
+    "Erst danach höchstens eine Read-only-Lease und eine Read-only-Abfrage; weiterhin kein Source-Pause, Dump oder Target-Eingriff."
+  ],
+  "preserved_history": {
+    "old_operational_pooler_failures": 1,
+    "historical_source_freezes": 1,
+    "source_recovery": "PASS bleibt anerkannt; nicht erneut auditiert",
+    "current_full_dump": 0,
+    "direct_prep_cycles_used": 2,
+    "direct_prep_previous_budget_remaining": 0,
+    "direct_prep_previous_status": "FOLLOWUP_FAILED",
+    "direct_prep_operational_actions": 0,
+    "counter_reset": false,
+    "unknown_additional_counters": "Unverändert übernehmen; nicht als null behandeln."
+  },
+  "review_execution": {
+    "tests_run": 0,
+    "remote_calls": 0,
+    "changes": 0,
+    "secret_contents_read": false,
+    "scope": "Lokale Code-, Header-, Hash- und Pfadexistenzprüfung; keine Wiedereröffnung bereits akzeptierter anderer Bereiche."
+  }
+}

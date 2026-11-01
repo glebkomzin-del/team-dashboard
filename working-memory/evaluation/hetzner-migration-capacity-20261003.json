@@ -1,0 +1,67 @@
+{
+  "checked_at_utc": "2026-10-03T17:48:21Z",
+  "host": "178.105.167.26",
+  "mode": "read-only live capacity measurement after source database restore",
+  "memory_mib": {
+    "total": 7729,
+    "used": 1322,
+    "available": 6407,
+    "swap_total": 0
+  },
+  "root_disk_gib": {
+    "filesystem_size": 75,
+    "used": 35,
+    "available": 37,
+    "used_percent": 49
+  },
+  "containers": [
+    {
+      "name": "target-functions",
+      "memory_mib": 35.89,
+      "limit_mib": 512
+    },
+    {
+      "name": "target-api-gw",
+      "memory_mib": 20.97,
+      "limit_mib": 128
+    },
+    {
+      "name": "target-auth",
+      "memory_mib": 9.875,
+      "limit_mib": 128
+    },
+    {
+      "name": "target-rest",
+      "memory_mib": 60.71,
+      "limit_mib": 128
+    },
+    {
+      "name": "target-db",
+      "memory_mib": 226.6,
+      "limit_mib": 1024
+    },
+    {
+      "name": "dashboard",
+      "memory_mib": 80.7,
+      "limit_mib": 1536
+    },
+    {
+      "name": "n8n",
+      "memory_mib": 427.4
+    },
+    {
+      "name": "picnic",
+      "memory_mib": 81.82
+    },
+    {
+      "name": "n8n-postgres",
+      "memory_mib": 73.22
+    }
+  ],
+  "conclusion": "Current expanded CAX21 has substantial free memory/disk with all nine existing and target services; target production cutover and pending restore/recovery gates are separate",
+  "limits": [
+    "Point-in-time measurement, not a sustained peak load test",
+    "Backup restore test still pending at this point",
+    "No guarantee for unrequested future workloads"
+  ]
+}

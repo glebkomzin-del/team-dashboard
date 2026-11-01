@@ -1,0 +1,11 @@
+--- scheduled_backup.py
++++ scheduled_backup.py
+@@ -399,7 +399,7 @@
+         with tarfile.open(folder/'n8n-data.tar.gz','w:gz') as tar:tar.add(mount,arcname='n8n-data',filter=lambda info:None if info.name.endswith(('.log','.log.1')) else info)
+         files={str(p.relative_to(folder)):{'bytes':p.stat().st_size,'sha256':checksum(p)} for p in folder.rglob('*') if p.is_file()}
+         private_json(folder/'bundle-manifest.json',{'format':'dashboard-full-backup-v1','started_at':started.isoformat(),'files':files})
+-        with tarfile.open(temporary,'w:gz') as tar:
++        with tarfile.open(temporary,'w:gz',compresslevel=1) as tar:
+             for name in [*files,'bundle-manifest.json']:tar.add(folder/name,arcname=name)
+         # Independently read the compressed bytes before advertising success.
+         with tarfile.open(temporary) as tar:

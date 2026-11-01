@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T19:01:23.044226+00:00",
+  "completed_utc": "2026-10-05T19:01:23.895130+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 - <<'SOURCE'\nimport subprocess\nq=\"SELECT json_build_object('states',(SELECT json_object_agg(state,n) FROM (SELECT state,count(*) n FROM wm_jobs GROUP BY state) x),'pipelines',(SELECT json_agg(x) FROM (SELECT pipeline,state,count(*) n FROM wm_jobs GROUP BY pipeline,state) x),'review',(SELECT row_to_json(x) FROM (SELECT id,document_id,source_id,state,reason,attempts,pipeline FROM wm_jobs WHERE id='a34706df2728e22f1c0b7648cac2a06402982a708df669d5d90fec6eb7c246f5') x),'calls',(SELECT count(*) FROM wm_model_calls),'archive',(SELECT count(*) FROM wm_archive_documents))::text\"\nr=subprocess.run(['docker','exec','dashboard-supabase-20261003-db-1','psql','-U','postgres','-d','postgres','-XAt','-v','ON_ERROR_STOP=1','-c',q],capture_output=True,text=True);print(r.stdout);print(r.stderr);raise SystemExit(r.returncode)\nSOURCE"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "f7cd9fccd7f9859a683b04e34efec71ebdfeced8b71781e5cacc01af4036ea2d",
+      "bytes": 1946
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

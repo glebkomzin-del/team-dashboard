@@ -1,0 +1,51 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "decision": "CONTINUE_BOUNDED",
+  "reviewer": "/root/final_cutover_gate",
+  "role_binding": "astra-reviewer gpt-6-astra/high",
+  "runtime_enforcement": "RULES_ONLY",
+  "reviewed_revision": "cb86ae929795a2813bf600fb5086a51fe87cf1d5 plus exact outbox correction",
+  "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261003T205500Z",
+  "script_hashes": {
+    "final_quiescence_once.py": "5a131d25afc663db08e55f2763bf3ba758bdab43e25c9bfc2607d22f6d0af5e0",
+    "final_phase_common.py": "1cbcceb23b9dd093c7fcb0e49325ed63ab09c4a64cfb96c520a1e9dac19a796b",
+    "final_export_once.py": "356980f2c1734dda947246975c3cb71b2ad0f7dfad21b56becb58d9267d2b4b9",
+    "final_restore_once.py": "03362524df9c1f1ee29457de4361dffed909c9c4a7163a6d281d040d53ee5a0e",
+    "n8n_dashboard_pause_once.py": "fde6f32f6ccef23aa646d2de7c96e47ad59dc35ec9b261953fecedcbb253f758",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+    "final_export_followup_once.py": "5df5f2eb31618990912e6d574a2d66830dcef419d1815ac2016e9f93ffb9c1b2"
+  },
+  "phase_budget": {
+    "freeze": 1,
+    "readonly_lease": 1,
+    "dump": 1,
+    "restore": 1,
+    "drain_seconds": 600
+  },
+  "conditions": [
+    "n8n active executions0 before stop/freeze/export",
+    "actual mounted outboxes exist and0",
+    "running/unknown provider0",
+    "source effective app writes0",
+    "all COPY equal before nativeVault/config/ACL",
+    "full target/offserver backup and actual promoted owner readonly flow before opening target writer"
+  ],
+  "superseded_evidence": "Initial preflight wrong unmounted outbox paths; corrected existing live mount paths witnessed by reviewer",
+  "future_dump_hash": "Bound only after actual approved export, not pre-reviewed",
+  "migration_acceptance": false,
+  "export_followup": {
+    "reviewer": "/root/final_export_login_gate",
+    "role_binding": "astra-reviewer gpt-6-astra/high",
+    "decision": "CONTINUE_BOUNDED",
+    "trigger": "LOW_YIELD",
+    "reviewed_revision": "e18df3ce8acd67cb0058079b505f5e64fd54472c",
+    "new_lease_budget": 1,
+    "connections_budget": 1,
+    "dump_budget": 1,
+    "original_final_leases": 1,
+    "original_final_dumps": 0,
+    "followup_directory": "readonly-export-followup-1",
+    "failure_action": "FOLLOWUP_FAILED then controlled Source rollback; no automatic next loop",
+    "cause": "Unresolved within-TTL password rejection. Later EAUTHQUERY after expiry is inconclusive. Original helper correct CA quoting. Local diagnostic parser failure preserved."
+  }
+}

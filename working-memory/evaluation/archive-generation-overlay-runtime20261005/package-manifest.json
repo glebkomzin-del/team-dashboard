@@ -1,0 +1,36 @@
+{
+  "build_command": "docker build --network=none --pull=false -t dashboard-memory:archive-generation-overlay-20261005-5c4c18b8 /root/dashboard-archive-overlay-stage-20261005/package",
+  "candidate_image_id": "sha256:423501711e73203b9ea85f554f9e68f647796e53c89157eb5237fd704e7cb2a2",
+  "candidate_pipeline_runtime": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "candidate_pipeline_source": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "candidate_tag": "dashboard-memory:archive-generation-overlay-20261005-5c4c18b8",
+  "file_sha256": {
+    "Dockerfile": "3b2b82d330f701bdae0c95e62f8813240b091399d87ffe6c13c5c565637c5d9a",
+    "build-manifest.json": "5302ea113064c0c5c6be366f7f12d471a14be85adad93daf30ee19fdfeebedf0",
+    "canonical_archive.py": "a72cf81734b162a6a6df075c7fc101b8efe1bd26b7cf8daf5d029f368abba0d8",
+    "compose.yaml": "c99fa419429cbaf51267b45a8cfba20e1ca3913d6a92f2827bd82a29fd487efc",
+    "hybrid_index.py": "5c4c18b8f436c6a9e88198e214a3a05270bcf3c2ff6c413d2487161bf5baa72d",
+    "journal_service.py": "dc8af8292f874f1743ad72fa9b8a1434d1f6bdf2b347168c767800964e3e7cb1"
+  },
+  "frozen_semantic_manifest_sha256": "51e47b25aaba098d4f0ae991b69879739ffe40e29a548c037571c1ad7e2a5cc5",
+  "frozen_semantic_patch_sha256": "7f78fc2b5058edaa8fed65ec053a1a2011a2e048881448c4c82951e14aa10358",
+  "gateway_unchanged_sha256": "7607e565e4e92040cf2567e2775439bd5c146115b3cf125db1b3c269d9a2b52b",
+  "october_sql_unchanged_sha256": "22ac14542d1f2ec8a025e831b5f8c7f4fb23de7ea1dbf3a19a726e6ed99a5f5d",
+  "problem_id": "ARCHIVE-GENERATION-OVERLAY-20261005",
+  "production_release_gate": "DENY_pending_root_receipt_and_fresh_main_pause_drain_inventory",
+  "restore_schema_unchanged_sha256": "5963514dca18c8bcf2f3fc28560063fe4030021251bc43ed44cdf376991838c1",
+  "runtime_manifest_entries": 137,
+  "scheduled_backup_unchanged_sha256": "954e5f163387952b6b7074e5ec3d6938cd9fbedc0473044f3fecd5d8c56d29ec",
+  "schema_entries_unchanged": 46,
+  "selected_overlay_files": [
+    "canonical_archive.py",
+    "journal_service.py",
+    "hybrid_index.py"
+  ],
+  "source_build_manifest_sha256": "bbb1bda7b73b7dc9f885129c6fec83cdd6b23435ecf493c20dd86f39e254d85c",
+  "source_compose_sha256": "e22911ec94d218bcbc313f950ce4abb4698c282298a95117d9b4d5e5c0192466",
+  "source_image_id": "sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb",
+  "source_image_tag": "dashboard-memory:queue-placeholder-20261005-b3e22868",
+  "source_pipeline": "v11:compact1:gate1:gpt-5.6-terra:3086726206f9074d:canonical1:7c67663689250e1c",
+  "status": "private_image_built_not_deployed"
+}

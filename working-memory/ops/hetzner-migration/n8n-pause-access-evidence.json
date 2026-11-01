@@ -1,0 +1,48 @@
+{
+  "existing_keys": 1,
+  "scopes": [
+    "workflow:list",
+    "workflow:read",
+    "workflow:create",
+    "workflow:update",
+    "workflow:delete",
+    "workflow:execute",
+    "credential:list",
+    "credential:read",
+    "credential:create",
+    "credential:update",
+    "credential:delete",
+    "variable:list",
+    "variable:read",
+    "variable:create",
+    "user:list",
+    "user:read",
+    "project:list",
+    "project:read"
+  ],
+  "audience": "public-api",
+  "source_workflow_mutation": false,
+  "workflows": [
+    {
+      "id": "nzyaKxs5Om9wuPEc",
+      "http": 200,
+      "active": true,
+      "activeVersionId": "d7211499-a941-4614-89e6-be6fb13f1f86",
+      "original_sha256": "dce1482280f4025ae1bde483619a1d36fc0ab20133dcee38ed766080a5470a4a"
+    },
+    {
+      "id": "dashboardDriveMove",
+      "http": 200,
+      "active": true,
+      "activeVersionId": "74b389a7-0b56-4cfe-a7c1-720c5867d031",
+      "original_sha256": "fa2ea5ed454101150946dc7b7ec31398a5fafbcc2b0358ffda25e9894c5a7443"
+    },
+    {
+      "id": "dashboardDriveWatch",
+      "http": 200,
+      "active": true,
+      "activeVersionId": "d0475768-b276-43b7-b5a2-67b7ceb13dce",
+      "original_sha256": "77616dfbe07dff9dd38b376ce8a4f9d39fc4518f63f988ba3ef792281ea3eb59"
+    }
+  ]
+}

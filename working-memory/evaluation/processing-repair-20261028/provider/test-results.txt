@@ -1,0 +1,7 @@
+Command: python3 -m unittest discover -s meeting-os/working-memory/evaluation/processing-repair-20261028/provider -p test_provider.py
+Exit: 0
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.001s
+
+OK

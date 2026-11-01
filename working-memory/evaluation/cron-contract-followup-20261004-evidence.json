@@ -1,0 +1,155 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "subject": "cronSafetyContract",
+  "status": "LOCAL_VALIDATION_PASS_ROOT_INTEGRATION_PENDING",
+  "updated_at": "2026-10-04T03:03:58.625706+00:00",
+  "operational_target_go": false,
+  "root_acceptance_required": true,
+  "model": {
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "provider": "openai",
+    "session": "01a104d8-2897-7a23-b09d-ca03b04d4826",
+    "header_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-cron-contract-followup-builder-1/stderr-private.txt",
+    "confirmed_from_actual_header": true
+  },
+  "skills_loaded": [
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/recovery.md",
+    "/Users/glebkomzin/.agents/skills/project-governance/references/specialist-skills.md"
+  ],
+  "scope": "Only four actual cron guard locations with WHERE active and strict count checks, plus PARTIAL_SHA literal. No unrelated edits. No commit.",
+  "authorizing_review": {
+    "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-cron-contract-adjudication-1/result.json",
+    "sha256": "ee19f9bc97b7722588e65efa7c1af51051c351bc0f16fb2f0ba584f05456fde6",
+    "session": "01a104d0-adaa-7ae0-a2a4-9de73fbb595a",
+    "decision": "CHANGE_APPROACH",
+    "scope_limit": "Local continuation only; no operational GO"
+  },
+  "owned_file_hashes": {
+    "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py": "c00187109eb75628b2e17dc541ee712c2f9aa8e88483c6c3df6b3eea1f385110",
+    "working-memory/ops/hetzner-migration/final_target_partial_source_return_once.py": "a7067eebfb01bc4ede1884bafb34f6ebfd4352b0e8ff0d6ab78b6eaa702ba3b8",
+    "working-memory/ops/hetzner-migration/final_target_runtime_permissions_followup_once.py": "882ded14f80af132914670fd04ef79b5ed1c317b0c72efe9653db7797f62460f",
+    "working-memory/ops/hetzner-migration/test_final_cron_contract.py": "e78bcc47f183e43fd630d615df1a745d9010a301fd35b0e284718bd878ac23ef"
+  },
+  "original_hashes": {
+    "final_prewrite_rollback_once.py": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "final_target_partial_source_return_once.py": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319",
+    "final_target_runtime_permissions_followup_once.py": "dd9c283bb73680964d7e18e215bbb02f2dc4afb084e5adcee0271513666bfa2d"
+  },
+  "preservation": {
+    "private_root": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1",
+    "directories_mode": "0700",
+    "files_mode": "0600",
+    "outside_temporary_directories": true,
+    "exact_original_three_helpers_preserved": true,
+    "existing_69_manifest_preserved_without_rewrite": true
+  },
+  "tests": {
+    "command": [
+      "python3",
+      "-B",
+      "-m",
+      "unittest",
+      "-v",
+      "test_final_cron_contract"
+    ],
+    "invocations": 1,
+    "exit_code": 0,
+    "methods": 4,
+    "case_primaries": 55,
+    "guard_cases": 54,
+    "positive_guard_cases": 4,
+    "negative_guard_cases": 50,
+    "poststop_source_rejection_cases": 1,
+    "families": {
+      "partial-target": 11,
+      "prewrite-source": 16,
+      "prewrite-target": 11,
+      "partial-poststop-rejection": 1,
+      "partial-source": 16
+    },
+    "failures": 0,
+    "errors": 0,
+    "actual_paths": "Actual prewrite preflight including full embedded Target Python; actual PartialOperations source_frozen and runtime_attempt preflight_partial branch; actual execute preflight denials and post-stop Source recheck on synthetic disposable files. No Source recovery on any real system.",
+    "covered": "Inactive definitions retained byte-for-byte; active counts 1/2 denied; bool False/True, float 0.0, null, string, malformed Source row/list and Target types denied. Preflight rejection reaches each actual cron guard and occurs before stop/grants/marker. Post-stop Source denial verifies exact order and no grants.",
+    "syntax_bindings_diff": "PASS: exact whole-file original-to-current comparison limits changes to four guard locations plus PARTIAL_SHA. AST syntax and transitive SCRIPTS hashes verified within same invocation.",
+    "stdout": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/stdout-private.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/stderr-private.txt",
+      "sha256": "561c4f7f94cba42f290a7ea333920a3dfb3e80b632fb62b187af59f107c4fedb"
+    },
+    "private_artifact_manifest": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/private-artifacts-sha256.json",
+      "sha256": "326d332bdf978445b120896b2dcea7d7f70db94db0e6b8c1165734ecc61a0560"
+    }
+  },
+  "protected69": {
+    "count": 69,
+    "actual_differences": [
+      "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py"
+    ],
+    "unchanged_count": 68,
+    "protected_original_fixtures_unchanged": true,
+    "partial_not_in_inventory": true,
+    "after_receipt": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/protected-after.json",
+      "sha256": "97cca4d107d860aaeaad0043566fabf3019e69d45a5ab258f9c654b5d8cc1a52"
+    }
+  },
+  "source19": {
+    "source": "final-export-20261004T004000Z/source-only-gate.json script_hashes",
+    "count": 19,
+    "before_differences": [],
+    "actual_after_differences": [
+      "final_prewrite_rollback_once.py"
+    ],
+    "unchanged_count": 18,
+    "explanation": "The actual Source-only 19 inventory includes final_prewrite_rollback_once.py. Its expressly authorized Cron edit changes one SHA. Zero Source19 diff cannot truthfully be claimed. Old gate unchanged; Root must rebind/review before operational use.",
+    "receipt": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/source19-after.json",
+      "sha256": "753a827d401a8953b6969a50959a69317800e99e617bd99b17112fca2a28b064"
+    }
+  },
+  "historical_primary_read": {
+    "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/cron-contract-followup-local-1/historical-contract-read-primary.json",
+    "sha256": "a68dbef3e0ab49540c41fb9338a24f2110b39466dae0959472f9019975b8b9fc",
+    "fresh_proof": false
+  },
+  "accepted_unaffected": "Runtime13/Healthy7/Partial48/Permissions36 unchanged claims remain accepted; no rerun of old campaigns. Original Runtime FAILED and Restore PASS retained.",
+  "budget": {
+    "local_packages_consumed": 1,
+    "narrow_test_invocations_consumed": 1,
+    "narrow_test_invocations_remaining": 0,
+    "automatic_repair_loops": 0,
+    "permission_offline_cycles_consumed_preexisting": 2,
+    "permission_full_cycles_remaining": 0,
+    "operational_builds_executed": 0,
+    "operational_host_dispatches_executed": 0,
+    "previous_operational_budget_not_consumed": "1 corrected build / 1 host completion; no GO granted"
+  },
+  "limits": [
+    "Root integration and fresh actual-hash Astra review remain required before any permission operation.",
+    "Root must independently provide fresh Source/Target active_cron=0, net.http_request_queue=0, original/current Cron-definition equality and actual PartialReturn dry-readiness. No future proof manufactured.",
+    "Source-only gate has one explicitly authorized implementation hash change; previous gate hashes are not operationally current.",
+    "No Runtime/default-user/FrontendIdentity fix, no docs/frontend edits, no commit, no remote or actual SourceRecovery execution.",
+    "Synthetic guards establish local contract only; no continuous runtime hook enforcement claim.",
+    "Existing Supabase active-count SQL was read directly in final_export_once.py:50; no remote SQL or new generic platform introduced."
+  ],
+  "external_operations": {
+    "ssh": 0,
+    "network": 0,
+    "real_cli": 0,
+    "Source": 0,
+    "database": 0,
+    "Docker": 0,
+    "Keychain": 0,
+    "provider": 0,
+    "Source_recovery": 0
+  },
+  "enforcement": "RULES_ONLY plus isolated actual-guard execution; no operational GO"
+}

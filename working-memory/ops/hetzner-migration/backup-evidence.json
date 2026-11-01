@@ -1,0 +1,70 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-BACKUP",
+  "baseline_sha256": "0ce536a2fb4980ab27ad72b621b5d3819491aa61b0150db9d544e5c4ea90a95b",
+  "candidate_sha256": "58048432e2efb34dc6ede449fc86fc3ce9e3ecbb7d17816d8f512de9b5cb0ea9",
+  "baseline_live_match": true,
+  "disk_available_bytes_observed": 41453740032,
+  "local_checks": {
+    "targeted_risk_cases": 3,
+    "existing_backup_offserver_cases": 12,
+    "syntax": true
+  },
+  "isolated_restore": "passed_cycle_2",
+  "production_backup_deployed": false,
+  "complete_cycles_consumed": 2,
+  "cycles_in_progress": 0,
+  "max_cycles": 2,
+  "application_provider_calls": 0,
+  "budget_binding": "No paid services or model calls authorized; runtime token cost unknown",
+  "remote_test": "/var/backups/dashboard-job/.adapter-check-HZ20261003-1",
+  "preflight_harness_aborts": 1,
+  "cycle_1": {
+    "result": "failed_startup",
+    "cause": "docker cp ownership mapped to root; private PG config unreadable",
+    "observed_pg_exit_code": 1,
+    "oom": false,
+    "diagnosis": "Permission denied wal-g.conf/read-replica.conf/supautils.conf/conf.d"
+  },
+  "cycle_2": {
+    "result": "passed",
+    "input_dump_reused": true,
+    "tables_verified": 89,
+    "rows_verified": 68572,
+    "auth_users": 1,
+    "auth_sessions": 22,
+    "vault_secrets": 1,
+    "auth_users_content_hash_verified": true,
+    "vault_plaintext_hash_verified": true,
+    "role_attributes_password_verifier_hashes_verified": true,
+    "private_config_files": 30,
+    "external_network": false,
+    "disposable_container_removed": true
+  },
+  "dump_sha256": "0c9da59574cd911d6efdbf724ff8feef7f8b329df9b0b1b36489257a9f64d7b4",
+  "roles_sha256": "962fb67246fb63186113db565cd81be014b95e9772a97d4b123ed34174ec98aa",
+  "restore_receipt_sha256": "3febc28a2332bcc8cfb9dbea682cd5a36edea824b013a185c1394f033a7306a7",
+  "test_subbundle_sha256": "42ae4f5bfd754f520da408d9651d61e634c8753d07afe735438e36b89992ff00",
+  "test_subbundle_bytes": 320524395,
+  "test_subbundle_files": 35,
+  "local_private_artifact": "/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/backup-adapter-check-20261003/backup-adapter-isolated.tar.gz",
+  "production_daily_full_bundle_tested": false,
+  "open_obligations": [
+    "Lead integration/deployment approval and current live baseline guard",
+    "Consistent runtime build-manifest update and cutover marker activation",
+    "Production daily full-bundle/offserver scheduled run after authorized deployment",
+    "Production restore must enforce current external deletion barrier before services start"
+  ],
+  "actual_offserver_verifier": {
+    "files_verified": 35,
+    "archive_sha256_verified": true,
+    "ran_on": "Mac private transferred test subbundle"
+  },
+  "patch_reconstruction_verified": true,
+  "patch_sha256": "ae0847eb9e26b832bce89eaed5a5d0a88336466d62ac4b5c90cc1b2c10ce8b70",
+  "tested_database_properties": {
+    "owner": "postgres",
+    "default_database_acl": true,
+    "database_specific_role_setting_rows": 0,
+    "observed_on_source_stage": true
+  }
+}

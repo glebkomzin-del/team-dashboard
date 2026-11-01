@@ -1,0 +1,49 @@
+{
+  "build_manifest_sha256": "bbb1bda7b73b7dc9f885129c6fec83cdd6b23435ecf493c20dd86f39e254d85c",
+  "candidate_image": "sha256:2c935de2b6c458810c67dbe7b10e07ec8ee06a97bbca305bc9e8582bf5e3e6cb",
+  "candidate_pipeline": "v11:compact1:gate1:gpt-5.6-terra:3086726206f9074d:canonical1:7c67663689250e1c",
+  "contract_sha256": "8d32dff73414c1d216e0f1a152bdf247e5b8fe93dd6044ef779c3f6c0554f485",
+  "durable_patch_sha256": "d979db5ef1828c887f6f8db08cc7a381911ba8961412729662407d806d08f2b8",
+  "host_script_sha256": "67e491a528d61e247f785c6d5e289e335c4f8b63e970f75fd8e05c13da9de76e",
+  "open": [
+    "real_positive_intake_pause_drain",
+    "fresh_cutover_inventory",
+    "independent_review_and_lead_GO",
+    "actual_postrelease_full_backup_isolated_restore_mac_copy"
+  ],
+  "original_output_sha256": {
+    "backup-ast.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backup-ast.stdout": "244f25e076d43283035641e0a00a801711975104ecb5796dcef0389ad4cbf4f9",
+    "build.stderr": "8778fe812452caca189249604ffbedee5f352884f9718af6728740f689feb04d",
+    "cutover-unknown.stderr": "75bb706cd4200453ec1f69fbcdf07976bc3990ff93753812264a61672d47fadf",
+    "cutover-unknown.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "deploy-no-drain.stderr": "daa1416ac09485f399f24d883bf5ea161b5ac94a7cd338a62be57a1a11da7c40",
+    "deploy-no-drain.stdout": "a465a066f1eb46ed9709579bdcf046cc52bff1d4430eea41c73204c39e183b88",
+    "image-archive-index.json": "cddf342d16ba64f32580faa130a0d86671163107f428d3da8147b2a2b3b2908d",
+    "image-load.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "image-load.stdout": "48e1e5dc6b1684540d4254cf3f90c52af4be87c3367977a4b654af47979bfbee",
+    "image-retag-cleanup.stdout": "cf6e9494550cd0b806af5c02bf67672b4bfc78ba27c76d47b0a34d3539ac83b8",
+    "image-retag.stdout": "5b4c985e1b4809e09261b7f5769f173c4fa8ff02539033281cdcce52ac96efa2",
+    "manifest.json": "2b4aa8897e09220c52c75db302e345936c021611322ee39850c16c2b135e933a",
+    "pipeline-v11.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pipeline-v11.stdout": "a71471bb8a21357500ca404040314998267f56b6d0c76adc9b16e50ac4aea24e",
+    "preflight.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preflight.stdout": "a465a066f1eb46ed9709579bdcf046cc52bff1d4430eea41c73204c39e183b88",
+    "restore-plan.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "restore-plan.stdout": "3bfe0733174a28a7603a348d1ec8a390c66512802fa8dc73d6c6269ee78988c3"
+  },
+  "package_manifest_sha256": "b3e22868171bf2eb6a25eec4f93fd40ebc31ac74742fef49738ea97e646b695e",
+  "status": "prepared_no_production_mutation",
+  "test_exits": {
+    "backup_ast": 0,
+    "cutover_unknown_receipt": 1,
+    "deploy_missing_drain": 1,
+    "disposable_retag_and_cleanup": 0,
+    "docker_load": 0,
+    "docker_save": 0,
+    "host_preflight": 0,
+    "image_pipeline_v11": 0,
+    "image_restore_plan": 0,
+    "offline_build": 0
+  }
+}

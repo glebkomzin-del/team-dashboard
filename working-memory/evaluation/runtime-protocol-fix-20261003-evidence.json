@@ -1,0 +1,158 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "package": "RuntimePREP1",
+  "mode": "LOCAL_HELPERS_OFFLINE_ONLY",
+  "at_utc": "2026-10-03T22:22:11.637440+00:00",
+  "bounded_cycles": 1,
+  "provider_calls": 0,
+  "external_mutations": 0,
+  "enforcement_level": "RULES_ONLY",
+  "fresh_astra_hash_review": "PENDING_ROOT",
+  "versioning": "PENDING_ROOT_OWN_FILES_ONLY",
+  "historical_counters_preserved": {
+    "oldFinal": "1+followup",
+    "SourcePREP": "2+1",
+    "RuntimePREP": 1
+  },
+  "skills_read": [
+    "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "/Users/glebkomzin/.codex/plugins/cache/openai-curated-remote/supabase/1.0.0/skills/supabase/SKILL.md"
+  ],
+  "checks": [
+    {
+      "name": "syntax",
+      "status": "PASS",
+      "files": [
+        "final_target_runtime_once.py",
+        "final_restore_once.py",
+        "frontend-final-promote-once.py",
+        "final_owner_link_once.py",
+        "n8n_dashboard_pause_once.py",
+        "test_final_protocol_private_errors.py"
+      ],
+      "method": "Python compile, no import or execution"
+    },
+    {
+      "name": "offline_contract",
+      "status": "FAIL",
+      "returncode": 1,
+      "stdout_private": "/private/tmp/hz-runtime-prep-validation-xu_w9b1t/offline_contract.stdout",
+      "stderr_private": "/private/tmp/hz-runtime-prep-validation-xu_w9b1t/offline_contract.stderr"
+    },
+    {
+      "name": "git_diff_check",
+      "status": "PASS",
+      "returncode": 0,
+      "command": "git -c core.fsmonitor=false diff --no-ext-diff --check -- [five owned helpers]"
+    },
+    {
+      "name": "all_owned_file_whitespace",
+      "status": "PASS",
+      "findings": []
+    }
+  ],
+  "code_sha256": {
+    "working-memory/ops/hetzner-migration/final_target_runtime_once.py": "d4a227a2f58584bd4983b1facaf7d998f1cb5a16d573aef6e6723e554e5d456f",
+    "working-memory/ops/hetzner-migration/final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "working-memory/ops/hetzner-migration/frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "working-memory/ops/hetzner-migration/final_owner_link_once.py": "260607a30273e6600f0a854087a974f2fb95c54321744d5cfb1d193bda7630f9",
+    "working-memory/ops/hetzner-migration/n8n_dashboard_pause_once.py": "2a8ccf127984b37d9cfad168cc0a7168f239ffc7959c811c2bb7809f451fb096",
+    "working-memory/ops/hetzner-migration/test_final_protocol_private_errors.py": "856801a049c24be2629a750d1fe7564c49b400ef1012e3b54bd1b6b051d4aee6"
+  },
+  "error_ownership": {
+    "target-runtime-process": "final_target_runtime_once.py",
+    "target-runtime-health": "final_target_runtime_once.py",
+    "restore-process": "final_restore_once.py",
+    "restore-fingerprint": "final_restore_once.py",
+    "restore-fingerprint-start": "final_restore_once.py",
+    "frontend-cli": "frontend-final-promote-once.py",
+    "frontend-target-key": "frontend-final-promote-once.py",
+    "frontend-promotion": "frontend-final-promote-once.py",
+    "owner-sql": "final_owner_link_once.py",
+    "owner-generate-link": "final_owner_link_once.py",
+    "n8n-workflow-api": "n8n_dashboard_pause_once.py",
+    "n8n-sequence": "n8n_dashboard_pause_once.py"
+  },
+  "not_executed": [
+    "Source freeze/export",
+    "Target restore/runtime/backup FULL",
+    "Frozen frontend promotion",
+    "Production owner flow",
+    "Target writer opening",
+    "Fresh Astra acceptance"
+  ],
+  "recovery_scope": "Local helper diff only; original five source runtime flags and 0600 service.env backup prepared, not operationally executed.",
+  "source_contract": {
+    "image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f",
+    "flags": {
+      "MEMORY_READ_ONLY": "0",
+      "MEMORY_INTAKE_ENABLED": "1",
+      "MEMORY_AUTOMATIC_ENABLED": "1",
+      "MEMORY_QA_ENABLED": "1",
+      "MEMORY_ORIGINAL_DELETION_ENABLED": "1"
+    },
+    "server_py_sha256": "3cde7428a6100472a5c54fd80062a65ca2834ac4792c0c02f969474964df979f"
+  },
+  "closed_readonly_flags": {
+    "MEMORY_READ_ONLY": "1",
+    "MEMORY_INTAKE_ENABLED": "0",
+    "MEMORY_AUTOMATIC_ENABLED": "0",
+    "MEMORY_QA_ENABLED": "0",
+    "MEMORY_ORIGINAL_DELETION_ENABLED": "0"
+  },
+  "status": "STOP_RETURN_NO_FIX_LOOP",
+  "validation_failure_private": "/private/tmp/hz-runtime-prep-validation-xu_w9b1t/validation-exception.txt",
+  "prior_review_code_sha256": {
+    "final_target_runtime_once.py": "3515ed500c0499bebc9969b3edf22551be830b7ab90c700cf20fc0006ac98747",
+    "final_restore_once.py": "03362524df9c1f1ee29457de4361dffed909c9c4a7163a6d281d040d53ee5a0e",
+    "frontend-final-promote-once.py": "36a862fafafbf5073003f4be9871c990981549888bf020f5658ca24b6279ee1b",
+    "final_owner_link_once.py": "29b0fb111801d1eeb219a2e128607582464d3fc1f3cb6d1e72aefea09909e2e1",
+    "n8n_dashboard_pause_once.py": "fde6f32f6ccef23aa646d2de7c96e47ad59dc35ec9b261953fecedcbb253f758"
+  },
+  "offline_test_result": {
+    "tests_run": 10,
+    "failures": 2,
+    "errors": 4,
+    "full_suite_pass": false,
+    "fully_passed_tests": [
+      "actual image server AST disabled POST and deletion startup",
+      "failed fingerprint full stream preservation",
+      "successful order-independent fingerprint without logs",
+      "runtime/frontend real process-wrapper captures"
+    ],
+    "failed_test_diagnostics": "/private/tmp/hz-runtime-prep-validation-xu_w9b1t/offline_contract.stderr"
+  },
+  "open_mandatory_blockers": [
+    {
+      "owner": "Builder",
+      "file": "working-memory/ops/hetzner-migration/final_owner_link_once.py",
+      "line": 43,
+      "finding": "Implementation regression: replacement matched the newly inserted http_read try block and removed original ROOT/TARGET/REDIRECT/main and five-flag guard; http_read references undefined req. No owner GO permitted."
+    },
+    {
+      "owner": "Builder",
+      "file": "working-memory/ops/hetzner-migration/n8n_dashboard_pause_once.py",
+      "line": 30,
+      "finding": "New run_process references subprocess without importing it; process failure/timeout and successful-return tests fail for n8n."
+    },
+    {
+      "owner": "Builder test fixture",
+      "file": "working-memory/ops/hetzner-migration/test_final_protocol_private_errors.py",
+      "line": 154,
+      "finding": "n8n partial-change test ROOT is unresolved temporary path on macOS, while run resolves /var to /private/var; assert fails before mocked API calls. Partial receipt test remains unproven."
+    }
+  ],
+  "stop_reason": "Single allowed implementation/offline validation cycle failed. No follow-up repairs or repeated tests; return to Root. Do not operate these helpers.",
+  "operational_readiness": "BLOCKED_UNVALIDATED_NO_GO",
+  "health_behavior_change": "Prepared runtime performs one health request and stops privately on failure; old automatic polling removed to honor no retry. Not remotely executed.",
+  "native_model_identity": "Requested gpt-6.1-sol medium; effective native runtime identity not independently inspectable in this worker context.",
+  "owned_diff_private": "/private/tmp/hz-runtime-prep-validation-xu_w9b1t/owned-helper-diff.stdout",
+  "code_sha256_verified_on_return": {
+    "working-memory/ops/hetzner-migration/final_target_runtime_once.py": "d4a227a2f58584bd4983b1facaf7d998f1cb5a16d573aef6e6723e554e5d456f",
+    "working-memory/ops/hetzner-migration/final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "working-memory/ops/hetzner-migration/frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "working-memory/ops/hetzner-migration/final_owner_link_once.py": "260607a30273e6600f0a854087a974f2fb95c54321744d5cfb1d193bda7630f9",
+    "working-memory/ops/hetzner-migration/n8n_dashboard_pause_once.py": "2a8ccf127984b37d9cfad168cc0a7168f239ffc7959c811c2bb7809f451fb096",
+    "working-memory/ops/hetzner-migration/test_final_protocol_private_errors.py": "856801a049c24be2629a750d1fe7564c49b400ef1012e3b54bd1b6b051d4aee6"
+  }
+}

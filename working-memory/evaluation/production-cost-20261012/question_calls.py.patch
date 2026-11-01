@@ -1,0 +1,12 @@
+--- question_calls.py
++++ question_calls.py
+@@ -25,7 +25,8 @@
+             raise BudgetExceeded('Question model or schema is not priced')
+         value={'model':model,'prompt':prompt,'max_tokens':max_tokens,'schema':schema}
+         if model == 'gpt-6.1-sol':
+-            value['transport']={'reasoning_effort':'medium','service_tier':'default'}
++            value['transport']={'reasoning_effort':'medium','service_tier':'default',
++                                'prompt_cache_options':{'mode':'explicit'}}
+         request=encode(value);reserve=reserve_micro_usd(prompt,model,max_tokens,schema)
+         fields={'question_id':self.question_id,'actor_id':self.actor_id,'call_index':self.index}
+         record=self.store.call('question_reserve',**fields,request_json=request,

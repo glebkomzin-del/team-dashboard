@@ -1,0 +1,11 @@
+test_exact_known_export_and_counterexamples (test_image_placeholder_queue.ImagePlaceholderTests.test_exact_known_export_and_counterexamples) ... ok
+test_worker_closes_only_verified_unpaid_claim_before_provider (test_image_placeholder_queue.ImagePlaceholderTests.test_worker_closes_only_verified_unpaid_claim_before_provider) ... ok
+test_plan_refuses_changed_historical_source (test_restore_schema.RestoreSchemaTests.test_plan_refuses_changed_historical_source) ... ok
+test_rc2_plan_has_one_checked_bridge_and_orders_deletions (test_restore_schema.RestoreSchemaTests.test_rc2_plan_has_one_checked_bridge_and_orders_deletions) ... ok
+test_restore_refuses_missing_queue_guard (test_restore_schema.RestoreSchemaTests.test_restore_refuses_missing_queue_guard) ... ok
+test_workspace_schema_fallback_is_the_workspace_supabase_directory (test_restore_schema.RestoreSchemaTests.test_workspace_schema_fallback_is_the_workspace_supabase_directory) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 23.383s
+
+OK

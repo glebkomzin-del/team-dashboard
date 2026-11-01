@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T21:31:00.577192+00:00",
+  "completed_utc": "2026-10-05T21:31:02.897458+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "docker exec dashboard-memory-canonical-draft-canonical-draft-1 python3 /app/.local/technical-relation-qualification-20261005/qualify_once.py send --run-dir /app/.local/technical-relation-qualification-20261005/run --runtime-dir /app/.local/technical-relation-qualification-20261005/runtime --review-receipt /app/.local/technical-relation-qualification-20261005/review.json"
+  ],
+  "exit_code": 2,
+  "outputs": {
+    "stdout": {
+      "sha256": "61d63bc12eccfa9f95dfbc31d08b10137d7624b17f53cdfb9256054430cdd5d6",
+      "bytes": 330
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

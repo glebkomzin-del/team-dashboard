@@ -1,0 +1,2312 @@
+{
+  "backend_copied": 138,
+  "base_head": "3376a277f8c567a28513bfe1c2ac59e39c07131a",
+  "current_repair": {
+    "at_utc": "2026-10-06T17:23:31.439385+00:00",
+    "build_manifest_sha256": "3f5e3d29178207a01f86a6054cc869d8caf8266fb545d5d7f921b548e64b5d66",
+    "complete_release": false,
+    "final_freeze": false,
+    "fresh_full_namespace_read_verified": false,
+    "generation_review_sha256": "b63900e2ed0fae2b92db5db3e13536f85c05b717fd7decd2aab451f61c8c5f41",
+    "graph_sha256": "532af78016bab2b8d61a4d383b5f0e222171ea29948c999fac44664deb14efd9",
+    "historical_p2_package_manifest_sha256": "b456a3df1e15149c2a386543f0b933e087e96db53587310318e23ae6e21cd3df",
+    "image_id": "sha256:89e6d0e6523ad16c6247b695ee2ec4a80ff356a7b071c881e2be94faaa62bf13",
+    "original_source_dockerfile_sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+    "recipe_dependency": "local base tag in Repair.Dockerfile must resolve to recorded base_image_id; rebuilding not performed by this package",
+    "recipe_sha256": "c5f2cfe1f87dc7f77f771ca7f31885d3651445989e6b9ade64497bf03664d837",
+    "technical_install_proof": "evidence/release/current-repair/install-readonly-spec-public.json",
+    "untouched_source_binding": "historical frozen304 metadata; FileProvider current total read unavailable"
+  },
+  "excluded_sensitive_config": [
+    {
+      "external_source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation/source-corrections.json",
+      "path": "evaluation/source-corrections.json",
+      "reason": "contains original meeting source passages; external configuration only",
+      "sha256": "519ba5768882a38dd64dd76b0120156f1c61ee46177f90706b40b2b626a29ecb"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 170,
+      "mode": "100644",
+      "path": "backend/Dockerfile",
+      "sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/Dockerfile"
+    },
+    {
+      "bytes": 1983,
+      "mode": "100644",
+      "path": "backend/access.py",
+      "sha256": "58164da22cfd7d8ff8cf5e6727a0e69e856e5c33906944470394555551f9a14b",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/access.py"
+    },
+    {
+      "bytes": 5566,
+      "mode": "100644",
+      "path": "backend/archive_drive.py",
+      "sha256": "f3f5e48d0942078914e89cb30d56ec14227cdf274c7bd43fe712259babeb1a0e",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/archive_drive.py"
+    },
+    {
+      "bytes": 9213,
+      "mode": "100644",
+      "path": "backend/archive_index.py",
+      "sha256": "4dfcf53e63c3cef4af5b216b637f74a79700a2c1c8bf8c0d8af3c02c972f1601",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/archive_index.py"
+    },
+    {
+      "bytes": 6508,
+      "mode": "100644",
+      "path": "backend/call_budget.py",
+      "sha256": "576fcb19a3a7917abbddb61b86d1cb131e353b370d4a8b8b447581b3424c44fb",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/call_budget.py"
+    },
+    {
+      "bytes": 15079,
+      "mode": "100644",
+      "path": "backend/canonical_archive.py",
+      "sha256": "a72cf81734b162a6a6df075c7fc101b8efe1bd26b7cf8daf5d029f368abba0d8",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/canonical_archive.py"
+    },
+    {
+      "bytes": 19859,
+      "mode": "100644",
+      "path": "backend/canonical_backup.py",
+      "sha256": "ead1971e6ca7dd39943bf1a251c25afb84423363e35df4204c7dc0ffd0d6d2a3",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/canonical_backup.py"
+    },
+    {
+      "bytes": 8814,
+      "mode": "100644",
+      "path": "backend/canonical_restore.py",
+      "sha256": "59150171fb621d569fea80d45183d0eada2ed64d7bb9d8eabe2810ffccdfdc49",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/canonical_restore.py"
+    },
+    {
+      "bytes": 10788,
+      "mode": "100644",
+      "path": "backend/canonical_worker.py",
+      "sha256": "e4be443a1540110ddce0b620294b002cb9cd3481e6e9e424edc880a5c22a3b4c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/canonical_worker.py"
+    },
+    {
+      "bytes": 3579,
+      "mode": "100644",
+      "path": "backend/check_processing.py",
+      "sha256": "b8c270f313e4557cb1c79f3d39ee6d63954f4542be02a414cfb2779dd078f4c5",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/check_processing.py"
+    },
+    {
+      "bytes": 13771,
+      "mode": "100644",
+      "path": "backend/compact_reconcile.py",
+      "sha256": "6e9c71b31aba782a69009ec67985140989ac55c3f628de20516bc006ec688065",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/compact_reconcile.py"
+    },
+    {
+      "bytes": 616,
+      "mode": "100644",
+      "path": "backend/compose.yaml",
+      "sha256": "75375975999dd6b084651244ecf2bddb4779045edca678a9a95bf7ae27a061dc",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/compose.yaml"
+    },
+    {
+      "bytes": 6462,
+      "mode": "100644",
+      "path": "backend/context_window.py",
+      "sha256": "1681665434169d3f6b1cb40b0a93f5889a0385b199219584521f6f22cda0e590",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/context_window.py"
+    },
+    {
+      "bytes": 2537,
+      "mode": "100644",
+      "path": "backend/corrections.py",
+      "sha256": "bcd141b4c83f035d76c7f1595e4f1687e857123b676f98a1da39196be117a918",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/corrections.py"
+    },
+    {
+      "bytes": 2508,
+      "mode": "100644",
+      "path": "backend/deletion_backup.py",
+      "sha256": "069c88d26c479cd3c253f349bd705ee62633634ec990dc7bc74b88a037e4822c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/deletion_backup.py"
+    },
+    {
+      "bytes": 3303,
+      "mode": "100644",
+      "path": "backend/deletion_jobs.py",
+      "sha256": "0aad47fb17a4bf3461c4bcb768dcfb056e07dd0ed4c400508e45adc355165800",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/deletion_jobs.py"
+    },
+    {
+      "bytes": 4373,
+      "mode": "100644",
+      "path": "backend/deletion_ledger.py",
+      "sha256": "9d6e5a939e7e7390e27236469bdcb37f2f137360ee71f4d47f49342e9939897d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/deletion_ledger.py"
+    },
+    {
+      "bytes": 12886,
+      "mode": "100644",
+      "path": "backend/deletion_workflow.py",
+      "sha256": "1a18ec5bebb62fae1beae939ab12d32991a794a050ccb75a981955cf413faa21",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/deletion_workflow.py"
+    },
+    {
+      "bytes": 2374,
+      "mode": "100644",
+      "path": "backend/drive_completion.py",
+      "sha256": "aa76377725bdb98935c25c9e626e97e91378067693be7cd28ef6e967a279f471",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/drive_completion.py"
+    },
+    {
+      "bytes": 4831,
+      "mode": "100644",
+      "path": "backend/drive_intake.py",
+      "sha256": "28b3369a073c900c60c7a3f092ad468611646bfa7bec7f58b45de586850c9497",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/drive_intake.py"
+    },
+    {
+      "bytes": 6814,
+      "mode": "100644",
+      "path": "backend/durable_calls.py",
+      "sha256": "e20373b984e20517bebd8c4003b4e7c1f0b431766a2a52758197d16833954999",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/durable_calls.py"
+    },
+    {
+      "bytes": 3212,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v1.txt",
+      "sha256": "2dfa2be81c2a96b4f505ad6cf8e326152186f9c35d28194711da5ba80b3e5c2c",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v1.txt"
+    },
+    {
+      "bytes": 3860,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v2.txt",
+      "sha256": "8eb5474daab7fe967306cb0e8596bb95d03c5e80d82eba3158febab1accc7bec",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v2.txt"
+    },
+    {
+      "bytes": 5322,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v3.txt",
+      "sha256": "78f9179f74eb84c3b55fdecbc7cde185ab1cb890de5b58436ac4ca418e721a40",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v3.txt"
+    },
+    {
+      "bytes": 6664,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v4.txt",
+      "sha256": "e9ec8ba0a1420b05c15656e2bb72b86443f43c581527f18061340ea5e82075ed",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v4.txt"
+    },
+    {
+      "bytes": 7824,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v5.txt",
+      "sha256": "b919a3db43a06dd45f3780bddc33364f776fcf94d949d721cd4f122059558d4c",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v5.txt"
+    },
+    {
+      "bytes": 8349,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v6.txt",
+      "sha256": "62bbecaf743d02a2f28cf976fba52ca878a27e153770866e3e9f4c078e0a0630",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v6.txt"
+    },
+    {
+      "bytes": 9013,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v7.txt",
+      "sha256": "e4ddcd4a00c8b48d9d08be2ce85af80b1c6529dc853e29ffbe5a02c099a72340",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v7.txt"
+    },
+    {
+      "bytes": 9013,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v8.txt",
+      "sha256": "e4ddcd4a00c8b48d9d08be2ce85af80b1c6529dc853e29ffbe5a02c099a72340",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/prompt-v8.txt"
+    },
+    {
+      "bytes": 10982,
+      "mode": "100644",
+      "path": "backend/evaluation/prompt-v9.txt",
+      "sha256": "1bd7623fc2136fcfb8b189f62228b5102a14f3850c9b4c67b557c6f095baaa54",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation/prompt-v9.txt"
+    },
+    {
+      "bytes": 2550,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v1.json",
+      "sha256": "360ea9c5b569063b03b62d3a50e0bfd76d954c870cbc5188a6ebd2a7614f4920",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v1.json"
+    },
+    {
+      "bytes": 2562,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v2.json",
+      "sha256": "e31de48b071699dd7ace6f0e0aa0ae8814da0205dd5b0de4a545413a184922ed",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v2.json"
+    },
+    {
+      "bytes": 2874,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v3.json",
+      "sha256": "295ab54b5f83813278169e8bda607377297534ba948188c5d650fb5d09739748",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v3.json"
+    },
+    {
+      "bytes": 3279,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v4.json",
+      "sha256": "2632988b4febf28223629148bdf843fbbdf519aad0c84a2364770b96b298e730",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v4.json"
+    },
+    {
+      "bytes": 3279,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v5.json",
+      "sha256": "2632988b4febf28223629148bdf843fbbdf519aad0c84a2364770b96b298e730",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v5.json"
+    },
+    {
+      "bytes": 3279,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v6.json",
+      "sha256": "2632988b4febf28223629148bdf843fbbdf519aad0c84a2364770b96b298e730",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v6.json"
+    },
+    {
+      "bytes": 3279,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v7.json",
+      "sha256": "2632988b4febf28223629148bdf843fbbdf519aad0c84a2364770b96b298e730",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v7.json"
+    },
+    {
+      "bytes": 3279,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v8.json",
+      "sha256": "2632988b4febf28223629148bdf843fbbdf519aad0c84a2364770b96b298e730",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/schema-v8.json"
+    },
+    {
+      "bytes": 3310,
+      "mode": "100644",
+      "path": "backend/evaluation/schema-v9.json",
+      "sha256": "fcb27754346eb73ccd3136ed2f25e2dc27fa21fe7addd04d2bae8086c90ae543",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation/schema-v9.json"
+    },
+    {
+      "bytes": 3443,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-prompt-v6.txt",
+      "sha256": "c4cffd7a2209d86fc45979f52372b9485eb2ce46505f0d56831ba1f5f777d701",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-prompt-v6.txt"
+    },
+    {
+      "bytes": 3977,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-prompt-v7.txt",
+      "sha256": "2d8458806e18349b762c8cb84974e715a29268c1e51cee939ee26c4c49b2cca8",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-prompt-v7.txt"
+    },
+    {
+      "bytes": 3977,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-prompt-v8.txt",
+      "sha256": "2d8458806e18349b762c8cb84974e715a29268c1e51cee939ee26c4c49b2cca8",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-prompt-v8.txt"
+    },
+    {
+      "bytes": 4370,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-prompt-v9.txt",
+      "sha256": "fb1fec047efac6a59a48f1feeff3c0d9af94290b6e980856aed78e12ffc16632",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation/work-gate-prompt-v9.txt"
+    },
+    {
+      "bytes": 2107,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-prompt.txt",
+      "sha256": "9c62efc47c69f29cda598f0ce3cea0649ae770c101a068cce09f90ba29d7e942",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-prompt.txt"
+    },
+    {
+      "bytes": 1321,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-schema-v6.json",
+      "sha256": "5b68970bcc46d0bd5dbda783c70978b46feac76bea19a601b2cc162cce51dcc9",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-schema-v6.json"
+    },
+    {
+      "bytes": 1481,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-schema-v7.json",
+      "sha256": "5d23256f14f0a4c7ba80676b5220e5a739ebee26963afaf9da33a81b5c8290b1",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-schema-v7.json"
+    },
+    {
+      "bytes": 1481,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-schema-v8.json",
+      "sha256": "5d23256f14f0a4c7ba80676b5220e5a739ebee26963afaf9da33a81b5c8290b1",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/work-gate-schema-v8.json"
+    },
+    {
+      "bytes": 1481,
+      "mode": "100644",
+      "path": "backend/evaluation/work-gate-schema-v9.json",
+      "sha256": "5d23256f14f0a4c7ba80676b5220e5a739ebee26963afaf9da33a81b5c8290b1",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation/work-gate-schema-v9.json"
+    },
+    {
+      "bytes": 4837,
+      "mode": "100644",
+      "path": "backend/evaluation_budget.py",
+      "sha256": "9ed4ad9acc6217adfed91beb483a60d276579972da6429e3be1436ad5693a91d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation_budget.py"
+    },
+    {
+      "bytes": 3212,
+      "mode": "100644",
+      "path": "backend/future_summary.py",
+      "sha256": "0abd3852b223c9cfb2fd03b4d4f8c8992f6e339187334b86b5c2b133e8c02eb0",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/future_summary.py"
+    },
+    {
+      "bytes": 6216,
+      "mode": "100644",
+      "path": "backend/gateway_journal.py",
+      "sha256": "5713cb5bb663cf17bbdea17f4f74cd78f6798f81a130106f72daa1b391bfab5d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/gateway_journal.py"
+    },
+    {
+      "bytes": 25598,
+      "mode": "100644",
+      "path": "backend/generation_review.py",
+      "sha256": "cb4edc2fcef7732e7762c394e70e3841183d202de2c5dd2c4282408b0dbf3a79",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/generation_review.py"
+    },
+    {
+      "bytes": 14523,
+      "mode": "100644",
+      "path": "backend/generation_service.py",
+      "sha256": "60282b2f1d96dbada3063c2a296488ba8ea011990c5c490731b2af6b5e3db5e3",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/generation_service.py"
+    },
+    {
+      "bytes": 19581,
+      "mode": "100644",
+      "path": "backend/human_decisions.py",
+      "sha256": "64cc5be5f874c6153c26d3306ddd8c15b088cc55275804c59336d2f5b67c5df0",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/human_decisions.py"
+    },
+    {
+      "bytes": 16989,
+      "mode": "100644",
+      "path": "backend/hybrid_index.py",
+      "sha256": "5c4c18b8f436c6a9e88198e214a3a05270bcf3c2ff6c413d2487161bf5baa72d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/hybrid_index.py"
+    },
+    {
+      "bytes": 24097,
+      "mode": "100644",
+      "path": "backend/hybrid_pipeline.py",
+      "sha256": "5a7562fb72bc72e6ee3632c21c596f1a6f85a4792a1488c5123e26007a8b5a68",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/hybrid_pipeline.py"
+    },
+    {
+      "bytes": 3717,
+      "mode": "100644",
+      "path": "backend/hybrid_schema.py",
+      "sha256": "66ba0460a9070a1f3aa070a798865908cbb9a758975cd4e691edbf46b1c5aba2",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/hybrid_schema.py"
+    },
+    {
+      "bytes": 7333,
+      "mode": "100644",
+      "path": "backend/job_recovery.py",
+      "sha256": "f18c5e30a28f831d10635a7d7505c751b58858a772a7337a1aa1bb53fc8c4b44",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/job_recovery.py"
+    },
+    {
+      "bytes": 9568,
+      "mode": "100644",
+      "path": "backend/journal_projection.py",
+      "sha256": "07d5945f69c62c657442b0feeb8cee7551bc7783724e47f0a2dfafabc9df61a2",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/journal_projection.py"
+    },
+    {
+      "bytes": 17194,
+      "mode": "100644",
+      "path": "backend/journal_service.py",
+      "sha256": "9f93a83d7c6fdc8d871d7c3c3db48481b7cefc6c38a0c3f8bd3b78742635041b",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/journal_service.py"
+    },
+    {
+      "bytes": 6391,
+      "mode": "100644",
+      "path": "backend/journal_store.py",
+      "sha256": "c01afd745ab7c77170af9d3f7d27bf73d1796bcaeca188b6f6ae25b7bf81083a",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/journal_store.py"
+    },
+    {
+      "bytes": 3375,
+      "mode": "100644",
+      "path": "backend/matter_links.py",
+      "sha256": "52d985c7906e976550631c90c3abb5445ac4a19c19135a4a9c9d40d2d358f048",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/matter_links.py"
+    },
+    {
+      "bytes": 9536,
+      "mode": "100644",
+      "path": "backend/meeting_naming.py",
+      "sha256": "b72f045a32988f9fced7e305270b97d321ccb7362a0ce109f77a10adb832d307",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/meeting_naming.py"
+    },
+    {
+      "bytes": 10423,
+      "mode": "100644",
+      "path": "backend/meeting_title_backfill.py",
+      "sha256": "87f9ff63598436f51489b7f5aba6f17491d5b29cd124b99bbf8d4dae43edb0f7",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/meeting_title_backfill.py"
+    },
+    {
+      "bytes": 21104,
+      "mode": "100644",
+      "path": "backend/memory.py",
+      "sha256": "a09be9c831d2e213858a3d9e2746b4c4bc98e540c03ec4dd1023f5f1b11d4c71",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/memory.py"
+    },
+    {
+      "bytes": 3648,
+      "mode": "100644",
+      "path": "backend/memory_chat.py",
+      "sha256": "5c0fd9afe1ea4084479184813a2fb37ac492a576584db485cb27efc442b636fb",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/memory_chat.py"
+    },
+    {
+      "bytes": 16287,
+      "mode": "100644",
+      "path": "backend/memory_chat_query.py",
+      "sha256": "e1d81e9c3824ddcf337fa94d02f901423a6fbdc78a884608f3fc0d4ead074a6b",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/memory_chat_query.py"
+    },
+    {
+      "bytes": 8355,
+      "mode": "100644",
+      "path": "backend/offserver_backup.py",
+      "sha256": "f20eb75a9b43a0b893c4290983c9eecc04b5c6c4bd51d23aef461fd898f49f4b",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/offserver_backup.py"
+    },
+    {
+      "bytes": 12170,
+      "mode": "100644",
+      "path": "backend/openai_provider.py",
+      "sha256": "aa54834e68f4d1af2ae3e7e610bf0ee154234ef26c9b48dbdde3e957cad87054",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/openai_provider.py"
+    },
+    {
+      "bytes": 19641,
+      "mode": "100644",
+      "path": "backend/original_deletion.py",
+      "sha256": "8b5201bf3d08d0ac545914c78049379dd88e841323c5b2d17d9977b2ff445f12",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/original_deletion.py"
+    },
+    {
+      "bytes": 6759,
+      "mode": "100644",
+      "path": "backend/original_deletion_service.py",
+      "sha256": "cf0341a3eb5e8278676c8e94ed71d4a95a99418545722136bba71ae0bc785259",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/original_deletion_service.py"
+    },
+    {
+      "bytes": 3242,
+      "mode": "100644",
+      "path": "backend/pipeline_runtime.py",
+      "sha256": "834c0bf91f4515bbc5c6ef4b7d1f1f9636286334bf2260fa87fc5624f0ac3392",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/pipeline_runtime.py"
+    },
+    {
+      "bytes": 16646,
+      "mode": "100644",
+      "path": "backend/planner.py",
+      "sha256": "e107e0f72c33e21b2b7173bfdc29cb7cdfe67643ec9b5a3b80153f35205dea3d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/planner.py"
+    },
+    {
+      "bytes": 22799,
+      "mode": "100644",
+      "path": "backend/processor.py",
+      "sha256": "76fb213e98d8593f10e9cea8cf0867d06e000d1f5244457a43fa96a5cc3c0e34",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/processor.py"
+    },
+    {
+      "bytes": 1263,
+      "mode": "100644",
+      "path": "backend/projection_order.py",
+      "sha256": "fdf71ee4f124f81bea3c38171b486702e8d52beb357143232c35952607732700",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/projection_order.py"
+    },
+    {
+      "bytes": 10385,
+      "mode": "100644",
+      "path": "backend/projection_snapshot.py",
+      "sha256": "9bbabaf3b5ff3b26484cf8ce1533e0164ea9f434ea00cf37e1ff3c98fce351ba",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/projection_snapshot.py"
+    },
+    {
+      "bytes": 33732,
+      "mode": "100644",
+      "path": "backend/qa_service.py",
+      "sha256": "e5bb56a81ce79092437b10afe4241bc4aca5898c85cc9d9a376fc1f4d521864d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/qa_service.py"
+    },
+    {
+      "bytes": 5061,
+      "mode": "100644",
+      "path": "backend/question_calls.py",
+      "sha256": "8100ce0554fe5ac04fd07d520f971cca1996691044ec7d94c3b27bd985476a76",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/question_calls.py"
+    },
+    {
+      "bytes": 4145,
+      "mode": "100644",
+      "path": "backend/question_jobs.py",
+      "sha256": "5fd9000be29d27cdf6f118688efeb2eaa66fa4c4d876a259d264ea4712005d1e",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/question_jobs.py"
+    },
+    {
+      "bytes": 9805,
+      "mode": "100644",
+      "path": "backend/reconcile.py",
+      "sha256": "7f165f110e850320a80427f481022f93e5bef6bae91130b0741f8b48df4cc80e",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/reconcile.py"
+    },
+    {
+      "bytes": 8352,
+      "mode": "100644",
+      "path": "backend/restore_outboxes.py",
+      "sha256": "a79eae06f7af6b9b6e1cc2b0268a90af42dd3201681d5eb2463a30b230d2214e",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/restore_outboxes.py"
+    },
+    {
+      "bytes": 12062,
+      "mode": "100644",
+      "path": "backend/restore_schema.py",
+      "sha256": "760131f26ab27abed6b08ec537b466915aeca6faa115c1268828ea4601228862",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/restore_schema.py"
+    },
+    {
+      "bytes": 4456,
+      "mode": "100644",
+      "path": "backend/retrieval_context.py",
+      "sha256": "e60aeb0763dcbf0d2334824cf8e08d3b50fda5398e3a238c9a7ef6e8987f2762",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/retrieval_context.py"
+    },
+    {
+      "bytes": 2975,
+      "mode": "100644",
+      "path": "backend/review_api.py",
+      "sha256": "09afc82ca7a3bf9d9f84d596b2f5ff4568aafa284211e1e240d2dbeecbb50d68",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/review_api.py"
+    },
+    {
+      "bytes": 3805,
+      "mode": "100644",
+      "path": "backend/run_release_validation.py",
+      "sha256": "73ade4ea403deadd96a8703a5e7fd2639b0b98500dd68c693f6cc0e901f46749",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/run_release_validation.py"
+    },
+    {
+      "bytes": 28503,
+      "mode": "100644",
+      "path": "backend/scheduled_backup.py",
+      "sha256": "954e5f163387952b6b7074e5ec3d6938cd9fbedc0473044f3fecd5d8c56d29ec",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/scheduled_backup.py"
+    },
+    {
+      "bytes": 7820,
+      "mode": "100644",
+      "path": "backend/schema/20260906195410_working_memory_journal.sql",
+      "sha256": "8d4cbd95c33af43ded6f35693cd70a727e09bd0c33ef43fb3d803722a2b81fc2",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906195410_working_memory_journal.sql"
+    },
+    {
+      "bytes": 1495,
+      "mode": "100644",
+      "path": "backend/schema/20260906203215_working_memory_service_scope.sql",
+      "sha256": "03ad2418b08e251afe31f961317dbfbc55460e7a0759dda1cbce3ad927d135f2",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906203215_working_memory_service_scope.sql"
+    },
+    {
+      "bytes": 190,
+      "mode": "100644",
+      "path": "backend/schema/20260906203938_working_memory_service_read_policy.sql",
+      "sha256": "2a0ad94cf7bbb3dfce01d20e229d5d6b7e8b1438bdb408a969b8934a5a4c8747",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906203938_working_memory_service_read_policy.sql"
+    },
+    {
+      "bytes": 8621,
+      "mode": "100644",
+      "path": "backend/schema/20260906211203_working_memory_original_archive.sql",
+      "sha256": "61c8aab049f7bb76868c56ec0748af6bbd580305717771171e2454d2e09139db",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906211203_working_memory_original_archive.sql"
+    },
+    {
+      "bytes": 20427,
+      "mode": "100644",
+      "path": "backend/schema/20260906220626_working_memory_durable_queue.sql",
+      "sha256": "d7d39695df94caf6ed1207ddcc904d8423bf118c652952011ca2904a10c63a06",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906220626_working_memory_durable_queue.sql"
+    },
+    {
+      "bytes": 1336,
+      "mode": "100644",
+      "path": "backend/schema/20260906225251_working_memory_drive_manifest.sql",
+      "sha256": "2e259371023c1f47cad56c91d05a791145a1aa6fdd2deca6bb4a4527a502f677",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906225251_working_memory_drive_manifest.sql"
+    },
+    {
+      "bytes": 17123,
+      "mode": "100644",
+      "path": "backend/schema/20260906235000_working_memory_job_recovery.sql",
+      "sha256": "e8526760d8071b022d8157eb4ed2573f7546d5cad707efd69290bf22b474b9fc",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260906235000_working_memory_job_recovery.sql"
+    },
+    {
+      "bytes": 4825,
+      "mode": "100644",
+      "path": "backend/schema/20260907001000_working_memory_backup_snapshot.sql",
+      "sha256": "bb86bc2de48ae73353f1fb3a45961e20ab7311db4c07622bbad7cd2de220c99b",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260907001000_working_memory_backup_snapshot.sql"
+    },
+    {
+      "bytes": 15228,
+      "mode": "100644",
+      "path": "backend/schema/20260907013500_working_memory_generation_reviews.sql",
+      "sha256": "0ceb7b6c54a0b1cf01b0b195fa7d4d1aa8351911755e26cfe49c3cb2b32b58ec",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260907013500_working_memory_generation_reviews.sql"
+    },
+    {
+      "bytes": 3679,
+      "mode": "100644",
+      "path": "backend/schema/20260907132739_working_memory_uncapped_processing.sql",
+      "sha256": "7c5dd4f2ef3e01c28d9343a8fb4f45b96a22f31df7a25b9dfdd414cdced6df84",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260907132739_working_memory_uncapped_processing.sql"
+    },
+    {
+      "bytes": 8710,
+      "mode": "100644",
+      "path": "backend/schema/20260908163023_working_memory_hybrid_search.sql",
+      "sha256": "4645a32f75db054ba36a72251c504ae19fb78fb392adee95c98ed3de2961c698",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908163023_working_memory_hybrid_search.sql"
+    },
+    {
+      "bytes": 3526,
+      "mode": "100644",
+      "path": "backend/schema/20260908165134_working_memory_hybrid_durability.sql",
+      "sha256": "aef18e424b6730483098cbe3dabc7fd41a4fae515cafb57a75f830dff52d61f3",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908165134_working_memory_hybrid_durability.sql"
+    },
+    {
+      "bytes": 2265,
+      "mode": "100644",
+      "path": "backend/schema/20260908170839_working_memory_hybrid_snapshot_join.sql",
+      "sha256": "82cfd67e885b38ba019d077c59a3f837420c888635f5e3aeabeacc406f134eb8",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908170839_working_memory_hybrid_snapshot_join.sql"
+    },
+    {
+      "bytes": 2408,
+      "mode": "100644",
+      "path": "backend/schema/20260908170955_working_memory_hybrid_late_materialization.sql",
+      "sha256": "4896f749e992a782fbb4b6626a40482e560caa61d1cbc65827c5f133bda5f85a",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908170955_working_memory_hybrid_late_materialization.sql"
+    },
+    {
+      "bytes": 4412,
+      "mode": "100644",
+      "path": "backend/schema/20260908171324_working_memory_hybrid_vector_index.sql",
+      "sha256": "5af08e865e7e802851fa3c5a49a5db646e18d3217157aebdfbb2c11ae741453d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908171324_working_memory_hybrid_vector_index.sql"
+    },
+    {
+      "bytes": 5657,
+      "mode": "100644",
+      "path": "backend/schema/20260908172330_working_memory_hybrid_search_completion.sql",
+      "sha256": "b08a131c1f397fa139647e27414101acebba4f5ad8bc1e501db4e700f6f3fd85",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908172330_working_memory_hybrid_search_completion.sql"
+    },
+    {
+      "bytes": 3992,
+      "mode": "100644",
+      "path": "backend/schema/20260908192553_working_memory_hybrid_index_plan.sql",
+      "sha256": "859fff52a27db05d0e8623207846a45f42e51dd8a0aaaced7c67fa22fa4e23b8",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908192553_working_memory_hybrid_index_plan.sql"
+    },
+    {
+      "bytes": 515,
+      "mode": "100644",
+      "path": "backend/schema/20260908193255_working_memory_search_backup_alias.sql",
+      "sha256": "c0e3fabd06022701f9f78433958006b30a4177ec520ce0a16a7f56ab467f4610",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908193255_working_memory_search_backup_alias.sql"
+    },
+    {
+      "bytes": 2369,
+      "mode": "100644",
+      "path": "backend/schema/20260908193439_working_memory_immutable_search_backup.sql",
+      "sha256": "5fb383988a26717c0063ada110171cbad8c1bf12ddb04b24c1e62cfcf99c8726",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260908193439_working_memory_immutable_search_backup.sql"
+    },
+    {
+      "bytes": 6828,
+      "mode": "100644",
+      "path": "backend/schema/20260909155014_optional_generation_review_reason.sql",
+      "sha256": "30dae83a4c8a3ccd7ee66588d184dff774e24394710dfe62a142842f936e23c7",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260909155014_optional_generation_review_reason.sql"
+    },
+    {
+      "bytes": 11367,
+      "mode": "100644",
+      "path": "backend/schema/20260919174933_canonical_questions.sql",
+      "sha256": "54505959b6abc810b2737b9a4330a788098652392e6b2e1051717f56e0eb45fe",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919174933_canonical_questions.sql"
+    },
+    {
+      "bytes": 1458,
+      "mode": "100644",
+      "path": "backend/schema/20260919193314_backup_snapshot_references.sql",
+      "sha256": "9e517b7a86f8dcb640037b6e2b68bd9e7ecb44bf39f9729c145617955c958b66",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919193314_backup_snapshot_references.sql"
+    },
+    {
+      "bytes": 14811,
+      "mode": "100644",
+      "path": "backend/schema/20260919200321_working_memory_original_deletion_ledger.sql",
+      "sha256": "bebfdafb55c6c0873028215b94c09554c00b6de9f1805b663954f8400281fac7",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919200321_working_memory_original_deletion_ledger.sql"
+    },
+    {
+      "bytes": 11269,
+      "mode": "100644",
+      "path": "backend/schema/20260919201406_working_memory_original_deletion_purge.sql",
+      "sha256": "79bbec4017b37708717b9f65c778248161d98710d13418857f0a7f16ed6389fc",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919201406_working_memory_original_deletion_purge.sql"
+    },
+    {
+      "bytes": 3084,
+      "mode": "100644",
+      "path": "backend/schema/20260919202704_backup_page_sequential_hydration.sql",
+      "sha256": "d60c916dca6cd073354ed43750db3ebd73016c30742ec8b83995cd882c0b10ad",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919202704_backup_page_sequential_hydration.sql"
+    },
+    {
+      "bytes": 37454,
+      "mode": "100644",
+      "path": "backend/schema/20260919202831_working_memory_original_deletion_sanitized_receipts.sql",
+      "sha256": "f1b7eca7dda952a6f137ca22502db8d7b00ecf28d5a47f54ffd7ceef5fe918b2",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919202831_working_memory_original_deletion_sanitized_receipts.sql"
+    },
+    {
+      "bytes": 4203,
+      "mode": "100644",
+      "path": "backend/schema/20260919214500_backup_completed_call_references.sql",
+      "sha256": "3f2ee0ecaae4b662faafac15a2790e7d356b38be772477918643ca73fc2c5591",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919214500_backup_completed_call_references.sql"
+    },
+    {
+      "bytes": 13589,
+      "mode": "100644",
+      "path": "backend/schema/20260919214722_question_deletion_epoch_guard.sql",
+      "sha256": "8d26a2b833fd3d0d8947d52d02750066a4c47b4bbfcaebf9c9ac312a1b27603c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919214722_question_deletion_epoch_guard.sql"
+    },
+    {
+      "bytes": 1632,
+      "mode": "100644",
+      "path": "backend/schema/20260919215634_source_deletion_reimport_status.sql",
+      "sha256": "1b9166e0e44fde2aeaf1d90d8e9df229b59b69fa0aa89563441a0b1e3b69cc7e",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919215634_source_deletion_reimport_status.sql"
+    },
+    {
+      "bytes": 432,
+      "mode": "100644",
+      "path": "backend/schema/20260919220146_working_memory_pipeline_cutover_audit.sql",
+      "sha256": "5a0289d2c0ea3790bd6b4d76b8e4bb2e3f684da4d003911da31972b1cf72ba9b",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919220146_working_memory_pipeline_cutover_audit.sql"
+    },
+    {
+      "bytes": 9223,
+      "mode": "100644",
+      "path": "backend/schema/20260919220805_backup_completed_question_call_references.sql",
+      "sha256": "e3364a9811486b22b26bc1c20fad57f63612dbef41d2658f4159dd36ac89c9e2",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919220805_backup_completed_question_call_references.sql"
+    },
+    {
+      "bytes": 9997,
+      "mode": "100644",
+      "path": "backend/schema/20260919220820_working_memory_generation_recovery_costs.sql",
+      "sha256": "9503d08e34326162c7ed1be2c37f822b0e08916c63c3390f80c1c4f8989fd5b7",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919220820_working_memory_generation_recovery_costs.sql"
+    },
+    {
+      "bytes": 6739,
+      "mode": "100644",
+      "path": "backend/schema/20260919222422_archive_active_envelope_after_redaction.sql",
+      "sha256": "f6e225550a4d52a4ebc0060f644101bc201548ec6b5ff3f07dc4566a68837cd7",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919222422_archive_active_envelope_after_redaction.sql"
+    },
+    {
+      "bytes": 16678,
+      "mode": "100644",
+      "path": "backend/schema/20260919230755_archive_only_source_deletion.sql",
+      "sha256": "029c08aa2d407aed45ccd80fc2e43dcb6112c53d636bf49065fb5eb5b171d82f",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919230755_archive_only_source_deletion.sql"
+    },
+    {
+      "bytes": 1725,
+      "mode": "100644",
+      "path": "backend/schema/20260919231025_block_deleted_drive_sources_in_manifest.sql",
+      "sha256": "55b34cb547a0d55603fd59c89dba34bfc8b68e71a776b67a3b6b8f309fad60a4",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260919231025_block_deleted_drive_sources_in_manifest.sql"
+    },
+    {
+      "bytes": 11118,
+      "mode": "100644",
+      "path": "backend/schema/20260920160000_pipeline_recovery_diagnostics.sql",
+      "sha256": "ea56397d00ed86aded554ead06c529618b59172b434e7202982d9f04adf89390",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920160000_pipeline_recovery_diagnostics.sql"
+    },
+    {
+      "bytes": 10057,
+      "mode": "100644",
+      "path": "backend/schema/20260920161000_memory_conversations.sql",
+      "sha256": "e243947a86bebbbc6b1d5613ed4648e5b68beb9b4bb7ee248f40896fd86b5f09",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920161000_memory_conversations.sql"
+    },
+    {
+      "bytes": 1266,
+      "mode": "100644",
+      "path": "backend/schema/20260920162000_memory_conversation_backup.sql",
+      "sha256": "c9a5243d9e7ed879ea0b77e66b6240db193ea8b99ba94c8950f3ea973384cec5",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920162000_memory_conversation_backup.sql"
+    },
+    {
+      "bytes": 1252,
+      "mode": "100644",
+      "path": "backend/schema/20260920163000_call_replay_reservation.sql",
+      "sha256": "93befa6508800278dc9a846eabae869fbb2f19443587075fc57736e821df1cf5",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920163000_call_replay_reservation.sql"
+    },
+    {
+      "bytes": 1165,
+      "mode": "100644",
+      "path": "backend/schema/20260920164000_job_detail_request_hash.sql",
+      "sha256": "c2a8364e4dbc83cebada737d7c0e90b45f3934a475f9cb593a7070047b37e146",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920164000_job_detail_request_hash.sql"
+    },
+    {
+      "bytes": 5073,
+      "mode": "100644",
+      "path": "backend/schema/20260920165000_working_memory_search_work_candidates.sql",
+      "sha256": "2fc6aa2add1495b6c648ef078dedf518fd90b538242c823feb3bc350ca66be13",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920165000_working_memory_search_work_candidates.sql"
+    },
+    {
+      "bytes": 5157,
+      "mode": "100644",
+      "path": "backend/schema/20260920166000_working_memory_search_lexical_candidates.sql",
+      "sha256": "9486804129f348e63dc2c28a863076f059390258c1f8c8f2e6fa9cb4ab3aea2c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920166000_working_memory_search_lexical_candidates.sql"
+    },
+    {
+      "bytes": 5324,
+      "mode": "100644",
+      "path": "backend/schema/20260920174816_working_memory_search_vector_index_scan.sql",
+      "sha256": "339c8ffbdcd033435a2ae53e9999febfd19d09fe5c7188b6b3d116c52d0bfec1",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920174816_working_memory_search_vector_index_scan.sql"
+    },
+    {
+      "bytes": 379,
+      "mode": "100644",
+      "path": "backend/schema/20260920202135_working_memory_search_timeout.sql",
+      "sha256": "96193bd2fef566c7fb40a4962333525e7949f2a0f58534390461721a56249786",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920202135_working_memory_search_timeout.sql"
+    },
+    {
+      "bytes": 264,
+      "mode": "100644",
+      "path": "backend/schema/20260920210540_working_memory_search_put_timeout.sql",
+      "sha256": "95b813bd1b3b12970b006647af427316d441c7cd60c889fa6cd8e0890cb23186",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20260920210540_working_memory_search_put_timeout.sql"
+    },
+    {
+      "bytes": 3653,
+      "mode": "100644",
+      "path": "backend/schema/20261005133858_archive_verified_image_placeholder_job.sql",
+      "sha256": "22ac14542d1f2ec8a025e831b5f8c7f4fb23de7ea1dbf3a19a726e6ed99a5f5d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20261005133858_archive_verified_image_placeholder_job.sql"
+    },
+    {
+      "bytes": 6855,
+      "mode": "100644",
+      "path": "backend/schema/20261005202341_generation_review_empty_reason_audit.sql",
+      "sha256": "2bfdad83ecaf7a797a77fe6b84b91d5c569471735c51303bb4f8241f2d5f93f0",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20261005202341_generation_review_empty_reason_audit.sql"
+    },
+    {
+      "bytes": 25144,
+      "mode": "100644",
+      "path": "backend/schema/20261006103000_isolate_processing_job_failures.sql",
+      "sha256": "958d2ace29452beb4f7de9d10c748f331d462692aa9980e8b367b0ca34fec68c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20261006103000_isolate_processing_job_failures.sql"
+    },
+    {
+      "bytes": 40105,
+      "mode": "100644",
+      "path": "backend/server.py",
+      "sha256": "29e84b34b463cfa430729f7c0ab08db543bcb2f57e5d0a0a3e91c8be4c374f05",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/server.py"
+    },
+    {
+      "bytes": 4120,
+      "mode": "100644",
+      "path": "backend/service_worker.py",
+      "sha256": "fcb4740dd57040f920341c4badb0598b9746ab6192d76e84a9c4988f0ef88c1c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/service_worker.py"
+    },
+    {
+      "bytes": 9478,
+      "mode": "100644",
+      "path": "backend/source_edit.py",
+      "sha256": "21b7a11ee584f0c905172ed6e203cd7094e19675ed82126f93bf059453b8ca6f",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/source_edit.py"
+    },
+    {
+      "bytes": 859,
+      "mode": "100644",
+      "path": "backend/temporal_guard.py",
+      "sha256": "79f6d1a5b69679eee922be5dc9db0a4e9bfa1bcc231c913cc6bbcbe4eadfefb1",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/temporal_guard.py"
+    },
+    {
+      "bytes": 3913,
+      "mode": "100644",
+      "path": "backend/verify_actions.py",
+      "sha256": "f28670956366d81e791edc4c040ae0c185f5d15fc50d8cfbac1ae506c7c6f08c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/verify_actions.py"
+    },
+    {
+      "bytes": 284,
+      "mode": "100644",
+      "path": "evidence/backend/corrected-counter-check.json",
+      "sha256": "26b0c70349a034c8709967e0c26e5058fdd1cf56b23d796d1ba3f65ad264ab1c",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/corrected-counter-check.json"
+    },
+    {
+      "bytes": 7828,
+      "mode": "100644",
+      "path": "evidence/backend/test_token_counter_fix.py",
+      "sha256": "27b045af5776c52d1509c54bdcd73ab134b0aad2ec3531d88e9743531d766eaf",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/test_token_counter_fix.py"
+    },
+    {
+      "bytes": 1330,
+      "mode": "100644",
+      "path": "evidence/backend/token-fix-manifest.json",
+      "sha256": "9a9a0b1016a2b271682eedbb0c2c9aaa809d12af15b4ff2155b2f9266bc807e6",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/token-fix-manifest.json"
+    },
+    {
+      "bytes": 103,
+      "mode": "100644",
+      "path": "evidence/backend/token-fix-tests.stderr",
+      "sha256": "1f11b6e880045ee35de832b81b45d06257342e13b5c79bbf0034379d4ca220b9",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/token-fix-tests.stderr"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "evidence/backend/token-fix-tests.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/token-fix-tests.stdout"
+    },
+    {
+      "bytes": 5795,
+      "mode": "100644",
+      "path": "evidence/backend/token-fix.patch",
+      "sha256": "100ff634bac71608d561e68efba8c844a930d26875eaab26cecc7b59c5341b8d",
+      "source": "/private/tmp/dashboard-sol-operational-20261006/token-fix.patch"
+    },
+    {
+      "bytes": 963051,
+      "mode": "100644",
+      "path": "evidence/graph/current-repair-graph.json",
+      "sha256": "6a294fe4a1609155a47812834cfb06d8b34fb2e2864a8a6f77c32ab3d9afc43c",
+      "source": "/private/tmp/dashboard-p3-final-own-source-preparation-20261006/current-repair-graph.json"
+    },
+    {
+      "bytes": 989,
+      "mode": "100644",
+      "path": "evidence/graph/current-repair-receipt.json",
+      "sha256": "731a7bf70d7bfc1b9f070ca8dda7b12f0aaeff0f2fe779ca3996604492f247f7",
+      "source": "/private/tmp/dashboard-p3-final-own-source-preparation-20261006/current-repair-receipt.json"
+    },
+    {
+      "bytes": 951782,
+      "mode": "100644",
+      "path": "evidence/graph/graph.json",
+      "sha256": "286222732edff464d3d5a80d6f2490e871c21183b417ba1497de82ea0814d6cc",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/graph-sol-counter/graph.json"
+    },
+    {
+      "bytes": 939377,
+      "mode": "100644",
+      "path": "evidence/graph/p2-graph.json",
+      "sha256": "0abc1e681525de3124852c31d1fd71daa488cb8ef43a0e055d3ee1efcc941b04",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/graph-sol-parent/graph.json"
+    },
+    {
+      "bytes": 809,
+      "mode": "100644",
+      "path": "evidence/graph/receipt.json",
+      "sha256": "bdcd4eed524519b6d99eb726bd17deea2161c648b6aa9daf77d33c2a818082b3",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/graph-sol-counter/receipt.json"
+    },
+    {
+      "bytes": 104,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/contract-tests.stderr",
+      "sha256": "35e173770e8b2ae664bb6a561f29ed51afa8d5f7cc9761dbdfa594317be439b2",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/contract-tests.stderr"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/contract-tests.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/contract-tests.stdout"
+    },
+    {
+      "bytes": 1163,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/independent-go-v2.json",
+      "sha256": "2cc78960dbba1aab7fbb58f9741f7183961ae4f7fc41c60a31a6b761e267c3aa",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/final-backup-independent-go-v2.json"
+    },
+    {
+      "bytes": 1776,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/preparation-receipt.json",
+      "sha256": "a4627a74c96eb437460b10fe7dce51baf1fdc8e91baa5997765c75e92e7e52d8",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/preparation-receipt.json"
+    },
+    {
+      "bytes": 281,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/sql-explain-proof.json",
+      "sha256": "52bf0f61276fbd25be29161ac983cfeaaad7964e59f873e038277ae858af99d1",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/sql-explain-proof.json"
+    },
+    {
+      "bytes": 3089,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/stage-manifest.json",
+      "sha256": "3a4db042074e4a97a702d46301aa3518dd178100e0433f9bef50ae1d0f103781",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/stage-manifest.json"
+    },
+    {
+      "bytes": 21211,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/supplement-manifest.json",
+      "sha256": "a475bd0f4cee28591ff82918c9f3ff8b3d1aae2b40b85826ddbf79c003489974",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/payload/supplement-manifest.json"
+    },
+    {
+      "bytes": 757,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/supplement-proof.json",
+      "sha256": "0805e89221932aff42d8b562c8986937c8d4ed269d0e9ea9ea36b5e157dd4812",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/supplement-proof.json"
+    },
+    {
+      "bytes": 4263,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/test_recovery_contract.py",
+      "sha256": "d13c38525bd4484b2fb091b2297e864f58e25d8da23af01358ca708804704da7",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/test_recovery_contract.py"
+    },
+    {
+      "bytes": 1330,
+      "mode": "100644",
+      "path": "evidence/release/backend-manifest.json",
+      "sha256": "9a9a0b1016a2b271682eedbb0c2c9aaa809d12af15b4ff2155b2f9266bc807e6",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/backend-manifest.json"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/base-build-manifest.json",
+      "sha256": "c1f25ebd92ef813de5c2c2d9a95851e177b280e642096ebb9cc25f147e13ddc6",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/base-build-manifest.json"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/build-manifest.json",
+      "sha256": "313c648519acedd693632837ddab54cf4b65a7198bd49734db628360c61e1a31",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/build-manifest.json"
+    },
+    {
+      "bytes": 170,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/OriginalSource.Dockerfile",
+      "sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 157,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/Repair.Dockerfile",
+      "sha256": "c5f2cfe1f87dc7f77f771ca7f31885d3651445989e6b9ade64497bf03664d837",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/build-manifest.json",
+      "sha256": "3f5e3d29178207a01f86a6054cc869d8caf8266fb545d5d7f921b548e64b5d66",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 786,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/historical-stage-latency-public.json",
+      "sha256": "46ff773a8823d8076e63f118f40395b6f5c9585c7876407df17fab31e7feb5cc",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 1089,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/image-receipt-public.json",
+      "sha256": "94086abbe4fcd987db877f60283649834449a94d8177e955df717fe8187f746c",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 243,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/install-data-preservation-public.json",
+      "sha256": "39cf15807baf7c585ef041d846cc3f4a541ba9d5d9327ad336d9a854944f9af9",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 1345,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/install-readonly-spec-public.json",
+      "sha256": "f715caec48d3ce809dbd1a2712642523a099f6cd3e16216385e3e04264c44d51",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 730,
+      "mode": "100644",
+      "path": "evidence/release/owner-cua-bindings.json",
+      "sha256": "416f693e347954f0c1b422a179decafb090b02e91c97394ae056b98578608749",
+      "source": "private owner artifacts hash binding"
+    },
+    {
+      "bytes": 2220,
+      "mode": "100644",
+      "path": "evidence/release/p2/actual-n8n-restore-02.json",
+      "sha256": "6c08607d5b66bd93aec10368a35223ea2e9b8f7894c172d4442fd7f7c8a5a4d2",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/actual-n8n-restore-02.json"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/p2/base-build-manifest.json",
+      "sha256": "313c648519acedd693632837ddab54cf4b65a7198bd49734db628360c61e1a31",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/base-build-manifest.json"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/p2/build-manifest.json",
+      "sha256": "e8e50bea00f5ba529e797e699307bb43b12110f2c27b2107f6c9eccb86c2044f",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/build-manifest.json"
+    },
+    {
+      "bytes": 764,
+      "mode": "100644",
+      "path": "evidence/release/p2/cutover-result.json",
+      "sha256": "2e53c01154bc78afa86f24af88139fa4a260417cd49a9c5066d534f4b1176d3a",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/cutover-result.json"
+    },
+    {
+      "bytes": 5672,
+      "mode": "100644",
+      "path": "evidence/release/p2/enable-independent-review.json",
+      "sha256": "d83228e2d28fba2d40870d69db8ce44ee299ba939f2a1ecb8df3eace74fd30a9",
+      "source": "/private/tmp/dashboard-enable-gate-20261006/review-result.json"
+    },
+    {
+      "bytes": 1029,
+      "mode": "100644",
+      "path": "evidence/release/p2/image-receipt.json",
+      "sha256": "edafa96527ec9fcc56eaac9977b01ff2f254656928c59ac849072b9e9f4942f4",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/image-receipt.json"
+    },
+    {
+      "bytes": 623,
+      "mode": "100644",
+      "path": "evidence/release/p2/installed.json",
+      "sha256": "dbae95415af68f14d85eb57a5dfdfb7ee79060d94b1f788dafc6c7142ac2bd1e",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/installed.json"
+    },
+    {
+      "bytes": 17048,
+      "mode": "100644",
+      "path": "evidence/release/p2/package-manifest.json",
+      "sha256": "b456a3df1e15149c2a386543f0b933e087e96db53587310318e23ae6e21cd3df",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/package-manifest.json"
+    },
+    {
+      "bytes": 1724,
+      "mode": "100644",
+      "path": "evidence/release/package-manifest.json",
+      "sha256": "1f90242e339ceee69372665d4b846ed1825d1c20637b383fcac779bcac05ae7c",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/package-manifest.json"
+    },
+    {
+      "bytes": 1110,
+      "mode": "100644",
+      "path": "evidence/release/technical-release-go.json",
+      "sha256": "161b58099afd568f41ff59ac3c8da9764d1c60b1e7fa24a982b1541bad1b98ae",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/technical-release-go.json"
+    },
+    {
+      "bytes": 1377,
+      "mode": "100644",
+      "path": "evidence/release/ui-stale-disabled-cua-receipt.json",
+      "sha256": "1ba3033e10562c96e243edb2c48affc8dc30c5597a9e9d1a8a054e5e3194b9bf",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/ui-stale-disabled-cua-receipt.json"
+    },
+    {
+      "bytes": 381,
+      "mode": "100644",
+      "path": "evidence/release/ui-stale-public-assets.json",
+      "sha256": "063b3fe0f99b52797baa3341bc24ab72e74a39142e753aac94db9da279d4ae82",
+      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/ui-stale-public-assets.json"
+    },
+    {
+      "bytes": 564,
+      "mode": "100644",
+      "path": "evidence/ui/SHA256SUMS",
+      "sha256": "842661d7fb999b69e495ec7c4bc98a22c5f1e1e9f8e8b67a262a363979a24fe7",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/SHA256SUMS"
+    },
+    {
+      "bytes": 524,
+      "mode": "100644",
+      "path": "evidence/ui/build.log",
+      "sha256": "18768b629249f516cadd73642e499c3da5f71537a97cee123c301b1fc6936c3c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/build.log"
+    },
+    {
+      "bytes": 165,
+      "mode": "100644",
+      "path": "evidence/ui/lint.log",
+      "sha256": "386c7233693aaf7d39c882fe7538544799e90d19e8fb6d6fee13bee16eb2b63c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/lint.log"
+    },
+    {
+      "bytes": 2334,
+      "mode": "100644",
+      "path": "evidence/ui/p2-causal-proof.json",
+      "sha256": "4e110f7b0bafd5a84201110de5d63fc059a36adeb4a387012045016534bcbd91",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/followup-causal-proof.json"
+    },
+    {
+      "bytes": 8666,
+      "mode": "100644",
+      "path": "evidence/ui/p2-local-historical-receipt.json",
+      "sha256": "177398e897376f7e36de2931a6e18ecbc7e3a65f75604c69f29d935b984b8ed1",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/receipt-lease-override-01.json"
+    },
+    {
+      "bytes": 1144,
+      "mode": "100644",
+      "path": "evidence/ui/p2-source-bindings.json",
+      "sha256": "6222d83227b50ee093aaba9884a708dad349cfe33c863d87cc4864d741697d81",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source-manifest.json"
+    },
+    {
+      "bytes": 114,
+      "mode": "100644",
+      "path": "evidence/ui/patch-verification.log",
+      "sha256": "d1117c2f5c391ddea59a0417e8edd369ddbfcb07d939db0e21056e8573471a9b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/patch-verification.log"
+    },
+    {
+      "bytes": 1824,
+      "mode": "100644",
+      "path": "evidence/ui/published-p2-preparation-manifest.json",
+      "sha256": "cef982a87671a3f17ca97c674526a705b2e403f7765a55b47e59cfca044e1b1a",
+      "source": "/private/tmp/dashboard-sol-root-ui-release-20261006/release-manifest.json"
+    },
+    {
+      "bytes": 930,
+      "mode": "100644",
+      "path": "evidence/ui/published-p2-static-proof.json",
+      "sha256": "9b60753bde6d8f7ceef4a5c40cbda12e33a586901e2e97f00b0229a7a86ce72b",
+      "source": "/private/tmp/dashboard-sol-root-ui-release-20261006/actual-public-static-proof.json"
+    },
+    {
+      "bytes": 8303,
+      "mode": "100644",
+      "path": "evidence/ui/receipt.json",
+      "sha256": "16f955a947bedd486fd51976c3b2d416b200c2cd99521f8e1d5b66cfd580f82f",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/receipt.json"
+    },
+    {
+      "bytes": 2758,
+      "mode": "100644",
+      "path": "evidence/ui/source-bindings.json",
+      "sha256": "07d745999e9cf95ea59d2f676e89bb2e54b130123a0b616964bd94ca67970093",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source-bindings.json"
+    },
+    {
+      "bytes": 4491,
+      "mode": "100644",
+      "path": "evidence/ui/tests.log",
+      "sha256": "ff10a88d661e6d05c90641a9a51a4da1fc9570b02659d5d565a3b21880200148",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/tests.log"
+    },
+    {
+      "bytes": 4036,
+      "mode": "100644",
+      "path": "evidence/ui/ui-source.patch",
+      "sha256": "29daa7cf44abd745946bb2fdce4055f256f46d5adf073c612e70422b73052b09",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/ui-source.patch"
+    },
+    {
+      "bytes": 3637,
+      "mode": "100644",
+      "path": "recovery-v2/RECOVERY.md",
+      "sha256": "df112354d9530df9688eeb69f3c9bd3bd26a54d7d69b1db1b3306543f025b280",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/RECOVERY.md"
+    },
+    {
+      "bytes": 9427,
+      "mode": "100644",
+      "path": "recovery-v2/enriched-fingerprint.sql",
+      "sha256": "c2394aa13faae4db8bd2c0ec033d169d194fccc00d8be02996c8c33f3d50e3d7",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/enriched-fingerprint.sql"
+    },
+    {
+      "bytes": 7529,
+      "mode": "100644",
+      "path": "recovery-v2/full_backup_once.py",
+      "sha256": "89c804126b162e83a8dce7a0fc8a1929a38d24bc6b4fd98598c351f5c2227612",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/full_backup_once.py"
+    },
+    {
+      "bytes": 5339,
+      "mode": "100644",
+      "path": "recovery-v2/restore_enriched.py",
+      "sha256": "d0e2c94d57138d1bda5166083c8433310ac4d3422bb026e0f4b92d415c8f5113",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/restore_enriched.py"
+    },
+    {
+      "bytes": 25144,
+      "mode": "100644",
+      "path": "sql-authority-copy/20261006103000_isolate_processing_job_failures.sql",
+      "sha256": "958d2ace29452beb4f7de9d10c748f331d462692aa9980e8b367b0ca34fec68c",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006103000_isolate_processing_job_failures.sql"
+    },
+    {
+      "bytes": 2218,
+      "mode": "100644",
+      "path": "sql-authority-copy/20261006123000_bound_processing_status_isolation.sql",
+      "sha256": "8654d1c19dd3c3d32eb821dac00234a070a741ef1d841eef0cf51a0b9d7b1b3a",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006123000_bound_processing_status_isolation.sql"
+    },
+    {
+      "bytes": 350,
+      "mode": "100644",
+      "path": "ui/build-pinned.py",
+      "sha256": "57e58cbaa58c9a2aaaead85000c511954dde81e903eb540a53019d01a6c8b581",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/build-pinned.py"
+    },
+    {
+      "bytes": 414,
+      "mode": "100644",
+      "path": "ui/components.json",
+      "sha256": "c43debf95040b052ab726e0e009165d82cfa7f7d674385b64a3d6f762350ae4c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/components.json"
+    },
+    {
+      "bytes": 616,
+      "mode": "100644",
+      "path": "ui/eslint.config.js",
+      "sha256": "4efe97b16d1200fac0eaf07aa00930a8668b1f96a0be1891ace8c1e712ff0ccb",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/eslint.config.js"
+    },
+    {
+      "bytes": 426,
+      "mode": "100644",
+      "path": "ui/index.html",
+      "sha256": "ea9c45773c4d0cbe9f1c44ba95f2fe14395a1a9a9abf845a5e8bddfead51260f",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/index.html"
+    },
+    {
+      "bytes": 2632,
+      "mode": "100644",
+      "path": "ui/package.json",
+      "sha256": "6abfdc89c421b1efa43f293d6eeed175aa7c5b37ad2b42fa8ba4756e65146263",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/package.json"
+    },
+    {
+      "bytes": 235812,
+      "mode": "100644",
+      "path": "ui/pnpm-lock.yaml",
+      "sha256": "fe04425d444731338266351a9d498ea4157caade8b618820d6cafab9fa4d4242",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/pnpm-lock.yaml"
+    },
+    {
+      "bytes": 101,
+      "mode": "100644",
+      "path": "ui/pnpm-workspace.yaml",
+      "sha256": "1768563c6d26ab601e8cb55b8c342536fc127f49180c53122cee3b28725097f9",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/pnpm-workspace.yaml"
+    },
+    {
+      "bytes": 80,
+      "mode": "100644",
+      "path": "ui/postcss.config.js",
+      "sha256": "190c877db466995bf1482f4a16abd06e04a89ede3119341e2a86ff96e1737b27",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/postcss.config.js"
+    },
+    {
+      "bytes": 289,
+      "mode": "100644",
+      "path": "ui/public/favicon.svg",
+      "sha256": "684b657171b876ec6967595e9bab2ba7baef25c5440f7d54e562fc242491c6b5",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/public/favicon.svg"
+    },
+    {
+      "bytes": 5031,
+      "mode": "100644",
+      "path": "ui/public/icons.svg",
+      "sha256": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/public/icons.svg"
+    },
+    {
+      "bytes": 6148,
+      "mode": "100644",
+      "path": "ui/src/.DS_Store",
+      "sha256": "46571111bd54dbe4361964c6131510864244d2210bcd5ef5b569a5d8ccccd394",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/.DS_Store"
+    },
+    {
+      "bytes": 2891,
+      "mode": "100644",
+      "path": "ui/src/App.css",
+      "sha256": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/App.css"
+    },
+    {
+      "bytes": 129837,
+      "mode": "100644",
+      "path": "ui/src/App.tsx",
+      "sha256": "89ab78b10b6636b0e47842c51289b2265b400990a42a913d406111db95d1f1fc",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/App.tsx"
+    },
+    {
+      "bytes": 437,
+      "mode": "100644",
+      "path": "ui/src/Entry.tsx",
+      "sha256": "088bd33fb25475fe76d8cf6900dba0e84081f2f55927ec314664eaacf9990c37",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/Entry.tsx"
+    },
+    {
+      "bytes": 13057,
+      "mode": "100644",
+      "path": "ui/src/assets/hero.png",
+      "sha256": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/assets/hero.png"
+    },
+    {
+      "bytes": 4126,
+      "mode": "100644",
+      "path": "ui/src/assets/react.svg",
+      "sha256": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/assets/react.svg"
+    },
+    {
+      "bytes": 8709,
+      "mode": "100644",
+      "path": "ui/src/assets/vite.svg",
+      "sha256": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/assets/vite.svg"
+    },
+    {
+      "bytes": 2296,
+      "mode": "100644",
+      "path": "ui/src/auth.ts",
+      "sha256": "b7f249ce1c2ee1507ed148da9a331bd85a67cd9eb0918d76edc3081334b5b32a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/auth.ts"
+    },
+    {
+      "bytes": 3493,
+      "mode": "100644",
+      "path": "ui/src/components/MultiSelectFilter.tsx",
+      "sha256": "e6420708bc090429f7fc8da3ffc08823967233dced590fd2d38cf49597867dc6",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/MultiSelectFilter.tsx"
+    },
+    {
+      "bytes": 2001,
+      "mode": "100644",
+      "path": "ui/src/components/ui/accordion.tsx",
+      "sha256": "dcbfb3243a26096fc3e5f54039ccb5c4c23d9bb79a4d5846b4be75bf912f07d9",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/accordion.tsx"
+    },
+    {
+      "bytes": 1598,
+      "mode": "100644",
+      "path": "ui/src/components/ui/alert.tsx",
+      "sha256": "5950ac01377e7eedc94b00eb3fee678745e4cc1a72b5343867f0733d07db6660",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/alert.tsx"
+    },
+    {
+      "bytes": 140,
+      "mode": "100644",
+      "path": "ui/src/components/ui/aspect-ratio.tsx",
+      "sha256": "08b0aa0b05efc573c7d63363c03e83d4b101bfeb54140764e96ddea30659cfcc",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/aspect-ratio.tsx"
+    },
+    {
+      "bytes": 1405,
+      "mode": "100644",
+      "path": "ui/src/components/ui/avatar.tsx",
+      "sha256": "fb33bc4865b74d1f0239b1782dbdc4cc2d38690ba6e245e9e3b024c256b14c2b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/avatar.tsx"
+    },
+    {
+      "bytes": 1074,
+      "mode": "100644",
+      "path": "ui/src/components/ui/badge.tsx",
+      "sha256": "77868e31597e89ff2295203400d32bc84e289d597d3a998f6dcb4a3993c4f246",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/badge.tsx"
+    },
+    {
+      "bytes": 2712,
+      "mode": "100644",
+      "path": "ui/src/components/ui/breadcrumb.tsx",
+      "sha256": "c3d3dcb0d82fc5e91d8830bac7fead905686fe876f1f42c3ed872bb0a6b6584e",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/breadcrumb.tsx"
+    },
+    {
+      "bytes": 1902,
+      "mode": "100644",
+      "path": "ui/src/components/ui/button.tsx",
+      "sha256": "c2b999a96781e6c932632bd089095368e973bf5602e1b1a62156b7d2b43f1e84",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/button.tsx"
+    },
+    {
+      "bytes": 7555,
+      "mode": "100644",
+      "path": "ui/src/components/ui/calendar.tsx",
+      "sha256": "12bf2e464080393f253d70ab23acdc126c963a68e0c45d4a7f2b8941552aa404",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/calendar.tsx"
+    },
+    {
+      "bytes": 1828,
+      "mode": "100644",
+      "path": "ui/src/components/ui/card.tsx",
+      "sha256": "525c4bb2c051987be64df0e92e1d90174912b219bf541e24ffbc4a3406de49e8",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/card.tsx"
+    },
+    {
+      "bytes": 6224,
+      "mode": "100644",
+      "path": "ui/src/components/ui/carousel.tsx",
+      "sha256": "69686986376cbc02a5f907b1ca8a7a759808c4e8df1200517c57ec749e8484cd",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/carousel.tsx"
+    },
+    {
+      "bytes": 1026,
+      "mode": "100644",
+      "path": "ui/src/components/ui/checkbox.tsx",
+      "sha256": "da3ac46877c697a12e04c8b84e18d408f54c48faf8ccef710231e4f676ddd35e",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/checkbox.tsx"
+    },
+    {
+      "bytes": 315,
+      "mode": "100644",
+      "path": "ui/src/components/ui/collapsible.tsx",
+      "sha256": "6f5be8ba164c177759bf63cc25ad4d49391f162f6784ba624d72e5d5c0c0dde2",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/collapsible.tsx"
+    },
+    {
+      "bytes": 4887,
+      "mode": "100644",
+      "path": "ui/src/components/ui/command.tsx",
+      "sha256": "5a57ebc119f2357b097098d22865d45de8fda623ee88fe98b99999838c13633b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/command.tsx"
+    },
+    {
+      "bytes": 7420,
+      "mode": "100644",
+      "path": "ui/src/components/ui/context-menu.tsx",
+      "sha256": "dc50f646230af939330e709d1a4f0e6d887e5209ee191451df29ce6bc7ccfca3",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/context-menu.tsx"
+    },
+    {
+      "bytes": 4087,
+      "mode": "100644",
+      "path": "ui/src/components/ui/dialog.tsx",
+      "sha256": "2cf5b637c460a34436d7946936a50dcb13ac35bb2b5802a1c82f339390df1e11",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/dialog.tsx"
+    },
+    {
+      "bytes": 3021,
+      "mode": "100644",
+      "path": "ui/src/components/ui/drawer.tsx",
+      "sha256": "774316527ddc577fc54012a0c898ebcf7cf8f11152126e550828b53004a5b70c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/drawer.tsx"
+    },
+    {
+      "bytes": 7606,
+      "mode": "100644",
+      "path": "ui/src/components/ui/dropdown-menu.tsx",
+      "sha256": "dc109123ecd59af01d07aa9f3a8e8a7085bd3f337388c5369799ab1ce6c2d45f",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/dropdown-menu.tsx"
+    },
+    {
+      "bytes": 4118,
+      "mode": "100644",
+      "path": "ui/src/components/ui/form.tsx",
+      "sha256": "f57dda04514eb2c4bc325cc89eb29513a0f681bb841199f390aae0af23b43fe6",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/form.tsx"
+    },
+    {
+      "bytes": 1251,
+      "mode": "100644",
+      "path": "ui/src/components/ui/hover-card.tsx",
+      "sha256": "dcb793b8b1202b1634d791a993acadca0cfc3043a93b98c91a627fbff794f384",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/hover-card.tsx"
+    },
+    {
+      "bytes": 768,
+      "mode": "100644",
+      "path": "ui/src/components/ui/input.tsx",
+      "sha256": "6299a6a387dc55e528aec4342deaea0b83f1ea3a365c135a31a18ee55334f441",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/input.tsx"
+    },
+    {
+      "bytes": 724,
+      "mode": "100644",
+      "path": "ui/src/components/ui/label.tsx",
+      "sha256": "2eac8fbb04002c42b0fbc4062d20d131e421796eaf65c37d2049e29e42ecbc5a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/label.tsx"
+    },
+    {
+      "bytes": 8622,
+      "mode": "100644",
+      "path": "ui/src/components/ui/menubar.tsx",
+      "sha256": "9e6f0abc04c608d29568be5b3f495815c4d708b5fd5b1e5797a2fb41b6f6b376",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/menubar.tsx"
+    },
+    {
+      "bytes": 5124,
+      "mode": "100644",
+      "path": "ui/src/components/ui/navigation-menu.tsx",
+      "sha256": "a06d96a582ac207ffcd38445d773c05e841d646efb185b5e9b65f73e5bd388c7",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/navigation-menu.tsx"
+    },
+    {
+      "bytes": 1356,
+      "mode": "100644",
+      "path": "ui/src/components/ui/popover.tsx",
+      "sha256": "69f74cdd76588a1249522ff8009e044eee6080ad8cf26cb08d7a5fc3281f0255",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/popover.tsx"
+    },
+    {
+      "bytes": 778,
+      "mode": "100644",
+      "path": "ui/src/components/ui/progress.tsx",
+      "sha256": "62867bfee64030a1b58ff7e18623893d1b626eab65340f160cdedf88b8b52200",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/progress.tsx"
+    },
+    {
+      "bytes": 1410,
+      "mode": "100644",
+      "path": "ui/src/components/ui/radio-group.tsx",
+      "sha256": "9ba7808b7404cdf2159c81883a39290033bc4308f2978eb80797c92b87421301",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/radio-group.tsx"
+    },
+    {
+      "bytes": 1642,
+      "mode": "100644",
+      "path": "ui/src/components/ui/scroll-area.tsx",
+      "sha256": "d7d02600effca55d0dcadce8c09c97ebddda3a19c5fa1d52dc9f6f727b26c6b1",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/scroll-area.tsx"
+    },
+    {
+      "bytes": 5731,
+      "mode": "100644",
+      "path": "ui/src/components/ui/select.tsx",
+      "sha256": "b8936f21d1af9539d43453a96ac1b65cb188f5d2f8d52e05d6eaaded282b794b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/select.tsx"
+    },
+    {
+      "bytes": 770,
+      "mode": "100644",
+      "path": "ui/src/components/ui/separator.tsx",
+      "sha256": "995c54f1c5c688f712a675fe35d55bcada2b31dba561dcc71553a1ad601e59ec",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/separator.tsx"
+    },
+    {
+      "bytes": 4280,
+      "mode": "100644",
+      "path": "ui/src/components/ui/sheet.tsx",
+      "sha256": "363f8e06aa5b53c6475f445117f60fa9294be79e9e4f1f5bf70886800188124e",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/sheet.tsx"
+    },
+    {
+      "bytes": 266,
+      "mode": "100644",
+      "path": "ui/src/components/ui/skeleton.tsx",
+      "sha256": "87608e7cc815ad3d88e0b9de6c402bb37b58ea1b38636cf69709da1baff6e334",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/skeleton.tsx"
+    },
+    {
+      "bytes": 1037,
+      "mode": "100644",
+      "path": "ui/src/components/ui/slider.tsx",
+      "sha256": "234e38fef59169bd02d8f5b56ca02e5ec13a0bd6846c328927b924e1299f7fb0",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/slider.tsx"
+    },
+    {
+      "bytes": 880,
+      "mode": "100644",
+      "path": "ui/src/components/ui/sonner.tsx",
+      "sha256": "f93091b355ef5bea646755da13b6f8b87df1be2da4cb0679fe123be99d3d5f04",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/sonner.tsx"
+    },
+    {
+      "bytes": 1162,
+      "mode": "100644",
+      "path": "ui/src/components/ui/switch.tsx",
+      "sha256": "ab2d009e0fa7366f47ae1a6e0ca35d0aac55c6264c5f61718e12366c196163b4",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/switch.tsx"
+    },
+    {
+      "bytes": 2859,
+      "mode": "100644",
+      "path": "ui/src/components/ui/table.tsx",
+      "sha256": "a4a6972c2d47d465d7f02c1dc4a6cbfeda7a97e46479c1b0cebdaf26bf9b497a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/table.tsx"
+    },
+    {
+      "bytes": 1877,
+      "mode": "100644",
+      "path": "ui/src/components/ui/tabs.tsx",
+      "sha256": "6f74706bc6b53f9e4bcebb5e7ab8743b616aef181edc7758b8ee905f9b2fdcd7",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/tabs.tsx"
+    },
+    {
+      "bytes": 649,
+      "mode": "100644",
+      "path": "ui/src/components/ui/textarea.tsx",
+      "sha256": "ec7c92aaed80f6923a7caa4bfe4eead395b50a7001504fd7fbb0b9381804dae9",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/textarea.tsx"
+    },
+    {
+      "bytes": 4832,
+      "mode": "100644",
+      "path": "ui/src/components/ui/toast.tsx",
+      "sha256": "723d1642dc0505f598126581b27cf8a9f2a1ee383af5b3af06d3b908d9728e4a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/toast.tsx"
+    },
+    {
+      "bytes": 786,
+      "mode": "100644",
+      "path": "ui/src/components/ui/toaster.tsx",
+      "sha256": "05e5b3eb44dce90b44e42ca3b4bdc582c5f4bf1652e38237ff7276aa6bd66d8f",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/toaster.tsx"
+    },
+    {
+      "bytes": 1739,
+      "mode": "100644",
+      "path": "ui/src/components/ui/toggle-group.tsx",
+      "sha256": "11592e3f7673ef518e2f82b939dc4752fe5ef7953f487f35595931c3d16fc37d",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/toggle-group.tsx"
+    },
+    {
+      "bytes": 1486,
+      "mode": "100644",
+      "path": "ui/src/components/ui/toggle.tsx",
+      "sha256": "955fa1bb97505b7a8bba3f7cff1991035a9afa0e1113f5d598147e6369dbf44b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/toggle.tsx"
+    },
+    {
+      "bytes": 1253,
+      "mode": "100644",
+      "path": "ui/src/components/ui/tooltip.tsx",
+      "sha256": "da5e88fd55b605c2f6960813775bd99c635a69c71657b3f7ad5905e7a9c53e04",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/components/ui/tooltip.tsx"
+    },
+    {
+      "bytes": 5406,
+      "mode": "100644",
+      "path": "ui/src/features/auth/AuthForms.tsx",
+      "sha256": "dbd06d06907dff8b8de5a9d680a234c56aaa7095a26164fc4b9e7a0c5bafc087",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/auth/AuthForms.tsx"
+    },
+    {
+      "bytes": 11596,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/DecisionDialog.tsx",
+      "sha256": "3a6e2fe081b420765414693105d992bbc9f7ae173fbd30c2e87fa8b9720efd75",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/DecisionDialog.tsx"
+    },
+    {
+      "bytes": 759,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/EvidenceConfidence.tsx",
+      "sha256": "522560fd85e532fba4192c9f074e0ae50ee560e6b092f2cc0a0664cc509bde1b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/EvidenceConfidence.tsx"
+    },
+    {
+      "bytes": 16730,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/GenerationReviews.tsx",
+      "sha256": "46af54d87b7a762aee1513c6c7aceea613a3d1cf163851e2b4322f1ccb8e8864",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/GenerationReviews.tsx"
+    },
+    {
+      "bytes": 22865,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/NotesChat.tsx",
+      "sha256": "a0b6faa0a2747ac7f69644f3b968297b55370a9912e9fb6cff0a639170742d80",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/NotesChat.tsx"
+    },
+    {
+      "bytes": 7412,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/PlannerEditor.tsx",
+      "sha256": "feb5a68a03a1074f47893a271a8cfa19c04ac5a07f5310d4a4e1dbfe864a0eba",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/PlannerEditor.tsx"
+    },
+    {
+      "bytes": 12138,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/ProcessingPanel.tsx",
+      "sha256": "b959e912d4dc9eaf64030758bd6b03b9913e1c08986dade9a31d9a6e60737c15",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/src/features/working-memory/ProcessingPanel.tsx"
+    },
+    {
+      "bytes": 9855,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/RecoveryDialog.tsx",
+      "sha256": "cc0ee9fd3ee2b17b92a5b86a685d0695f6b1ad3984883d2ec7347e259cb4b66d",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/RecoveryDialog.tsx"
+    },
+    {
+      "bytes": 20248,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/SourceEditor.tsx",
+      "sha256": "0670df0674c0fc8e0fb2d6fb4ab4ce6535123862cc1455e2e49129fe1ccd5dc9",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/SourceEditor.tsx"
+    },
+    {
+      "bytes": 4521,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/WorkspaceOverview.tsx",
+      "sha256": "b51f63522374e54d7512bd681e1dc01b96bddd39f95015bc9e92c12affc4d683",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/WorkspaceOverview.tsx"
+    },
+    {
+      "bytes": 9213,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/notes-chat-context.ts",
+      "sha256": "24a8f7cd1bb03d947ee4a9941b59fee94c2fbbd384598a3c5150089542d77b9a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/notes-chat-context.ts"
+    },
+    {
+      "bytes": 11045,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/notes-chat.css",
+      "sha256": "14edb80a448c89a0c0e9d28ac2db7ee1971489f0e4d97b08f525ffc2ee182cc0",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/notes-chat.css"
+    },
+    {
+      "bytes": 4623,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/planning.ts",
+      "sha256": "af4b071b3a4478a96bd3c32753cbdc9afe366351c23d51e091d62e29556dcd9a",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/planning.ts"
+    },
+    {
+      "bytes": 1365,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/preferences.ts",
+      "sha256": "daf6361853321ebfb140c04e582f37c0398daf5664e04d3c24cd5bbc81a45929",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/preferences.ts"
+    },
+    {
+      "bytes": 10701,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/processing-status.ts",
+      "sha256": "f36578edceb9193de7c84bb55b9c8f6281a3c79a6ec767d634b79f038cf0af0e",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/src/features/working-memory/processing-status.ts"
+    },
+    {
+      "bytes": 32370,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/productivity.css",
+      "sha256": "7b186a033331c0466f11ce60a53bfb02e25652d481431ffa277bd46760ea69cb",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/productivity.css"
+    },
+    {
+      "bytes": 1582,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/snapshot-cache.ts",
+      "sha256": "eeaec5f6217d0a526e686de2b104f7ba3639c30e68262a3582369cf0d081bf34",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/snapshot-cache.ts"
+    },
+    {
+      "bytes": 7198,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/types.ts",
+      "sha256": "d68cd3772f0a90a7dac1d47737d1e6cb4b7af0fabbf25d13b6a7d7527ae7f747",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/types.ts"
+    },
+    {
+      "bytes": 2419,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/useReviewSnapshot.ts",
+      "sha256": "f0626cd191f29389b006e95e3380773ce6a974b02e2f61d7c31afa993b976c56",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/useReviewSnapshot.ts"
+    },
+    {
+      "bytes": 11726,
+      "mode": "100644",
+      "path": "ui/src/features/working-memory/working-memory.css",
+      "sha256": "317da7169c49b7204c87e59816cfb575b062ce6b22a6222aef4a65af6c8576d9",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/working-memory.css"
+    },
+    {
+      "bytes": 3895,
+      "mode": "100644",
+      "path": "ui/src/hooks/use-toast.ts",
+      "sha256": "5aab0623ee24bddf9420c259a23a06996292e38ea70eccbac2715516f6d01a0b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/hooks/use-toast.ts"
+    },
+    {
+      "bytes": 6510,
+      "mode": "100644",
+      "path": "ui/src/index.css",
+      "sha256": "79054279673af410b4aab43febe9ccf62816527f7c604be2e12d54c397eb9e28",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/index.css"
+    },
+    {
+      "bytes": 23485,
+      "mode": "100644",
+      "path": "ui/src/lib/shared.tsx",
+      "sha256": "0d318223d21b013df1468b95207be68373db36a343f178087b8bdae9a83364e4",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/lib/shared.tsx"
+    },
+    {
+      "bytes": 166,
+      "mode": "100644",
+      "path": "ui/src/lib/utils.ts",
+      "sha256": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/lib/utils.ts"
+    },
+    {
+      "bytes": 232,
+      "mode": "100644",
+      "path": "ui/src/main.tsx",
+      "sha256": "6a0b7f32b188741962309d1045a0e1b010af41fa069fa8f35e172de952d62314",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/main.tsx"
+    },
+    {
+      "bytes": 28475,
+      "mode": "100644",
+      "path": "ui/src/pages/ActionsPage.tsx",
+      "sha256": "d15ab18c521c42d871e9f30994b18d0a633447cc222b5b5a7c9ff889e6be2c4b",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/ActionsPage.tsx"
+    },
+    {
+      "bytes": 8183,
+      "mode": "100644",
+      "path": "ui/src/pages/ActivityPage.tsx",
+      "sha256": "211d4658534f548a111ccbb78b91ced27f79822bd5147b65cf9f647240709548",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/ActivityPage.tsx"
+    },
+    {
+      "bytes": 19264,
+      "mode": "100644",
+      "path": "ui/src/pages/ArchivePage.tsx",
+      "sha256": "e0534577d6da33aeff1bf7cc0098e3dbf51866810ea39320993d1590e49a08a2",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/ArchivePage.tsx"
+    },
+    {
+      "bytes": 15168,
+      "mode": "100644",
+      "path": "ui/src/pages/CommandCenterPage.tsx",
+      "sha256": "b8779a609eea1b2b1d45198aa83439b24393d0b6f60b088557dd6bf18e00b8aa",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/CommandCenterPage.tsx"
+    },
+    {
+      "bytes": 46948,
+      "mode": "100644",
+      "path": "ui/src/pages/InboxPage.tsx",
+      "sha256": "2582ce91de37bf108718b1d555d5ac43d4cf0c2fae48c51c1e349429728a89cd",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/InboxPage.tsx"
+    },
+    {
+      "bytes": 17637,
+      "mode": "100644",
+      "path": "ui/src/pages/KiPage.tsx",
+      "sha256": "940fd6d1833e493fad3aebab393a39ad80aadb010d99f7102634f0520ca707a7",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/KiPage.tsx"
+    },
+    {
+      "bytes": 15259,
+      "mode": "100644",
+      "path": "ui/src/pages/MeetingsPage.tsx",
+      "sha256": "6d544cf62d7d21d8bb439bec3468acb82eca51fe7f99a792ffa2c862848d8cf1",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/MeetingsPage.tsx"
+    },
+    {
+      "bytes": 15233,
+      "mode": "100644",
+      "path": "ui/src/pages/MemoryApp.tsx",
+      "sha256": "c53d544d9e702453f82e0a157f0ee4aa6428d6808d7e581f68be7c902f9b6b67",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/src/pages/MemoryApp.tsx"
+    },
+    {
+      "bytes": 43285,
+      "mode": "100644",
+      "path": "ui/src/pages/ProductivityPage.tsx",
+      "sha256": "b6c7ee4bd7dd4fe60502e3914cc570be38015ab15b96544889abdcedf2106d23",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/ProductivityPage.tsx"
+    },
+    {
+      "bytes": 62040,
+      "mode": "100644",
+      "path": "ui/src/pages/ProjectsPage.tsx",
+      "sha256": "b429c5553d9cc5764a21ec17fbcf0ab8f513f62f01494c451d2abbd67fd1b651",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/ProjectsPage.tsx"
+    },
+    {
+      "bytes": 13509,
+      "mode": "100644",
+      "path": "ui/src/pages/SettingsPage.tsx",
+      "sha256": "31ff12ee28c77b7fdd298bdfa442f686dda40cfb3dbbe6f08c2598a9d599245f",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/SettingsPage.tsx"
+    },
+    {
+      "bytes": 6950,
+      "mode": "100644",
+      "path": "ui/src/pages/TextSearchPage.tsx",
+      "sha256": "e14055e22bff7b816c68e916039587923936a617a65bbfae2d6fbfa52e98111e",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/TextSearchPage.tsx"
+    },
+    {
+      "bytes": 17063,
+      "mode": "100644",
+      "path": "ui/src/pages/WorkingMemoryPage.tsx",
+      "sha256": "47aaa26d1e933f025cd6e3fe289e04e76aabe4cf2d73c01008c357b587259d52",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/WorkingMemoryPage.tsx"
+    },
+    {
+      "bytes": 122,
+      "mode": "100644",
+      "path": "ui/src/pages/WorkingMemoryPreview.tsx",
+      "sha256": "6f12f8755f0364fdd50ca5bcc435c911d17999cf106ef8c7194004a2222dec74",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/WorkingMemoryPreview.tsx"
+    },
+    {
+      "bytes": 20265,
+      "mode": "100644",
+      "path": "ui/src/supabase.ts",
+      "sha256": "2d4b4eea9181efa079d8eee04acd906e20869a735c615afda08b5e2f2a67ba30",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/supabase.ts"
+    },
+    {
+      "bytes": 1949,
+      "mode": "100644",
+      "path": "ui/tailwind.config.js",
+      "sha256": "5298ab0a8b152890bfb78e0e817328f2587458d7f36be1d294ad0fdadb306399",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/tailwind.config.js"
+    },
+    {
+      "bytes": 4573,
+      "mode": "100644",
+      "path": "ui/tests/memory-shell-status.test.mjs",
+      "sha256": "f186be16b2ecd1aa259b41a45129f1c50042b3f8578f518ae0a3da5265bfe3c5",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/tests/memory-shell-status.test.mjs"
+    },
+    {
+      "bytes": 6487,
+      "mode": "100644",
+      "path": "ui/tests/processing-panel.test.mjs",
+      "sha256": "44c13e97d03c53133bab06d3ced3822a3add952f98f11d8fc8966a53e9edb9b3",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/tests/processing-panel.test.mjs"
+    },
+    {
+      "bytes": 18136,
+      "mode": "100644",
+      "path": "ui/tests/processing-status.test.mjs",
+      "sha256": "8be80e8585c36b6e79993912e1f3bbb680c05d6f471980c270e2e113d32eb403",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/tests/processing-status.test.mjs"
+    },
+    {
+      "bytes": 727,
+      "mode": "100644",
+      "path": "ui/tsconfig.app.json",
+      "sha256": "34351b6490c203f999757ec0f27a7d20376f7c58926aaef03a58f947a0f39a8c",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/tsconfig.app.json"
+    },
+    {
+      "bytes": 248,
+      "mode": "100644",
+      "path": "ui/tsconfig.json",
+      "sha256": "b6f0ab17a155de3cd71310ed5d7213a1283fcaa95c603b9cda4c8149da33e557",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/tsconfig.json"
+    },
+    {
+      "bytes": 591,
+      "mode": "100644",
+      "path": "ui/tsconfig.node.json",
+      "sha256": "90a22c920cbc14624fb4658b58f15c875abf3234224f3933f211849c3ada3242",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/tsconfig.node.json"
+    },
+    {
+      "bytes": 496,
+      "mode": "100644",
+      "path": "ui/vite.config.ts",
+      "sha256": "081a7b8664605b559be54a4bf6605bbed75230b4c61f7f455ea68127ed897285",
+      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/vite.config.ts"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/OriginalSource.Dockerfile",
+      "bytes": 170,
+      "mode": "100644",
+      "sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/Repair.Dockerfile",
+      "bytes": 155,
+      "mode": "100644",
+      "sha256": "a4ed10c6d8394868a6946ce4fabe9c74f5ff7ac576b9827d9c1dcbd5e32d670c",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/build-manifest.json",
+      "bytes": 14967,
+      "mode": "100644",
+      "sha256": "0c1b612bdd394bb8e76da36e4e93b17a3706ff7825a9b5424b1aa6706e2e2a7f",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/compact_reconcile.patch",
+      "bytes": 669,
+      "mode": "100644",
+      "sha256": "7b6a7dc8ee4687416d7cb58f433847e2c288684e1f5ec80539c0607d810a53ea",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/corrected-n8n-guard-receipt.json",
+      "bytes": 824,
+      "mode": "100644",
+      "sha256": "847f01b9b3ae9b7cbe7454e99c44730cd85049fc094798ef57ddd2bdba4b7c0f",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/image-receipt.json",
+      "bytes": 1366,
+      "mode": "100644",
+      "sha256": "c58add316c2fcdfee3ea27721804b0bd5d7f8160ff9d38e6c377adc8277838db",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/rollout-and-recovery-binding.json",
+      "bytes": 1876,
+      "mode": "100644",
+      "sha256": "18572ddaf0b8dfcff60d34992e6178c07b1e547310e2f34bd941552dd5d688e9",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/runtime13.json",
+      "bytes": 1188,
+      "mode": "100644",
+      "sha256": "af6acb258bc52c2fc4bd920861e25e110a4eb5a148fb2966f5b1be8ebf810a94",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/technical-review-receipt.json",
+      "bytes": 27690,
+      "mode": "100644",
+      "sha256": "c388117e56be26f9e9610376fa1d99b366c6343bf1983f5d57ee21e7e57bbaf2",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/test-plan-and-results.json",
+      "bytes": 3390,
+      "mode": "100644",
+      "sha256": "ac1789fa513f20efe2c386e87d0648f9fae07c0b031fb726855cf32ec5d7b43c",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    }
+  ],
+  "final_actual_acceptance_and_enable": "Root-owned; this preparation makes no later execution claim",
+  "final_full_backup_and_database_restore": "pending Root actual evidence; historical preparation receipts remain historical",
+  "manifest_count_interpretation": {
+    "build_map_total": 139,
+    "copied_build_map_entries": 138,
+    "disjoint_non_schema_entries": 91,
+    "excluded_sensitive_entries": 1,
+    "schema_entries_included_in_build_map": 48
+  },
+  "manifest_entries": 139,
+  "package_manifest_sha256": "b456a3df1e15149c2a386543f0b933e087e96db53587310318e23ae6e21cd3df",
+  "preparation_at_utc": "2026-10-06T15:35:56.365435+00:00",
+  "prepared_final_completion": false,
+  "sql_selected": 48,
+  "current_p3": {
+    "at_utc": "2026-10-06T20:06:12.438906+00:00",
+    "image_id": "sha256:c07075ed2c911d83d052d256593fe05aaa72edb57c3cb54f84f6537e19b407e6",
+    "pipeline": "v11:compact1:gate1:gpt-6.1-sol:88fc544001f40996:canonical1:42317499c5d8a62a",
+    "source139_manifest_sha256": "0c1b612bdd394bb8e76da36e4e93b17a3706ff7825a9b5424b1aa6706e2e2a7f",
+    "approved_five_module_map": {
+      "compact_reconcile.py": "6e9c71b31aba782a69009ec67985140989ac55c3f628de20516bc006ec688065",
+      "generation_review.py": "cb4edc2fcef7732e7762c394e70e3841183d202de2c5dd2c4282408b0dbf3a79",
+      "generation_service.py": "60282b2f1d96dbada3063c2a296488ba8ea011990c5c490731b2af6b5e3db5e3",
+      "journal_service.py": "9f93a83d7c6fdc8d871d7c3c3db48481b7cefc6c38a0c3f8bd3b78742635041b",
+      "server.py": "29e84b34b463cfa430729f7c0ab08db543bcb2f57e5d0a0a3e91c8be4c374f05"
+    },
+    "original_Dockerfile_unchanged": true,
+    "overlay_recipe_sha256": "a4ed10c6d8394868a6946ce4fabe9c74f5ff7ac576b9827d9c1dcbd5e32d670c",
+    "public_evidence": "evidence/release/p3-direct-current",
+    "graph_sha256": "6a294fe4a1609155a47812834cfb06d8b34fb2e2864a8a6f77c32ab3d9afc43c",
+    "graph_nodes": 745,
+    "graph_edges": 2217,
+    "historical_89_fields_retained": true,
+    "actual_install_and_routing": "OPEN_UNTIL_ROOT_PROOF",
+    "processing_native_owner_HTTP_enable": "OPEN",
+    "backup_pair_isolated_restore_source_after_restore": "OPEN",
+    "source_copy_status": "FIVE_APPROVED_SOURCE_FILES_POSITIVELY_READ_BEFORE_AND_DIRECTLY_VERIFIED_AFTER",
+    "final_freeze": false,
+    "final_completed": false,
+    "unknown_attempts_cost_counters": "UNKNOWN_NOT_RESET",
+    "source_copy_at_utc": "2026-10-06T20:06:55.816019+00:00"
+  }
+}

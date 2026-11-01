@@ -1,0 +1,44 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "FORWARD_FAILED_ARTIFACT_TRANSFER_PENDING_INDEPENDENT_REVIEW",
+  "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+  "source_frozen": true,
+  "source_resume": false,
+  "source_freeze_attempts": 1,
+  "leases": 1,
+  "dump_attempts": 1,
+  "archive": {
+    "status": "EXPORTED_AND_VALIDATED",
+    "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+    "dump_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+    "dump_bytes": 321266826,
+    "new_readonly_leases": 1,
+    "new_dump_attempts": 1,
+    "archive_valid": true,
+    "vault_archive_bound": true,
+    "edge_metadata_unchanged": true,
+    "source_frozen": true,
+    "roles_no_passwords": true,
+    "dump_pg_version": "17.10"
+  },
+  "offserver": {
+    "all_files_equal": true,
+    "dump_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+    "file_count": 47
+  },
+  "failure": "Pinned SSH full.dump upload exceeded existing60s helper deadline; private SSH timeout complete primary retained. No retry.",
+  "partial": {
+    "bytes": 310242816,
+    "remote_sha256": "b227187232909e326468f812af9f2407f83152824e599a0418276a8fb62a9100",
+    "local_prefix_sha256": "b227187232909e326468f812af9f2407f83152824e599a0418276a8fb62a9100",
+    "equal": true,
+    "complete_dump_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+    "source_frozen": true,
+    "timer_inactive": true
+  },
+  "target_changes": 0,
+  "timer_owned_paused": true,
+  "transfer_review_pending": true,
+  "historical_failures_preserved": true,
+  "enforcement": "RULES_ONLY"
+}

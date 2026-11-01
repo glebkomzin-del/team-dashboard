@@ -1,0 +1,29 @@
+{
+  "actual_cli_restore_plan_bytes": 322342,
+  "actual_cli_restore_plan_sha256": "330721bd10126e86aba235f03260750f56f8523caac9a7a9d1087971c424332b",
+  "actual_pipeline_runtime": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "backup_restore_status": "47 source and restore plan generation checked; full image-based database restore and backup binding remain Root release gates",
+  "candidate_image_id": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "candidate_tag": "dashboard-memory:archive-generation-reason-overlay-20261005-2bfdad83-v2",
+  "database_writes": "none in this package; cited isolated SQL proof belongs to the earlier GEN-REASON migration package",
+  "deployment": "none",
+  "existing_isolated_sql_proof": "../gen-reason-400-20261005/evidence.json: old pg_get_functiondef MD5 0622bb6e1c04dcd75e5e0774ed502337 -> new MD5 52e542324b17616d1f912cb0f3ef14f7 -> rollback old; same migration SHA",
+  "migration_sha256": "2bfdad83ecaf7a797a77fe6b84b91d5c569471735c51303bb4f8241f2d5f93f0",
+  "negative_checks": [
+    "missing 47 source DENY",
+    "changed 47 source DENY"
+  ],
+  "package_manifest_sha256": "1e1e235a15b1e352e62b52fb794416cb16a3ca930330fed14f933a91d9d4d049",
+  "provider_calls": 0,
+  "restore_plan_order": "old 20261005133858 image placeholder before new 20261005202341 generation reason",
+  "restore_schema_candidate_sha256": "627800affff32a07e255a6f20baffebc6bd9e0dd35a72535b30092b52c8f1346",
+  "runtime_files_verified_in_image": 137,
+  "runtime_manifest_entries": 138,
+  "schema_entries": 47,
+  "stage": "/root/dashboard-archive-generation-reason-overlay-stage-20261005/package",
+  "status": "private_candidate_built_not_deployed",
+  "superseded_candidate_image_id": "sha256:ab046d790308010de5a924f6a0a989eaad5dbb64fc22f2093ccc319cd711442c",
+  "superseded_candidate_result": "DENY: unmodified restore_schema CLI selected only 46 despite 47th source being present",
+  "unchanged_prior_manifest_entries": 135,
+  "unchanged_prior_schema_entries": 46
+}

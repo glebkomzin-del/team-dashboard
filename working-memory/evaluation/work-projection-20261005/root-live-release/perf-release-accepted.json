@@ -1,0 +1,13 @@
+{
+  "candidate_image_id": "sha256:5d5986089ce0824b53d530fd35ffe329eada90eb075c5b217f21e3966456bb52",
+  "candidate_pipeline": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "drain_receipt_sha256": "b01eba1fc4a8625d59b0294d10bf7e1adc8dae46588330c12b11f1273f39e25c",
+  "generation_function_md5": "52e542324b17616d1f912cb0f3ef14f7",
+  "inventory_sha256": "38f45e80ce5a0f25ff1870fd8ece3551af0c3634945af57e9fd3d4d66690fcd6",
+  "lead_clear": true,
+  "package_manifest_sha256": "b3454788a6a738ce4c7cd019bb18c7c02fbe85713c2b438a8ac9957c85e23237",
+  "result": "RELEASE_ACCEPTED",
+  "schema": 1,
+  "source_image_id": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "space_revision": 226
+}

@@ -1,0 +1,91 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-PUBLIC-AUTH",
+  "checked_at_utc": "2026-10-03T19:59:34.274916+00:00",
+  "review": "Lead fresh astra public_auth_contract_gate CONTINUE_BOUNDED LOW_YIELD; rule-only query correction",
+  "prior_failed_cycle": {
+    "used": 1,
+    "max": 1,
+    "evidence": "frontend-public-auth-evidence.json",
+    "commit": "829895112b762acf5d596e7f9916bda5fb3bc361"
+  },
+  "followup_cycle_used": 1,
+  "followup_cycle_max": 1,
+  "question": "Does unchanged actual public Recovery303 reach reset form, followed by separate APIreset and real existing synthetic password browser login with wrong-owner denial?",
+  "result": "bounded criteria passed; UI password update submit remains separately untested",
+  "backend_reported_http": {
+    "recover": 200,
+    "verify": 303,
+    "api_password_update": 200,
+    "capture_mail_count": 1
+  },
+  "callback": {
+    "expected_origin": "http://localhost:8943",
+    "query": "recovery=1",
+    "exact_original_location_opened": true,
+    "header_equals_callback_file": true,
+    "callback_file_sha256": "3134469928b139ab900a58dd3ab0b842392da3d288d99a9c0d358fa612eb831a",
+    "verify_headers_file_sha256": "98b6a92cf298989570582f7dc4576d77850028d097d45868bee2b7604366741a",
+    "host_original_directory": "/opt/dashboard-supabase-20261003/public-auth-query-1",
+    "tokens_in_tool_input": false,
+    "sdk_token_fragment_consumed": true
+  },
+  "browser": {
+    "engine": "CUA native Google Chrome",
+    "identical_artifact": "accepted output; static hashes verified at harness startup; no new build",
+    "reset_form_heading": "Neues Passwort festlegen",
+    "new_password_and_repeat_fields_visible": true,
+    "password_save_button_visible": true,
+    "ui_password_entered_or_submitted": false,
+    "callback_session_cleared_before_login": true,
+    "fresh_login_screen_verified": true,
+    "existing_synthetic_credentials_entered": true,
+    "login_clicked": true,
+    "authenticated_shell_logout_visible": true,
+    "session_bootstrap_for_login": false,
+    "wrong_owner_message": "Deine Anmeldung ist abgelaufen oder f\u00fcr diesen Bestand nicht freigegeben. Bitte melde dich erneut an.",
+    "password_save_prompt_declined": true,
+    "receipt_source": "Direct CUA AX and screenshots; no screenshot file persisted"
+  },
+  "actual_proxy_receipts": [
+    {
+      "route": "/api/working-memory/review",
+      "status": 401,
+      "body_sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630",
+      "bytes": 25,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    },
+    {
+      "route": "/api/working-memory/conversations",
+      "status": 401,
+      "body_sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630",
+      "bytes": 25,
+      "json_keys": [
+        "error"
+      ],
+      "array_counts": {}
+    }
+  ],
+  "public_password_grant_http_status": {
+    "status": 200,
+    "evidence": "backend retained restored GoTrue original logs; exactly1 POST /token grant_type=password in browser window",
+    "time_utc": "2026-10-03T19:58:02Z",
+    "private_original_log_hashes": {
+      "browser-auth-original.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "browser-auth-original.stderr": "9575e93a74263381e466ca8b126be98acc9824cad5efe453a0d0ecd692a46ff7"
+    },
+    "additional_auth_request": false
+  },
+  "credential_origin": "existing password of isolated backend-created .invalid account after backend APIReset200; private transfer only; no owner password, reset, manual JWT, or reported credential",
+  "source_and_production_writes": false,
+  "accepted_owner_readonly": "691758b unchanged and not repeated",
+  "cleanup": "localStorage.clear and restored login verified; own Chrome test tab closed; own tunnel34044/harness98860 stopped; backend reports original SMTP/allowlist restored and capture removed",
+  "validation": "Python AST syntax and scoped git diff checks; no source rebuild or accepted ownerflow repetition",
+  "previous_frontend_prep_cycles": 2,
+  "previous_frontend_cutover_cycles": 2,
+  "previous_owner_readonly_cycles": 1,
+  "provider_cost_calls_by_frontend": 0,
+  "codex_budget_usage": "unknown"
+}

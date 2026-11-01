@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-06T08:56:00.160729+00:00",
+  "kind": "private incremental AST-only deployed349 graph",
+  "token_manifest_sha256": "9a9a0b1016a2b271682eedbb0c2c9aaa809d12af15b4ff2155b2f9266bc807e6",
+  "base_graph_sha256": "3f311a258ab590a3462792d8e4c76d3d1d4d715018bcd35e04c8d97b1ec52bee",
+  "changed_python_sha256": {
+    "openai_provider.py": "aa54834e68f4d1af2ae3e7e610bf0ee154234ef26c9b48dbdde3e957cad87054",
+    "server.py": "0b529e2bd179b2e49680dc4f445300d51c23dac93d720e46596a1387b37945bc"
+  },
+  "pipeline": "v11:compact1:gate1:gpt-6.1-sol:03ab172405e37721:canonical1:42317499c5d8a62a",
+  "nodes": 734,
+  "edges": 2195,
+  "provider_calls": 0,
+  "semantic_extraction": false,
+  "mixed_repo_graph_written": false,
+  "graph_sha256": "286222732edff464d3d5a80d6f2490e871c21183b417ba1497de82ea0814d6cc"
+}

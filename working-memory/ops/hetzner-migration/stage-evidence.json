@@ -1,0 +1,380 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003",
+  "phase": "isolated-stage-2",
+  "production_cutover": false,
+  "public_endpoint_open": true,
+  "source_final_export": false,
+  "source_dump": {
+    "bytes": 321272162,
+    "sha256": "4e3574cedb2858f3022f931202581cdea4f43f611e068d8ffecde1c7e1f1bea1",
+    "pg_dump_version": "17.10",
+    "row_security": "off",
+    "effective_read_role": "supabase_read_only_user",
+    "tls_mode": "verify-full",
+    "offserver_private_root": "/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/hetzner-migration-20261003"
+  },
+  "restore": {
+    "attempt": 1,
+    "full_archive_restored": true,
+    "compared_copy_tables": 88,
+    "compared_rows": 68572,
+    "all_copy_hashes_equal_before_vault_reencryption": true,
+    "auth_users": 1,
+    "auth_sessions": 22,
+    "public_tables": 45,
+    "rls_tables": 45,
+    "public_policies": 36,
+    "active_cron": 0,
+    "pending_http_requests": 0
+  },
+  "vault": {
+    "secrets": 1,
+    "same_uuid_nonce_name_description": true,
+    "plaintext_hash_equal": true,
+    "private_offserver_sidecar_saved": true
+  },
+  "stage": {
+    "services_healthy": 5,
+    "network": "DB/REST/Edge internal; Auth restricted SMTP; gateway loopback127.0.0.1:8800",
+    "internal": false,
+    "app_processing_started": false
+  },
+  "auth_backend_integration": {
+    "migrated_refresh_http": 200,
+    "migrated_owner_same": true,
+    "synthetic_password_login": true,
+    "wrong_owner_rls_http": 200,
+    "wrong_owner_rows": 0,
+    "backend_owner_allowed": true,
+    "backend_wrong_owner_denied": true,
+    "edge_scoped_space_read": true,
+    "smtp_tls_auth_noop": true,
+    "smtp_emails_sent": 0
+  },
+  "edge": {
+    "functions": 11,
+    "retired_410_contracts": 10,
+    "journal_valid_scoped_read": true,
+    "journal_invalid_token_401": true,
+    "source_per_function_jwt_preserved": true,
+    "provider_calls": 0
+  },
+  "local_tests": {
+    "new_python_origins": 3,
+    "existing_access_search_retry": 12,
+    "new_and_existing_deno_journal": 12
+  },
+  "open": {
+    "recovery": "Public callback/headers/reset form/API password update/browser login now passed; UI password-reset submission untested under explicit CUA boundary. Historical failures retained.",
+    "cli_role_cleanup": "Managed source role DROP denied 42501; login expired and 0 sessions confirmed. Not deleted.",
+    "production": "Public stage API installed/verified. Frontend production, source freeze/final export and single-writer cutover not performed."
+  },
+  "attempts": {
+    "temporary_source_credential_leases": 2,
+    "source_full_dump_successful": 1,
+    "stage_full_restore": 1,
+    "recovery_failed_attempts": 2,
+    "recovery_followup_failed": 1,
+    "recovery_reopened_cycles": 2,
+    "recovery_reopened_requests": 1,
+    "recovery_diagnostic_review_followup": 1,
+    "recovery_repair_cycles": 1,
+    "recovery_issued_session_continuations": 1,
+    "network_implementation": 1,
+    "network_verification": 1,
+    "stage_clone_implementation": 1,
+    "stage_clone_read_verification": 1,
+    "public_nginx_implementation_verification": 1,
+    "public_auth_initial_failed": 1,
+    "public_auth_review_query_followup": 1
+  },
+  "recovery_followup": {
+    "problem_id": "HZ-MIGRATION-20261003/recovery",
+    "prior_failed_attempts": 2,
+    "followup_attempt": 1,
+    "smtp_external_messages": 0,
+    "source_mutation": false,
+    "smtp_greeting_ehlo_from_auth_net": true,
+    "status": "FOLLOWUP_FAILED",
+    "failure_type": "HTTPError",
+    "failure_message": "HTTP 500",
+    "auth_smtp_original_restored": true,
+    "capture_removed": true
+  },
+  "recovery_reopened": [
+    {
+      "problem_id": "HZ-MIGRATION-20261003/recovery",
+      "prior_failed_attempts": 2,
+      "prior_followup_failed": 1,
+      "new_authorized_cycle": 1,
+      "smtp_external_messages": 0,
+      "source_mutation": false,
+      "probe_after_auth_recreation": true,
+      "smtp_greeting_ehlo_from_auth_net": true,
+      "capture_fixed_private_ip": "172.22.0.7",
+      "status": "AUTHORIZED_CYCLE_FAILED",
+      "failure_type": "HTTPError",
+      "failure_message": "HTTP 504",
+      "auth_smtp_original_restored": true,
+      "capture_removed": true
+    },
+    {
+      "problem_id": "HZ-MIGRATION-20261003/recovery",
+      "prior_failed_attempts": 2,
+      "prior_followup_failed": 1,
+      "new_authorized_cycle": 2,
+      "smtp_external_messages": 0,
+      "source_mutation": false,
+      "probe_after_auth_recreation": true,
+      "smtp_greeting_ehlo_from_auth_net": true,
+      "capture_fixed_private_ip": "172.22.0.7",
+      "actual_smtp_host_matches_capture": true,
+      "actual_smtp_port": "1025",
+      "native_smtp_full_dialog_after_recreation": false,
+      "status": "AUTHORIZED_CYCLE_FAILED",
+      "failure_type": "RuntimeError",
+      "failure_message": "Native SMTP prerequisite failed",
+      "auth_smtp_original_restored": true,
+      "capture_removed": true
+    }
+  ],
+  "capture_diagnostic": {
+    "diagnostic_run": 1,
+    "original_capture_unmodified": true,
+    "auth_pid": 108426,
+    "node_returncode": 0,
+    "capture_running_after_node": false,
+    "capture_exit_after_node": 1,
+    "native_returncode": 1,
+    "capture_running_after_native": false,
+    "capture_exit_after_native": 1,
+    "recovery_requests": 0,
+    "smtp_data_commands": 0,
+    "capture_failure": "Unhandled socket read ECONNRESET after immediate Node client exit",
+    "native_failure": "TCP TimeoutError after capture already exited",
+    "capture_removed": true
+  },
+  "recovery_repair": {
+    "recovery_http": 200,
+    "public_prefix_link_correct": true,
+    "verify_http": 303,
+    "issued_session_refresh_http": 200,
+    "password_reset_http": 200,
+    "new_password_login_http": 200,
+    "third_party_mail_sent": 0,
+    "original_redirect_header_evidence_gap": true
+  },
+  "network": {
+    "verification_attempt": 1,
+    "source_mutation": false,
+    "external_emails_sent": 0,
+    "public_nginx_changed": false,
+    "healthy_services": 5,
+    "db_auth_rest_functions_no_published_ports": true,
+    "actual_loopback_gateway_http": 200,
+    "owner_auth_passed": true,
+    "owner_spaces_read": 2,
+    "wrong_owner_rls_empty": true,
+    "backend_owner_allow_wrong_owner_deny": true,
+    "scoped_journal_read": true,
+    "actual_auth_namespace_pid": 137831,
+    "actual_auth_dns_passed": true,
+    "actual_auth_gmail_tls_auth_noop": true,
+    "auth_non_smtp_egress_denied": true,
+    "status": "NETWORK_VERIFIED"
+  },
+  "stage_clone": {
+    "question": "Does the real runtime clone read target journal/archive/review for owner and deny wrong owner without processing?",
+    "attempt": 1,
+    "provider_calls": 0,
+    "app_write_requests": 0,
+    "status": "OWNER_READ_INTEGRATION_PASSED",
+    "cases": {
+      "health": {
+        "http": 200,
+        "bytes": 38,
+        "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+      },
+      "owner_archive": {
+        "http": 200,
+        "bytes": 15017,
+        "sha256": "ba27e33e9d40ca52b9c584330df2238b7eafa46fbbb0812d1a1e28df5ecaecf0"
+      },
+      "owner_review": {
+        "http": 200,
+        "bytes": 33516228,
+        "sha256": "b5ba97aa0a41a1e8ac81ca28f299a1dd2baebe96dba155b1e3ab6bb2ccdc68e7"
+      },
+      "owner_overview": {
+        "http": 200,
+        "bytes": 33391701,
+        "sha256": "89cfc43d644609310ab29efb97a82fbfd4bb93492c720d06512250346cca9c9d"
+      },
+      "wrong_owner_archive": {
+        "http": 401,
+        "bytes": 25,
+        "sha256": "ee3cf315d0fbfe54d808ccee83b60082a3b45d66170e264840f2cc228dcbf630"
+      }
+    },
+    "live_container_image_unchanged": true,
+    "read_only": true,
+    "intake": false,
+    "automatic": false
+  },
+  "public_api": {
+    "question": "Public stage preserves auth/RLS/scoped journal/retired API and existing routes without writers",
+    "attempt": 1,
+    "deployment": {
+      "nginx_t": 0,
+      "reload": 0,
+      "updated_sha256": "7cfba8642673162a182f67926bc26dbb0def8bdafecd7952e7ee5c524511fe51"
+    },
+    "app_write_requests": 0,
+    "provider_calls": 0,
+    "smtp_messages": 0,
+    "cases": {
+      "auth_health": {
+        "http": 200,
+        "bytes": 107,
+        "sha256": "0ec97e3267c99ff6bc3be68a60070d106f5b334fa6ab1391bf766d9d2bdfdfe2"
+      },
+      "owner_auth": {
+        "http": 200,
+        "bytes": 970,
+        "sha256": "529ce6a56ae4363381214cacfe28816bba4e856cefef08f0e9f657baf6b75a44"
+      },
+      "owner_rest": {
+        "http": 200,
+        "bytes": 96,
+        "sha256": "1cd4ded950e9443544f4724b0429e8ebbc493e64e7dc26b493ccc90c83732989"
+      },
+      "wrong_rls": {
+        "http": 200,
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "journal_read": {
+        "http": 200,
+        "bytes": 225,
+        "sha256": "da532c9de89d42527a242f077ef851a60c25daffc4cce45f987a0acfd7f9162f"
+      },
+      "retired_ask-memory": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_backfill-embeddings": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_dashboard-memory-eval": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_detect-resolutions": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_enrich-chunks": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_extract-structured-data": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_generate-embedding": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_ingest-transcript": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_run-eval": {
+        "http": 410,
+        "bytes": 131,
+        "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+      },
+      "retired_working-memory-terra-bootstrap": {
+        "http": 410,
+        "bytes": 7,
+        "sha256": "a9f71bc2404c91936d123fb820e9e9b75a47d292eed38e776df0dcf7a07b6ef2"
+      },
+      "n8n": {
+        "http": 200,
+        "bytes": 15,
+        "sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+      },
+      "dashboard": {
+        "http": 200,
+        "bytes": 38,
+        "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+      },
+      "draft": {
+        "http": 200,
+        "bytes": 38,
+        "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+      },
+      "info": {
+        "http": 200,
+        "bytes": 2165,
+        "sha256": "8b52299c6db240c007e33d5d5fd32ca7b596234d6ce27302de9b62f32203c311"
+      }
+    },
+    "auth_version": "v2.196.0",
+    "picnic_health": {
+      "http": 200
+    },
+    "source_aggregate_unchanged": true,
+    "target_aggregate_unchanged": true,
+    "status": "PUBLIC_STAGE_API_VERIFIED"
+  },
+  "public_auth": {
+    "problem_id": "HZ-MIGRATION-20261003-PUBLIC-AUTH",
+    "cycle": 1,
+    "prior_public_auth_failed": 1,
+    "review_authorized_query_followup": 1,
+    "smtp_external_messages": 0,
+    "source_mutation": false,
+    "probe_after_auth_recreation": true,
+    "node_probe_returncode": 0,
+    "smtp_greeting_ehlo_from_auth_net": true,
+    "capture_fixed_private_ip": "172.22.0.8",
+    "effective_allowlist_exact": true,
+    "actual_smtp_host_matches_capture": true,
+    "actual_smtp_port": "1025",
+    "native_probe_returncode": 0,
+    "native_smtp_dialog_after_recreation": true,
+    "capture_alive_same_pid_after_probes": true,
+    "recover_http": 200,
+    "captured_link_correct_prefix": true,
+    "status": "PUBLIC_AUTH_FOLLOWUP_PASSED",
+    "verify_http": 303,
+    "location_headers_preserved": true,
+    "reset_put_http": 200,
+    "same_synthetic_user": true,
+    "reset_form_frontend_observed": true,
+    "ui_password_submit_tested": false,
+    "original_smtp_allowlist_restored": true,
+    "capture_removed": true,
+    "restored_public_auth_health": "v2.196.0",
+    "restored_actual_auth_smtp_returncode": 0,
+    "original_verify303_location_exact_callback": true,
+    "browser_reset_form_visible": true,
+    "browser_existing_credential_login": true,
+    "browser_password_grant_http": 200,
+    "browser_password_grant_time": "2026-10-03T19:58:02Z",
+    "wrong_owner_backend_http": 401,
+    "frontend_receipt_commit": "604f71a",
+    "historical_public_auth_failures": 1,
+    "review_followup_cycles": 1
+  }
+}

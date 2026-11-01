@@ -1,0 +1,46 @@
+{
+  "body_sha256": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "container_run_dir": "/app/.local/technical-relation-qualification-20261005/run",
+  "container_runtime_dir": "/app/.local/technical-relation-qualification-20261005/runtime",
+  "expected_private_only": "expected-private/expected.json",
+  "files_sha256": {
+    "expected-private/expected.json": "adba6444856ee6fd26e4d25d87f4203c6d91977234aff1fca6a4fc4ba96446ba",
+    "frozen-runtime/canonical_worker.py": "ac2b4e340111dcfa213d951fdb30e9d6d79b30a062149791fefc4510c2ea5312",
+    "frozen-runtime/future_summary.py": "24f9a7510a7aebb0f15fd47f72886c6ee8eaf46a698455354380b9c4ab130aba",
+    "frozen-runtime/hybrid_pipeline.py": "ba601ac68ec1da8e2481736afd4531b145db90647a2da0cc5c15b343d8feb679",
+    "frozen-runtime/relation_runtime.py": "4a957276cdc0f620ce63bcd53279d32b7835916c92c1e25a98ef79129519c234",
+    "qualify_once.py": "e1be25bd89651c9aae4456a013f211ec079e079947db459ea39949a93080ec71",
+    "request/bindings.json": "83b610de2a647c527b0809cc48a20f8caf6814096d98be7fdf77902311cf7116",
+    "request/request.json": "0a12cc650938dc330b7f784a3571fda44d424b6f9bc8fcd6397c4582f93fc776"
+  },
+  "gates": [
+    "independent_accept_receipt_bound_to_frozen_hashes",
+    "host_persistent_run_dir_0700",
+    "live_space_revision_226",
+    "processing_enabled_false",
+    "source_body_hash_bound",
+    "no_existing_reservation_or_receipt",
+    "exactly_one_transport_attempt",
+    "unknown_outcome_no_resend"
+  ],
+  "host_persistent_bind_source": "/opt/dashboard-memory-canonical-draft/.local/cache/technical-relation-qualification-20261005",
+  "host_staging_root": "/root/semantic-relation-qualification-20261005",
+  "local_checks": {
+    "existing_reservation_exit": 1,
+    "no_review_send_exit": 1,
+    "preflight_exit": 0
+  },
+  "prior_paid_invalid_probe_usd": 0.032176,
+  "provider_attempts_this_package": 0,
+  "qualification_runtime": "gpt-5.6-terra",
+  "revision": 226,
+  "root": "/private/tmp/semantic-relation-qualification-20261005",
+  "source_job": "b646e5ea710df7286553a751649b468b6d76d6e8e198a1697bc3ce25886f92e5",
+  "status": "FROZEN_NO_PROVIDER_SEND",
+  "unaccepted": [
+    "actual_typed_response",
+    "semantic_endstate",
+    "runtime_summary_over_12000",
+    "production_integration"
+  ]
+}

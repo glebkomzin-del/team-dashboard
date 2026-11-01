@@ -1,0 +1,5 @@
+
+ERROR:  column "j.state" must appear in the GROUP BY clause or be used in an aggregate function
+LINE 1: ...ctive_jobs',(SELECT json_agg(x) FROM (SELECT j.id,j.state,j....
+                                                             ^
+

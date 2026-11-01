@@ -1,0 +1,76 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "disposition": "CHANGE_APPROACH",
+  "supported_problem_class": "Belegte R\u00fcckkehrl\u00fccke f\u00fcr eigene Target-Teilzust\u00e4nde vor Writer-\u00d6ffnung.",
+  "operational_target_go": false,
+  "enforcement": "RULES_ONLY",
+  "provenance": {
+    "model": "gpt-6-astra",
+    "reasoning_effort": "high",
+    "sandbox": "read-only",
+    "session": "01a10454-d64b-7e33-b23f-ed59f60edcda",
+    "verified": "Eigener nativer stderr-Startheader; Session-ID stimmt mit CODEX_THREAD_ID und CODEX_SESSION_ID \u00fcberein.",
+    "receipt": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-target-partial-return-review-1/stderr-private.txt"
+  },
+  "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md und references/independent-review.md gelesen.",
+  "reviewed_hashes": {
+    "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "final_prewrite_rollback_once.py": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "final_writer_open_once.py": "ebc80b2862f2a7592bf5ab91d897d27a25b1bbb270c0b46e3b3421d76f66fab4",
+    "final_source_partial_rollback_once.py": "f32d80db9fa24a524f9c40178f0276737a7684e1d6ce979598c9f3ed4e7cb917"
+  },
+  "code_evidence_base": "working-memory/ops/hetzner-migration/",
+  "exact_gaps": [
+    {
+      "phase": "Restore beziehungsweise Runtime vor Host\u00e4nderung",
+      "evidence": [
+        "final_restore_once.py:99-110 schreibt den Target-Marker vor API-Stop und Datenbankersetzung.",
+        "final_source_partial_rollback_once.py:32-33,64-89 verweigert diesen Marker; final_source_rollback_once.py:10 ebenfalls.",
+        "final_prewrite_rollback_once.py:83-94 verlangt Runtime-Referenz und Hostbindung; final_writer_open_once.py:247-263 verlangt s\u00e4mtliche f\u00fcnf host-runtime-original-Dateien.",
+        "final_target_runtime_once.py:105-134 ver\u00e4ndert Target-ACL/Config, startet vier APIs und baut das Image vor Erstellung dieser Snapshots."
+      ],
+      "callable_existing_return": null
+    },
+    {
+      "phase": "Nach eigener Host\u00e4nderung, vor abschlie\u00dfendem Runtime-Beleg",
+      "evidence": [
+        "final_target_runtime_once.py:148-172 ver\u00e4ndert f\u00fcnf Hostdateien, erzeugt den Backup-Marker, startet Canonical und \u00f6ffnet nach Health den Ingress; erst anschlie\u00dfend entsteht target-runtime-receipt.json.",
+        "final_prewrite_rollback_once.py:208-234 verlangt vollst\u00e4ndige Target-Config, Source/Target-43-Gleichheit, laufende Target-Runtime und vorhandenen eigenen Backup-Marker.",
+        "final_writer_open_once.py:327-347 verlangt Running, Target-Image, Target-Origin, geschlossene Flags und vollst\u00e4ndig ge\u00e4nderte Dateien.",
+        "final_prewrite_rollback_once.py:385 f\u00fchrt diesen Preflight vor jedem R\u00fcckkehrschritt aus."
+      ],
+      "callable_existing_return": null
+    }
+  ],
+  "hypothesis_precision": "Im LateReturn wird der Statusstring TARGET_READONLY_RUNTIME_ACTIVE nicht ausdr\u00fccklich gepr\u00fcft. Verpflichtende Runtime-Referenz und Live-Pr\u00fcfungen schlie\u00dfen die beschriebenen Teilzust\u00e4nde trotzdem aus. Eine erfundene PASS-Receipt w\u00e4re keine zul\u00e4ssige L\u00f6sung.",
+  "counterevidence_and_preserved_acceptance": {
+    "source_only": "Die bestehende Source-Partial-Recovery bleibt innerhalb ihres Source-only-Mandats g\u00fcltig. test_final_source_partial_recovery.py:124-132 pr\u00fcft Target-Marker ausdr\u00fccklich als Ablehnungsfall.",
+    "healthy_target": "Bestehender Pfad: final_prewrite_rollback_once.py --run-dir <lokaler Lauf> --gate-receipt <gebundenes Gate>, sofern s\u00e4mtliche bisherigen Voraussetzungen erf\u00fcllt sind.",
+    "tests": "LateReturn-7 und Runtime-13 bleiben f\u00fcr ihre akzeptierten F\u00e4lle erhalten. test_final_prewrite_return.py:38-39 mockt verify_runtime; seine Aktivierungsfehler betreffen den Source-Neustart innerhalb der R\u00fcckkehr, keine fehlgeschlagene Target-Aktivierung.",
+    "after_writer": "Source-Blindreturn bleibt verboten."
+  },
+  "bounded_correction": {
+    "packages": 1,
+    "max_complete_offline_cycles": 2,
+    "authority": "Root integriert und nimmt ab; keine Umsetzung oder Delegation durch dieses Review.",
+    "scope": [
+      "Eine explizite phasenabh\u00e4ngige R\u00fcckkehr erg\u00e4nzen; bestehende Source-only-Markerverbote und gesunden LateReturn nicht pauschal lockern.",
+      "Vor Host\u00e4nderung exakte originale Source-Hostdateien/Image/Env nachweisen, alle vier tats\u00e4chlichen Target-APIs stoppen und deren Stillstand best\u00e4tigen; kein laufender Canonical mit Target-Konfiguration, keine nachgewiesenen Target-Writer.",
+      "Nach Host\u00e4nderung f\u00fcnf vollst\u00e4ndige Originalsnapshots und ausschlie\u00dflich belegte eigene Zwischenst\u00e4nde von Dateien/Image/Env zulassen. Tats\u00e4chlichen Canonical und Target-APIs vor Source-Schreibfreigabe stoppen. Eigenen Backup-Marker nur bei exakter Eigentumsbindung entfernen.",
+      "In beiden Teilpfaden aktuelle Source43 gegen die laufgebundene Frozen-Baseline pr\u00fcfen; Writer-Marker, externe Target-Writer und Frontend-Promotion ausschlie\u00dfen. Unbekannte Zust\u00e4nde f\u00fchren zu STOP; keine globalen Abwesenheitsbehauptungen.",
+      "Target bleibt disposable; niemals Source-Daten aus Target restaurieren. Gesunder LateReturn beh\u00e4lt volle Pr\u00fcfungen einschlie\u00dflich Source/Target43-Gleichheit.",
+      "ACL82, vollst\u00e4ndige Config, f\u00fcnf Flags, Originalimage, Nginx, drei n8n-Versionen und Scopes exakt wiederherstellen. Eigenen Timer-Stop erst nach tats\u00e4chlichem SourceReturn-PASS zum belegten Originalzustand zur\u00fcckf\u00fchren."
+    ],
+    "offline_acceptance": [
+      "Echte Einstiegspunkte mit ausschlie\u00dflich simulierten Transporten: partieller API-Stop, abgebrochener Restore, Target-Config/API-Teilzustand und unvollst\u00e4ndige Snapshoterstellung bei unver\u00e4ndertem Host.",
+      "Parametrisierte Unterbrechung nach jeder der f\u00fcnf Hostdatei\u00e4nderungen, vor/nach Backup-Marker, bei Canonical-Start/Health sowie nach Ingress\u00f6ffnung vor Runtime-Receipt.",
+      "Ablehnung fehlender/falscher Snapshots nach Hostmutation, fremder Hash-/Image-/Env-Zust\u00e4nde, offener Flags, Source43-Abweichung, Writer-Marker, externer Writer und Frontend-Promotion.",
+      "Reihenfolge beweisen: Target-Stillstand vor Source-ACL; exakte Wiederherstellung; Health vor Ingress/Resume; Timer erst nach PASS. Keine erfundenen Runtime-Belege oder Target-Datenimporte."
+    ],
+    "stop_rule": "Sp\u00e4testens nach zwei vollst\u00e4ndigen Offline-Zyklen beenden. Ohne belegten Zwischenstand blockieren; keine automatische weitere Review-Fix-Schleife. Unver\u00e4nderte akzeptierte F\u00e4lle nicht erneut \u00f6ffnen."
+  },
+  "smallest_next_step": "Root vergibt genau dieses lokale Korrekturpaket ohne Remote-Aufrufe. Vor jeder Target-Operation bleiben tats\u00e4chlicher Exportnachweis und frisches GOAL_GATE \u00fcber tats\u00e4chliche Code-/Artefakthashes erforderlich.",
+  "performed": "Nur lokale Code-, Beleg- und Hashpr\u00fcfung; keine Tests, \u00c4nderungen, Delegation, Remote-Aufrufe oder Dump-/Secret-Lekt\u00fcre."
+}

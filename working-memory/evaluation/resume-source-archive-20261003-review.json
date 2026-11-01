@@ -1,0 +1,27 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "LOW_YIELD",
+  "decision": "CHANGE_APPROACH",
+  "reviewer": "/root/resume_archive_gate",
+  "role": "astra-reviewer",
+  "model_effort_binding": "Dedicated tool role fixes native gpt-6-astra high; fresh fork_turns=none, read-only mandate; no technical filesystem read-only enforcement",
+  "examined_commit": "5a28b5e87d8204370bc046c3c5c7f51ca5cd6e71",
+  "scope": "Source PREP only, no Source mutation/production GO",
+  "reasons": [
+    "Actual local archive read timeout; FileProvider cause not proven",
+    "pg_restore random restrict/unrestrict keys make complete extraction byte comparison invalid",
+    "Existing AppSupport archive permits one SHA-bound semantic all-column COPY verification"
+  ],
+  "followup_budget": {
+    "packages": 1,
+    "archive_extractions": 1,
+    "source_readonly_catalog_queries": 3,
+    "new_leases": 0,
+    "new_dumps": 0,
+    "mutations": 0
+  },
+  "followup_failure_contract": "FOLLOWUP_FAILED; no second automatic review/fix loop",
+  "original_user_resume": "Fahre fort; direct user-role message in Root current conversation, message ID unavailable",
+  "runtime_enforcement": "RULES_ONLY",
+  "source": "https://www.postgresql.org/docs/17/app-pgrestore.html"
+}

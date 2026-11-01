@@ -1,0 +1,15 @@
+{
+  "checks": [
+    {
+      "prompt_chars": 14,
+      "all_model_input_reasoning_schema_truncation_unchanged": true
+    },
+    {
+      "prompt_chars": 100000,
+      "all_model_input_reasoning_schema_truncation_unchanged": true
+    }
+  ],
+  "new_option": "explicit,no breakpoints",
+  "no_provider_call": true,
+  "recorded_transport_mode": true
+}

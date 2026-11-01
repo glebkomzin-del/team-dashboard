@@ -1,0 +1,75 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "decision": "CONTINUE_BOUNDED",
+  "scope": "PERMISSIONS_ONLY_TARGET_COMPLETION",
+  "local_preparation_go": true,
+  "operational_target_go": false,
+  "source_return_required_now": false,
+  "policy_exception": {
+    "explicitly_supersedes": "Die Recovery-only/noTargetRetry-Klausel des target-readonly-goal-20261004-review.json ausschlie\u00dflich f\u00fcr die belegte Dateiberechtigungsgrenze vor Zeile 132.",
+    "basis": "Der aktuelle ausdr\u00fcckliche Nutzerauftrag erlaubt die Pr\u00fcfung dieses begrenzten Fortsetzungswegs. Der Reviewer erweitert keine Nutzerrechte. Originalrestore und Runtimefehler bleiben erhalten; dies ist ein zus\u00e4tzlich begrenztes Korrekturpaket.",
+    "reason": "Exit1 Permission denied, beide Dateien 0600 root:root und Image-USER10001:10001 sind belegt. Die f\u00fcnf Hostdateien sind unver\u00e4ndert. Der inzwischen vorliegende Beleg runtime-failure-frozen-source-target-43.json meldet zum 2026-10-04T02:04:34Z Source43=Target43=Baseline und effektive Source-Schreibrechte0. Eine sofortige Source-R\u00fcckkehr ist damit keine notwendige technische Vorbedingung der lokalen Vorbereitung."
+  },
+  "budget": {
+    "local_packages": 1,
+    "max_complete_offline_cycles": 2,
+    "corrected_image_builds_after_followup_go": 1,
+    "host_completion_dispatches_after_followup_go": 1,
+    "further_automatic_fix_loops": 0
+  },
+  "local_package": {
+    "ownership": "Ein Writer: begrenzter Builder oder Root bei kleiner mechanischer Umsetzung; Root verantwortet Annahme, Versionierung und bestehende Projektdokumentation.",
+    "implementation": "Separater endlicher Helper, bestehende Konstanten/Funktionen wiederverwenden. Neuer privater Buildpfad; exakt dieselben zwei akzeptierten Codebytes. COPY --chmod=0644, urspr\u00fcngliche unver\u00e4nderliche Base und USER10001:10001. Keine Secrets kopieren, keine Root-Laufzeit, keine Architektur\u00e4nderung.",
+    "validation": "Gates, exklusive Marker, private Dateimodi, Z\u00e4hler, Fehlergrenzen und unver\u00e4nderte Hostdateien bis zur tats\u00e4chlichen Nonroot-SHA-Pr\u00fcfung pr\u00fcfen. Kompatibilit\u00e4t mit dem bestehenden PartialReturn f\u00fcr die erreichbaren Teilzust\u00e4nde nachweisen.",
+    "proof_timing": "Aktuelle Betriebsbelege sind keine Voraussetzung f\u00fcr LOCAL_PREP; sie sind zwingend vor operativer Ausf\u00fchrung."
+  },
+  "mandatory_followup_review": {
+    "required": true,
+    "scope": "Frisches unabh\u00e4ngiges Astra-Review des tats\u00e4chlichen Helpers, Tests, vollst\u00e4ndigen Ergebnisses und konkreten Hashstands vor jeder Target-Mutation.",
+    "operational_preconditions": [
+      "Frische gebundene Source43/Target43/Baseline-Gleichheit; Source effektive Rechte0, vollst\u00e4ndige deaktivierte Config, cron0, keine laufende oder unbekannte Arbeit und leere Outboxes.",
+      "Vault-Klartext/Metadaten und Auth-Userhashes unver\u00e4ndert; bekannte n8n-Versionen pausiert; Frontend \u00fcber tats\u00e4chliche CLI weiterhin original; kein Writer; eigener Timer und Backupservice weiterhin inaktiv.",
+      "Originale f\u00fcnf Hostdateien, Sourceimage, API-Identit\u00e4ten, Imageprovenienz und ausf\u00fchrbare frische PartialReturn-Referenzen best\u00e4tigt.",
+      "Eine exklusive neue Completion-Versuchsmarkierung vor dem ersten Build; anschlie\u00dfend tats\u00e4chliche SHA-Pr\u00fcfung beider Codefiles und server.py unter dem Default-Nonroot-User sowie Base-Layers+genau1.",
+      "Erst danach genau eine Original-Hostsnapshot-Erstellung und die unver\u00e4nderte Aktivierungslogik aus Zeilen132\u2013170: f\u00fcnf geschlossene Flags, native Origin/Key, \u00fcbrige Providerconfig erhalten, ein Backendstart, Health-GET bis90s vor Nginx."
+    ]
+  },
+  "recovery_compatibility": {
+    "finding": "Der bestehende PartialReturn bindet runtime-build/Dockerfile exakt an die alte Dockerfile und erwartet dashboard-memory:hetzner-final-20261003.",
+    "requirement": "Alten Buildpfad, Dockerfile, Codebytes und Fehlerimage erhalten. Korrektur separat bauen und pr\u00fcfen; den bestehenden Targetnamen erst danach auf das gepr\u00fcfte Image binden. Fehlerimage zus\u00e4tzlich gegen Referenzverlust sichern. Keine Recovery-Regel lockern."
+  },
+  "receipts": {
+    "new_status": "RecoveredRuntime",
+    "requirements": "Eigene neue Receipt mit Referenz und Hash des Originalfehlers sowie neuer Image-/Gate-/Helperbindung. Original-runtime-attempt.marker unver\u00e4ndert. Zeilen171\u2013172 nicht als urspr\u00fcnglichen Runtime-PASS \u00fcbernehmen; abgeschlossene Vorstufen durch bestehende Belege referenzieren.",
+    "original_runtime_status": "FAILED"
+  },
+  "excluded": [
+    "Erneuter Lease, Dump, Freeze oder DB-Restore",
+    "Wiederholung von Vault-Krypto, ACL-/Config-Restore, nativer Auth-Einrichtung oder Vier-API-Start",
+    "Frontend-Promotion, Writer\u00f6ffnung, FULLbackup-Ausf\u00fchrung und \u00c4nderungen anderer Projekte"
+  ],
+  "failure_return": {
+    "max_invocations": 1,
+    "proof_max_age_seconds": 300,
+    "gate_max_lifetime_seconds": 600,
+    "endpoint": "Bei Paketgrenze oder operativem Fehler keine weitere Fixrunde. Genau einmal bestehender PartialReturn, sofern aktuelle Gleichheit, eigener bekannter Teilzustand und kein Writer/Frontendwechsel belegt sind. Targetprozesse vor Source-Freigaben stoppen; Health vor Ingress/n8n, Timer erst nach Source-Core-PASS.",
+    "unsafe_or_denied": "Maintenance erhalten und blockiert an Root zur\u00fcckgeben; keine blinde Source-Reaktivierung."
+  },
+  "counters": {
+    "restore": "1 PASS, erhalten",
+    "original_runtime": "1 FAILED, Budget verbraucht",
+    "historical_offline": "Alle bisherigen Z\u00e4hler und Fehler bleiben unver\u00e4ndert; unbekannte Z\u00e4hler nicht nullsetzen."
+  },
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "session": "01a104a6-8e48-7d42-b126-2e79ace9f331",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permission-adjudication-1/stderr-private.txt:1-35",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md; independent-review.md; recovery.md",
+    "runtime_helper_sha256": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "partial_return_sha256": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319",
+    "performed": "Lokale Originalbelege und Code gelesen; keine Implementation, Tests, Delegation oder Remote-Aufrufe.",
+    "enforcement": "RULES_ONLY"
+  }
+}

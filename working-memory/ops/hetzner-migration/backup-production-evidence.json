@@ -1,0 +1,121 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-BACKUP",
+  "followup_scope": "production adapter installation and unchanged Hosted daily/offserver run",
+  "prior_isolated_restore_cycles_consumed": 2,
+  "production_run_cycles_started": 1,
+  "production_run_cycles_completed": 1,
+  "production_run_cycle_limit": 2,
+  "application_provider_calls": 0,
+  "budget_binding": "No paid services/model calls; prior counters preserved; runtime token cost unknown",
+  "installed_script_sha256": "58048432e2efb34dc6ede449fc86fc3ce9e3ecbb7d17816d8f512de9b5cb0ea9",
+  "baseline_script_sha256": "0ce536a2fb4980ab27ad72b621b5d3819491aa61b0150db9d544e5c4ea90a95b",
+  "installed_manifest_sha256_at_install": "5a2c36812e76089c712a7180312b60b19328b37426ddea30cbd6679514864004",
+  "rollback_manifest_sha256": "d5e9e668b4cbdcb54ee2591255848746414c8da0b3273768d52a567e4722e4f4",
+  "rollback_directory": "/opt/dashboard-memory-canonical-draft/.local/backup-adapter-rollback-HZ20261003",
+  "hosted_origin": "https://lghwikeotbkmojyyjglz.supabase.co",
+  "cutover_host_origin_contract": "https://178-105-167-26.nip.io/supabase",
+  "selfhost_activation_executed": false,
+  "preflight": {
+    "backup_service_inactive": true,
+    "backup_lock_acquired_during_install": true,
+    "disk_available_bytes": 39081213952,
+    "n8n_database_bytes": 1170291735,
+    "n8n_restore_required_free_bytes": 3510875205,
+    "offserver_installed_script_matches_repo": true,
+    "offserver_script_sha256": "f20eb75a9b43a0b893c4290983c9eecc04b5c6c4bd51d23aef461fd898f49f4b",
+    "mac_available_kib": 15191552
+  },
+  "daily_run_started_at": "2026-10-03T18:26:47.702565+00:00",
+  "daily_run_result": "passed",
+  "offserver_result": "passed unchanged installed pull",
+  "environment_changed_by_install": false,
+  "open_obligations": [
+    "Lead-owned Cutover marker activation after Writer/env/public HTTPS gate",
+    "Selfhost daily full-bundle/offserver run after Cutover"
+  ],
+  "production_containers_before": {
+    "n8n": {
+      "id": "052662afc419a6dff9a34e1e627fc94c00c6ecb39e558382f226c816ae95e7bc",
+      "started_at": "2026-10-03T16:55:19.55170796Z",
+      "running": true,
+      "image": "sha256:fe36dc659e17c046255eb56ef65e7776eb7d13e4ca83a76bef137effa090972d"
+    },
+    "n8n_postgres": {
+      "id": "90dc6837eb12da90bb410191d4fa8cd26d7e961555ef26367cfb1710b3ddbddf",
+      "started_at": "2026-10-03T16:55:19.5496576Z",
+      "running": true,
+      "image": "sha256:890480b08124ce7f79960a9bb16fe39729aa302bd384bfd7c408fee6c8f7adb7"
+    },
+    "dashboard-memory-canonical-draft-canonical-draft-1": {
+      "id": "04d64fb83bb5b57aab5d952210730f7a79e134831f72177322b13b86d17a9a41",
+      "started_at": "2026-10-03T16:55:19.53497952Z",
+      "running": true,
+      "image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f"
+    }
+  },
+  "daily_run_finished_at": "2026-10-03T18:55:18.582477+00:00",
+  "systemd_result": "success",
+  "systemd_exit_status": 0,
+  "archive": "dashboard-20261003T182647Z.tar.gz",
+  "archive_bytes": 1274298440,
+  "archive_sha256": "bf150d126a93f12556f86d432f8fc23de52f0eae1b88d83b603093cde529dec8",
+  "bundle_files": 155,
+  "uncompressed_bundle_bytes": 3210063769,
+  "canonical": {
+    "verified": true,
+    "revision": 221,
+    "archive_revision": 857,
+    "documents": 384,
+    "notes": 473,
+    "observations": 1858,
+    "model_api_calls": 0
+  },
+  "n8n_restore": {
+    "workflows": 15,
+    "credentials": 6,
+    "active": 0,
+    "published": 0,
+    "credential_decryption_verified": true,
+    "google_refresh_token_preserved": true,
+    "external_network": false,
+    "model_calls": 0
+  },
+  "deletion_barrier": {
+    "server_attested_at": "2026-10-03T18:26:48.639212+00:00",
+    "mac_copied_at": "2026-10-03T18:57:33.064826+00:00",
+    "minimum_deletion_revision": 0,
+    "restore_ledger_persisted": true
+  },
+  "offserver_files_verified": 155,
+  "offserver_finished_at": "2026-10-03T18:57:33.064935+00:00",
+  "offserver_archive_sha256_same_as_server": true,
+  "offserver_archive_mode": "0600",
+  "offserver_archive_directory_mode": "0700",
+  "server_backup_status_receipt_sha256": "c8d003301aef476d6691f9d3bfcccda258a55753ee37404b8d6711f21b0aaa50",
+  "server_offserver_receipt_sha256": "aedbc13c9f97915118bc40f768ba507f80445dc9277beb4dca09835c42cc3084",
+  "mac_offserver_status_receipt_sha256": "bc550dede028e701a00b9b45fee381f8004456e3bf87e9fa903de186c8e8b63d",
+  "production_container_ids_starttimes_images_unchanged": true,
+  "production_containers_after": {
+    "n8n": {
+      "id": "052662afc419a6dff9a34e1e627fc94c00c6ecb39e558382f226c816ae95e7bc",
+      "started_at": "2026-10-03T16:55:19.55170796Z",
+      "running": true,
+      "image": "sha256:fe36dc659e17c046255eb56ef65e7776eb7d13e4ca83a76bef137effa090972d"
+    },
+    "n8n_postgres": {
+      "id": "90dc6837eb12da90bb410191d4fa8cd26d7e961555ef26367cfb1710b3ddbddf",
+      "started_at": "2026-10-03T16:55:19.5496576Z",
+      "running": true,
+      "image": "sha256:890480b08124ce7f79960a9bb16fe39729aa302bd384bfd7c408fee6c8f7adb7"
+    },
+    "dashboard-memory-canonical-draft-canonical-draft-1": {
+      "id": "04d64fb83bb5b57aab5d952210730f7a79e134831f72177322b13b86d17a9a41",
+      "started_at": "2026-10-03T16:55:19.53497952Z",
+      "running": true,
+      "image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f"
+    }
+  },
+  "current_production_manifest_sha256": "5a2c36812e76089c712a7180312b60b19328b37426ddea30cbd6679514864004",
+  "current_production_script_sha256": "58048432e2efb34dc6ede449fc86fc3ce9e3ecbb7d17816d8f512de9b5cb0ea9",
+  "rollback_executed": false
+}

@@ -1,0 +1,93 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "decision": "CONTINUE_BOUNDED",
+  "scope": "TARGET_RESTORE_READONLY_RUNTIME",
+  "operational_target_go": true,
+  "go_semantics": "Bedingte Freigabe f\u00fcr genau einen Restore und eine anschlie\u00dfende Readonly-Aktivierung. S\u00e4mtliche Vorbedingungen m\u00fcssen vor Ausf\u00fchrung tats\u00e4chlich erf\u00fcllt und belegt sein.",
+  "diagnosis": "Die zuvor belegte R\u00fcckkehrl\u00fccke ist im vollst\u00e4ndig gelesenen PartialReturn-Helper geschlossen. Kein weiterer zwingender Produktionscode-Blocker nachgewiesen. Der optionale Vorbereitungskandidat ist unver\u00e4ndert nicht als ausf\u00fchrbare R\u00fcckkehrvorbereitung geeignet.",
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "session": "01a10492-984a-7f10-8ff5-39a9ed5061b1",
+    "receipt": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-target-readonly-goal-review-1/stderr-private.txt",
+    "verification": "Nativer Startheader gelesen.",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md einschlie\u00dflich independent-review.md und recovery.md",
+    "performed": "Lokale Code-, Testbeleg-, Metadaten- und Hashpr\u00fcfung; keine \u00c4nderungen, Testausf\u00fchrung, Delegation oder Remote-Aufrufe."
+  },
+  "revision": "e4caaaa5847862e5e2ed6932e90277bc5bfe8cf0",
+  "code_base": "working-memory/ops/hetzner-migration/",
+  "reviewed_sha256": {
+    "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "final_target_partial_source_return_once.py": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319",
+    "test_final_target_partial_source_return.py": "d480d54f5271e16b33e4daa13488ee1c0a605ff561957cfca79a844e946eb028",
+    "final_prewrite_rollback_once.py": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "final_writer_open_once.py": "ebc80b2862f2a7592bf5ab91d897d27a25b1bbb270c0b46e3b3421d76f66fab4",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "n8n_dashboard_pause_once.py": "91711a2b721b6b787867382087d008afa56aa23cccf56ca2f5b3b7e62cc9a94d",
+    "final_quiescence_once.py": "e9b42235755e18b2013f3f6f264ca483aaa2debec7f561a62d62d9ff5fcda1ea"
+  },
+  "receipt_binding": {
+    "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+    "dump_bytes": 321266826,
+    "dump_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+    "source_phase_completion_sha256": "d4c80b93a638f4683a762c663416e27a5d4fdb41cd33ac30f7e191cef718c9f4",
+    "offserver_receipt_sha256": "90b71482988e816d77b5834bb2f6ce3498df2b1e0e1db81611838697c6a096b3",
+    "frozen_baseline_sha256": "9a286445ca0ab0b91aba69e58f7748c3b8ba57cb7960f9edd43cb1ded07b1c11",
+    "frozen_primary_sha256": "1c3b8fc5fc9798f3309ad4a2cebae9d8258355187448b6bb0271996ac98abd0e",
+    "original_host_primary_sha256": "19cd20b6c8070ed34ffc3e88c8b1df5be3894948fce652cade3e826092885d48",
+    "actual_api_contract_sha256": "6fe59288d0b50434f287ba22af7db26495fa5afb77bd08fa8c31fb65981d4a9d",
+    "authorized_test_output_sha256": "a04c34a5eed16743da55a417f0b117b12103c1cafee969f1d0f67bc527443031",
+    "integration_evidence_sha256": "e81c47587bc00941e6f1d830740a8859c5bea9f81a81b968270f6345e9fa0696"
+  },
+  "validation": {
+    "observed": "Gespeicherter vollst\u00e4ndiger Lauf: sieben Methoden PASS; 47 erhaltene Fallverzeichnisse plus zus\u00e4tzlicher CLI-Vertragsfall.",
+    "limitation": "PartialReturn ist mit simulierten Transporten validiert, nicht als Live-Recovery ausgef\u00fchrt.",
+    "history": "Alle urspr\u00fcnglichen Fehler, Folgezyklen und ausgesch\u00f6pften Integrationsversuche bleiben erhalten; kein Budgetreset.",
+    "prior_acceptances": "Unver\u00e4ndert g\u00fcltig innerhalb ihres bisherigen Umfangs."
+  },
+  "mandatory_preconditions": [
+    "Root bindet dieses Review an einen neuen phasengenauen Ausf\u00fchrungsgate. restore-gate-bound.json mit targetsteps=false bleibt ungeeignet.",
+    "Unmittelbar vorher tats\u00e4chlichen Source43-Frozen-Zustand, API-Schreibrechte null, vollst\u00e4ndige deaktivierte Config, leere laufende/unbekannte Arbeit und Outboxes, drei pausierte n8n-Versionen sowie eigenen Timer/service pr\u00fcfen.",
+    "Exakte Hostdateien, Originalimage, f\u00fcnf Originalflags, Nginx-Maintenance, aktuelle vier API-Images/Netzwerke und interne eigene PostgreSQL-Identit\u00e4t ohne ver\u00f6ffentlichte DB-Ports best\u00e4tigen.",
+    "Archivhash und s\u00e4mtliche ben\u00f6tigten privaten Eingaben auf dem Host pr\u00fcfen; insbesondere Config, ACL, Query/Baseline, Rollen, Vault-Sidecar und f\u00fcnf unver\u00e4nderliche Originaldateien. Keine Secretwerte ausgeben.",
+    "PartialReturn samt allen Abh\u00e4ngigkeiten hashgleich bereitstellen. Tats\u00e4chlich lesbare private Referenzen einschlie\u00dflich prepare_business_freeze_acl.py und Original-Hostbindung m\u00fcssen vollst\u00e4ndig vorbereitet sein.",
+    "Query-Referenz muss exakt dem baseline.query_path entsprechen: Hostrun/business-fingerprint.sql. Bedingte host-runtime-original-Pfade nicht als bereits vorhandene Snapshots ausgeben.",
+    "Frontend bleibt auf beiden urspr\u00fcnglichen READY-Aliassen ohne neue VITE-Variablen; keine Writer-/Promotionmarker oder bekannten externen Target-Writer.",
+    "Runtime ausschlie\u00dflich nach tats\u00e4chlichem ALLCOPY-PASS des gebundenen Archivs. Keine API-Aktivierung vor diesem PASS."
+  ],
+  "preparation_candidate_findings": {
+    "path": "/private/tmp/hz-target-execution-preparation-20261004.py",
+    "sha256": "acd584249be604389fe3b6f998f590bb236a60b4eece4fe9dd2574e0097674a9",
+    "issues": [
+      "Lokale Query-Referenz widerspricht dem zwingenden Hostpfad der Frozen-Baseline.",
+      "Auch --refresh-recovery-candidate verweigert vorhandene Restore-/Runtime-Marker und kann deshalb nach tats\u00e4chlichem Teilfehler keinen Recovery-Kandidaten erzeugen."
+    ],
+    "smallest_step": "Root stellt die korrekten Referenzen direkt zusammen und erhebt Fehlerfallbelege frisch; dieser optionale Kandidat ist weder Gate noch Recovery-Aufruf. Daf\u00fcr ist keine \u00c4nderung der gepr\u00fcften Produktionshelper erforderlich."
+  },
+  "budget": {
+    "final_restore_attempts": 1,
+    "readonly_runtime_attempts": 1,
+    "automatic_target_retries": 0
+  },
+  "failure_partial_return": {
+    "max_invocations": 1,
+    "proof_max_age_seconds": 300,
+    "gate_max_lifetime_seconds": 600,
+    "conditions": "Nur eigener belegter Teilzustand vor Writer/Frontend-Promotion; frische echte Proofs und hashgebundener Gate auf Mac/Host. Kein erfundener Runtime-PASS.",
+    "ordering": "Maintenance; s\u00e4mtliche bekannten Target-Prozesse nachweislich stoppen; Source43 und Freeze unmittelbar vor Source-ACL pr\u00fcfen; Original-ACL/Config/f\u00fcnf Hostdateien/Image wiederherstellen; tats\u00e4chliche Health vor Ingress/n8n; Timer erst nach Source-Core-PASS.",
+    "runtime_branch": "Tats\u00e4chliches ALLCOPY und aktuelle Target43-Gleichheit erforderlich.",
+    "failed_restore_branch": "Inkonsistente Target-DB bleibt disposable; keine \u00dcbernahme nach Source.",
+    "denial_or_failure": "Maintenance und \u00dcbergabe an Root; keine blinde Source-Recovery, kein weiterer Target-Versuch."
+  },
+  "excluded": [
+    "Frontend-Promotion und Writer-\u00d6ffnung",
+    "Weitere Source-Leases, Dumps oder Freeze-Versuche",
+    "Source-L\u00f6schung, Passwortreset, neue Provider-/Mail-/Bezahldienste",
+    "\u00c4nderungen oder Neustarts anderer Projekte"
+  ],
+  "next_boundary": "Nach erfolgreicher Readonly-Aktivierung tats\u00e4chliches Target-FULLbackup samt Mac-Spiegel nachweisen. Frontend/Owner und Writer bleiben einem separaten wichtigen Gate vorbehalten; Source bleibt im erfolgreichen Migrationspfad API-schreibgesperrt.",
+  "enforcement": "RULES_ONLY"
+}

@@ -1,0 +1,116 @@
+{
+  "question": "Public stage preserves auth/RLS/scoped journal/retired API and existing routes without writers",
+  "attempt": 1,
+  "deployment": {
+    "nginx_t": 0,
+    "reload": 0,
+    "updated_sha256": "7cfba8642673162a182f67926bc26dbb0def8bdafecd7952e7ee5c524511fe51"
+  },
+  "app_write_requests": 0,
+  "provider_calls": 0,
+  "smtp_messages": 0,
+  "cases": {
+    "auth_health": {
+      "http": 200,
+      "bytes": 107,
+      "sha256": "0ec97e3267c99ff6bc3be68a60070d106f5b334fa6ab1391bf766d9d2bdfdfe2"
+    },
+    "owner_auth": {
+      "http": 200,
+      "bytes": 970,
+      "sha256": "529ce6a56ae4363381214cacfe28816bba4e856cefef08f0e9f657baf6b75a44"
+    },
+    "owner_rest": {
+      "http": 200,
+      "bytes": 96,
+      "sha256": "1cd4ded950e9443544f4724b0429e8ebbc493e64e7dc26b493ccc90c83732989"
+    },
+    "wrong_rls": {
+      "http": 200,
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "journal_read": {
+      "http": 200,
+      "bytes": 225,
+      "sha256": "da532c9de89d42527a242f077ef851a60c25daffc4cce45f987a0acfd7f9162f"
+    },
+    "retired_ask-memory": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_backfill-embeddings": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_dashboard-memory-eval": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_detect-resolutions": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_enrich-chunks": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_extract-structured-data": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_generate-embedding": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_ingest-transcript": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_run-eval": {
+      "http": 410,
+      "bytes": 131,
+      "sha256": "98aa5208d5cf19d39122965b86a59fa3e841c36d1a048cb6a5bc3b2c69b94ffe"
+    },
+    "retired_working-memory-terra-bootstrap": {
+      "http": 410,
+      "bytes": 7,
+      "sha256": "a9f71bc2404c91936d123fb820e9e9b75a47d292eed38e776df0dcf7a07b6ef2"
+    },
+    "n8n": {
+      "http": 200,
+      "bytes": 15,
+      "sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+    },
+    "dashboard": {
+      "http": 200,
+      "bytes": 38,
+      "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+    },
+    "draft": {
+      "http": 200,
+      "bytes": 38,
+      "sha256": "2216900846e67e7bb1545fea40f45400bd2a79cfc04cdc702094fdb593dfeefc"
+    },
+    "info": {
+      "http": 200,
+      "bytes": 2165,
+      "sha256": "8b52299c6db240c007e33d5d5fd32ca7b596234d6ce27302de9b62f32203c311"
+    }
+  },
+  "auth_version": "v2.196.0",
+  "picnic_health": {
+    "http": 200
+  },
+  "source_aggregate_unchanged": true,
+  "target_aggregate_unchanged": true,
+  "status": "PUBLIC_STAGE_API_VERIFIED"
+}

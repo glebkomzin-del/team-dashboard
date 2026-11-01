@@ -1,0 +1,173 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "milestone": "target-partial-return-followup",
+  "status": "LOCAL_MATRIX_PASS",
+  "updated_at": "2026-10-04T01:21:37.019372+00:00",
+  "operational_target_go": false,
+  "actual_gate_proof": false,
+  "root_acceptance_required": true,
+  "mode": "LOCAL_OFFLINE_ONLY",
+  "review": {
+    "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-target-partial-return-low-yield-review-1/result.json",
+    "sha256": "85312441b7bd6f8095104402abfd99b28a7e285c380ed25d480b1f8a81d37fec"
+  },
+  "historical_package": {
+    "cycles": 2,
+    "status": "FOLLOWUP_FAILED",
+    "immutable_evidence": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/target-partial-return-20261004-evidence.json",
+      "sha256": "c4aa7a274f6efee9f242404604c9ebd0c501c59e970673ba01578e4d9e91e48a"
+    },
+    "modified": false
+  },
+  "separately_authorized_followup": {
+    "packages": 1,
+    "cycle_limit": 2,
+    "cycles_used": 2,
+    "remaining_cycles": 0,
+    "status": "PASS"
+  },
+  "owned_file_hashes": {
+    "final_target_partial_source_return_once.py": "ba68eb28865f646ab41352246c80bd65ee6b2936d0f6c632fa0e433959bf9f68",
+    "test_final_target_partial_source_return.py": "853c6632476df2d9a1d7d8821c56bb4105aebc15f3e94847a0992927ccaed7fe"
+  },
+  "protected_files": {
+    "count": 69,
+    "all_hashes_unchanged": true,
+    "primary": {
+      "path": "/private/tmp/target-partial-followup-psqjidt_/protected-hashes.json",
+      "sha256": "e17b463f403f49233f6b281ef2d1dce03c0ee2aba8d7894f703da112b302cd90"
+    },
+    "active_source_19_inventories": [
+      {
+        "primary": {
+          "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/source-only-gate.json",
+          "sha256": "86bc0d0a7ebecc562859f4abaa1b6daa23de2c34382dc5e534c761d0e8a68271"
+        },
+        "phase": null,
+        "helper_count": 19,
+        "all_local_hashes_match": true,
+        "matches": {
+          "final_phase_common.py": true,
+          "final_quiescence_once.py": true,
+          "final_export_once.py": true,
+          "export_source.py": true,
+          "vault_copy_codec.py": true,
+          "prepare_business_freeze_acl.py": true,
+          "n8n_dashboard_pause_once.py": true,
+          "freeze-business.sql": true,
+          "freeze-business-restore-acl.sql": true,
+          "final_source_rollback_once.py": true,
+          "final_source_partial_rollback_once.py": true,
+          "business-fingerprint.sql": true,
+          "business-projection-contract.json": true,
+          "source_direct_route.py": true,
+          "source_direct_preflight_once.py": true,
+          "final_prewrite_rollback_once.py": true,
+          "final_writer_open_once.py": true,
+          "final_restore_once.py": true,
+          "final_target_runtime_once.py": true
+        }
+      },
+      {
+        "primary": {
+          "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/restore-gate-bound.json",
+          "sha256": "8981128631aa0df7a96c15f4c6d8855442e5160223d1434043b9d8db703fbf3a"
+        },
+        "phase": null,
+        "helper_count": 19,
+        "all_local_hashes_match": true,
+        "matches": {
+          "final_phase_common.py": true,
+          "final_quiescence_once.py": true,
+          "final_export_once.py": true,
+          "export_source.py": true,
+          "vault_copy_codec.py": true,
+          "prepare_business_freeze_acl.py": true,
+          "n8n_dashboard_pause_once.py": true,
+          "freeze-business.sql": true,
+          "freeze-business-restore-acl.sql": true,
+          "final_source_rollback_once.py": true,
+          "final_source_partial_rollback_once.py": true,
+          "business-fingerprint.sql": true,
+          "business-projection-contract.json": true,
+          "source_direct_route.py": true,
+          "source_direct_preflight_once.py": true,
+          "final_prewrite_rollback_once.py": true,
+          "final_writer_open_once.py": true,
+          "final_restore_once.py": true,
+          "final_target_runtime_once.py": true
+        }
+      }
+    ]
+  },
+  "tests": {
+    "command": "PARTIAL_RETURN_PRIVATE_DIR=<distinct-private-cycle-dir> PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s working-memory/ops/hetzner-migration -p test_final_target_partial_source_return.py -v",
+    "cycle_1": {
+      "methods": 6,
+      "scenario_count": 45,
+      "failures": 23,
+      "errors": 12,
+      "exit_code": 1,
+      "status": "FAILED",
+      "accepted_complete_positive_returns": 0,
+      "cause": "Synthetic n8n key path was mapped before replacement; all primary errors are preserved. Formal passes are not promoted.",
+      "output": {
+        "path": "/private/tmp/target-partial-followup-psqjidt_/cycle-1-output.txt",
+        "sha256": "c55472a18ab692fce34d5e252839073ac0287e38b3abe74708f4097916146ce2"
+      },
+      "private_file_index": {
+        "path": "/private/tmp/target-partial-followup-psqjidt_/cycle-1-all-private-files-sha256.json",
+        "sha256": "c29f4214b80d3de794da48d61f3a9ad41270048ce1b142d53969b6606dcde515"
+      }
+    },
+    "cycle_2": {
+      "methods": 6,
+      "scenario_count": 47,
+      "positive_boundary_cases": 12,
+      "cli_success_cases": 1,
+      "specific_preflight_denials": 26,
+      "post_start_fault_cases": 6,
+      "transport_and_shadow_contract_cases": 2,
+      "failures": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "status": "PASS",
+      "output": {
+        "path": "/private/tmp/target-partial-followup-psqjidt_/cycle-2-output.txt",
+        "sha256": "0a655ff8089f5b0bf6aa834525b8f2d5cb4566b8d1fa37f6fb425f264926d7d6"
+      },
+      "private_file_index": {
+        "path": "/private/tmp/target-partial-followup-psqjidt_/cycle-2-all-private-files-sha256.json",
+        "sha256": "b5b5207ef0483e5bab3565b89addb4b7d9dacd6d19315fa7aa571e7cb271dda3"
+      }
+    },
+    "syntax_compile": "PASS",
+    "hash_verification": "PASS"
+  },
+  "implementation": {
+    "fixture": "Renamed only scope data field to scope_state; retained inherited scopes(values). Legacy shadow reproduces a durable TypeError primary.",
+    "stage_manifest": "Exact production path is /opt/dashboard-memory-stage-read-20261003/build-manifest.json, confirmed by existing final_target_runtime_once.py stage.parent contract. New bounded SHA-verified RemoteSSH read via existing c.shell; other stage paths denied before read.",
+    "restore_branch": "Admits pinned own four API partial running states with unchanged original Source host and stopped original canonical; checks project/service labels, digest-pinned configured images and actual image IDs, exact restore network, only original loopback gateway port. All four actual APIs and canonical must stop before Source ACL grants. Disposable Target database is untouched.",
+    "negative_proof": "Each denial matches its intended primary cause; sequence faults must reach their named event. Full nested errors, stdout/stderr, tracebacks, commands and sequence are durable per case with file SHA manifests before fixture deletion.",
+    "return_proof": "All five exact original host bytes, full config, ACL82, actual original flags/image/service, simulated health/ingress, actual supported n8n resume/workflow readback contract, scopes restore/readback and timer ordering tested. No fake Target runtime PASS.",
+    "known_external_writers_scope": "Bounded Root-known writer evidence only; no worldwide absence claim."
+  },
+  "private_evidence_root": "/private/tmp/target-partial-followup-psqjidt_",
+  "permissions": {
+    "directories": "0700",
+    "files": "0600",
+    "validated": true
+  },
+  "no_external_operations": true,
+  "no_delegation": true,
+  "git_commits_created": false,
+  "authority_modified": false,
+  "preserved_accepted_checks": "Existing LateReturn7/Runtime13/SourcePartial tests not rerun; helpers unchanged.",
+  "remaining_operational_proofs": [
+    "Root authority/versioning and acceptance",
+    "Fresh independent Astra GOAL_GATE against actual final helper/test and actual frozen dump SHA",
+    "No Target GO or live SourceReturn proof from synthetic local fixtures"
+  ],
+  "enforcement": "RULES_ONLY; no automatic runtime enforcement claimed"
+}

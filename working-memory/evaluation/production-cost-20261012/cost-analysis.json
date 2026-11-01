@@ -1,0 +1,196 @@
+{
+  "date": "2026-10-12",
+  "timezone": "Europe/Berlin",
+  "through_utc": "2026-10-12T14:29:30.029055+00:00",
+  "all_406_call_list_price_calculations_match_ledger": true,
+  "stages": {
+    "extraction": {
+      "calls": 10,
+      "actual_micro_usd": 1149628,
+      "counterfactual_uncached_micro_usd": 1097464,
+      "input_tokens": 104352,
+      "output_tokens": 88876,
+      "reasoning_tokens": 3994,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 104322
+    },
+    "embedding": {
+      "calls": 374,
+      "actual_micro_usd": 3496,
+      "counterfactual_uncached_micro_usd": 3496,
+      "input_tokens": 166069,
+      "output_tokens": 0,
+      "reasoning_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "reconciliation": {
+      "calls": 12,
+      "actual_micro_usd": 4411819,
+      "counterfactual_uncached_micro_usd": 3746110,
+      "input_tokens": 1331445,
+      "output_tokens": 108322,
+      "reasoning_tokens": 6427,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 1331409
+    },
+    "gate": {
+      "calls": 10,
+      "actual_micro_usd": 402871,
+      "counterfactual_uncached_micro_usd": 335352,
+      "input_tokens": 135061,
+      "output_tokens": 6523,
+      "reasoning_tokens": 884,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 135031
+    }
+  },
+  "jobs": {
+    "a8c4b5876558bc661f690bbdd74bb853d0d6e77f3fb312868391e0cafe8fde89": {
+      "calls": 29,
+      "actual_micro_usd": 855241,
+      "counterfactual_uncached_micro_usd": 714891,
+      "input_tokens": 287648,
+      "output_tokens": 15332,
+      "reasoning_tokens": 1688,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 280696
+    },
+    "bb1cc002cc5ab01a3b0abdba2a5530a382f3e34daf88945130c31f8e85222aad": {
+      "calls": 11,
+      "actual_micro_usd": 151548,
+      "counterfactual_uncached_micro_usd": 131106,
+      "input_tokens": 42461,
+      "output_tokens": 4929,
+      "reasoning_tokens": 407,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 40881
+    },
+    "85f9e46fb36d580c86aee8fc436f4ff308d1d779451d6193500a359bbdbe0870": {
+      "calls": 84,
+      "actual_micro_usd": 1100953,
+      "counterfactual_uncached_micro_usd": 962432,
+      "input_tokens": 331675,
+      "output_tokens": 40720,
+      "reasoning_tokens": 1234,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 277041
+    },
+    "be0d246a2f5881f5372c23b210b9a284961c174d47ecd5b0eaff9cbd57f98c83": {
+      "calls": 52,
+      "actual_micro_usd": 721401,
+      "counterfactual_uncached_micro_usd": 629107,
+      "input_tokens": 199397,
+      "output_tokens": 25960,
+      "reasoning_tokens": 1583,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 184585
+    },
+    "f682782278a15650ee8867e0ff56b9f6c1326508762006679f736977dc19fa56": {
+      "calls": 14,
+      "actual_micro_usd": 213104,
+      "counterfactual_uncached_micro_usd": 183002,
+      "input_tokens": 61987,
+      "output_tokens": 6254,
+      "reasoning_tokens": 341,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 60202
+    },
+    "2071f0f08f5450b8c93bb553b12af4ccd207bdb998aa2bb281be6e6777bc8bf5": {
+      "calls": 55,
+      "actual_micro_usd": 789140,
+      "counterfactual_uncached_micro_usd": 689133,
+      "input_tokens": 228273,
+      "output_tokens": 28850,
+      "reasoning_tokens": 1350,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 200013
+    },
+    "d51fd70f123d472d44cef6f834f57d4f5d65c5c2a479675ce91a893905d72e0f": {
+      "calls": 65,
+      "actual_micro_usd": 820101,
+      "counterfactual_uncached_micro_usd": 716971,
+      "input_tokens": 232119,
+      "output_tokens": 30389,
+      "reasoning_tokens": 1012,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 206258
+    },
+    "8bdacbe21c5862d3c20a6e6378dd9702cd88188d26cdef4c6f3af8540cbd083c": {
+      "calls": 28,
+      "actual_micro_usd": 353468,
+      "counterfactual_uncached_micro_usd": 309857,
+      "input_tokens": 98216,
+      "output_tokens": 13517,
+      "reasoning_tokens": 828,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 87219
+    },
+    "7d5f81a952b9a2fe242a11f334f8664983427e8f936fa0970d8d23e314b0a2d1": {
+      "calls": 32,
+      "actual_micro_usd": 469806,
+      "counterfactual_uncached_micro_usd": 415421,
+      "input_tokens": 119869,
+      "output_tokens": 19763,
+      "reasoning_tokens": 1925,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 108769
+    },
+    "423522f3085f8f3da7981aad316a9b4c844dd9558627449ee86ba8cf03441ecb": {
+      "calls": 36,
+      "actual_micro_usd": 493052,
+      "counterfactual_uncached_micro_usd": 430502,
+      "input_tokens": 135282,
+      "output_tokens": 18007,
+      "reasoning_tokens": 937,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 125098
+    }
+  },
+  "known_total_micro_usd": 5967814,
+  "counterfactual_uncached_micro_usd": 5182422,
+  "long_context_text_calls": 0,
+  "not_a_provider_invoice": true,
+  "org_other_application_spend_unknown": true,
+  "openai_account_today_ui": {
+    "all_projects": true,
+    "all_api_keys": true,
+    "all_api_sources": true,
+    "displayed_spend_usd": 5.97,
+    "displayed_tokens": 1580421,
+    "displayed_requests": 35,
+    "matches_application_total_to_displayed_cents": true,
+    "organization_month_usd": 53.56,
+    "organization_spend_threshold_usd": 100,
+    "organization_threshold_enforced": false,
+    "auto_reload_below_balance_usd": 5,
+    "auto_reload_restore_to_usd": 10,
+    "spend_alert_percent": [
+      80,
+      100
+    ]
+  },
+  "funding_confirmed": {
+    "invoice_0027": {
+      "number": "3NMNOMGC-0027",
+      "gross_usd": 6.0,
+      "usage_credit_usd": 5.04,
+      "germany_vat_percent": 19,
+      "vat_usd": 0.96,
+      "paid": true,
+      "date": "2026-10-12",
+      "provider": "OpenAI OpCo, LLC / Stripe"
+    },
+    "invoice_0026": {
+      "number": "3NMNOMGC-0026",
+      "gross_usd": 5.99,
+      "paid": true,
+      "date": "2026-10-12"
+    },
+    "balance_read_usd": 9.59,
+    "payment_method_warning": "expired",
+    "payment_method_expiration": "05/2026",
+    "auto_reload_needs_attention": true,
+    "payment_details_changed": false
+  }
+}

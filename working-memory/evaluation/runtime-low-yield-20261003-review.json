@@ -1,0 +1,84 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "problemid": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "triggers": [
+    "LOW_YIELD"
+  ],
+  "reviewer": {
+    "id": "/root/hz_low_yield_review",
+    "role": "astra-reviewer",
+    "configured_model": "gpt-6-astra",
+    "configured_effort": "high",
+    "fresh_context": true,
+    "cli_uuid": null,
+    "runtime_provenance": "Keine zus\u00e4tzliche interne Modellbest\u00e4tigung oder CLI-UUID verf\u00fcgbar."
+  },
+  "primaryreason": "Originalprotokoll und Code best\u00e4tigen konkrete Implementierungsregressionen, einen Fixturefehler und die unbegr\u00fcndet entfernte Startbeobachtung. Vier bestandene F\u00e4lle belegen relevanten Fortschritt; der Paketmeilenstein bleibt unerf\u00fcllt. Genau ein lokales Korrekturpaket ist vertretbar.",
+  "examined_revision": "c21a598df2809dfa7cee3603dade0523f2da325e einschlie\u00dflich gebundener Arbeitsdateien; Owner-Vergleich gegen d0b9fe4.",
+  "examinedhashes": {
+    "final_target_runtime_once.py": "d4a227a2f58584bd4983b1facaf7d998f1cb5a16d573aef6e6723e554e5d456f",
+    "final_restore_once.py": "a03904761f2e773965e6253c592680dd6513b1c3a301f22e46fb36021db902eb",
+    "frontend-final-promote-once.py": "face0473a52f55d7555604f2d3959673bfa51c5a4466e3d3f09085a3f79c4bb2",
+    "final_owner_link_once.py": "260607a30273e6600f0a854087a974f2fb95c54321744d5cfb1d193bda7630f9",
+    "n8n_dashboard_pause_once.py": "2a8ccf127984b37d9cfad168cc0a7168f239ffc7959c811c2bb7809f451fb096",
+    "test_final_protocol_private_errors.py": "856801a049c24be2629a750d1fe7564c49b400ef1012e3b54bd1b6b051d4aee6",
+    "runtime-protocol-fix-20261003-evidence.json": "7bfb90a30520e070b33b6a34371a0aea0455b0cc162ad0d46de0683b56e02bea",
+    "native-runtime-contract-20261003-evidence.json": "8641564709af0ae1639bfe03ac404138bcf6ca7b78cc5d54a4ae9b149b37530a",
+    "final-resume-native-20261003-review.json": "1140d21dff95b25cf28fb21a1e668e6d88750bce8e0d33a87514fe57064d5d7a",
+    "NEXT-OPERATIONS.md": "897e5c9f3b107d8bcd45aac2d54dddae5076bd3d089aca260279897d1867f46e",
+    "offline_contract.stderr": "bbe2a9fc982d91b53ed71a5f9e82175b523532cfd98523c215fd7524f57d6ab2"
+  },
+  "relevantacceptances": [
+    "Vier bestehende F\u00e4lle bestanden: Image-AST-Vertrag, vollst\u00e4ndige Fingerprint-Fehlersicherung, reihenfolgeunabh\u00e4ngiger Fingerprint sowie Runtime-/Frontend-Prozesswrapper.",
+    "Tempor\u00e4re Flags 1/0/0/0/0 entsprechen dem dokumentierten Imagevertrag.",
+    "Codec10, StageOwner, RLS, Journal16.4, Backup, Frozen104 und Katalogabnahmen bleiben unber\u00fchrt."
+  ],
+  "openblockers": [
+    "Owner-main, Konstanten und Guard fehlen; der HTTP-Wrapper enth\u00e4lt ausgeschnittenen Ownercode.",
+    "n8n-Prozesswrapper verwendet subprocess ohne Import.",
+    "Ungel\u00f6ster Fixturepfad verursacht unter macOS einen Abbruch vor der eigentlichen API-Pr\u00fcfung.",
+    "Sofortiger Health-GET ersetzt f\u00e4lschlich die bestehende begrenzte Startbeobachtung."
+  ],
+  "boundedactions": {
+    "packages": 1,
+    "maximum_complete_offline_cycles": 2,
+    "scope": [
+      "Originalen Owner-main rekonstruieren; private Wrapper, f\u00fcnf Flagpr\u00fcfungen, einzelnen bestehenden Magiclink, Passwort und Originalaktionslink erhalten.",
+      "subprocess-Import erg\u00e4nzen und Fixturepfad normalisieren.",
+      "90-Sekunden-Health-GET-Beobachtung wiederherstellen; urspr\u00fcngliche Fehler privat sichern."
+    ],
+    "stop_on_success": true,
+    "operational_go": false,
+    "forbidden": [
+      "Sourcepause, Freeze, neue Lease oder Dump",
+      "Remoteoperationen, Target\u00e4nderung, Runtimeaktivierung oder Frontendpromotion",
+      "Zweiter Start, Compose-Wiederholung, Mail oder AI",
+      "Kriterienabschw\u00e4chung oder Zur\u00fccksetzen historischer Z\u00e4hler"
+    ]
+  },
+  "exacttest": {
+    "command": "python3 -B working-memory/ops/hetzner-migration/test_final_protocol_private_errors.py",
+    "required": "Alle zehn bestehenden Tests bestanden, Syntaxpr\u00fcfung der sechs Dateien und tats\u00e4chliche SHA256-Bindung.",
+    "necessary_regression_coverage": "Im selben Offlinepaket Owner-main mit gemockten Abh\u00e4ngigkeiten sowie verz\u00f6gerte Health-Bereitschaft und Fristablauf pr\u00fcfen: genau ein Start, ausschlie\u00dflich GET-Beobachtungen, private Originalfehler erhalten und keine Ingress\u00f6ffnung bei Fristablauf. Die bestehende Zehnersuite deckt diese Abl\u00e4ufe nicht vollst\u00e4ndig ab.",
+    "next_gate": "Frisches GOAL_GATE ausschlie\u00dflich f\u00fcr betroffene \u00c4nderungen und neue Codehashes."
+  },
+  "failureprotocol": "Sp\u00e4testens nach zwei vollst\u00e4ndigen Zyklen ohne vereinbarten Endpunkt FOLLOWUP_FAILED und blockiert zur\u00fcckgeben. Alle Ergebnisse und historischen Z\u00e4hler erhalten. Keine weitere automatische Review-Fix-Schleife.",
+  "limitations": "Review ausschlie\u00dflich lesend; keine Tests oder Remoteabfragen ausgef\u00fchrt. Historische Abnahmen aus vorhandenen Belegen \u00fcbernommen. NEXT-OPERATIONS bildet das bereits vorliegende STOP_RETURN_NO_FIX_LOOP noch nicht ab.",
+  "enforcement_level": "RULES_ONLY",
+  "native_provenance": {
+    "uuid": "01a103e1-80dc-7e62-b8fb-e712ed8ee328",
+    "runtime": "ChatGPT app Codex CLI0.160.0",
+    "auth": "ChatGPT",
+    "model_arg": "gpt-6-astra",
+    "reasoning_effort_arg": "high",
+    "sandbox": "read-only",
+    "exit_code": 0,
+    "usage": {
+      "input_tokens": 218111,
+      "cached_input_tokens": 193408,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3175,
+      "reasoning_output_tokens": 383
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "decision": "CHANGE_APPROACH",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "triggers": [
+    "GOAL_GATE",
+    "Historische LOW_YIELD/FOLLOWUP_FAILED bleiben erhalten; ausdr\u00fcckliche Nutzerfortsetzung ber\u00fccksichtigt."
+  ],
+  "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261003T220500Z",
+  "script_hashes": {
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "final_quiescence_once.py": "09ca17b3acfcfd7f7692fd9e01bf945e47f6c00e83cb691a6cdbd1e0f28e17df",
+    "final_export_once.py": "ead77bcc3e9435711e54be1c8ed9a7adf0572bdfe6a6439de6f0142670d2b6c5",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+    "vault_copy_codec.py": "cd326b284dbfbb315d0cabae151e78df0599977211da68b60cd660be53b206f5",
+    "prepare_business_freeze_acl.py": "daa77cf9cf84aa6cf83cadc3dec6b8ba7f86b507c7f4c95fc8019314771f1cb0",
+    "n8n_dashboard_pause_once.py": "fde6f32f6ccef23aa646d2de7c96e47ad59dc35ec9b261953fecedcbb253f758",
+    "freeze-business.sql": "bbaeadd9a668377f2bdd3bb938f1fe968755a969e5919bc500df54d4fdc85dcc",
+    "freeze-business-restore-acl.sql": "26c34f43afa8408e933589b6ce705bf09bd3e36234904de81166b26dd1955f02",
+    "final_restore_once.py": "03362524df9c1f1ee29457de4361dffed909c9c4a7163a6d281d040d53ee5a0e",
+    "final_target_runtime_once.py": "3515ed500c0499bebc9969b3edf22551be830b7ab90c700cf20fc0006ac98747",
+    "final_owner_link_once.py": "29b0fb111801d1eeb219a2e128607582464d3fc1f3cb6d1e72aefea09909e2e1",
+    "frontend-final-promote-once.py": "36a862fafafbf5073003f4be9871c990981549888bf020f5658ca24b6279ee1b",
+    "frontend-final-owner-redirect.py": "060374cd241fdccaa757caacdbf8a5bdcaa150b3d515ccaee4a8f06945043963"
+  },
+  "examined_revision_and_dirty_files": {
+    "head": "1880551c68f64357282b548fe633d8e45c064d2a",
+    "manifest": "Alle 14 tats\u00e4chlichen Dateihashes stimmen mit review-input-manifest.json \u00fcberein.",
+    "relevant_tracked_diff": "working-memory/ops/hetzner-migration/final_export_once.py: explizite einmalige Lease-Erzeugung und private HTTP-Fehlersicherung.",
+    "relevant_untracked_read": [
+      "working-memory/server.py",
+      "working-memory/scheduled_backup.py",
+      "working-memory/ops/hetzner-migration/catalog_reconcile_once.py",
+      "working-memory/evaluation/catalog-reconcile-20261003-evidence.json"
+    ],
+    "other_dirty_scope": "Weitere getrackte Frontend\u00e4nderungen und zahlreiche ungetrackte Dateien vorhanden; keine vollst\u00e4ndige Inhaltspr\u00fcfung oder Freigabe dieses Arbeitsbaums. Frozen Preview bleibt alleinige Promotionsquelle.",
+    "validation": "Lokale Dateilekt\u00fcre, Git-Status/Diff und Hashberechnung; keine Tests oder Remoteoperationen."
+  },
+  "primary_evidence": [
+    {
+      "path": "working-memory/evaluation/catalog-reconcile-20261003-evidence.json",
+      "finding": "43 Katalogfunktionen, 32 urspr\u00fcnglich gew\u00e4hrte Funktionen, keine fehlende Originalfunktion; alle elf zus\u00e4tzlichen Funktionen f\u00fcr s\u00e4mtliche drei API-Rollen nicht ausf\u00fchrbar."
+    },
+    {
+      "path": "working-memory/ops/hetzner-migration/final_quiescence_once.py",
+      "finding": "OID-basierte Kontrolle s\u00e4mtlicher relevanter effektiver Schreibrechte nach unver\u00e4ndertem Freeze; frischer ACL-Abgleich und begrenzter Drain vorhanden."
+    },
+    {
+      "path": "working-memory/server.py:283",
+      "finding": "POST /conversations und /questions werden vor dem READ_ONLY-Guard an Zeile 337 verarbeitet. QA_ENABLED=1 wird dort durch READ_ONLY nicht gesperrt."
+    },
+    {
+      "path": "working-memory/server.py:488",
+      "finding": "ORIGINAL_DELETION_ENABLED zusammen mit READ_ONLY f\u00fchrt beim Start ausdr\u00fccklich zu SystemExit."
+    },
+    {
+      "path": "working-memory/ops/hetzner-migration/final_target_runtime_once.py",
+      "finding": "\u00dcbernimmt bestehende QA-/Deletionflags; setzt nur READ_ONLY=1, INTAKE=0 und AUTOMATIC=0. call() verwirft erfasste Fehlerausgaben."
+    },
+    {
+      "path": "working-memory/ops/hetzner-migration/prepare_stage_clone_once.py:37",
+      "finding": "Der akzeptierte Stageclone setzte QA und Original-Deletion ausdr\u00fccklich auf 0; dessen Erfolg belegt deshalb nicht den vorgesehenen Finalzustand mit beiden Flags auf 1."
+    },
+    {
+      "path": "working-memory/ops/hetzner-migration/final_restore_once.py",
+      "finding": "COPY-Vergleich erfolgt vor Auth/Vault/ACL; fp() verwirft jedoch die gelesene Fehlerausgabe mit [:0]."
+    },
+    {
+      "path": "working-memory/ops/hetzner-migration/frontend-final-promote-once.py",
+      "finding": "Frozen-Artefaktpr\u00fcfungen vorhanden; cli() bewahrt bei Fehlern weder stdout noch stderr auf."
+    }
+  ],
+  "problem_class": "Offener Runtimevertragskonflikt und unvollst\u00e4ndige Prim\u00e4rfehlersicherung; der fr\u00fchere Katalogvergleichsfehler ist erkl\u00e4rt.",
+  "reasons": [
+    "Der behauptete globale Schreibschutz f\u00fcr QA ist im gelesenen server.py widerlegt; gleichzeitig verhindert dort Deletion=1 den Readonlystart.",
+    "Dieses lokale server.py ist nicht nachweislich an das tats\u00e4chliche immutable Image gebunden. Daher ist weder ein sicherer Finalstart noch ein abweichender sicherer Imagevertrag belegt. Diese entscheidende Unsicherheit muss vor Sourcefreeze geschlossen werden.",
+    "Das konkrete Protokoll erf\u00fcllt den verlangten Erhalt direkter Prim\u00e4rfehler nicht durchgehend. Gerade Runtime-, Fingerprint- und Promotionsfehler w\u00fcrden wesentliche Originaldiagnostik verlieren.",
+    "Frischer Export, vollst\u00e4ndiger COPY-Vergleich, Vaultbindung, Target-FULLbackup und Frozenpromotion sind grunds\u00e4tzlich passend; die genannten L\u00fccken rechtfertigen keine pauschale Wiederholung fr\u00fcherer Pr\u00fcfungen."
+  ],
+  "counterarguments": [
+    "Das tats\u00e4chliche Image k\u00f6nnte einen anderen server.py-Vertrag besitzen; die lokale Datei allein beweist keinen produktiven Startfehler.",
+    "Der Healthcheck w\u00fcrde einen Startabbruch erkennen und Maintenance beibehalten. Er belegt jedoch keine Sperre der QA-Schreibpfade.",
+    "Historische Stage-, Backup- und Frontendabnahmen bleiben g\u00fcltig f\u00fcr ihre gepr\u00fcften Konfigurationen.",
+    "Der offene aktuelle Root104-Abgleich blockiert eine ausschlie\u00dflich hashgebundene Frozenpromotion nicht."
+  ],
+  "open_mandatory_blockers": [
+    "Imagegebundener Nachweis eines startf\u00e4higen Readonlyzustands ohne QA-/Conversation-/Deletion-Schreibzugriffe; gegebenenfalls tempor\u00e4r QA/Deletion deaktivieren und urspr\u00fcngliche Werte f\u00fcr das sp\u00e4tere Writergate erhalten.",
+    "Private Erhaltung tats\u00e4chlicher Fehlerausgaben in den genannten Phasenhelfern vor weiterer operativer Ausf\u00fchrung.",
+    "Danach gezielte Nachpr\u00fcfung ge\u00e4nderter Protokollteile und erneute Hashbindung.",
+    "Weiterhin ausstehende Meilensteine: akzeptierter frischer Export, Targetrestore, Readonlyruntime, Target-FULLbackup samt Macmirror, Frozenpromotion und tats\u00e4chlicher Production-Owner-Lesefluss. Keine dieser Leistungen wird hier als erledigt angenommen."
+  ],
+  "permitted_actions": [
+    "Lead-gef\u00fchrte begrenzte Beweissicherung und notwendige Korrektur der konkret benannten Protokolll\u00fccken innerhalb der bestehenden Nutzerautorisierung.",
+    "Bestehende Abnahmen, Originalkriterien und historische Z\u00e4hler erhalten.",
+    "Keine zus\u00e4tzliche menschliche Freigabefrage aus diesem Review ableiten."
+  ],
+  "forbidden_actions": [
+    "Das unver\u00e4nderte gepr\u00fcfte Phasenprotokoll operativ starten.",
+    "Sourcefreeze, neue Lease, Dump, Targetrestore oder Promotion auf Grundlage dieses CHANGE_APPROACH-Urteils ausf\u00fchren.",
+    "Targetwriter \u00f6ffnen oder den Umzug als abgeschlossen erkl\u00e4ren.",
+    "Alten Dump als frischen Finalexport verwenden, Kriterien lockern oder historische Z\u00e4hler zur\u00fccksetzen.",
+    "Source l\u00f6schen, andere Projekte ver\u00e4ndern, AI-/Mail-/Backlogverarbeitung starten oder nach Targetbusinesswrites blind auf Source zur\u00fcckschalten."
+  ],
+  "finite_budget": {
+    "manifest_budget_not_released": {
+      "freeze": 1,
+      "natural_drain_seconds": 600,
+      "readonly_lease": 1,
+      "full_dump": 1,
+      "target_restore": 1,
+      "readonly_runtime_activation": 1,
+      "target_daily_full_backup": 1,
+      "mac_offserver": 1,
+      "frozen_frontend_promotion": 1,
+      "existing_owner_admin_magiclink": 1,
+      "production_owner_readonly_flow": 1
+    },
+    "correction_endpoint": "Ein begrenztes Paket: tats\u00e4chlichen Imagevertrag kl\u00e4ren, erforderliche tempor\u00e4re Flags und Prim\u00e4rfehlersicherung korrigieren, betroffene Nachweise zur\u00fcckgeben. Keine operative Wiederholung und keine neue Kostenfreigabe."
+  },
+  "failure_protocol": "Bei unerf\u00fclltem Paketendpunkt direkte Prim\u00e4rbelege sichern und an Lead zur\u00fcckgeben; keine automatische Wiederholung unver\u00e4nderter Schritte. Vor Targetbusinesswrites phasenabh\u00e4ngig Sourcekonfiguration, ACL, Runtime, n8n, Nginx und gegebenenfalls Frontend zur\u00fcckf\u00fchren. Der vorhandene final_source_rollback_once.py ist ausdr\u00fccklich auf den Zustand vor Targetrestore begrenzt und darf sp\u00e4ter nicht unver\u00e4ndert eingesetzt werden. Nach Targetbusinesswrites ist ein separater Datenr\u00fcckweg erforderlich.",
+  "next_smallest_decisive_step": "Den server.py-Start- und POST-Vertrag des Images sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f an vorhandene Originalbelege binden; anschlie\u00dfend ausschlie\u00dflich die erforderlichen Readonlyflags und Fehlerbelege korrigieren.",
+  "enforcement_level": {
+    "migration": "RULES_ONLY; einzelne Hashpr\u00fcfungen und Einmalmarker sind keine durchg\u00e4ngige Laufzeitsperre.",
+    "review": "Read-only-Sandbox vorgegeben; keine Implementation, Delegation, Tests, Source-/Targetqueries, SSH oder Providerrequests ausgef\u00fchrt.",
+    "identity": "Native Modell-, Effort- und unabh\u00e4ngige Prozessprovenienz hier nicht selbst verifiziert; externe Metadatenpr\u00fcfung bleibt bei Root."
+  },
+  "native_review_provenance": {
+    "thread_id": "01a103cd-1ab2-7d32-955c-2cc6af34e0a4",
+    "runtime_binary": "/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex",
+    "version": "0.160.0",
+    "auth_status": "Logged in using ChatGPT",
+    "explicit_cli_model": "gpt-6-astra",
+    "explicit_cli_reasoning_effort": "high",
+    "ignore_user_config": true,
+    "sandbox": "read-only",
+    "ephemeral": true,
+    "exit_code": 0,
+    "no_parent_conversation_inherited": true,
+    "provider_secret_env_removed": [
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL"
+    ],
+    "model_fallback_configured": false,
+    "usage": {
+      "input_tokens": 564785,
+      "cached_input_tokens": 471040,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 5730,
+      "reasoning_output_tokens": 662
+    }
+  }
+}

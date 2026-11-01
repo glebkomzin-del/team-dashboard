@@ -1,0 +1,28 @@
+{
+  "wm_generation_stage": {
+    "sha256": "f9bd45f2f4f1e8da529260bbf0dfa5de4fccbd00ac227b1b36086e8d0bb35d3f",
+    "guards": {
+      "Generation base changed": true,
+      "job_updated_at": true,
+      "Job unavailable for generation review": true
+    }
+  },
+  "wm_generation_decide": {
+    "sha256": "46efda4980e374b72ed0196f2eb50f42d7739c9b2d018bf3e2f98a1bf1f4d02c",
+    "guards": {
+      "Reviewed generation changed": true,
+      "Reviewed job changed": true,
+      "Review already decided with different content": true,
+      "id=g.job_id": true
+    }
+  },
+  "wm_archive_note_put": {
+    "sha256": "c17418d2c73818d29a03c0eb224eb0715fa4837a346217f23efcab2ab9aa6e5a",
+    "guards": {
+      "Note checksum mismatch": true,
+      "Active archive document required": true,
+      "Note identity reused with changed data": true,
+      "repeated": true
+    }
+  }
+}

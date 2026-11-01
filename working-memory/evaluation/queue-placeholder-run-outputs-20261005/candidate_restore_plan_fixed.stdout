@@ -1,0 +1,5 @@
+RC2 restore plan: 46 migrations, bridge before 20260908163023_working_memory_hybrid_search.sql; includes 5 reviewed deletion migrations.
+612767ea6eb90b2e610659adf856ae4f28258af289128ede1a2750b8081c5899  /tmp/queue-schema.sql
+46
+1
+1

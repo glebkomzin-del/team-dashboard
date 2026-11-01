@@ -1,0 +1,85 @@
+{
+  "decision": "CONTINUE_BOUNDED",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "LOW_YIELD",
+  "mode": "PREP_ONLY",
+  "operational_GO": false,
+  "source_target_mutation_permit": false,
+  "enforcement": "RULES_ONLY",
+  "review": {
+    "read_only": true,
+    "tests_executed": false,
+    "remote_operations": false,
+    "delegation": false,
+    "model_provenance": "Native Astra/high angefordert; interne Engine-Metadaten hier nicht unabh\u00e4ngig beobachtbar.",
+    "governance_confirmed": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "review_rules_confirmed": "/Users/glebkomzin/.agents/skills/project-governance/references/independent-review.md"
+  },
+  "evidence": {
+    "revision": "7dafef56c6883bde677b4d7ab83ead4dd25b7831",
+    "authority": "working-memory/docs/NEXT-OPERATIONS.md, letzte Source-only-/Writer-PREP-Abschnitte",
+    "preparation": "working-memory/evaluation/writer-protocol-preparation-20261003-evidence.json",
+    "writer_sha256": "6df64e92edbc1a4876732a25345e204ddc5fb3840dfd18dcde4717583628f993",
+    "return_sha256": "211751e44a94bb6cfd42b5d0c41ba13a0ba08bfafba752d76404accba0dd017f",
+    "query_sha256": "e8ca7870cc965f15fdf1c95ad9d8394a12b04e43eacc08ab49d70853be326254"
+  },
+  "diagnosis": [
+    "Konkrete Implementierungsl\u00fccke: Der sp\u00e4te R\u00fcckkehrpfad verweigert weiterhin jede Ausf\u00fchrung; Writer-Hostdateibindung und vollst\u00e4ndige Fehleraufzeichnung fehlen.",
+    "Evidenzkorrektur: Zyklus 1 hatte zwei Testfehler; Zyklus 2 bestand zwei Tests. Das PREP-Ziel blieb RETURN_ROOT_NOT_READY.",
+    "Der tats\u00e4chliche SQL-Vertrag ist vorhanden und hashbest\u00e4tigt. Live-Source- und Stage-Abfragen sind keine eingefrorene Baseline und kein Gleichheitsnachweis."
+  ],
+  "followup": {
+    "packages": 1,
+    "max_complete_offline_cycles": 2,
+    "builder": "Ein nativer gpt-6.1-sol/medium \u00fcber bestehende Abo-Route; keine weiteren Worker.",
+    "ownership": "Writer-/Prewrite-Return-Helfer, zugeh\u00f6rige isolierte Tests und eine Evidenzdatei. Source-Helfer, gemeinsam verwendete n8n-/Transport-Helfer und Autorit\u00e4t bleiben bei Root beziehungsweise ihrem bestehenden Owner.",
+    "milestone": "Ausf\u00fchrbarer, isoliert validierter sp\u00e4ter Source-R\u00fcckkehrpfad sowie geschlossene Writer-Hostbindung und Prim\u00e4rfehleraufzeichnung.",
+    "failure_bound": "Beim zweiten abgeschlossenen Zyklus ohne vollst\u00e4ndigen Meilenstein oder fr\u00fcherem nicht aufl\u00f6sbarem Pflichtblocker: FOLLOWUP_FAILED/BLOCK; keine weitere automatische Review-Reparaturschleife.",
+    "historical_counters": "Unver\u00e4ndert; aktuelle ausdr\u00fcckliche Nutzerfortsetzung er\u00f6ffnet nur dieses begrenzte Folgepaket."
+  },
+  "required_corrections": [
+    "Baseline, aktuelle Source und Target m\u00fcssen dieselben 43 benannten Tabellen mit vollst\u00e4ndigen Zeilenzahlen und duplikaterhaltenden Hashes abdecken. Nur wm_backup_records/wm_backup_snapshots ausschlie\u00dfen und ausschlie\u00dflich wm_processing_config.enabled normalisieren. Querybytes, UTC, Run, Tabelleninventar und private Originalantworten binden; fehlende Werte niemals als null Treffer behandeln.",
+    "Alle f\u00fcnf urspr\u00fcnglichen Hostdateien einschlie\u00dflich privater Source-Env sowie Image-/Manifest-, ACL-, Config-, Scope- und Frontend-Belege direkt an Gate-SHAs binden. Frische, Phase und tats\u00e4chliche Zust\u00e4nde unmittelbar vor betroffenen Operationen erneut pr\u00fcfen.",
+    "Source-Prozessbeleg auf bekannte Hostprozesse und drei pausierte n8n-Publikationen begrenzen. other_hosted_writer_processes=[] belegt keine weltweite Abwesenheit externer Writer.",
+    "Vor Source-Aktivierung Target-Canonical stoppen, Writer-Marker jeder relevanten Phase ausschlie\u00dfen, f\u00fcnf geschlossene Flags und tats\u00e4chlich leere Auftr\u00e4ge/Calls/Outboxes nachweisen sowie beide Businessprojektionen gegen die eingefrorene Baseline pr\u00fcfen. Fr\u00fchen Source-Rollback niemals nach Target-Restore aufrufen.",
+    "Nur compose.yaml, build-manifest.json, access.py, gateway_journal.py und service.env aus dem hashgebundenen Originalsnapshot restaurieren; nur den eigenen migration_run-Selfhostmarker entfernen. ACL82 und vollst\u00e4ndige Config ausschlie\u00dflich guarded restaurieren; Originalimage starten, maximal 90 Sekunden GET-Health beobachten, danach Original-Nginx und exakt drei Originalpublikationen sowie alte Scopes herstellen. Kein Target-Datenrollback.",
+    "Frontend-Original-ID laut beiden lokalen Inspect-Belegen: dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL. Nicht die angeh\u00e4ngte '2' aus der komprimierten Anfrage \u00fcbernehmen. Ohne Promotion beide Originalaliases verifizieren; bei teilweiser/erfolgter Promotion offiziellen Rollback h\u00f6chstens einmal ausf\u00fchren. Nur nachweislich selbst hinzugef\u00fcgte, urspr\u00fcnglich fehlende zwei VITE-Variablen entfernen; niemals OIDC-Gesamtenv restaurieren.",
+    "Vollst\u00e4ndige HTTP-Bodies, Status/Header, Prozessausgaben und Timeout-Prim\u00e4rdaten vor jeder nach au\u00dfen gegebenen Fehlermeldung dauerhaft privat mit 0600 sichern. Das gilt vor und nach Markern. Fehler halten beziehungsweise versetzen den Ablauf in Wartung; keine blinde Source-Aktivierung."
+  ],
+  "offline_acceptance": [
+    "Fehlende Baseline, fehlende/zus\u00e4tzliche Tabellen und abweichende Source-/Target-Hashes verweigern R\u00fcckkehr.",
+    "Fehlende oder falsche Host-SHAs, veraltete Gates und vorhandene Writer-Marker verweigern operative Aufrufe; private Diagnoseaufzeichnung bleibt zul\u00e4ssig.",
+    "Synthetischer vollst\u00e4ndiger Erfolgsablauf beweist Reihenfolge, exakt f\u00fcnf restaurierte Hostdateien, Original-ACL/Config, drei Publikationsversionen, Scopes und beide Frontend-R\u00fcckkehrzweige.",
+    "Gezielte Fehlerf\u00e4lle vor/nach Markern und an Aktivierungsgrenzen beweisen vollst\u00e4ndige Prim\u00e4rdatenaufzeichnung, Wartungsstopp und unterbleibende Folgeaktivierung."
+  ],
+  "open_operational_blockers": [
+    "Tats\u00e4chliche eingefrorene Baseline und sp\u00e4tere Source-/Target-Gleichheit fehlen.",
+    "Aktuelle vollst\u00e4ndige Writer-Belege f\u00fcr Runtime, ALL-COPY, Owner-Browserfluss, Target-Vollrestore, Mac-Spiegel, zwei Aliases und eingefrorene Artefakte fehlen.",
+    "Nach PREP sind frische gezielte Runtime-/Writer-GO-Pr\u00fcfungen anhand tats\u00e4chlicher Receipts erforderlich. Das separat gepr\u00fcfte Source-Freeze-/Export-Gate umfasst Target nicht."
+  ],
+  "preserved": "Stage-RLS/Auth, Journal16.4, Backups und akzeptiertes eingefrorenes Frontend bleiben anerkannt; kein breites Re-Audit.",
+  "native_process_provenance": {
+    "fresh_thread_id": "01a10404-23d6-7860-a7e8-14bd0bc381ab",
+    "executable": "/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex",
+    "requested_accepted_configuration": {
+      "model": "gpt-6-astra",
+      "reasoning_effort": "high",
+      "sandbox": "read-only",
+      "ephemeral": true,
+      "ignore_user_config": true,
+      "multi_agent": false,
+      "API_key_base_URL_removed_from_child_env": true
+    },
+    "actual_usage": {
+      "input_tokens": 495012,
+      "cached_input_tokens": 433408,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3930,
+      "reasoning_output_tokens": 138
+    },
+    "result_sha256": "9c40256a51fc600435ca49d46ff1c1de731738348f235ee946581f07291ccd42",
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED",
+    "previous_process": "native-return-protocol-gate-1 interrupted because repeated empty-receiver wait calls, no review decision/delegation/mutation; raw preserved not acceptedreview",
+    "recorded_at": "2026-10-03T23:12:59.804451+00:00"
+  }
+}

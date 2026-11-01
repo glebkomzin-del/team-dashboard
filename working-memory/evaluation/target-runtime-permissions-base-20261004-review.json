@@ -1,0 +1,80 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "scope": "PERMISSIONS_ONLY_TARGET_COMPLETION",
+  "decision": "CHANGE_APPROACH",
+  "operational_target_go": false,
+  "reviewed_at": "2026-10-04T02:31:47Z",
+  "diagnosis": "Der Permissions-only-Ansatz ist geeignet. Ein konkreter Buildvertrag-Blocker verhindert GO f\u00fcr den vorliegenden Hashstand: Die neue Dockerfile ersetzt den nachweislich verwendeten lokalen Base-Alias durch eine rohe Config-Image-ID.",
+  "blockers": [
+    {
+      "id": "FROM_BASE_REFERENCE",
+      "location": "working-memory/ops/hetzner-migration/final_target_runtime_permissions_followup_once.py:33",
+      "evidence": "DOCKERFILE verwendet FROM sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f. Der Originalhelper taggt BASE dagegen als dashboard-canonical-baseline:hz20261003 und verwendet diesen Alias. Der aktuelle Preflight pr\u00fcft den Alias nicht.",
+      "technical_finding": "Der gepr\u00fcfte upstream BuildKit-Code normalisiert FROM \u00fcber ParseNormalizedNamed; der Referenzparser behandelt sha256:<hex> als docker.io/library/sha256:<hex>. Das ist keine Bindung an die lokale Config-Image-ID. --pull=false behebt diese Namensabweichung nicht.",
+      "certainty": "Quellcodegest\u00fctzte Ableitung; kein tats\u00e4chlicher neuer Buildfehler behauptet. Engine29.5.0/buildx0.34.0 sind lokal belegt, der konkrete installierte Resolver wurde nicht ausgef\u00fchrt. Diese wesentliche Unsicherheit darf den einzigen Buildversuch nicht verbrauchen.",
+      "smallest_correction": "Nur die neue Dockerfile auf FROM dashboard-canonical-baseline:hz20261003 umstellen. Im Preflight vor Attempt-Marker und erster Mutation verlangen: op.inspect('dashboard-canonical-baseline:hz20261003')['Id'] == rt.BASE. COPY --chmod=0644, Default-USER10001:10001 und alle \u00fcbrigen Grenzen unver\u00e4ndert lassen. Einen fehlenden oder abweichenden Alias ablehnen."
+    }
+  ],
+  "accepted_review_findings": {
+    "whole_helper": "Alle 251 Helperzeilen, alle 216 Testzeilen, Originalruntime und PartialReturn-Vertrag gepr\u00fcft. Kein weiterer belegter Pflichtblocker innerhalb dieses Pakets festgestellt.",
+    "proof_contract": "15 Referenzen, individuelle SHA-Bindungen, 300s-Beobachtungen, 600s-Gate/Review, Source43/Target43/Baseline, Rechte0, vollst\u00e4ndige Config, leere Arbeit, Vault/Auth, pausierte Workflows, alter Frontendstand, keine Writer und Timerbedingungen sind ber\u00fccksichtigt. Die inhaltliche Ableitung aus Prim\u00e4rbelegen bleibt ausdr\u00fccklich Root-Verantwortung; blo\u00dfe SHA-Bindung beweist deren Wahrheit nicht.",
+    "ordering": "Exklusiver Attempt vor Badimage-Pinning und Build; Default-Nonroot-SHA aller drei Dateien und Base-Layers+1 vor statischem Retagging und Live-Datei\u00e4nderungen; anschlie\u00dfend f\u00fcnf Snapshots, geschlossene Flags, ein Backendstart, Health vor Nginx.",
+    "recovery": "Alte Dockerfile, Codebytes und Runtime-Marker bleiben erhalten. Der unver\u00e4nderte PartialReturn-host_check ist mit den vorgesehenen f\u00fcnf \u00c4nderungsgrenzen und dem abgeschlossenen Runtimezustand kompatibel. Tats\u00e4chliche Source-R\u00fcckkehr wurde hier weder ausgef\u00fchrt noch neu bewiesen.",
+    "current_projection": "ACCEPT f\u00fcr die vorgesehene Semantik: TARGET_READONLY_RUNTIME_ACTIVE bezeichnet CURRENT_OPERATIONAL_STATE nach tats\u00e4chlicher Recovery einschlie\u00dflich Health und Nginx. original_runtime_attempt_status=FAILED, RecoveredRuntime, Recovery-SHA, Originalfehler-SHA und Vorstufenreferenz erhalten die Historie. Das ist kein urspr\u00fcnglicher Runtime-PASS. Consumer-Feldkompatibilit\u00e4t ist best\u00e4tigt; das separate Frontendpaket erh\u00e4lt hierdurch kein GO.",
+    "markers_and_counts": "Exklusive private, dateiseitig fsync-geschriebene Marker und Erfolgs-/Fehlerbelege begrenzen Wiederholung. Bei Prozessabbruch bleibt der reservierte Versuch verbraucht beziehungsweise aufkl\u00e4rungsbed\u00fcrftig; fehlende Outcome-Z\u00e4hler bedeuten nicht null.",
+    "default_execution": "Der CLI-Einstieg setzt umask077 und verwendet reale Operations ohne Root-User-Override. Synthetische Operations werden nur ausdr\u00fccklich injiziert."
+  },
+  "validation_evidence": {
+    "reviewer_tests_executed": 0,
+    "builder_cycles_consumed": 2,
+    "cycle_1": "31 Fixturefehler durch KeyError baseline; keine Implementierungsvalidierung.",
+    "cycle_2": "4 Testmethoden mit 36 erhaltenen F\u00e4llen PASS.",
+    "independently_checked": "Hashes der beiden vollst\u00e4ndigen Testausgaben und des Artefaktmanifests stimmen. Alle 5888 aufgef\u00fchrten privaten Artefakte stimmen mit ihrem Manifest \u00fcberein. Alle 69 gesch\u00fctzten Dateien stimmen weiterhin.",
+    "limits": "Docker-Build, Dateirechte im realen Image, HTTP und Providerzugriffe sind simuliert. Der Test vergleicht die erzeugte Dockerfile mit derselben Implementierungskonstante und kann den FROM-Fehler deshalb nicht erkennen.",
+    "preserved_acceptances": "Unver\u00e4nderte Stage-, Runtime13- und Healthy7-Abnahmen werden nicht wieder ge\u00f6ffnet."
+  },
+  "bounded_correction": {
+    "local_scope": "Eine mechanische Korrektur von FROM und Alias-ID-Preflight einschlie\u00dflich ausschlie\u00dflich notwendiger Anpassung der synthetischen Aliasabbildung.",
+    "full_offline_cycles_remaining": 0,
+    "new_full_test_campaign": false,
+    "next_go_requirement": "Gezielte read-only Nachpr\u00fcfung des tats\u00e4chlichen Korrekturdiffs und der neuen exakten Helper-/Testhashes. Die unver\u00e4nderten 36 F\u00e4lle bleiben als bestehende Evidenz erhalten; kein Zur\u00fccksetzen der zwei verbrauchten Zyklen. Dieses Urteil ist noch kein ausf\u00fchrbares Target-Gate.",
+    "operational_budget_after_valid_go": {
+      "corrected_image_builds": 1,
+      "host_completion_dispatches": 1,
+      "further_automatic_fix_loops": 0
+    }
+  },
+  "root_preconditions_before_operation": [
+    "Alle angek\u00fcndigten tats\u00e4chlichen Prim\u00e4rbelege sammeln und individuell binden; historische Beobachtung vom 02:04:34Z nicht als aktuell ausgeben.",
+    "Vault-Originalsidecar, urspr\u00fcngliche Authhashes, Config und Vorstufen aus den urspr\u00fcnglichen Belegen ableiten; aktuelle Source-/Target-, Frontend-, Writer- und Timerbelege innerhalb der Fristen halten.",
+    "Vollst\u00e4ndige neun Host-Abh\u00e4ngigkeiten und Originalhashes bereitstellen. Review-script_hashes und Execution-Gate-script_hashes m\u00fcssen exakt dieselbe Vierdateien-Map enthalten.",
+    "Frische ausf\u00fchrbare PartialReturn-Referenzen und unver\u00e4nderte Sourceidentit\u00e4t best\u00e4tigen. Python im normalen Modus ohne deaktivierte Assertions verwenden."
+  ],
+  "failure_endpoint": "Originalrestore1 PASS und Originalruntime1 FAILED bleiben erhalten. Keine Wiederholung von Lease/Dump/Freeze/Restore/Vault/ACL/Config/API-Start. Nach operativem Fehler h\u00f6chstens einmal bestehender PartialReturn mit dann frischen sicheren Belegen; andernfalls Maintenance und blockierte R\u00fcckgabe. Keine weitere automatische Reparaturschleife.",
+  "script_hashes": {
+    "final_target_runtime_permissions_followup_once.py": "30d31431db141b7e95baa81f3e4155042cc85008eee883ebb57cdd133d15fac0",
+    "test_final_target_runtime_permissions_followup.py": "e0de7dad844890d5179467048f29b756d5fb13c79973ad6914be12b6285e2614",
+    "final_target_runtime_once.py": "e301b63688dfc56ac9339b0bd4152648c41ee66a54f0df6d318c2dc8aaa90a0c",
+    "final_target_partial_source_return_once.py": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319"
+  },
+  "primary_documentation": [
+    "[Dockerfile FROM und COPY --chmod](https://docs.docker.com/reference/dockerfile/)",
+    "[BuildKit resolveBaseImage](https://github.com/moby/buildkit/blob/master/frontend/dockerfile/dockerfile2llb/convert.go)",
+    "[Distribution ParseNormalizedNamed und splitDockerDomain](https://github.com/distribution/reference/blob/main/normalize.go)"
+  ],
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "session": "01a104bd-8486-7530-995b-5700917fb730",
+    "runtime_header": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/native-runtime-permissions-final-goal-1/stderr-private.txt:1-35",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references_loaded": [
+      "independent-review.md",
+      "recovery.md",
+      "specialist-skills.md"
+    ],
+    "performed": "Frisches eigenst\u00e4ndiges lokales Review, Dateilesen und Hashpr\u00fcfung sowie \u00f6ffentliche Prim\u00e4rdokumentation. Keine Implementation, Delegation, Tests oder Source-/Target-/Provideroperationen.",
+    "enforcement": "RULES_ONLY"
+  }
+}

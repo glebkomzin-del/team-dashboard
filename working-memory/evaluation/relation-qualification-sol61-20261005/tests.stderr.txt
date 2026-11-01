@@ -1,0 +1,9 @@
+test_exact_model_only_switch_and_conservative_cap (__main__.SolComparisonOffline.test_exact_model_only_switch_and_conservative_cap) ... ok
+test_explicit_authority_required_and_bounded (__main__.SolComparisonOffline.test_explicit_authority_required_and_bounded) ... ok
+test_payload_and_strict_offline_transport (__main__.SolComparisonOffline.test_payload_and_strict_offline_transport) ... ok
+test_preflight_and_existing_reservation_denied (__main__.SolComparisonOffline.test_preflight_and_existing_reservation_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.007s
+
+OK

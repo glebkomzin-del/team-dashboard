@@ -1,0 +1,51 @@
+{
+  "scope": "Read-only evidence for the deployed perf-only image at projection revision 226; no overall productivity acceptance",
+  "first_cold_flow": {
+    "source_receipt": "/root/dashboard-perf-cold-226-20261005/cold-start.json",
+    "cache_absent_after_rename": true,
+    "owner_click_utc": "2026-10-05T22:02:05.991Z",
+    "cache_mtime_utc": "2026-10-05T22:02:31.219768Z",
+    "last_owner_observation_utc": "2026-10-05T22:02:55.907Z",
+    "owner_outcome": "enabled with no alert or background-loading message",
+    "duration_evidence": "successful, at most 49.916 seconds from click to last observation; exact completion time and under-45-second criterion unproved"
+  },
+  "second_timed_cold_flow": {
+    "source_receipt": "/root/dashboard-perf-cold-timed-226-20261005/cold-start.json",
+    "source_receipt_sha256": "53c636b2fa80f775fbabc008064a781ad5f91bd76817da801bb8d853b2adb30f",
+    "snapshot_path": "/root/dashboard-perf-cold-timed-226-20261005/before-226.sqlite",
+    "snapshot_sha256": "f31a417f2ac315161acff0232a6d808956eccd30e153fffe867a2b3d60781a79",
+    "public_ui_timing_receipt": "/private/tmp/dashboard-productive-dispatch-20261005/perf-public-cold-ui-timing.json",
+    "public_ui_timing_sha256": "5f623c6f3f99a72d6de28b3a08b84ceb9456955d4a399d398b1fef7fd1fac0e3",
+    "cache_absent_after_rename": true,
+    "rename_completed_utc": "2026-10-05T22:08:31.820906Z",
+    "owner_click_start_utc": "2026-10-05T22:08:38.219Z",
+    "cache_mtime_utc": "2026-10-05T22:09:01.563569Z",
+    "owner_enabled_no_alert_utc": "2026-10-05T22:09:07.172Z",
+    "measured_owner_wait_ms": 28953,
+    "click_control_exception": "The UI control call timed out; actual disabled/loading state was observed and no second click was made",
+    "live_sqlite_integrity_check": "ok",
+    "live_projection_cursor_revision": 226,
+    "human_decisions": 4,
+    "planning_events": 7,
+    "normalized_table_equality": "all 12 tables; sorted SHA-256 of row SHA-256 digests, JSON-encoded with sorted keys; runs only removes id and created_at",
+    "raw_table_equality": "11 of 12 tables; runs differs only in id and created_at",
+    "runs_raw_before_sha256": "46255eb8a9120c4279ea9a03ce6159672529f40e75abb1734f15e43814ea4ab1",
+    "runs_raw_after_sha256": "f64d4f14410d0edfc234fe3f4ba4cebb2182c39b1c454d5b98e6f1323d1deb74",
+    "table_counts_and_normalized_sha256": {
+      "human_decisions": [4, "955b35062e22a2e351138c814b6ffdcae57f9aeb60130d371ae05c37a940bd58"],
+      "jobs": [213, "8831db962c344f06386c37e8d02bf1dab2d9a42f68bec5e74d1ec6120760bb85"],
+      "matter_links": [1, "8da2bd1f437a1a884a40db842700f72d5978f59abfa7f2e45a43d85b10632636"],
+      "matters": [815, "d2f6cfaf78a6d583bf5a92d6e52dc9c0f722b5090c2478e635f6bec6aa86760e"],
+      "observations": [1885, "e77e2cef2b9bd66b0a643303686fb61397dc44c379952ec521dd63cd258788c1"],
+      "planning_events": [7, "c0ef113860cb5cbe8c5eb86b227dc33fe287a542f9ff62c3b6e79cd6c155b886"],
+      "projection_cursor": [1, "5fbdab4c2f5f88e1d22f18f2a83764ac29be5a7b04e85c0f4d3587a4d45a3cb4"],
+      "projection_event_order": [224, "a3637d6efc1150fc9dac81ed32a95d9cad1fe63129d34729a455d3e7638d7496"],
+      "runs": [213, "b8f5e60e7ac7591276328c1bd9c63734761ff94b1b7e4c10b6c456bd24a021d1"],
+      "source_versions": [213, "9d615a4f797ac3cbaba365bc95faa129803aa6cfb733e9dc5582d786e3546e86"],
+      "sqlite_sequence": [1, "b90a1169d27bfb3830178c50ca50254667cd77215b8d8ba33206a65f893f53c6"],
+      "work_events": [614, "87484bcbc724ec2cf7bc72296e64379bcd75ef236b418ff39f036b4a6afe6a21"]
+    }
+  },
+  "decision": "Recommend technical partial acceptance of the deployed revision-226 perf cold flow and under-45-second observed public UI completion for this single timed case; no general reliability or overall productivity GO",
+  "execution": "Read-only SQLite metadata/hash queries and existing receipt reads; no cache writes, browser control, provider calls or repeated test execution by this evaluator"
+}

@@ -1,0 +1,29 @@
+--- a/scheduled_backup.py
++++ b/scheduled_backup.py
+@@ -386,7 +386,10 @@
+         for path in schema.glob('*.sql'):
+             if path.is_symlink():raise RuntimeError('Unexpected schema symlink')
+             target=folder/'schema'/path.name;target.parent.mkdir(mode=0o700,exist_ok=True);shutil.copy2(path,target)
+-        private_json(folder/'runtime-images.json',{name:{'image_id':value['Image'],'configured_image':value['Config']['Image']} for name,value in [('n8n',n8n),('postgres',pg),('memory',container('dashboard-memory-canonical-draft-canonical-draft-1'))]})
++        memory=container('dashboard-memory-canonical-draft-canonical-draft-1')
++        private_json(folder/'runtime-images.json',{name:{'image_id':value['Image'],'configured_image':value['Config']['Image']} for name,value in [('n8n',n8n),('postgres',pg),('memory',memory)]})
++        # The memory image is locally built. Its ID alone cannot restore a lost host.
++        run(['docker','save','--output',str(folder/'memory-image.tar'),memory['Image']],timeout=600)
+         mount=next(m['Source'] for m in n8n['Mounts'] if m['Destination']=='/home/node/.n8n')
+         with tarfile.open(folder/'n8n-data.tar.gz','w:gz') as tar:tar.add(mount,arcname='n8n-data',filter=lambda info:None if info.name.endswith(('.log','.log.1')) else info)
+         files={str(p.relative_to(folder)):{'bytes':p.stat().st_size,'sha256':checksum(p)} for p in folder.rglob('*') if p.is_file()}
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,8 +1,5 @@
+-FROM python:3.14.7-slim@sha256:cad9a2c871761c413caa6fdd6441c783451e740a48aaeba60ae62a8b53525ef6
+-WORKDIR /app
+-COPY *.py ./
+-COPY evaluation/ ./evaluation/
+-RUN mkdir -p /app/.local && chown -R 10001:10001 /app
++FROM dashboard-memory:hetzner-final-20261003
++USER root
++COPY --chown=10001:10001 canonical_worker.py restore_schema.py scheduled_backup.py build-manifest.json /app/
++COPY --chown=10001:10001 schema/ /app/schema/
+ USER 10001:10001
+-ENV MEMORY_BIND=0.0.0.0 MEMORY_DB=/app/.local/service.sqlite PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+-CMD ["python", "server.py"]

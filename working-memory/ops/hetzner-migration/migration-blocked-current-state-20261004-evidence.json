@@ -1,0 +1,146 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "checked_at_utc": "2026-10-04T03:58:03.878762+00:00",
+  "status": "BLOCKED_PARTIAL_SOURCE_RETURN_FAILURE",
+  "whole_migration_complete": false,
+  "server_upgrade": {
+    "type": "CAX21",
+    "vcpus": 4,
+    "ram_gib": 8,
+    "disk_gb": 80,
+    "previously_live_verified": true
+  },
+  "accepted_target_data": {
+    "original_restore_tables": 88,
+    "original_restore_rows": 68572,
+    "original_restore_allcopy_passed": true,
+    "readonly_runtime_recovered_once": true,
+    "corrected_image": "sha256:7d5e64318a66c3bf0227d694a3d15569263dc96d08b4cd0ae6d8feaeab2a9bcf",
+    "currently_running": false
+  },
+  "current_target_full_backup": {
+    "state": "ok",
+    "started_at_utc": "2026-10-04T03:15:36.213480+00:00",
+    "finished_at_utc": "2026-10-04T03:41:14.170140+00:00",
+    "archive": "dashboard-20261004T031536Z.tar.gz",
+    "bytes": 1588614220,
+    "sha256": "431bf4142c642c120c16a419da2b9a155a41cbcd45e9aa473137cccbecc4e555",
+    "selfhost_isolated_restore_passed": true,
+    "canonical_isolated_restore_passed": true,
+    "n8n_credentials_decrypt_verified": true,
+    "google_refresh_token_preserved": true,
+    "isolated_n8n_external_network": false,
+    "isolated_n8n_model_calls": 0,
+    "mac_same_archive_sha256_verified": true,
+    "mac_payload_files_verified": 202
+  },
+  "frontend": {
+    "promotion_attempts": 0,
+    "owner_link_attempts": 0,
+    "target_writer_opened": false,
+    "new_control_id_code": "implemented_unvalidated",
+    "followup_targeted_invocations": 1,
+    "failed_first_family": "fixture_private_directory_0755",
+    "remaining_families_not_run": 2,
+    "status": "BLOCKED_RETURN_NO_AUTOMATIC_FOLLOWUP"
+  },
+  "source_availability_return": {
+    "dispatches": 1,
+    "status": "FAILED",
+    "error_type": "PreconditionsError",
+    "primary_error": "Return proof stale",
+    "proof_observed_at_utc": "2026-10-04T03:50:32.552295+00:00",
+    "preflight_current_changed_runtime_passed": true,
+    "target_four_apis_and_canonical_stopped": true,
+    "source_original_acl82_restored_exact": true,
+    "source_full_config_still_frozen": true,
+    "source43_baseline_equal": true,
+    "source_backend_not_started": true,
+    "source_original_five_host_files_not_restored": true,
+    "core_pass": false,
+    "complete": false,
+    "target_data_reverted": false
+  },
+  "current_state": {
+    "dashboard_ingress": "exact_maintenance_configuration",
+    "canonical_backend_running": false,
+    "target_database_running": true,
+    "target_four_apis_running": false,
+    "n8n_original_three_dashboard_workflows_paused": true,
+    "temporary_two_workflow_scopes_still_present": true,
+    "backup_timer_active": false,
+    "backup_timer_enabled": true,
+    "backup_service_inactive": true,
+    "source_original_anon_authenticated_dml_and_writer_counts": {
+      "anon": [
+        0,
+        0
+      ],
+      "authenticated": [
+        0,
+        0
+      ]
+    },
+    "source_original_service_role_counts": {
+      "writable_tables": 23,
+      "executable_writers": 32
+    },
+    "n8n_picnic_database_started_at_unchanged": "2026-10-03T16:55",
+    "other_running_services": {
+      "n8n": {
+        "running": true,
+        "started_at": "2026-10-03T16:55:19.55170796Z"
+      },
+      "n8n_postgres": {
+        "running": true,
+        "started_at": "2026-10-03T16:55:19.5496576Z"
+      },
+      "picnic-skill": {
+        "running": true,
+        "started_at": "2026-10-03T16:55:19.530385Z"
+      }
+    },
+    "dashboard_prefix_http_status": {
+      "/dashboard-memory/health": 503,
+      "/dashboard-memory-draft/health": 503
+    },
+    "dashboard_prefix_http_checked_at_utc": "2026-10-04T04:01:12.004018+00:00"
+  },
+  "next_step_boundary": {
+    "no_automatic_frontend_followup": true,
+    "no_automatic_source_return_retry": true,
+    "rule": "User AGENTS.md section 14: one review-authorized bounded followup failing its endpoint must block; a new explicit user decision is required. Prior user seek-until-works preceded these actual failures.",
+    "smallest_future_work": [
+      "Restore availability from the actual partial ACL-restored, config-disabled, target-stopped state; diagnose repeated remote-read overhead/freshness without bypassing stale-state guards, preserve first return failure and counters.",
+      "Separately validate the control-ID fixture under its private-directory contract before any frontend promotion, real Owner flow or Target writer opening."
+    ],
+    "runtime_enforcement": "RULES_ONLY"
+  },
+  "private_primary_refs": {
+    "full": {
+      "private_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/actual-target-full-backup-success-status.json",
+      "sha256": "5701af9491af71ec84aa1aa32be0e1e7ec7af8cbae4f5226f8287fd12046f15f"
+    },
+    "mac": {
+      "private_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/actual-current-target-mac-copy-success.json",
+      "sha256": "645650585aa76ef51356724bf55bdb0b7ee9d9b8097e5bf4eba730fd7d4727a4"
+    },
+    "return_dispatch": {
+      "private_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/source-availability-return-dispatch-once.json",
+      "sha256": "ba65f04a9a69fafb3bcf29ddd9a321fb2bcca9c15d9f70518f6f3bf82f2449d3"
+    },
+    "postfailure_state": {
+      "private_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/source-availability-return-7243c98b62114438bd42cd028d0ec45c/postfailure-current-state-summary.json",
+      "sha256": "b821ae5e55e758e50317f255f7cb8513e078ec91d63066ca5c1697b413ade385"
+    },
+    "postfailure_source_acl": {
+      "private_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/source-availability-return-7243c98b62114438bd42cd028d0ec45c/postfailure-source-acl-private.json",
+      "sha256": "59fc65746e3c97383ab5552f1f48816a7dae37bf0edd408eadc07018d99b9cb8"
+    },
+    "return_error": {
+      "private_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z/transport-errors/LATE_SOURCE_RETURN_STOP-f60b40c5d7314577b584b55bd18c3511.json",
+      "sha256": "a9d2ebf4b7f516a9444c3ec51c55484fe3919e15494de10bc7deefd3406e9342"
+    }
+  },
+  "verification_scope": "No new frontend tests, no repeated FULL backup or return mutation, no Source deletion. Final scoped evidence consistency and whitespace checks only; no new CI run."
+}

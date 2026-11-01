@@ -1,0 +1,16 @@
+{
+  "candidate_image_id": "sha256:5d5986089ce0824b53d530fd35ffe329eada90eb075c5b217f21e3966456bb52",
+  "candidate_tag": "dashboard-memory:work-projection-20261005-a48b8401",
+  "helper_sha256": "573bad948c5c7adf5d96df34e7a78823609c61a73a20902c5c1f339012796290",
+  "isolated_image_validation": {
+    "pipeline": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+    "runtime_files_verified": 137,
+    "schema_sources": 47
+  },
+  "manifest_sha256": "b3454788a6a738ce4c7cd019bb18c7c02fbe85713c2b438a8ac9957c85e23237",
+  "preflight_without_receipt": "DENY exit1; no backup directory, no runtime write",
+  "production_release": "not attempted",
+  "public_cold_get": "not tested; existing work cache key contains revision only",
+  "source_image_id": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "status": "private_image_built_not_deployed"
+}

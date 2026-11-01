@@ -1,0 +1,450 @@
+--- a/hybrid_pipeline.py
++++ b/hybrid_pipeline.py
+@@ -28,7 +28,8 @@
+     names = ('hybrid_pipeline.py','hybrid_schema.py','hybrid_index.py','processor.py','memory.py',
+              'reconcile.py','temporal_guard.py','call_budget.py','openai_provider.py','planner.py','projection_order.py',
+              'evaluation/prompt-v9.txt','evaluation/schema-v9.json','evaluation/work-gate-prompt-v9.txt',
+-             'evaluation/work-gate-schema-v9.json','evaluation/source-corrections.json')
++             'evaluation/work-gate-schema-v9.json','evaluation/endstate-gate-schema-v1.json',
++             'evaluation/endstate-gate-prompt-v1.txt','evaluation/source-corrections.json')
+     if compact:names += ('compact_reconcile.py','retrieval_context.py','human_decisions.py')
+     return ('v11:compact1:gate1:' if compact else 'v10:hybrid1:gate1:')+model+':'+fingerprint(''.join((ROOT/n).read_text() for n in names))[:16]
+ 
+@@ -93,6 +94,68 @@
+             checked['required_review']=True
+             checked['action_uncertainty']='Ein Teilergebnis wurde als erledigt erkannt; der Abschluss der referenzierten Gesamtaufgabe ist dadurch nicht bestätigt.'
+     return after
++
++
++def apply_endstate(proposal, extraction, gate, originals):
++    """Bind the last gate's complete observation and summary decisions to this source."""
++    observations=proposal['observations']; paragraphs=extraction['meeting_summary']
++    states=gate.get('endstate'); summaries=gate.get('final_summary')
++    def complete(rows, count, label):
++        if not isinstance(rows,list) or len(rows)!=count or any(type(row.get('index')) is not int for row in rows if isinstance(row,dict)) or any(not isinstance(row,dict) for row in rows):
++            raise ValidationError(label+' coverage invalid')
++        if [row['index'] for row in rows]!=list(range(count)):
++            raise ValidationError(label+' indices changed')
++    complete(states,len(observations),'Endstate')
++    complete(summaries,len(paragraphs),'Summary')
++    verdicts={v['index']:v['verdict'] for v in gate['verdicts']}
++    for state,observation in zip(states,observations):
++        status=state.get('status'); earlier=state.get('earlier_evidence_ids'); later=state.get('later_evidence_ids')
++        reason=state.get('reason'); claim=state.get('final_claim')
++        if status not in ('unchanged','withdrawn','ambiguous') or not isinstance(reason,str) or not isinstance(earlier,list) or not isinstance(later,list):
++            raise ValidationError('Invalid endstate decision')
++        if verdicts.get(state['index'])=='withdrawn' and status!='withdrawn':
++            raise ValidationError('Withdrawn gate lacks a matching endstate')
++        if status=='unchanged':
++            if earlier or later or claim is not None:raise ValidationError('Unchanged endstate must retain original')
++            continue
++        if status=='ambiguous':
++            if claim is not None or not reason.strip() or any(i not in originals for i in earlier+later):raise ValidationError('Invalid ambiguous endstate')
++            observation['required_review']=True
++            observation['action_uncertainty']=reason
++            continue
++        if (observation['kind']!='commitment' or observation.get('update_target') or observation.get('update')!='none'
++                or verdicts.get(state['index'])!='withdrawn'):
++            raise ValidationError('Withdrawal requires a matching new-commitment gate verdict')
++        if (not reason.strip() or not isinstance(claim,str) or not claim.strip()
++                or not earlier or not later or any(i not in originals for i in earlier+later)
++                or any(originals[i]['text'] not in observation['quotes'] for i in earlier)
++                or max(originals[i]['start'] for i in earlier)>=min(originals[i]['start'] for i in later)):
++            raise ValidationError('Withdrawal lacks bound earlier and later original evidence')
++        prior_claim=observation['claim']
++        observation.update(kind='decision',claim=claim,commitment_strength='not_applicable',
++                           work_state='not_applicable',due_text=None,condition_text=None,
++                           action_uncertainty=None,superseded_claim=prior_claim,
++                           endstate={'status':'withdrawn','reason':reason,'earlier_evidence_ids':earlier,
++                                     'later_evidence_ids':later})
++        for evidence_id in dict.fromkeys(earlier+later):
++            unit=originals[evidence_id]
++            if unit['text'] not in observation['quotes']:observation['quotes'].append(unit['text'])
++            if not any(s['start']==unit['start'] and s['end']==unit['end'] for s in observation['source_spans']):
++                observation['source_spans'].append({'start':unit['start'],'end':unit['end'],'quote':unit['text']})
++    final=[]
++    for item,prior in zip(summaries,paragraphs):
++        status=item.get('status');ids=item.get('evidence_ids');body=item.get('text');reason=item.get('reason')
++        if (status not in ('unchanged','corrected','ambiguous') or not isinstance(ids,list) or not ids
++                or any(i not in originals for i in ids) or not isinstance(body,str) or not body.strip()
++                or not isinstance(reason,str)):
++            raise ValidationError('Invalid final summary paragraph')
++        if status=='ambiguous':raise ValidationError('Unresolved final summary; source retained for review')
++        if status=='unchanged':
++            if body!=prior['text'] or ids!=prior['evidence_ids']:raise ValidationError('Unchanged summary was altered')
++        elif body==prior['text'] or not reason.strip():
++            raise ValidationError('Corrected summary needs a reason and changed text')
++        final.append({'text':body,'evidence_ids':ids})
++    return final
+ 
+ 
+ def confidence(proposal):
+@@ -294,11 +357,11 @@
+             numbered=[{**item,'id':str(i)} for i,item in enumerate(batch)]
+             proposal['observations'].extend(stage('lifecycle-'+str(number),reconcile.prompt(meeting,numbered,originals)+instruction,lifecycle_schema([w['id'] for w in batch]),check_life,8000))
+         candidates=[{'index':i,**o} for i,o in enumerate(proposal['observations']) if o['kind']=='commitment' or o.get('update')!='none']
+-        if candidates:
+-            gate_schema=json.loads((ROOT/'evaluation/work-gate-schema-v9.json').read_text())
+-            def checked_gate(value):
++        gate_schema=json.loads((ROOT/'evaluation/endstate-gate-schema-v1.json').read_text())
++        def checked_gate(value):
+                 import copy
+                 checked=guard_gate_escalation(proposal,apply_work_gate(copy.deepcopy(proposal),value['verdicts'],originals))
++                final_summary=apply_endstate(checked,raw,value,originals)
+                 for item in checked['observations']:
+                     # Keep all explicitly selected positions, including repeated identical lines.
+                     existing={(s['start'],s['end']) for s in item['source_spans']}
+@@ -311,22 +374,28 @@
+                             for unit in originals.values():
+                                 if unit['text']==quote:item['source_spans'].append({'start':unit['start'],'end':unit['end'],'quote':quote});break
+                 confidence(checked);validate(checked,meeting['raw_transcript'],known)
+-                return checked
+-            touched={o.get('update_target') for o in candidates if o.get('update_target')}
+-            gate_work=[w for w in work if w['id'] in touched]
+-            gate_rules=(ROOT/'evaluation/work-gate-prompt-v9.txt').read_text()
+-            if compact:
+-                from compact_reconcile import GATE_RULES
+-                gate_rules+='\n'+GATE_RULES
+-            proposal=stage('gate',gate_rules+'\nKandidaten:\n'+encode(candidates)+'\nBestehende Arbeit:\n'+encode(gate_work)+base,gate_schema,checked_gate,8000)
++                return checked,final_summary
++        touched={o.get('update_target') for o in candidates if o.get('update_target')}
++        gate_work=[w for w in work if w['id'] in touched]
++        gate_rules=(ROOT/'evaluation/work-gate-prompt-v9.txt').read_text()+'\n'+(ROOT/'evaluation/endstate-gate-prompt-v1.txt').read_text()
++        if compact:
++            from compact_reconcile import GATE_RULES
++            gate_rules+='\n'+GATE_RULES
++        proposal,final_summary=stage('gate',gate_rules+'\nKandidaten:\n'+encode(candidates)+'\nAlle aktuellen Beobachtungen:\n'+encode([{'index':i,**o} for i,o in enumerate(proposal['observations'])])+'\nVorläufige Zusammenfassung:\n'+encode(raw['meeting_summary'])+'\nBestehende Arbeit:\n'+encode(gate_work)+base,gate_schema,checked_gate,8000)
++        raw['meeting_summary']=final_summary
+         proposal=guard(db,meeting,proposal)
+         statistics.update(total_work=len(allwork),selected_work=len(work),queries=len(search_queries),hits=len(hits))
+         for item in proposal['observations']:item['retrieval_provenance']=statistics['search']
++        from future_summary import from_value
++        summary=from_value(raw,originals,meeting['title'],meeting['raw_transcript'])
++        summary['link_provenance']={'method':'final_gate_source_cited_summary',
++                                    'source_hash':fingerprint(meeting['raw_transcript']),
++                                    'endstate_hash':fingerprint(encode({'observations':proposal['observations'],'meeting_summary':final_summary}))}
+         result=apply(db,job,token,proposal,model=model,usage={'hybrid':statistics})
+         # Publication is allowed only after new inputs, observations and summary are indexed.
+         following={**meeting,'meeting_date':(date.fromisoformat(meeting['meeting_date'][:10])+timedelta(days=1)).isoformat()}
+         index.persist(documents(db,following,archive_db or '')+current_source_documents(meeting,raw))
+         (folder/'validation.json').write_text(encode(statistics))
+-        return {'job':job,'status':'applied','observations':len(result),'new_work':sum(o['creates_work'] for o in result),'hybrid':statistics}
++        return {'job':job,'status':'applied','observations':len(result),'new_work':sum(o['creates_work'] for o in result),'hybrid':statistics,'summary':summary}
+     except Exception as error:
+         record_failure(db,job,token,error);raise
+--- a/processor.py
++++ b/processor.py
+@@ -41,7 +41,7 @@
+     indices=[v['index'] for v in verdicts]
+     if len(indices)!=len(set(indices)) or set(indices)!=candidates:raise ValidationError('Gate coverage mismatch')
+     for v in verdicts:
+-        if v.get('verdict') not in ('supported','unsupported','ambiguous','already_done','duplicate'):raise ValidationError('Unknown gate verdict')
++        if v.get('verdict') not in ('supported','unsupported','ambiguous','already_done','duplicate','withdrawn'):raise ValidationError('Unknown gate verdict')
+         if not v.get('evidence_ids') or any(i not in originals for i in v['evidence_ids']):raise ValidationError('Invalid gate evidence')
+         if v.get('due_role') is not None and v['due_role'] not in ('work_deadline','event_time','data_reference','unclear','none'):raise ValidationError('Invalid time role')
+         if v['verdict']!='duplicate' and v.get('duplicate_of') is not None:raise ValidationError('Unexpected duplicate target')
+--- a/future_summary.py
++++ b/future_summary.py
+@@ -31,6 +31,9 @@
+ 
+ def from_response(response,originals,title,transcript=None):
+     value=json.loads(''.join(c.get('text','') for c in response.get('content',[]) if c.get('type')=='text'))
++    return from_value(value,originals,title,transcript)
++
++def from_value(value,originals,title,transcript=None):
+     paragraphs=value.get('meeting_summary')
+     if not isinstance(paragraphs,list) or not 1<=len(paragraphs)<=12:raise ValidationError('Missing or excessive summary')
+     evidence=[];texts=[]
+--- a/canonical_worker.py
++++ b/canonical_worker.py
+@@ -118,7 +118,8 @@
+                     if result['status']!='applied':raise ValidationError('Sandbox result not applied')
+                     row=scratch.execute("SELECT proposal_json FROM runs WHERE job_id=? AND outcome='applied'",(result['job'],)).fetchone()
+                     if not row or not calls.primary_responses:raise ValidationError('Missing accepted proposal')
+-                    summary=future_summary.from_response(calls.primary_responses[-1],processor.units(version['transcript']),version['title'],version['transcript'])
++                    summary=(result['summary'] if processor.PROMPT_VERSION in ('v10','v11')
++                             else future_summary.from_response(calls.primary_responses[-1],processor.units(version['transcript']),version['title'],version['transcript']))
+                     payload=prepare_source(base,version,json.loads(row['proposal_json']),pipeline=self.pipeline,model=self.model,
+                         provenance={'mode':'automatic_future_source','document_id':document['id'],
+                                     'job_id':job['id'],'context_revision':job['expected_revision']},
+--- a/canonical_archive.py
++++ b/canonical_archive.py
+@@ -71,6 +71,23 @@
+       ORDER BY (n.document_id=?) DESC,n.registered_revision DESC,n.id'''
+     try:
+         rows=list(db.execute(query,(document_id,document_id)))
++        # The journal's accepted source generation is authoritative for its
++        # current summary. Immutable archive notes remain in archived_notes.
++        try:
++            active=list(db.execute('''SELECT n.* FROM active_source_notes n
++              JOIN documents noted ON noted.id=n.document_id
++              JOIN documents current ON current.id=?
++              WHERE noted.source_id=current.source_id
++                AND noted.event_date=current.event_date
++                AND noted.body_hash=current.body_hash
++                AND noted.body=current.body
++                AND (noted.id=current.id OR noted.observed_at<=current.observed_at)
++              ORDER BY (n.document_id=?) DESC,n.id''',(document_id,document_id)))
++        except sqlite3.OperationalError as error:
++            if 'no such table: active_source_notes' not in str(error):raise
++            active=[]
++        if active:
++            return active+[row for row in rows if row['origin']!='source_summary']
+         if rows:return rows
+         # A deleted original is absent from the active documents table. Its
+         # independently sanitized derived note remains useful and may still be
+@@ -135,9 +152,11 @@
+     # Keep both snapshots but present the accepted meeting's text first.
+     return sorted(result,key=lambda row:row['origin']!='legacy_meetings')
+ 
+-def rebuild_archive(store,destination,*,through=None):
++def rebuild_archive(store,destination,*,through=None,journal_through=None):
+     space=store.space();ceiling=space['archive_revision'] if through is None else through
+     if type(ceiling) is not int or not 0<=ceiling<=space['archive_revision']:raise ValidationError('Invalid archive snapshot')
++    if journal_through is not None and (type(journal_through) is not int or not 0<=journal_through<=space['revision']):
++        raise ValidationError('Invalid journal snapshot for archive summary')
+     target=Path(destination);target.parent.mkdir(mode=0o700,exist_ok=True,parents=True)
+     fd,name=tempfile.mkstemp(prefix='.'+space['id']+'-archive-',suffix='.sqlite',dir=target.parent);os.close(fd)
+     db=None;revisions=set();counts={'documents':0,'notes':0}
+@@ -169,6 +188,21 @@
+                         db.execute('INSERT INTO archived_notes VALUES (?,?,?,?,?,?,?)',tuple(row[k] for k in ('id','document_id','origin','origin_id','note_json','note_hash'))+(revision,))
+                 counts[kind]+=1
+         if len(revisions)!=ceiling:raise ValidationError('Archive snapshot has missing revisions')
++        db.execute('CREATE TABLE active_source_notes (id TEXT PRIMARY KEY,document_id TEXT NOT NULL REFERENCES documents(id),origin TEXT NOT NULL,origin_id TEXT NOT NULL,note_json TEXT NOT NULL,note_hash TEXT NOT NULL)')
++        if journal_through is not None:
++            from generation_review import logical_entries
++            for entry in logical_entries(store.entries(through=journal_through)):
++                if entry['kind']!='source':continue
++                note=entry['payload'].get('archive_note')
++                if note is None:continue
++                checked=verify_note(note)
++                source=entry['source']
++                document=db.execute('SELECT source_id,event_date,body_hash FROM documents WHERE id=?',(checked['document_id'],)).fetchone()
++                if document is None:continue  # Redacted or no longer present in this archive snapshot.
++                if (checked['origin']!='source_summary' or document['source_id']!=source['source_id']
++                        or document['event_date']!=source['event_date'] or document['body_hash']!=source['content_hash']):
++                    raise ValidationError('Journal summary does not match its immutable original')
++                db.execute('INSERT INTO active_source_notes VALUES (?,?,?,?,?,?)',tuple(checked[k] for k in ('id','document_id','origin','origin_id','note_json','note_hash')))
+         db.execute('CREATE TABLE archive_cursor (space_id TEXT PRIMARY KEY,revision INTEGER NOT NULL)')
+         db.execute('INSERT INTO archive_cursor VALUES (?,?)',(space['id'],ceiling));db.commit()
+         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValidationError('Archive cache integrity failure')
+--- a/journal_service.py
++++ b/journal_service.py
+@@ -115,7 +115,9 @@
+         candidates=[]
+         for path in directory.glob(space_id+'-*.sqlite'):
+             version=path.stem.removeprefix(space_id+'-')
+-            if version.isdigit() and not path.is_symlink():candidates.append((int(version),path))
++            parts=version.split('-')
++            if all(part.isdigit() for part in parts) and len(parts) in (1,2) and not path.is_symlink():
++                candidates.append((tuple(map(int,parts[::-1])),path))
+         for _,path in sorted(candidates,reverse=True)[3:]:
+             if path!=current:
+                 try:path.unlink()
+@@ -124,7 +126,7 @@
+     def _open_projection(self, space, *, archive=False):
+         directory=self.cache/'archive' if archive else self.cache
+         revision=space['archive_revision' if archive else 'revision']
+-        target=directory/f"{space['id']}-{revision}.sqlite"
++        target=directory/(f"{space['id']}-{revision}-{space['revision']}.sqlite" if archive else f"{space['id']}-{revision}.sqlite")
+         lock=self.archive_lock if archive else self.projection_lock
+         opener=open_archive if archive else open_readonly
+         def open_target():
+@@ -140,7 +142,8 @@
+         try:
+             if not target.exists():
+                 builder=rebuild_archive if archive else rebuild
+-                builder(self.store,target,through=revision)
++                if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
++                else:builder(self.store,target,through=revision)
+             db=open_target()
+             self.prune(directory,space['id'],target)
+             return db
+--- a/hybrid_index.py
++++ b/hybrid_index.py
+@@ -141,7 +141,11 @@
+                     row['text'], {'start': row['start'], 'end': row['end'], 'title': row['title']})
+             # Imported notes are navigation aids, never independent evidence.
+             if archive.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='archived_notes'").fetchone():
+-                for row in archive.execute('SELECT * FROM archived_notes ORDER BY registered_revision DESC').fetchall():
++                active_available=bool(archive.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='active_source_notes'").fetchone())
++                active=archive.execute('SELECT * FROM active_source_notes').fetchall() if active_available else []
++                active_documents={row['document_id'] for row in active}
++                archived=archive.execute('SELECT * FROM archived_notes ORDER BY registered_revision DESC').fetchall()
++                for row in [*active,*(r for r in archived if r['origin']!='source_summary' or r['document_id'] not in active_documents)]:
+                     note = dict(row)
+                     parent = archive.execute('SELECT id,source_id,body_hash,event_date,observed_at FROM documents WHERE id=?', (note.get('document_id'),)).fetchone()
+                     if not parent or parent['event_date'] > cutoff or parent['observed_at'] > known_at: continue
+--- /dev/null
++++ b/evaluation/endstate-gate-schema-v1.json
+@@ -0,0 +1,162 @@
++{
++  "type": "object",
++  "additionalProperties": false,
++  "properties": {
++    "endstate": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "index": {
++            "type": "integer"
++          },
++          "status": {
++            "type": "string",
++            "enum": [
++              "unchanged",
++              "withdrawn",
++              "ambiguous"
++            ]
++          },
++          "reason": {
++            "type": "string"
++          },
++          "earlier_evidence_ids": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          },
++          "later_evidence_ids": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          },
++          "final_claim": {
++            "type": [
++              "string",
++              "null"
++            ]
++          }
++        },
++        "required": [
++          "index",
++          "status",
++          "reason",
++          "earlier_evidence_ids",
++          "later_evidence_ids",
++          "final_claim"
++        ]
++      }
++    },
++    "final_summary": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "index": {
++            "type": "integer"
++          },
++          "status": {
++            "type": "string",
++            "enum": [
++              "unchanged",
++              "corrected",
++              "ambiguous"
++            ]
++          },
++          "reason": {
++            "type": "string"
++          },
++          "text": {
++            "type": "string"
++          },
++          "evidence_ids": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          }
++        },
++        "required": [
++          "index",
++          "status",
++          "reason",
++          "text",
++          "evidence_ids"
++        ]
++      }
++    },
++    "verdicts": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "index": {
++            "type": "integer"
++          },
++          "verdict": {
++            "type": "string",
++            "enum": [
++              "supported",
++              "unsupported",
++              "ambiguous",
++              "already_done",
++              "duplicate",
++              "withdrawn"
++            ]
++          },
++          "reason": {
++            "type": "string"
++          },
++          "evidence_ids": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          },
++          "duplicate_of": {
++            "type": [
++              "integer",
++              "null"
++            ]
++          },
++          "due_role": {
++            "type": "string",
++            "enum": [
++              "work_deadline",
++              "event_time",
++              "data_reference",
++              "unclear",
++              "none"
++            ]
++          },
++          "action_uncertainty": {
++            "type": [
++              "string",
++              "null"
++            ]
++          }
++        },
++        "required": [
++          "index",
++          "verdict",
++          "reason",
++          "evidence_ids",
++          "duplicate_of",
++          "due_role",
++          "action_uncertainty"
++        ]
++      }
++    }
++  },
++  "required": [
++    "verdicts",
++    "endstate",
++    "final_summary"
++  ]
++}
+--- /dev/null
++++ b/evaluation/endstate-gate-prompt-v1.txt
+@@ -0,0 +1,5 @@
++ENDSTAND DERSELBEN STUFE: Prüfe mit dem vollständigen Original jede nummerierte aktuelle Beobachtung (endstate) und jeden nummerierten Absatz der vorläufigen Zusammenfassung (final_summary). Erhalte die Indizes vollständig und unverändert. Frühere Zusagen und spätere Aussagen müssen im konkreten Gegenstand, Ergebnis, Verantwortlichen und zeitlichen Bezug zusammenpassen. Eine spätere sachfremde Verneinung oder nur eine fehlende Voraussetzung nimmt keine Zusage zurück. Quote-IDs und Reihenfolge allein beweisen den Bezug nicht.
++
++Für einen solchen Kandidaten setze verdict=withdrawn UND endstate=withdrawn; supported bedeutet weiterhin am Ende offene zugesagte Arbeit. endstate=withdrawn gilt nur für eine NEUE Zusage dieses Meetings, die später im selben Meeting eindeutig zurückgenommen oder durch einen anderen Endstand ersetzt wird. Nenne getrennte frühere und spätere Original-IDs und erkläre in reason den konkreten Bezug. Erhalte beide Aussagen als historische Originalbelege; die Beobachtung wird als Entscheidung/Wissen ohne offene Arbeit gespeichert. Bestehende historische Aufgaben werden dadurch niemals automatisch storniert. Bei fehlendem, ungültigem oder unklarem Rücknahmebeleg wähle ambiguous und beschreibe die Unsicherheit; kein automatischer Wegfall. Für unveränderte Beobachtungen status=unchanged und leere frühere/spätere ID-Listen. Die bisherigen verdicts bleiben ausschließlich für die Arbeit-Kandidaten zuständig.
++
++final_summary ist die verbindliche Lesefassung zum Endstand: genau ein Absatz pro vorläufigem Absatz, gleicher Index. unchanged übernimmt Text und evidence_ids unverändert. corrected ersetzt widersprüchlichen Text durch eine kurze sachliche Fassung mit Original-IDs und konkreter reason; frühe und spätere Aussagen sowie ihre Beziehung im Text klarstellen, wenn sonst ein falscher Eindruck offener Arbeit bliebe. ambiguous bei nicht sicher entscheidbarem Widerspruch. Keine neue Verpflichtung, keinen historischen ID-Wechsel und keine erfundene Tatsache erzeugen.

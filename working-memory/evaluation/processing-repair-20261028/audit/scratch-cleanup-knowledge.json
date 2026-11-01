@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "approval_decision": "D-20261029-091358-2648-freigabe-nur-24-archivkopien",
+  "approval_status": "erledigt",
+  "manifest_sha256": "768be63bc2b40387a5e5ca07f9c8d3eb8bfdd6e043dc4a2931403dc8d8f38679",
+  "knowledge_check_errors": 0,
+  "knowledge_check_warnings": 0,
+  "canonical_index": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/INDEX.md",
+  "new_context_backup_performed": false,
+  "server_configuration_changed": false
+}

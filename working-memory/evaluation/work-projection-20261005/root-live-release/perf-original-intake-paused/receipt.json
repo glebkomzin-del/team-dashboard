@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T21:56:53.561234+00:00",
+  "completed_utc": "2026-10-05T21:56:55.503256+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 /root/dashboard-intake-transition-prep-20261005.py capture-ui-pause --run-dir /root/dashboard-intake-transition-perf-20261005T2157"
+  ],
+  "exit_code": 0,
+  "outputs": {
+    "stdout": {
+      "sha256": "6eafb0390e5678fc4448a1ead3997c26010911f9fc23632347dbabd33d534a1a",
+      "bytes": 111
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

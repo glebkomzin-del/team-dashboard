@@ -1,0 +1,141 @@
+{
+  "schema": "writer-return-followup-local-evidence-v1",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "recorded_at": "2026-10-03T23:30:07.982941+00:00",
+  "status": "LOCAL_FOLLOWUP_MILESTONE_VALIDATED_CANDIDATE",
+  "operational_GO": false,
+  "remote_operations_executed": false,
+  "source_target_mutations_executed": false,
+  "builder_scope": "Owned local helper/tests/evidence only; no delegation, provider, SQL, SSH, Docker, real Auth/mail/AI or git operations.",
+  "requested_model": "native gpt-6.1-sol medium",
+  "model_engine_metadata_independently_observed": false,
+  "review_provenance": {
+    "path": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-return-protocol-gate-2/result.json",
+    "sha256": "9c40256a51fc600435ca49d46ff1c1de731738348f235ee946581f07291ccd42",
+    "decision": "CONTINUE_BOUNDED",
+    "trigger": "LOW_YIELD",
+    "packages": 1,
+    "max_complete_offline_cycles": 2,
+    "reviewed_previous_revision": "7dafef56c6883bde677b4d7ab83ead4dd25b7831",
+    "historical_counters": "Retained unchanged; no counter reset or controller enforcement claimed."
+  },
+  "complete_offline_cycles_used": 2,
+  "validation_command": "python3 -B -m unittest test_final_writer_preconditions test_final_prewrite_return -v",
+  "validation_cwd": "working-memory/ops/hetzner-migration",
+  "cycles": [
+    {
+      "cycle": 1,
+      "exit_code": 1,
+      "discovered_test_methods": 10,
+      "subtest_errors": 2,
+      "result": "Return denial/success/activation cases passed; Writer error subtests failed because disposable production-root regex mapping used the patched ROOT instead of its original value. The HTTP failure was never reached.",
+      "duplicate_discovery": "Imported/inherited existing TestCase methods were repeated; corrected in cycle 2 without changing existing acceptance criteria."
+    },
+    {
+      "cycle": 2,
+      "exit_code": 0,
+      "test_methods": 7,
+      "subtest_errors": 0,
+      "result": "OK",
+      "coverage": [
+        "Missing frozen baseline; missing/extra business tables; Source/Target row/hash differences; writer marker; missing/wrong original host SHA; stale gate deny before mutation.",
+        "Actual entrypoint invokes full mocked-transport return sequence: maintenance, Target stop before ACL, exact five file copies executed on disposable paths, own migration marker deletion, guarded original ACL/config, single no-build Source start executed with mocked subprocess, health before ingress, supported resume call mocked, exact scope SQL/readback, two frontend branches.",
+        "No-promotion aliases READY on exact original deployment; partial/completed own promotion uses one official rollback and removes only own two originally absent VITE variables.",
+        "Activation/process and health/timeout failures preserve full stdout/stderr and hold maintenance with no ingress/resume continuation.",
+        "Writer pre/post-attempt HTTP body/status/headers preserved privately; invalid-run timeout fallback 0700/0600; Source Management malformed response body/headers retained before decoding error."
+      ]
+    }
+  ],
+  "implementation_contract": {
+    "query_sha256": "e8ca7870cc965f15fdf1c95ad9d8394a12b04e43eacc08ab49d70853be326254",
+    "business_table_inventory_count": 43,
+    "exclusions": [
+      "wm_backup_records",
+      "wm_backup_snapshots"
+    ],
+    "normalization_only": {
+      "wm_processing_config": [
+        "enabled"
+      ]
+    },
+    "baseline_required_fields": [
+      "status=FROZEN_SOURCE_BUSINESS_BASELINE",
+      "problem_id",
+      "run_dir",
+      "query_path",
+      "query_sha256",
+      "observed_at",
+      "captured_after_freeze=true",
+      "table_names",
+      "tables",
+      "primary_response.path/sha256"
+    ],
+    "baseline_primary_shape": [
+      {
+        "value": "Exact full 43 table row/count/hash list; duplicate-preserving query"
+      }
+    ],
+    "return_inputs": "Mac PRIVATE/run/prewrite-source-rollback-proof.json refs are gate-bound separately; matching host run/prewrite-return-gate.json and all three helpers are required before mutation.",
+    "host_files": [
+      "compose.yaml",
+      "build-manifest.json",
+      "access.py",
+      "gateway_journal.py",
+      "service.env"
+    ],
+    "original_host_primary_sha256": "19cd20b6c8070ed34ffc3e88c8b1df5be3894948fce652cade3e826092885d48",
+    "source_transport": "Same Mac Source Management endpoint/query and existing final_phase_common.source_token credential path; local source_sql captures raw HTTP body/status/headers before decoding and reuses final_phase_common.private_failure. No Source admin credentials are transferred to host.",
+    "process_scope": "Known inspected host processes, API roles and three original publications only; no world absence claim.",
+    "private_errors": "Mac existing final_phase_common.private_failure; native writer own 0700/0600 diagnostics, including missing/invalid run temporary fallback.",
+    "frontend_original_deployment": "dpl_84v5UqEaCs5TnRsb6QzahSNxeNxL",
+    "frontend_build_path": "/private/tmp/hz-frontend-build-ejf6dx_r",
+    "never": [
+      "Early fullFreezeReturn after Target restore",
+      "Source return after any writer attempt marker",
+      "Target database data rollback",
+      "Owner password reset",
+      "OIDC whole-env restoration",
+      "Workflow SQL activation"
+    ]
+  },
+  "owned_sha256": {
+    "working-memory/ops/hetzner-migration/final_writer_open_once.py": "ebc80b2862f2a7592bf5ab91d897d27a25b1bbb270c0b46e3b3421d76f66fab4",
+    "working-memory/ops/hetzner-migration/final_prewrite_rollback_once.py": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "working-memory/ops/hetzner-migration/test_final_writer_preconditions.py": "8c8f49b003887542d190ef7c01ccc26be7e60687316fc1b2466b5db20f88c725",
+    "working-memory/ops/hetzner-migration/test_final_prewrite_return.py": "258f37cd28fe30931052e39ceddf15c186eaa748b754f45b3b596537f4793fd5"
+  },
+  "known_limits": [
+    "All operational transports in tests are mocked. Local assertions and generated native Python compilation do not prove actual production database, health, alias, ACL, config, workflow or filesystem state.",
+    "The native runtime/closed flags/outboxes/API publication inspection transport uses synthetic offline state; existing accepted runtime/RLS/Auth/backups/frontend acceptance was not reopened.",
+    "Primary return SQL syntax/semantics has not been executed against Source or Target in this package.",
+    "Governance review enforcement remains RULES_ONLY, not a runtime lock.",
+    "Original source configuration/provider secrets are compared via private file reads at future execution; no actual future receipt or synthesized operational PASS is supplied.",
+    "Root owns integration, versioning and acceptance; this evidence does not grant operational authority."
+  ],
+  "future_unexecuted_mandatory_criteria": [
+    "Actual post-freeze Source baseline with immutable query bytes, UTC/run binding, all exact 43 names and private primary response SHA.",
+    "Fresh actual Source/Target equality, complete known Source process/API/publication proof, actual five closed flags, empty running/unknown calls/two outboxes and inactive backup service before return.",
+    "Gate-bound exact five host originals, original ACL82/full CFG/scopes, frontend project and own promotion/env-ownership receipts, matching host gate and helper bytes.",
+    "Actual fresh Writer runtime/ALL-COPY/Owner-browser/full Target embedded daily restore/Mac mirror/two frozen artifact aliases proofs within gate freshness.",
+    "Root later independent Astra review of actual production receipts before operational GO; no production run in this local milestone."
+  ],
+  "native_process_provenance": {
+    "fresh_thread_id": "01a1040a-002a-7552-9027-bf814f4cbb15",
+    "requested_accepted_configuration": {
+      "model": "gpt-6.1-sol",
+      "reasoning_effort": "medium",
+      "sandbox": "workspace-write",
+      "multi_agent": false,
+      "ignore_user_config": true,
+      "ephemeral": true
+    },
+    "actual_usage": {
+      "input_tokens": 1967412,
+      "cached_input_tokens": 1868672,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 31956,
+      "reasoning_output_tokens": 9348
+    },
+    "server_internal_engine_metadata": "NOT_SEPARATELY_OBSERVED"
+  }
+}

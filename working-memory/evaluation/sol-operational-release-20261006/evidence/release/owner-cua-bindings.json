@@ -1,0 +1,19 @@
+{
+  "deployment": "dpl_BHGjJRASsQb4vdj1dt1oiwwyaKeT",
+  "files": [
+    {
+      "external_path": "/private/tmp/dashboard-sol-root-token-fix-20261006/ui-stale-public-owner.png",
+      "sha256": "e07754afaf86e1d57d69bc2862d5bece5082916bc4daf002aff71b923e9e752f",
+      "bytes": 42412,
+      "included_in_git": false,
+      "reason": "owner UI evidence retained privately; hash binding only"
+    },
+    {
+      "external_path": "/private/tmp/dashboard-sol-root-token-fix-20261006/ui-stale-public-owner.ax.txt",
+      "sha256": "0571ee26b6813807e064c69e48c234779cb350a5397aa334a56b1be7290cba8b",
+      "bytes": 5265,
+      "included_in_git": false,
+      "reason": "owner UI evidence retained privately; hash binding only"
+    }
+  ]
+}

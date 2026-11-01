@@ -1,0 +1,53 @@
+{
+  "actual_prior_failed_cost_micro_usd": null,
+  "actual_prior_failed_reserved_micro_usd": 221248,
+  "files_sha256": {
+    "expected-private/expected.json": "677f01c92314a3a1b77f75564c9da926b2a5441dfa2c777e625e1ace6e5cf505",
+    "prepare_wirefix.py": "98d29e3811b4fab324517acd80670512e27a03d28f5e124ae7204e19cda5f957",
+    "prior-failed/receipt.json": "a2f6cd75380bc1bf3576c25df92b8834d3431b38815f6f7b7bda0466ea3ce0e0",
+    "prior-failed/reservation.json": "e29d12b38f62a13429541b14b743bac6322529cde8907ed0d271eca91ce64b86",
+    "prior-failed/response.json": "9d4683c5198126425d0e4d18e07025f17fe3ced743fd14ccdc11656a34cda8d7",
+    "request/bindings.json": "19d70bbcf04b6963c64d80793935fe9de625cb0bbb0c35c5b5622b1ce55484d6",
+    "request/request.json": "6641f19a2253d7fffc6fb4f9a4cf63eef864ebd12d367538dd9b1babf8e723b3",
+    "runner/qualify_once.py": "c10affd8410b685b8a01d28a473d20be0e2de4edaf87b2da1754ce17533d38b1",
+    "runtime/canonical_worker.py": "ac2b4e340111dcfa213d951fdb30e9d6d79b30a062149791fefc4510c2ea5312",
+    "runtime/future_summary.py": "24f9a7510a7aebb0f15fd47f72886c6ee8eaf46a698455354380b9c4ab130aba",
+    "runtime/hybrid_pipeline.py": "ba601ac68ec1da8e2481736afd4531b145db90647a2da0cc5c15b343d8feb679",
+    "runtime/relation_runtime.py": "4a957276cdc0f620ce63bcd53279d32b7835916c92c1e25a98ef79129519c234",
+    "test_wirefix.py": "c55fe5622e3fd9d511d5de11ad5868dc989ff40117af32a1e11e3a1b8d82cbf6"
+  },
+  "independent_review": "PENDING",
+  "new_prompt_unchanged_sha256": "21499ff8f62b4112014701998605e0bb4ef0277a0dc1ef099b65f68f12d60206",
+  "new_schema_enum_values": 212,
+  "official_supported_schema_reference": "https://developers.openai.com/api/docs/guides/structured-outputs",
+  "offline_results": {
+    "no-review-send-deny": {
+      "exit": 1,
+      "stderr_sha256": "3b68e9314cc0a2adfb88e357e917ff8766669304b6ae8e4e0dcb8f09647a34e4",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "offline-preflight": {
+      "exit": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "3445ee13b075480f019c3379608f778c7ddb918de520a255f6410f71a8d3b190"
+    },
+    "offline-wire-test": {
+      "exit": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8ff773c29433c4bf742fd7939030d2ed05c3301218796b5461b4b9a5b65d4291"
+    }
+  },
+  "old_request_sha256": "0a12cc650938dc330b7f784a3571fda44d424b6f9bc8fcd6397c4582f93fc776",
+  "prior_failed_response": "HTTP 400 without body capture; cause inferred from unsupported schema, not confirmed",
+  "provider_attempts_in_this_package": 0,
+  "revision": 226,
+  "root": "/private/tmp/semantic-relation-wirefix-20261005",
+  "schema_test_source_units": [
+    197,
+    750,
+    1001
+  ],
+  "send": "NOT_AUTHORIZED",
+  "source_body_sha256": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "status": "OFFLINE_WIREFIX_FROZEN_NO_SEND"
+}

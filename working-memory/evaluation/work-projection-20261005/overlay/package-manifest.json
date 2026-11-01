@@ -1,0 +1,28 @@
+{
+  "build_command": "docker build --network=none --pull=false -t dashboard-memory:work-projection-20261005-a48b8401 /root/dashboard-work-projection-stage-20261005/package",
+  "candidate_image_id": "sha256:5d5986089ce0824b53d530fd35ffe329eada90eb075c5b217f21e3966456bb52",
+  "candidate_pipeline_runtime": "v11:compact1:gate1:gpt-5.6-terra:25995eec984cca1d:canonical1:7c67663689250e1c",
+  "candidate_tag": "dashboard-memory:work-projection-20261005-a48b8401",
+  "file_sha256": {
+    "Dockerfile": "b69969dee1a6d238dd92492dba904eb771ea0e63053cc69c7d88d0c757f55618",
+    "build-manifest.json": "e9ceca05f45f45d3ec3ef54324b88d65480ea8cfd278f6e8d2f8751d7c83ffe1",
+    "compose.yaml": "d452b1b9d900bc3ba59190fc78b4630c020f99022503685bcf1db4df87a2ce76",
+    "generation_review.py": "f74b7c4c54bdf1ed4a28f340c2ecd2f86d69f45cb5fd7b290a2ff103fd1d6c7f",
+    "journal_projection.py": "07d5945f69c62c657442b0feeb8cee7551bc7783724e47f0a2dfafabc9df61a2"
+  },
+  "patch_sha256": "a48b8401db5bd1aa957990b9f6a0ada7f5397e045051260daa552b74beda2cd3",
+  "problem_id": "WORK-PROJECTION-COLD-20261005",
+  "production_release_gate": "DENY_pending_combined_image_independent_review_and_cold_live_acceptance",
+  "runtime_manifest_entries": 138,
+  "schema_entries": 47,
+  "source_build_manifest_sha256": "173d0bbb9963aa072e35f1379667f60aaa6bc815fb68bbd7b152f65a56c2ed54",
+  "source_files_sha256": {
+    "generation_review.py": "9b004be7326f12d11b6033f1034ce7c9487eeed97d4ff8288e430d5a52526c1e",
+    "journal_projection.py": "1e248f8cc17e7e110b92a0a855270caba3703e040d74e04e0205fbc6f7ec54b0"
+  },
+  "source_image_id": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471",
+  "source_image_tag": "dashboard-memory:archive-generation-reason-overlay-20261005-2bfdad83-v2",
+  "source_package_manifest_sha256": "1e1e235a15b1e352e62b52fb794416cb16a3ca930330fed14f933a91d9d4d049",
+  "status": "private_image_built_not_deployed",
+  "unchanged_manifest_entries": 135
+}

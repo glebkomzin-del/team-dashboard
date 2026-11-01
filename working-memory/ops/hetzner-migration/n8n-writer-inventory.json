@@ -1,0 +1,68 @@
+[
+  {
+    "id": "dashboardDriveWatch",
+    "active": true,
+    "published_history_matches": true,
+    "node_types": [
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.httpRequest",
+      "n8n-nodes-base.manualTrigger",
+      "n8n-nodes-base.scheduleTrigger"
+    ],
+    "source_supabase_origin_occurrences": 0,
+    "urls_no_query_no_userinfo": [
+      "https://178-105-167-26.nip.io/webhook/dashboard-drive-events",
+      "https://www.googleapis.com/drive/v3/changes/startPageToken",
+      "https://www.googleapis.com/drive/v3/changes/watch",
+      "https://www.googleapis.com/drive/v3/channels/stop"
+    ],
+    "credential_node_types": [
+      "n8n-nodes-base.httpRequest"
+    ]
+  },
+  {
+    "id": "dashboardDriveMove",
+    "active": true,
+    "published_history_matches": true,
+    "node_types": [
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.httpRequest",
+      "n8n-nodes-base.manualTrigger",
+      "n8n-nodes-base.scheduleTrigger"
+    ],
+    "source_supabase_origin_occurrences": 0,
+    "urls_no_query_no_userinfo": [
+      "https://178-105-167-26.nip.io/dashboard-memory/drive-completion/",
+      "https://178-105-167-26.nip.io/dashboard-memory/drive-manifest",
+      "https://www.googleapis.com/drive/v2/files/",
+      "https://www.googleapis.com/drive/v3/files"
+    ],
+    "credential_node_types": [
+      "n8n-nodes-base.httpRequest"
+    ]
+  },
+  {
+    "id": "nzyaKxs5Om9wuPEc",
+    "active": true,
+    "published_history_matches": true,
+    "node_types": [
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.httpRequest",
+      "n8n-nodes-base.manualTrigger",
+      "n8n-nodes-base.scheduleTrigger",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.webhook"
+    ],
+    "source_supabase_origin_occurrences": 0,
+    "urls_no_query_no_userinfo": [
+      "https://178-105-167-26.nip.io/dashboard-memory/drive-manifest",
+      "https://178-105-167-26.nip.io/dashboard-memory/drive-sources",
+      "https://www.googleapis.com/drive/v3/files",
+      "https://www.googleapis.com/drive/v3/files/"
+    ],
+    "credential_node_types": [
+      "n8n-nodes-base.httpRequest",
+      "n8n-nodes-base.webhook"
+    ]
+  }
+]

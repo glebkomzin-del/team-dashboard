@@ -1,0 +1,177 @@
+{
+  "schema": "hetzner-migration-final-state-v1",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "observed_at": "2026-10-04T21:50:32.208722+00:00",
+  "status": "MIGRATION_COMPLETE",
+  "whole_migration_complete": true,
+  "database_auth_backend": "Hetzner self hosted",
+  "frontend_host": "Vercel",
+  "dashboard_url": "https://team-dashboard-rho.vercel.app/memory-next",
+  "server": {
+    "type": "CAX21",
+    "cpu_count": 4,
+    "ram_gb_nominal": 8,
+    "disk_gb_nominal": 80,
+    "actual_capacity": {
+      "MemTotal_bytes": 8104972288,
+      "MemAvailable_bytes": 5769871360,
+      "cpu_count": 4,
+      "disk_total_bytes": 80307429376,
+      "disk_available_bytes": 33833185280,
+      "load_average": [
+        0.51318359375,
+        0.72412109375,
+        1.18017578125
+      ]
+    }
+  },
+  "runtime": {
+    "original_flags_verified": true,
+    "original_three_n8n_active_verified": true,
+    "nine_other_containers_unchanged": true,
+    "health_statuses": [
+      200,
+      200,
+      200
+    ],
+    "current_projection_sha256": "14c12a431e958af6ef79f87daabbe0cada410dcd1e67eb880fcea13db0f3ccc2"
+  },
+  "actual_owner_ui": {
+    "regular_original_owner_session": true,
+    "overview": true,
+    "archive_originals": 350,
+    "original_body_chars": 2047,
+    "original_and_saved_summary_current_equal": true,
+    "business_write_test": false,
+    "new_paid_synthetic_ai_test": false
+  },
+  "backup": {
+    "state": "ok",
+    "archive": "dashboard-20261004T211311Z.tar.gz",
+    "bytes": 1589655604,
+    "sha256": "612717daffd110679448c3fc27de2762bde9ca205015693627fff88972f1e19e",
+    "finished_at": "2026-10-04T21:39:08.163384+00:00",
+    "selfhost": {
+      "enabled": true,
+      "tables_verified": 89,
+      "dump_sha256": "3eb5c20065a5fea2915968a22af5043df06668ecc6254770a23eab2af79f6e25",
+      "restore_verified": true
+    },
+    "n8n_isolated_restore": {
+      "workflows": 15,
+      "credentials": 6,
+      "active": 0,
+      "published": 0,
+      "credential_decryption_verified": true,
+      "google_refresh_token_preserved": true,
+      "external_network": false,
+      "model_calls": 0
+    },
+    "canonical_verified": true,
+    "mac_state": "ok",
+    "mac_files_verified": 202,
+    "mac_archive_sha256": "612717daffd110679448c3fc27de2762bde9ca205015693627fff88972f1e19e",
+    "external_restore_ledger_persisted": true,
+    "mac_finished_at": "2026-10-04T21:41:36.534998+00:00",
+    "timer_active_waiting_enabled": true,
+    "effective_service_timeout_minutes": 45,
+    "timeout_dropin_existing_since": "2026-09-19",
+    "prior_archives_preserved": true,
+    "independent_new_mac_archive_verified": true,
+    "embedded_restore_receipts_independently_bound": true,
+    "current_host_mac_external_ledger_equal": true
+  },
+  "source": {
+    "effective_closed_before_writer": true,
+    "retained": true,
+    "source_return_allowed": false,
+    "source_deleted_or_cancelled": false
+  },
+  "actual_phase_counters": {
+    "writer_open_attempts": 1,
+    "writer_phase_source_collector_payloads": 2,
+    "writer_phase_current_frontend_gets": 4,
+    "successful_owner_magiclink_requests": 1,
+    "frontend_promotion_attempts": 1,
+    "production_env_adds": 2,
+    "successful_original_ingress_restores": 1,
+    "controlled_resume_source_close_payloads": 1,
+    "whole_history_query_or_acl_round_count": "NOT_AGGREGATED; see immutable prior quiescence/return/replan records"
+  },
+  "recovery": {
+    "current_runbook": "working-memory/docs/RESTORE-RUNBOOK.md",
+    "target_full_restore_only_after_writer": true,
+    "full_physical_host_loss_simulated": false
+  },
+  "validation": {
+    "typed_source_collector_offline_cases_passed": 8,
+    "typed_source_collector_sha256": "0d8050ded680b8c8e5247208f93c09f4fb128bb25f881ae714036002031746fb",
+    "no_new_ci_run": true,
+    "governance_enforcement": "RULES_ONLY",
+    "independent_final_review": {
+      "decision": "CONTINUE_BOUNDED",
+      "conditional_technical_go": true,
+      "reviewed_at": "2026-10-04T21:43:31Z",
+      "session": "01a108d9-6f94-70c3-8b0c-efd67b7d7a7a",
+      "original_mandatory_blockers_preserved": true,
+      "conditions_resolved_by_actual_evidence": true,
+      "final_acceptance_by": "Root after positive conditions and committing this status",
+      "new_model_accept_judgment_claimed": false
+    },
+    "documentation_version_binding": "Git commit containing this final evidence and NEXT-OPERATIONS.md; exact commit recorded in private root-final-closure-receipt.json"
+  },
+  "evidence_refs": {
+    "post_writer_runtime": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-post-writer-completion-runtime-1/root-completion-live-acceptance.json",
+      "sha256": "f6b766d102305434f0a8b154f6931c6a5b13d637bd0257a4926b9fdd45674e15"
+    },
+    "post_writer_runtime_primary": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-post-writer-completion-runtime-1/stdout-private.jsonl",
+      "sha256": "575b76215799e5901ad9b136c4803cdc26243be06a1b047ee022e0e5da1c5cbf"
+    },
+    "ui": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-post-writer-ui-final-1.json",
+      "sha256": "36a4ff146cfc12e13338db88e110434be1bc25a41716e5fbc3778c2da770116a"
+    },
+    "new_full_backup": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-backup-archive-progress-4/stdout.json",
+      "sha256": "8215485550d09c8f9f5c40c48cd0d5ccfa2637eab1c568759a51a80113f154f9"
+    },
+    "new_mac_copy": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-final-backup-pull-actual-1/actual-current-mac-copy-success.json",
+      "sha256": "4a5bef7be4f6e36e0b51ae8ceb7eceb651ac7e1e0a3c343cb8ec606fcbc5e6c9"
+    },
+    "mac_execution": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-final-backup-pull-actual-1/process.json",
+      "sha256": "c10940d667a7e5bcd8d26623626f596e8bd997d980b2ffa6901cd3ae1bd52415"
+    },
+    "host_offserver_receipt": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-final-offserver-host-receipt-1/stdout.json",
+      "sha256": "6e61c7b1d522f808431a104f0e748f87ed31589a67f0abfb9faa3f2b8311cff0"
+    },
+    "writer": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-writer-open-actual-current-1/stdout.json",
+      "sha256": "a648c2ce6a58149a8a6e44f48ca373f2cbc7141bb726ee1a6ac0fa94cfaf2ca6"
+    },
+    "source_before_writer": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-writer-source-actual-current-3/source-effective-before-writer-open.json",
+      "sha256": "067a5eeb74ee80e2c159a6d27cea461e70daa7536c26c7f1ddfb6e23f90959b8"
+    },
+    "writer_go": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-writer-native-goal-current-4/result.json",
+      "sha256": "c4258c9fc70aac980269c1ae8f8da6de4bf10aa3b71da8d1d452ba8744a277c9"
+    },
+    "independent_archive": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-final-independent-archive-check-1/final-independent-archive-acceptance.json",
+      "sha256": "a37dda3d9e704f46d0f8e5f7cef72783815b9c4f276d10ab776e968edd215d06"
+    },
+    "post_mac_runtime": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-final-post-mac-runtime-1/root-final-post-mac-acceptance.json",
+      "sha256": "410168db48e66ba00723982107115931a5e9175c6aa91aac33fa5843b0845428"
+    },
+    "independent_final_review": {
+      "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/final-live-20261004/hz-migration-final-independent-goal-1/result.json",
+      "sha256": "b6a7ef63e0988bf21f34e1837ca21f70bb174d9bd7de6833f8e3584fc0855b6f"
+    }
+  }
+}

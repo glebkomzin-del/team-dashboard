@@ -1,0 +1,109 @@
+{
+  "decision": "BLOCK",
+  "transfer_operational_go": false,
+  "packet": "SOURCE_ARTIFACT_TRANSFER_ONLY",
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "trigger": "GOAL_GATE",
+  "enforcement": "RULES_ONLY",
+  "runtime": {
+    "thread_id": "01a10464-cc53-7be2-a1f9-4d05b6314054",
+    "role": "/root",
+    "native_astra_high_verified": false,
+    "fresh_independent_reviewer_verified": false,
+    "runtime_header_available": false,
+    "filesystem_read_only": true,
+    "delegations": 0,
+    "tests": 0,
+    "remote_calls": 0,
+    "mutations": 0,
+    "restricted_contents_read": false
+  },
+  "diagnosis": "Die gelesenen Receipts belegen einen validierten Export einschlie\u00dflich Vault-Bindung und unabh\u00e4ngiger Mac-Kopie. Der anschlie\u00dfende Transport scheiterte; daraus folgt weder ein ung\u00fcltiger lokaler Dump noch eine erfolgreich abgeschlossene Source-Phase. Ein g\u00fcltiges unabh\u00e4ngiges Astra-Pflichtreview kann dieser Root-Thread nicht ersetzen.",
+  "binding_contract": {
+    "review": "working-memory/evaluation/source-direct-final-goal-20261004-review.json",
+    "sha256": "733d87e15a551313b38a5f4a429d39da7dc26334e456d4a2b07237c6b143b61a",
+    "exact_condition": "Jeder Vorw\u00e4rtsfehler beendet diesen Versuch und aktiviert ausschlie\u00dflich den beschriebenen Recovery-Vertrag.",
+    "consequence": "Der bisherige Vertrag verlangt Source-Partial-Recovery. Ein Transferpaket ben\u00f6tigt eine g\u00fcltige unabh\u00e4ngige Neuentscheidung, die diese Bedingung f\u00fcr genau den belegten Transportfehler ausdr\u00fccklich abl\u00f6st. Dieses Ergebnis erteilt sie nicht."
+  },
+  "bindings": {
+    "local_root": "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z",
+    "remote_root": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+    "receipt_sha256": {
+      "final-export-receipt.json": "5df0a808bee43826be829326e180f18d4623a3ae60fe85021a49034a445442b1",
+      "offserver-receipt.json": "90b71482988e816d77b5834bb2f6ce3498df2b1e0e1db81611838697c6a096b3",
+      "partial-upload-prefix-proof.json": "544dc6290cc76ab22ab58aa9e7653f37a5c4094dcf07ebc571f03587e26048ff",
+      "partial-upload-before-private.json": "7f47b3d07ca73dc1e4493db6c7397d6b346bca54f2dcf49345e1730061704ab1",
+      "source-direct-final-protocol.json": "968370b45531dc3cc63472f7088dc11badb9f7d3947410911714f802a58336d1",
+      "source-frozen-business-primary.json": "1c3b8fc5fc9798f3309ad4a2cebae9d8258355187448b6bb0271996ac98abd0e",
+      "transport-errors/SSH_TIMEOUT-7f9481035314441889d704a547944c70.json": "3120cab9fb953b7ada88921ef75a5f597ea3240e7b83f8e66662c6579ae1c604"
+    },
+    "current_code": {
+      "all_19_hashes_match_bound_review": true,
+      "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+      "final_export_once.py": "0e61119c979f38fcb6e00ca275141e73a75e7a9007928066f19497b60d1602e3",
+      "finding": "upload() \u00fcbernimmt den shell()-Standardtimeout von 60 Sekunden."
+    },
+    "artifact": {
+      "full_bytes": 321266826,
+      "full_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+      "prefix_bytes": 310242816,
+      "prefix_sha256": "b227187232909e326468f812af9f2407f83152824e599a0418276a8fb62a9100",
+      "remaining_bytes": 11024010,
+      "verification_scope": "Receipt-Dateien und Helper-Hashes lokal gepr\u00fcft; Dump-Inhalt, Vault-Plaintext und Remotezustand nicht erneut gelesen."
+    }
+  },
+  "allowed_budget_now": {
+    "transfer_mutations": 0,
+    "source_authentication": 0,
+    "dump": 0,
+    "freeze": 0,
+    "target": 0
+  },
+  "candidate_packet_for_independent_adjudication": {
+    "status": "NOT_AUTHORIZED_BY_THIS_RESULT",
+    "budget": {
+      "append_attempts": 1,
+      "append_timeout_seconds": 120,
+      "small_file_uploads": 5,
+      "attempts_per_small_file": 1,
+      "timeout_seconds_per_small_file": 120,
+      "new_source_leases": 0,
+      "new_dumps": 0,
+      "new_freezes": 0,
+      "target_actions": 0,
+      "automatic_retries": 0
+    },
+    "conditions": [
+      "Exklusiver unver\u00e4nderlicher Versuchseintrag vor \u00c4nderungen; fremder oder unklarer Zustand f\u00fchrt zu DENY.",
+      "Frische Read-only-Pr\u00fcfung vor der ersten \u00c4nderung: effektive API-Business-Schreibrechte aller drei Rollen null, Backend gestoppt, relevante Jobs/Outboxes/n8n ruhig, eigener Timer und Backup-Service inaktiv, vollst\u00e4ndige 43-Tabellen-Projektion gleich Frozen-Baseline. Null neue Source-Leases darf diese notwendige Pr\u00fcfung nicht ausschlie\u00dfen.",
+      "Alten SSH-Prozess und entfernten Writer nachweislich beendet best\u00e4tigen; stabile Gr\u00f6\u00dfe allein ersetzt diesen Nachweis nicht.",
+      "Originalfragment mit exakt gebundenen Bytes und SHA ohne \u00dcberschreiben unter failed-upload-full.dump erhalten; exklusiven Kandidaten erstellen und dessen vollst\u00e4ndigen Pr\u00e4fix erneut pr\u00fcfen.",
+      "Nur die gebundenen 11024010 Restbytes einmal anh\u00e4ngen; R\u00fcckgabestatus und vorhandene Timeout-Ausgaben vollst\u00e4ndig privat sichern.",
+      "Kandidaten erst nach vollst\u00e4ndigem Gr\u00f6\u00dfen-/SHA-PASS atomar und ohne Ersetzen eines zwischenzeitlich entstandenen Ziels als full.dump \u00fcbernehmen.",
+      "F\u00fcnf kleine Dateien ausschlie\u00dflich exklusiv \u00fcbertragen und gegen lokale Hashes pr\u00fcfen.",
+      "Neues Abschlussreceipt erh\u00e4lt den alten Outer-Status FAILED und beschreibt ausschlie\u00dflich nachgewiesene Transfer-Recovery. Keine Target-Freigabe ableiten."
+    ]
+  },
+  "failure_recovery": {
+    "existing_contract": "Einmaliger gepr\u00fcfter Source-Partial-Recovery-Pfad; eigenes Timer-Original erst nach tats\u00e4chlichem Source-Recovery-PASS und exaktem Ownership-Abgleich wiederherstellen.",
+    "candidate_failure": "STOP; kein zweites Append. Recovery nur innerhalb des nachweislich unverbrauchten bestehenden Budgets.",
+    "foreign_state_or_recovery_failure": "Maintenance erhalten und konkreten Blocker melden; kein blindes Starten."
+  },
+  "counters": {
+    "reset": false,
+    "old_outer_failure_preserved": true,
+    "reported_current_phase_consumption": {
+      "freeze": 1,
+      "readonly_lease": 1,
+      "full_dump": 1,
+      "failed_upload": 1
+    },
+    "complete_controller_history_verified": false,
+    "remaining_recovery_budget_independently_verified": false
+  },
+  "hard_blockers": [
+    "Eigene native Astra/high-Laufzeit und unabh\u00e4ngige Reviewer-Provenienz fehlen.",
+    "Die bindende Recovery-Klausel wurde durch kein hier g\u00fcltig erteiltes Review abgel\u00f6st."
+  ],
+  "precise_next_packet": "Frisches natives Astra/high-Review ausschlie\u00dflich der gebundenen Transfer-Recovery-Ausnahme mit tats\u00e4chlichem Laufzeitheader, unabh\u00e4ngiger Identit\u00e4t und unver\u00e4nderter Versuchshistorie. Bis dahin keine Transferaktion; bestehender Recovery-Vertrag bleibt verbindlich."
+}

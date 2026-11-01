@@ -1,0 +1,16 @@
+{
+  "status": "frozen_no_provider_request",
+  "supersedes_request_sha256": "8415aae936dec6a6650e0d1329913a4ff553e4c232de079f8c8f84bb698f586a",
+  "source_body_sha256": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "prompt_sha256": "cde0231d387f4c72bea709c8195a69d4becbf1065d2c1c9ef531ffad9b2dd579",
+  "schema_sha256": "2d37e4f8f478d890acc02cbe2ea4ff91dafbafe84ef659dac33d2b401c5bf9fc",
+  "request_sha256": "f90491efa272cac07fd32d2f5aa05f1a7a611bb815a7bd9e9c862296666762bc",
+  "source_map_sha256": "d0d300c5f598210d7d409e04b3861df7c9f7210502779df86885f27c509347f1",
+  "expected_private_sha256": "177865cb14cbb7cb21aac0d8673a08927e017b94f298b0b970760b3a67467cb9",
+  "model": "gpt-5.6-terra",
+  "max_output_tokens": 8000,
+  "reservation_config": "Use existing provider count_input_tokens and reserve_micro_usd for exactly one gpt-5.6-terra request, max_tokens=8000; persist exclusive reservation before send; unknown outcome forbids resend.",
+  "provider_requests_allowed_after_independent_lead_go": 1,
+  "previous_failed_rounds_retained": 2,
+  "paid_new_74194_status": "preserved_not_accepted"
+}

@@ -1,0 +1,38 @@
+{
+  "worker.patch": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-worker.patch",
+    "sha256": "4c5e0020797d64310d5219a1bb511eafb5c74d87a42157c8eafa473627fdedca"
+  },
+  "gateway.patch": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-gateway.patch",
+    "sha256": "a76e864566350ab25840c1cf8013868e718c29003a9da915a57eb1c8a083b492"
+  },
+  "migration.patch": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-migration.patch",
+    "sha256": "09db3810ed3d4c99ffb4f27716e5e071777ea0d754740c106bf1c88e82486b6a"
+  },
+  "20261005133858_archive_verified_image_placeholder_job.sql": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261005133858_archive_verified_image_placeholder_job.sql",
+    "sha256": "22ac14542d1f2ec8a025e831b5f8c7f4fb23de7ea1dbf3a19a726e6ed99a5f5d"
+  },
+  "worker-tests.py": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_image_placeholder_queue.py",
+    "sha256": "ec9500be28cda1114e16396e0944b26dc78b8f79527b19d5b406b769ae8e9530"
+  },
+  "sql-tests.sql": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_image_placeholder_queue.sql",
+    "sha256": "ea9b55db3aa4bba6c8042258f88e36c7f6d3d69eaef7d676f35dce2ce94d2655"
+  },
+  "gateway-tests.ts": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/functions/working-memory-journal/handler_image_placeholder_test.ts",
+    "sha256": "5881593ac61511ae2e506fcd7af350971c48b3aec17aeb19e9ef7c2e2a8d4c0e"
+  },
+  "restore.patch": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/queue-placeholder-restore-runtime.patch",
+    "sha256": "dcd9ea2c6276e681a916849ab8b652bc068d2d8f22dff8cf17777a2ee7172c18"
+  },
+  "restore-tests.py": {
+    "authoritative_path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_restore_schema.py",
+    "sha256": "cab0eacca5965a5af1513f19ddd11c1e30da84c0ab6f63425c4010c36d9094a0"
+  }
+}

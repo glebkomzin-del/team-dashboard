@@ -1,0 +1,36 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "ACTUAL_READONLY_RUNTIME_RECOVERED",
+  "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+  "original_runtime_status": "FAILED",
+  "original_runtime_attempts": 1,
+  "original_error_sha256": "7a56d9ba20549a9dc50426563cd639f4bfb61258220249ebce65245846022f45",
+  "note": "Original Host error bytes SHA; preserved Mac diagnosis primary is JSON-equivalent but was formatted differently. Neither historical file rewritten.",
+  "corrected_image": "sha256:7d5e64318a66c3bf0227d694a3d15569263dc96d08b4cd0ae6d8feaeab2a9bcf",
+  "bad_image": "sha256:71c4adc659852f9dd222db7b3b8c8c0a4664487a14912d7f01607057fc68919f",
+  "bad_image_alias": "dashboard-memory:hetzner-final-permission-failed-20261003",
+  "counters": {
+    "corrected_image_builds": 1,
+    "host_completion_dispatches": 1,
+    "backend_starts": 1
+  },
+  "default_nonroot_three_sha_pass": true,
+  "original_host_five_snapshot_created": true,
+  "all_five_closed": {
+    "MEMORY_READ_ONLY": "1",
+    "MEMORY_INTAKE_ENABLED": "0",
+    "MEMORY_AUTOMATIC_ENABLED": "0",
+    "MEMORY_QA_ENABLED": "0",
+    "MEMORY_ORIGINAL_DELETION_ENABLED": "0"
+  },
+  "health_status": "ok",
+  "writers_opened": false,
+  "frontend_changed": false,
+  "current_state_projection": "CURRENT_OPERATIONAL_STATE",
+  "recovery_sha256": "df6eed1213dd3d3d032e39be92666f657e17bc21fb8d11c29b2935bc2b6376b1",
+  "actual_full_backup": "STARTED_ONCE_PENDING_RESULT",
+  "actual_mac_same_target_archive": "PENDING",
+  "frontend_identity": "BLOCKED_RETURN_NO_AUTOMATIC_FOLLOWUP",
+  "whole_migration_complete": false,
+  "enforcement": "RULES_ONLY"
+}

@@ -1,0 +1,48 @@
+{
+  "schema": "source-direct-auth-preflight-v1",
+  "status": "PASSED",
+  "actual_auth_pass": true,
+  "project": "lghwikeotbkmojyyjglz",
+  "host": "db.lghwikeotbkmojyyjglz.supabase.co",
+  "source_account_password_unchanged": true,
+  "lease_attempts_total": 2,
+  "authenticated_probes_total": 1,
+  "dump": 0,
+  "source_freeze": 0,
+  "target_mutations": 0,
+  "probe_run_dir": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/.local/hetzner-migration-20261003/current-evidence/source-direct-auth-probe-2",
+  "gate_sha256": "80521c42ebc10cf5cd6b3ee078d2a5fe796500352a6bc2cdcea1063ad6275282",
+  "script_hashes": {
+    "source_direct_route.py": "1cb323399a8e215727110d1519ed634fb4cde2c73fc4fc652b79da0d8eadbef7",
+    "source_direct_preflight_once.py": "800ca78008762edb3dc1734a8dc666e88f38dbe97504486f9ada723e5b7d32ae",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3",
+    "final_export_once.py": "0e61119c979f38fcb6e00ca275141e73a75e7a9007928066f19497b60d1602e3",
+    "test_source_direct_route.py": "d5a84fa1b20aa590d8a230615c7897fc3ae325a29c0713b55df7f0667e9f489c"
+  },
+  "facts_sha256": "85ae2d350185e02d7829f8339849331f07c956481b61fd3c84ddb63f93545156",
+  "ca_sha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "proof_hashes": {
+    "actual-hetzner-direct-db-network.json": "76427b099f782fd0d3c5bd53351a0d1c43f71de63f183fdf9c034ae541a06943",
+    "actual-hetzner-direct-db-tls.json": "1b3ed7938941f6116b741e4701ad9552ad6c33b341ecaff648d34201ef3273ef"
+  },
+  "review_sha256": "48f864e6ca940a9c3f07013f3675b666aedd37ff5e386ca903ae8bb8e22aa98a",
+  "actual_facts": {
+    "current_user": "supabase_read_only_user",
+    "session_user": "cli_login_supabase_read_only_user",
+    "ssl": true,
+    "read_only": "on",
+    "public_tables": 45,
+    "public_readable": 45,
+    "public_writable": 0,
+    "auth_tables": 27,
+    "auth_readable": 27
+  },
+  "roles_bypassrls": true,
+  "superuser": false,
+  "review_uuid": "01a10449-fb49-7633-85df-8ee93864f7f0",
+  "source_production_unchanged": true,
+  "preflight_legacy_role_assertion_failure_preserved": true,
+  "final_dump": 0,
+  "operational_final_go": false
+}

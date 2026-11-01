@@ -1,0 +1,53 @@
+{
+  "cohort": "10 original jobs through 2026-10-12T14:29:30Z",
+  "calls": 32,
+  "real_provider_calls": 0,
+  "changes": 0,
+  "method": "Full saved request bodies; character common prefixes, not token estimates; exact JSON schema equality; no source text output",
+  "stages": {
+    "extraction": {
+      "requests": 10,
+      "unique_complete_prompts": 10,
+      "prompt_characters_min": 15089,
+      "prompt_characters_max": 102266,
+      "prompt_characters_median": 26764.0,
+      "common_prompt_prefix_characters": 12882,
+      "unique_complete_schemas": 1,
+      "max_exact_schema_reuse": 10,
+      "schema_characters_min": 2585,
+      "schema_characters_max": 2585,
+      "adjacent_same_stage_gaps_under_30m": 5,
+      "request_boundary_shape": "one user message containing the complete varying prompt; no explicit breakpoints"
+    },
+    "gate": {
+      "requests": 10,
+      "unique_complete_prompts": 10,
+      "prompt_characters_min": 9471,
+      "prompt_characters_max": 136423,
+      "prompt_characters_median": 41922.5,
+      "common_prompt_prefix_characters": 4982,
+      "unique_complete_schemas": 1,
+      "max_exact_schema_reuse": 10,
+      "schema_characters_min": 691,
+      "schema_characters_max": 691,
+      "adjacent_same_stage_gaps_under_30m": 5,
+      "request_boundary_shape": "one user message containing the complete varying prompt; no explicit breakpoints"
+    },
+    "reconciliation": {
+      "requests": 12,
+      "unique_complete_prompts": 12,
+      "prompt_characters_min": 117951,
+      "prompt_characters_max": 760746,
+      "prompt_characters_median": 325038.0,
+      "common_prompt_prefix_characters": 17564,
+      "unique_complete_schemas": 10,
+      "max_exact_schema_reuse": 3,
+      "schema_characters_min": 9715,
+      "schema_characters_max": 39529,
+      "adjacent_same_stage_gaps_under_30m": 7,
+      "request_boundary_shape": "one user message containing the complete varying prompt; no explicit breakpoints"
+    }
+  },
+  "documented_cause_of_no_shared_prefix_cache_hits": "GPT-5.6+ implicit breakpoints are message endings, not earlier token intervals. All 32 full prompts are unique; a common interior prefix is not a cached boundary.",
+  "further_optimization_requires": "Explicit boundary at a useful stable prefix, original contents/roles/schema and validations preserved, positive token and real output evidence; changing dynamic reconciliation schemas must not be bypassed."
+}

@@ -1,0 +1,50 @@
+{
+  "listed_files": 24,
+  "removed_files": 24,
+  "already_absent_files": 0,
+  "removed_bytes": 1571074048,
+  "all_listed_absent": true,
+  "removed_paths": [
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/be7fb8106f5a1f88882ae75160bc236dd09549697e0155ed7048eb70fa6e8e90/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/a40913ae86af726d46406c98cfef93e562f69c268c206934a5b3d408d8299548/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/ff9988a8e7a229927f6848e97f1a849ba7eb098a9def5e064336b83d7b6d5139/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/49769acd22c7a6a035eac90afb39fb1df2520c7f0268192df4f6093ed9982031/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/d1b7890a582993bb82943d2275102c5f79fe81e9634e81be66d4c6c13f9b71c2/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/96142571ddde2ceed04bdb39f7de34e8ca925abbc06415fac91541d9aa970f4b/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/61dbcd680a9bf8ee0f5925fdc19aa7029bb49d7d57e625e67cc1cd81f87122ca/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/1bb33af10d4901e0a61824c6323211396577e23d999062e4df76908b9d32f7a4/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/ce28adbc88167e016048fa4e410613b8c9d129494888a6f77738d95c21a28063/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/d50c49b43b439959fcc31364ad29f9b397213a2342ecc1b06459248ce66b33e8/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/b1718deb8bcc868dd81f46519abdccd22d336850fa59a3d0bdda65fa8c5f3ba3/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/08f653e4aed268e23c703ae5d8b3c1b2108f2e1bc5b9675a3f9d3a63f4b51422/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/5bd9551c9edb091db91cec5d08ac387e7adb315052ed7798a309af53aa9a4eff/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/448340dd0ef7f0a7af2cda85e1190a05ccc6400a33bf1c689672380b91af08e4/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/f09befd74b16f5d6032a56de408f17aeb1abf458d0f0b828ddcab36534f435ae/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/f09befd74b16f5d6032a56de408f17aeb1abf458d0f0b828ddcab36534f435ae/attempts/38e226bc-f718-5e41-b927-d0da7b10c982/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/9266439fe8c4bb320db97d2a4bb1c4f16b5badb43f9bebf51c2f2191df6a61f7/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/9266439fe8c4bb320db97d2a4bb1c4f16b5badb43f9bebf51c2f2191df6a61f7/attempts/e9a2a394-dab8-5585-b7ee-7570223ac4b8/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/674a3693aa06f0df55b0e1b32f50b0512d5897e35d0f7403ac60c86d9e425281/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/8066e3c214faed1fa2f5f408f5db32b99d3422d7b7d3669ed874dc695e2ca2b7/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/265b6d593a273ac34d5bed8f5104719c92fa00b9eecc9cc807177f087b0be8af/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/26b13764aab6514b5b8019fc83230f94db84db87df5092857a05ffdd04d22f30/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/0260b2c88ca109a61ee9b21cf855aa707065397c80a43c85fbd67f97d5d9091b/archive.sqlite",
+    "/app/.local/projections-rc1-20260919/worker-reprocess22/f07a9d9d5d0b4f69c7b3ecb3ac62de96302bf604a94a80b36445a1f532df7280/archive.sqlite"
+  ],
+  "already_absent_paths": [],
+  "status": "PASS",
+  "manifest_sha256": "768be63bc2b40387a5e5ca07f9c8d3eb8bfdd6e043dc4a2931403dc8d8f38679",
+  "verified_backup_sha256": "beced3c273d5c610c758cddbcdc7fc4cc6c4e399658c44ceb05da3ad1b6f4ca9",
+  "backup_preserved": true,
+  "selected_jobs_before": {
+    "applied": 22,
+    "active": 0
+  },
+  "selected_jobs_after": {
+    "applied": 22,
+    "active": 0
+  },
+  "free_bytes_before": 919117824,
+  "free_bytes_after": 2490220544,
+  "completed_at": "2026-10-29T08:15:25.348147+00:00",
+  "scope": "Only the24 manifest-listed temporary archive.sqlite copies; no directories, canonical data, originals, receipts or backups removed."
+}

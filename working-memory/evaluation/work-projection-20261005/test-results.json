@@ -1,0 +1,26 @@
+{
+  "negative_cases": [
+    "unknown generation format DENY without destination/temporary file",
+    "inconsistent re-signed review result DENY without destination/temporary file"
+  ],
+  "overlay_preflight": "PRIVATE_SOURCE_OVERLAY_BOUND; manifest 613681231751300ef40d5fc20db37231c8a173b726e9f262dd3c3a16d000fed8; base image 8f72278b; 47 schema; 135/138 unchanged",
+  "review_output": {
+    "baseline_sha256": "05cb9f3caf01e9ab8a845f6dbf21f4f077e59f47d51e4add96a654329a8e3c1b",
+    "candidate_sha256": "05cb9f3caf01e9ab8a845f6dbf21f4f077e59f47d51e4add96a654329a8e3c1b",
+    "canonical_json_bytes": 33434630
+  },
+  "revision226_cold_local": {
+    "baseline_seconds": 20.75,
+    "candidate_seconds": 12.58,
+    "environment": "disposable local SQLite; no gateway or provider"
+  },
+  "sqlite_tables": {
+    "equal": 10,
+    "runs_exception": "generated id and created_at differ; 213 business-field rows equal",
+    "total": 11
+  },
+  "unit_generation_review": {
+    "count": 18,
+    "result": "PASS"
+  }
+}

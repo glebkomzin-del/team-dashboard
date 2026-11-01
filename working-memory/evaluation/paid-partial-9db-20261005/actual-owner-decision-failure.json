@@ -1,0 +1,19 @@
+{
+  "captured_at_utc": "2026-10-05T20:28:22.126077+00:00",
+  "actual_owner_ui_http_status": 400,
+  "actual_postgres_error_at_utc": "2026-10-05T20:10:25.396Z",
+  "actual_postgres_error": "new row for relation \"wm_job_decisions\" violates check constraint \"wm_job_decisions_reason_check\"",
+  "review_id": "9ffad67b-7534-4b47-8305-fd7b09609e86",
+  "review_state_after_failed_decision": "pending",
+  "revision_after_failure": 224,
+  "job_state_after_failure": "running",
+  "job_updated_at_still_matches_review": true,
+  "production_model_call_rows": 1505,
+  "job_known_model_call_rows": 4,
+  "job_known_actual_micro_usd": 34726,
+  "unknown_model_calls": 0,
+  "automatic_retry": false,
+  "cause": "generation accept permits empty reason but linked job audit requires nonempty reason",
+  "failed_transaction_rolled_back": true,
+  "repair_package": "GEN-REASON-400 additive scoped SQL preserving optional user reason and audit requirement"
+}

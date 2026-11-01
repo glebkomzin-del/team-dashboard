@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T21:16:26.169606+00:00",
+  "completed_utc": "2026-10-05T21:17:50.546960+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 /root/dashboard-archive-generation-reason-overlay-stage-20261005/deploy-private.py deploy --inventory /root/dashboard-intake-transition-archive47-20261005T2116/inventory.json --inventory-sha c964a8554fb80bd3cc1ac37e02da6971108898036d9a69af85919f0cbb315d67 --drain-receipt /root/dashboard-intake-transition-archive47-20261005T2116/drain-receipt.json --drain-sha 4ae857aeac853aa1cdb89387bb7a37f54610b6d9eb1e3cf7b5264dd90a8c2029 --backup-dir /root/dashboard-archive47-before-20261005T2116"
+  ],
+  "exit_code": 1,
+  "outputs": {
+    "stdout": {
+      "sha256": "64ba1cfd607c0dfb2186da9d8379b67672afa8d9bde2258695f2b96db6f65e9a",
+      "bytes": 503
+    },
+    "stderr": {
+      "sha256": "7201ff2b7d3ee9a271fbbea67aa8f0fadf48cd016994f613d929c9e0d20d39b4",
+      "bytes": 734
+    }
+  }
+}

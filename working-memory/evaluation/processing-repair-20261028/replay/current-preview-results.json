@@ -1,0 +1,13 @@
+{
+  "current_revision": 338,
+  "memory_file": "overlay/memory.py",
+  "memory_sha256": "e822eb293d6d87cc74f0df5671e4d656c060c81ccce6502860b7c142803c2316",
+  "current_historical_hash_rebuild": "PASS",
+  "logical_sources_before": 325,
+  "human_decisions_before": 11,
+  "generation_compile": "PASS",
+  "personal_decisions_preserved": 11,
+  "new_sources": 2,
+  "review_sha256": "e08daf7d17803966307ba67a304a35440b7cc2e2bda2370c81e05ebc99a7605b",
+  "generation_verify": "PASS"
+}

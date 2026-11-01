@@ -1,0 +1,7 @@
+BEGIN
+96a2dc44-9b9e-4644-b236-c5c1956cd39d
+DO
+COMMIT
+{"config" : {"space_id":"96a2dc44-9b9e-4644-b236-c5c1956cd39d","enabled":false,"automatic_from":"2026-09-08","pipeline":"v11:compact1:gate1:gpt-5.6-terra:3086726206f9074d:canonical1:7c67663689250e1c","budget_micro_usd":null}, "active" : [{"id" : "9db6eb68e9fc5e8e1a54147a3c5c668ab9734ca0b2e3b8f555a4114da8313549", "state" : "running", "updated_at" : "2026-10-05T19:04:59.526017+00:00"}]}
+
+

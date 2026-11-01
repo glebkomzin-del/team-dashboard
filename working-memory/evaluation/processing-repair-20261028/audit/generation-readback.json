@@ -1,0 +1,18 @@
+{
+  "revision": 340,
+  "accepted_generations": [
+    {
+      "revision": 339,
+      "review_sha256": "4c9bd49460fa0bd814052a1ffd82efe537a4a74c34c18214ae208bee20fe57bc",
+      "personal_decisions_preserved": 11,
+      "new_sources": 1
+    },
+    {
+      "revision": 340,
+      "review_sha256": "3cc0076570e4e0dfd2992cf50ace305960fd82cd52c5ede3f0dd099944eaee60",
+      "personal_decisions_preserved": 11,
+      "new_sources": 1
+    }
+  ],
+  "source_versions": 327
+}

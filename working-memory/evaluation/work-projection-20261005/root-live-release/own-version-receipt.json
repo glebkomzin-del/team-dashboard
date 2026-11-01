@@ -1,0 +1,24 @@
+{
+  "all_stored_blobs_match_frozen_original_bytes": true,
+  "at_utc": "2026-10-05T22:58:19.641345+00:00",
+  "cas_ref_updated": true,
+  "foreign_staged_preserved": [
+    "working-memory/evaluation/semantic-relation-probe-20261005/manifest.json",
+    "working-memory/evaluation/semantic-relation-probe-20261005/prepare.py",
+    "working-memory/evaluation/semantic-relation-probe-20261005/prompt.txt",
+    "working-memory/evaluation/semantic-relation-probe-20261005/schema.json",
+    "working-memory/evaluation/semantic-relation-probe-20261005/test_probe.py",
+    "working-memory/evaluation/semantic-relation-probe-20261005/validate.py"
+  ],
+  "head": "79741bf82fd5f986bb88256124027c6d2bce4d55",
+  "index_after_sha256": "f47f88865e073780ee440d95c75f1687e8cfb6847f2ca25734ff281b46ea9eb6",
+  "index_before_sha256": "15cd04a194e914726f400a6f65dcd9fac730009cce4958670313adcf7cfbdbb2",
+  "nonown_index_entries_exactly_preserved": true,
+  "old_head": "676828b53dec31d42efcc2fb1025368e90753307",
+  "own_files": 184,
+  "paid_model_authority": "PENDING_USER",
+  "push_performed": false,
+  "semantic_goal": "OPEN",
+  "tree": "1efcc9d5633fe8dfd0ee901e8f0980a140174a06",
+  "worktree_writes_by_version_script": 0
+}

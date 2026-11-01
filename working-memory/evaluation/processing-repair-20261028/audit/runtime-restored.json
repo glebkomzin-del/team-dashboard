@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "original_flags_restored": true,
+  "flags": {
+    "MEMORY_READ_ONLY": "0",
+    "MEMORY_AUTOMATIC_ENABLED": "1",
+    "MEMORY_INTAKE_ENABLED": "1",
+    "MEMORY_QA_ENABLED": "1",
+    "MEMORY_ORIGINAL_DELETION_ENABLED": "1"
+  },
+  "original_resources_restored": true,
+  "resources": {
+    "NanoCpus": 1000000000,
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "Memory": 1610612736,
+    "MemorySwap": 3221225472,
+    "MemoryReservation": 0
+  },
+  "image": "dashboard-memory:processing-repair-20261028",
+  "code_hashes": {
+    "memory.py": "e822eb293d6d87cc74f0df5671e4d656c060c81ccce6502860b7c142803c2316",
+    "openai_provider.py": "fe6dc8e07c5e90bacca8e1b6b364b97fab2715d1589209ea457a909d4a92c0d3"
+  },
+  "health": {
+    "status": "ok",
+    "mode": "production"
+  },
+  "running": true,
+  "oom_killed": false,
+  "container_recreated": true,
+  "revision_before": 362,
+  "free_bytes_after": 939302912,
+  "restored_at": "2026-10-28T23:07:51.542336+00:00"
+}

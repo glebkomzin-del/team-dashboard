@@ -1,0 +1,164 @@
+name: dashboard-supabase-20261003
+services:
+  db:
+    image: supabase/postgres:17.6.1.136@sha256:a9946f08d31e8eb1149229c94e5c26603a9233116807cbbd93d75179cbac516a
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.0
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      JWT_EXP: 3600
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - pg-config:/etc/postgresql-custom
+      - ./upstream/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+      - ./upstream/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:ro
+      - ./auth-ownership.sql:/docker-entrypoint-initdb.d/init-scripts/99-auth-ownership.sql:ro
+    command: [postgres, -c, config_file=/etc/postgresql/postgresql.conf, -c, max_connections=60]
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres, -h, localhost]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  auth:
+    networks:
+      default: {}
+      smtp-egress:
+        ipv4_address: 172.28.80.2
+    image: supabase/gotrue:v2.196.0@sha256:93bfec0a41cfe3ed81d03c9c1c8807fd230b8ecea260cf999b8a7204ccc7d5cf
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.5
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: https://178-105-167-26.nip.io/supabase/auth/v1
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: https://team-dashboard-rho.vercel.app
+      GOTRUE_URI_ALLOW_LIST: https://team-dashboard-rho.vercel.app/**
+      GOTRUE_DISABLE_SIGNUP: "true"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_ISSUER: https://178-105-167-26.nip.io/supabase/auth/v1
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_USER}
+      GOTRUE_SMTP_HOST: smtp.gmail.com
+      GOTRUE_SMTP_PORT: 587
+      GOTRUE_SMTP_USER: ${SMTP_USER}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS}
+      GOTRUE_SMTP_SENDER_NAME: Dashboard Job
+      GOTRUE_MAILER_URLPATHS_INVITE: /supabase/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /supabase/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /supabase/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /supabase/auth/v1/verify
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+    healthcheck:
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://localhost:9999/health]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  rest:
+    image: postgrest/postgrest:v16.4@sha256:c3638ac25258ede665db66a4052b6fd30db4f22789327dce84599409136da35f
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.5
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_EXTRA_SEARCH_PATH: public,extensions
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_ADMIN_SERVER_PORT: 3001
+      PGRST_ADMIN_SERVER_HOST: localhost
+      PGRST_DB_MAX_ROWS: 1000
+    healthcheck:
+      test: [CMD, /bin/postgrest, --ready]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  api-gw:
+    networks:
+      default: {}
+      api-ingress:
+        ipv4_address: 172.28.81.2
+    image: envoyproxy/envoy:v1.39.1@sha256:b21240e552b588017072424716c0bce30000f49deed6262bde55b042b5acfd97
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.5
+    ports: ['127.0.0.1:8800:8000']
+    depends_on:
+      auth: {condition: service_healthy}
+      rest: {condition: service_healthy}
+    volumes:
+      - ./upstream/envoy.yaml:/etc/envoy/envoy.yaml:ro
+      - ./upstream/cds.yaml:/etc/envoy/cds.yaml:ro
+      - ./upstream/lds.template.yaml:/etc/envoy/lds.template.yaml:ro
+      - ./upstream/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      ANON_KEY_ASYMMETRIC: ""
+      SERVICE_ROLE_KEY_ASYMMETRIC: ""
+      SUPABASE_PUBLISHABLE_KEY: ""
+      SUPABASE_SECRET_KEY: ""
+      SUPABASE_PUBLIC_URL: https://178-105-167-26.nip.io/supabase
+      DASHBOARD_USERNAME: unused
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
+    entrypoint: [/bin/sh, /docker-entrypoint.sh]
+    healthcheck:
+      test: [CMD-SHELL, "timeout 1 bash -c '</dev/tcp/127.0.0.1/8000'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  functions:
+    image: supabase/edge-runtime:v1.76.2@sha256:3115aa7254d84e35704fad8abbcef7e759b645213ffb3b9238a7862659b704c2
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    depends_on:
+      api-gw: {condition: service_healthy}
+    volumes:
+      - ./functions:/home/deno/functions:ro
+      - deno-cache:/root/.cache/deno
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SUPABASE_URL: http://api-gw:8000
+      SUPABASE_PUBLIC_URL: https://178-105-167-26.nip.io/supabase
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      VERIFY_JWT: "true"
+    command: [start, --user-worker-request-idle-timeout, "150000", --main-service, /home/deno/functions/main]
+    healthcheck:
+      test: [CMD-SHELL, "timeout 1 bash -c '</dev/tcp/127.0.0.1/9000'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  pg-data:
+  pg-config:
+  deno-cache:
+networks:
+  default:
+    external: true
+    name: dashboard-supabase-20261003_restore
+  smtp-egress:
+    external: true
+    name: dashboard-supabase-20261003_smtp-egress
+  api-ingress:
+    external: true
+    name: dashboard-supabase-20261003_api-ingress

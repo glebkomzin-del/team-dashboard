@@ -1,0 +1,17 @@
+{
+  "state": "ok",
+  "last_success_at": "2026-10-12T16:32:45.927970+00:00",
+  "last_backup_at": "2026-10-12T15:51:14+00:00",
+  "archive": "dashboard-20261012T155114Z.tar.gz",
+  "sha256": "fbe7cbe1edb18f4569baf2f6105c532714fbe78ee35832ec4361aa0a493055c9",
+  "bytes": 3100145408,
+  "target": "owner_mac",
+  "files_verified": 255,
+  "finished_at": "2026-10-12T16:32:45.927970+00:00",
+  "filevault_on": true,
+  "backed_up_runtime_image_matches": true,
+  "backed_up_three_sources_match": true,
+  "backed_up_compression_code_matches": true,
+  "backed_up_processing_enabled": true,
+  "backed_up_pipeline": "v11:compact1:gate1:gpt-6.1-sol:753caadf3fb8fea4:canonical1:023a8c7cae48980c"
+}

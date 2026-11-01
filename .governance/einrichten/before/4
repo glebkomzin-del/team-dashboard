@@ -1,0 +1,46 @@
+# STATUS
+
+**Stand:** 2026-10-12
+
+## Ziel
+Meeting-Auswertung im Dashboard (meeting-os) belegbar günstiger machen, ohne inhaltliche Qualität zu senken. Außerdem klären, ob die OpenAI "Decision API" das Problem löst, und das Abbruchverhalten von Codex abstellen.
+
+## Erfolgskriterium
+- Kostentreiber mit Zahlen belegt; Optimierungen nach Einsparung und Qualitätsrisiko bewertet.
+- Decision API: Existenz, Funktion und Eignung mit Quellen geklärt.
+- Codex: Abbruchmuster mit Belegen benannt und konkrete Regeln/Config vorgeschlagen.
+- Keine Änderung an Produktion, kein bezahlter API-Aufruf ohne Freigabe.
+
+## Plan
+- [x] 0. Einstieg: Verlauf und Kostenpaket `meeting-os/working-memory/evaluation/production-cost-20261012/` gesichtet — Ergebnis: Bestandsabgleich = 73,9 % der Kosten, Cache-Korrektur bereits produktiv (~13 %)
+- [x] 1. Bestandsabgleich-Prompt in Bausteine zerlegen, Optimierungen bewerten (Sub-Agent, lesend) — Ergebnis: Katalog ≈75 % der Tokens, Original-JSON 11 %, Schema 5 %, Ausgabe 20k Tok. (≈28 % der 0,72 USD, ≈65 % davon neu ausgegebene Beobachtungen); verlustfreie Packung ausgeschöpft; Delta-Ausgabe größter qualitätsneutraler Hebel; Cache-Grenze im Abgleich negativ
+- [x] 2. Decision API recherchieren (Sub-Agent researcher) — Ergebnis: Decisions API real (`POST /v1/decisions`, Public Beta, nur gpt-6-luna, 0,10 USD/Mio. Input, nur Klassifikation gegen vorgegebene Optionen, Limits/Batch/Caching nicht dokumentiert); löst Abgleich nicht eigenständig. Kernaussagen selbst gegen die Doku geprüft.
+- [x] 3. Codex-Abbruchverhalten aus Sitzungsprotokollen auswerten (Sub-Agent, lesend) — Ergebnis: 28 Sitzungen/161 Abschlüsse; Hauptursache sind Freigabe-/Stopp-Klauseln in `~/.codex/AGENTS.md` (§8, §9, §10, §12, §14, §16) und Memory-Eintrag "explicit approval for new costs"; Textbausteine liegen vor, noch nicht angewendet
+- [ ] 4. Ergebnisse zusammenführen, Empfehlung, Freigaben von Gleb einholen — Ergebnis: Bericht mit nächsten Schritten
+
+## Jetzt
+PoC "gestufter Bestandsabgleich": `meeting-os/working-memory/evaluation/poc-tiered-reconcile-20261012/` (README mit Befunden und Toren). Offline-Replay aus der Sicherung belegt: 64 von 12.223 Kandidaten genutzt (0,5 %); Aktualität+Ähnlichkeit hält 64/64 bei ~54 %. Fünf Codex-Aufträge laufen (Gegenprüfung, Selektor+Tests, Flex/Batch-Diagnose, Folgerunden-Analyse, Modell-Replay-Harness).
+Davor: Schritte 1–3 abgeschlossen, Bericht an Gleb erfolgt.
+Preise (offizielle Seite, 12.10.): Sol 6.1 Standard 2/10 USD je Mio. (Input/Output), Batch und Flex je 1/5; gpt-6-luna Standard 0,10/0,50, Batch/Flex 0,05/0,25. Großer Abgleich-Call 0,72 USD (Sol Standard inkl. Cache-Aufschlag) ≈ 0,31 Sol-Batch ≈ 0,03 Luna (Rechnung, Qualität Luna unbelegt).
+
+Stand 12.10. spät: Selektor-Prototyp (29 Tests) und Modell-Replay-Harness (49 Tests, Dry-Run 0,94 USD für 41 Aufrufe auf Luna) fertig und geprüft. Zielbild/Plan: `meeting-os/working-memory/docs/ZIELBILD-PHASE1.md`. Entscheidungsauswertung fertig: nur 11 menschliche Aktionen, keine belastbare Annahmequote; 664 Aufgaben (509 offen, 342 ohne Frist, 218 aktiv ≥ 90 Tage), Priorität praktisch leer. **13.10.:** Luna-Replay durchgeführt (41 Aufrufe auf dem Server, 0,55 USD, 0 Fehler): Luna ersetzt Sol im Abgleich NICHT (fairer Recall 1/4, Zielaufgaben 0/12, 24/41 Antworten ungültig); verworfen. Tragfähiger Weg: Sol mit Hot-Set-Filter (A=21 Tage ODER Suchrang<5 ODER exakt genannt), Delta-Ausgabe, später Batch. Codex bereitet vor: Rang-Validierung gegen Produktions-Suchränge (`selector/RANK-VALIDATION.md`) und Filter in Pipelinekopie (`pipeline-v12/`, kein Deploy). Einspielen im Schattenbetrieb erst nach Ja/Nein von Gleb.
+**13.10. (mittags):** Rang-Validierung: A=30,k=5 → 64/64 bei 49,1 %. Filter in `pipeline-v12/` (69 Tests, abschaltbar), Review "Freigabe mit Auflagen". Gefilterter Sol-Replay (6 gefiltert + 3 Kontrollen, 1,39 USD): Filterverlust 0; Lebenszyklus-Urteile von Sol selbst instabil (Kontrolle 2/4); Kosten −38 % gefiltert, davon ca. 16 Pp Cache-Fix, Filter allein ≈ −20 bis −27 %. Nicht widerlegt, nicht bewiesen; Pflichtfall (25 Tage/Rang 12) im Lauf nicht enthalten. Bezahlte Tests gesamt ca. 1,95 USD. Nichts in Produktion eingespielt.
+**13.10. (abends) Phase-1-Bausteine fertig:** `meeting-os/working-memory/tools/` — `memory-mcp/` (M2, 49 Tests), `reminders/` (M3, 49), `relevance/` (M1, 20; 663 Aufgaben: 214 wichtig/385 standard/65 kleinigkeit, Schwellen nicht kalibriert), `handover/` (M4, 92 Tests; belegte Synthese gpt-6.1-sol 0,117 USD/5 Pakete, 0 Belegverstöße, fertig_wenn immer Annahme, nie "unbekannt"), `daily/` (M5, 64 Tests; Tageslauf 114 s, alle Schritte ok, 5 Pakete). Ausgaben `tools/daily/out/2026-10-13/`. Kosten Entscheidung: Hot-Set-Filter nicht eingespielt (Restrisiko), Cache-Fix bleibt, Batch Backlog. **13.10. 14:31 MESZ PRODUKTION: Flex-Fallback eingespielt** (Image `dashboard-memory:flex-fallback-20261013`, Kennung `…:f1c841324c7f7b39:canonical1:023a8c7c…`, Env `DASHBOARD_SERVICE_TIER=flex_fallback` im Compose-Block; Fallback nur bei 429 flex_unavailable, nie bei Timeout/5xx). Rückweg: `.local/recovery/flex-20261013/*.before` + Compose-Tag `dashboard-memory:cache-explicit-20261012` + Kennung `…:753caadf3fb8fea4:…`; Skript `/root/deploy_flex.sh` (Rollback eingebaut), Log `/root/deploy_flex.log`. Offen: erster regulärer Job nach Umstellung prüfen (returned_service_tier/Kosten). Luna für Extraktion/Gate gemessen verworfen (66 statt 143 Beobachtungen, Gate 78 %); Delta v2 mit Pflichtfeldern als nächstes; Kosten je Meeting Ø 0,50 USD (42 Dokumente/8 Tage), heutiger Ausreißer = 2 Validierungsfehler à ~0,8 USD (Ursache nicht gespeichert).
+**13.10. 15:22 MESZ PRODUKTION Release 2 live:** Image `dashboard-memory:release2-20261013`, Kennung `…:3bc96d89c6534c1a:delta2:canonical1:294c117212937b9c`, Compose-Env `DASHBOARD_SERVICE_TIER=flex_fallback`, `DASHBOARD_DELTA_OUTPUT=1`, `DASHBOARD_HOTSET_FILTER=0`. Neu: Delta-Ausgabe v2 (Replay 8 Aufrufe/0,87 USD: Ausgabe −69 %, Kosten −34 % ggü. Referenz inkl. Cache-Fix, 0 Fehler, Entscheidungsübereinstimmung 0,83–1,00 vs. Sol-Rauschen 0,73; `progress`-Urteile 0/3 wie in den Kontrollen), Fehlerdiagnose auf stderr (`event: job_failed`). Rückweg Schalter: Compose-Werte auf "0"; Code: `.local/recovery/release2-20261013/*.before`, Tag `dashboard-memory:flex-fallback-20261013b`, Kennung `…:d891b42212dbc5d0:canonical1:023a8c7c…`; Skript `/root/deploy_release2.sh` (Rollback eingebaut). Offen: erster regulärer Job unter Flex+Delta (Ledger: returned_service_tier, Kosten; Docker-Log `job_failed`); Folgerunde unter Delta v2 nur offline getestet; Hot-Set-Filter vorerst aus.
+**13.10. 15:32 MESZ PRODUKTION Hot-Set-Filter AN** (Compose `DASHBOARD_HOTSET_FILTER=1`, AGE_DAYS=30, RANK=5; Kennung `…:3bc96d89c6534c1a:hotset1:age=30:rank=5:delta2:canonical1:294c117212937b9c`; Skript `/root/deploy_hotset.sh`, Rückweg: Compose-Wert "0" + Kennung `…:3bc96d89c6534c1a:delta2:canonical1:294c1172…`, Sicherung `.local/recovery/hotset-20261013/compose.yaml.before`). Begründung: 64/64 genutzte Aufgaben behalten bei 49 % der Kandidaten (Produktions-Suchränge), erledigte 0/1590 genutzt. Restrisiko: alte Aufgabe (>30 Tage), nicht in Top-5 und nicht genannt → wird nicht geprüft; kein automatisches Sicherheitsnetz, Stichprobenprüfung am ersten Job nötig.
+**13.10. 16:03 MESZ PRODUKTION Release 3 live:** Image `dashboard-memory:release3-20261013`, Filterregel jetzt: Alter ≤ 30 Tage ODER Suchrang < 8 ODER im Transkript genannt ODER Status wartend (`DASHBOARD_HOTSET_KEEP_WAITING=1`); Kennung `…:b44964adc67bfefb:hotset1:age=30:rank=8:wait1:delta2:canonical1:d6198b7958d46e3e`. Rückweg: Skript `/root/deploy_release3.sh` (Rollback eingebaut), Sicherung `.local/recovery/release3-20261013/`, vorheriges Image `dashboard-memory:release2-20261013`. Lokale Sicherungen: 29 Archive gelöscht (alle auf dem Server oder überholt), Pull-Zeitplan deaktiviert, `rescale-20261003`/`backup-adapter-check-20261003` gelöscht; behalten: 3 Nachweisarchive, `hetzner-migration-20261003` (Prüfspur), `recovery-ledgers`. Offen: Ledger-Nachweis am ersten regulären Meeting (Tarif, Kosten, `job_failed`).
+Offen/Schalter: (1) 40er-Bewertungsliste → Relevanz kalibrieren, (2) Zustellung (Gmail-Entwurf/Push) + Zeitplan 07:30 nicht aktiviert (Compliance, persistente Konfiguration), (3) Memory-Index-Cache (100 s Aufbau), (4) Lieferweg zur Arbeits-KI/Vault, (5) Mac-Datenträger ~100 % voll.
+
+## Offen / Blocker
+- Ja/Nein von Gleb nötig: Hot-Set-Filter im Schattenbetrieb auf dem Server einspielen (berührt die produktive Pipeline; Rückweg per Umgebungsvariable).
+- Weitere bezahlte Vergleichsaufrufe (OpenAI) brauchen neue Freigabe; bisher verbraucht laut Kostenpaket 0,96 USD bekannt, 2,70 USD inkl. Reserven.
+- Modellwechsel Sol→Luna im Abgleich: gemessen verworfen, Sol 6.1 bleibt Standard (Auftrag 06.10.).
+- Entscheidung Gleb: `~/.codex/AGENTS.md`/Memory ändern (Codex-Abbruchverhalten).
+- `/tmp/__x` (0 Byte, vom Analyse-Agent angelegt) löschen? Außerhalb Repo, braucht Freigabe.
+- Kein Git-Repo im Root; Stop-Hook greift nicht.
+
+## Fehlversuche
+Aus Vorsession (Kostenpaket): Flex-Vergleich in allen drei Läufen unvollständig (`flex_unavailable`), flaches Katalog-Packing vergrößerte Katalog um 0,52 % und wurde verworfen.
+
+## Nächster Schritt
+Rückgaben der drei Agenten auswerten, daraus einen Plan für Prompt-Kompaktierung ableiten.

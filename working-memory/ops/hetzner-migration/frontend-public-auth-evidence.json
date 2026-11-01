@@ -1,0 +1,46 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-PUBLIC-AUTH",
+  "checked_at_utc": "2026-10-03T19:50:24.691427+00:00",
+  "cycle_used": 1,
+  "cycle_max": 1,
+  "question": "Does one public synthetic recovery reach the identical artifact reset form and then real interactive target password login with wrong-owner denial?",
+  "decision": "blocked at actual callback destination; no second recovery/reset/login cycle",
+  "backend_reported_http": {
+    "public_recover": 200,
+    "public_verify": 303,
+    "api_reset": "not executed"
+  },
+  "actual_callback": {
+    "scheme": "https",
+    "host": "team-dashboard-rho.vercel.app",
+    "path": "",
+    "expected_origin": "http://localhost:8943",
+    "expected_query": "recovery=1",
+    "matches_isolated_callback": false,
+    "location_header_matches_private_callback_file": true
+  },
+  "private_originals": {
+    "verify_headers_sha256": "607b13264d4cf80eaa7bb777f52c3db5c33157448483f8b64d374277be02debb",
+    "callback_sha256": "311719f7bbc6be52acf908bb52943f4331af2ec9511510ab5d6c16705fa540f1",
+    "host_directory": "/opt/dashboard-supabase-20261003/public-auth-1",
+    "local_directory": "/private/tmp/hz-frontend-cutover-private/integration"
+  },
+  "frontend_artifact": "same accepted static hashes verified by harness startup; no new build",
+  "browser": "CUA native Google Chrome localhost:8943 login form visibly verified; actual mismatched callback never opened",
+  "public_callback_reset_form": "not tested: callback would enter source production frontend, so stopped",
+  "ui_password_submit": "not tested; CUA policy requires human takeover for credential changes",
+  "interactive_password_login": "not tested: API reset and new credential unavailable after callback failure",
+  "wrong_owner_login_denial": "not tested in this package; accepted prior session-bootstrap denial remains separate",
+  "accepted_owner_readonly_commit": "691758b; not repeated",
+  "previous_frontend_prep_cycles": 2,
+  "previous_frontend_cutover_cycles": 2,
+  "previous_owner_readonly_cycles": 1,
+  "credential_origin": "backend synthetic .invalid account; no owner credentials or manual JWT; no credentials entered",
+  "production_environment_mutated": false,
+  "production_alias_mutated": false,
+  "frontend_source_mutated": false,
+  "backend_cleanup": "backend reported original GoTrue config restored and SMTPcapture removed",
+  "own_cleanup": "own Chrome test tab closed; harness5561 and SSHtunnel27560 stopped; unused redirect preparation removed",
+  "provider_cost_calls_by_frontend": 0,
+  "codex_budget_usage": "unknown"
+}

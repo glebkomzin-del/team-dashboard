@@ -1,0 +1,7 @@
+Pinned target preflight passed; intake drain and current inventory require independent positive receipt.
+BEGIN
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMIT
+Candidate runtime healthy; queue/config unchanged. Reconfirm intake drain and inventory before cutover.

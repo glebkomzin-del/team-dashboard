@@ -1,0 +1,120 @@
+{
+  "problem_id": "HZ-RESCALE-20261003-SAFETY",
+  "validated_at": "2026-10-03T16:50:42.850259+00:00",
+  "host_files": 4052,
+  "sqlite_online_files": 7,
+  "critical_outboxes_and_barrier_unchanged": true,
+  "critical_file_count": 4,
+  "services_unchanged": [
+    {
+      "name": "/n8n",
+      "started_at": "2026-09-08T22:00:32.208130007Z",
+      "image": "sha256:fe36dc659e17c046255eb56ef65e7776eb7d13e4ca83a76bef137effa090972d",
+      "running": true,
+      "health": null
+    },
+    {
+      "name": "/n8n_postgres",
+      "started_at": "2026-05-16T11:50:57.23209972Z",
+      "image": "sha256:890480b08124ce7f79960a9bb16fe39729aa302bd384bfd7c408fee6c8f7adb7",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "/dashboard-memory-canonical-draft-canonical-draft-1",
+      "started_at": "2026-09-21T13:31:02.334844088Z",
+      "image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "/picnic-skill",
+      "started_at": "2026-07-02T07:42:28.833062894Z",
+      "image": "sha256:57c07dc0baad5476ca3074dc469b89d67d79428e2b373d626c6725ef56e50a7d",
+      "running": true,
+      "health": null
+    }
+  ],
+  "docker_images_readable": [
+    "picnic-skill:latest",
+    "dashboard-memory:memory-20260921-compact-guard-final"
+  ],
+  "n8n_encryption_key_backed_up": true,
+  "scope": [
+    "n8n consistent logical database dump",
+    "n8n complete data volume and encryption configuration",
+    "Dashboard runtime source configuration full .local caches/outboxes",
+    "active Dashboard SQLite consistent online backups",
+    "Picnic runtime and config plus local image",
+    "nginx certificates systemd cron"
+  ],
+  "limits": [
+    "No Supabase database dump in resize package",
+    "No credential-decryption CLI test",
+    "No complete application-user-flow restore",
+    "Live filesystem archive is not an atomic host snapshot; active SQLite copied consistently separately, outbox/barrier hashes match before/archive/after"
+  ],
+  "private_evidence_directory": "/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/rescale-20261003",
+  "artifacts": {
+    "host-runtime.tar.gz": {
+      "bytes": 1144696866,
+      "sha256": "74c1f4ffc57d06761f8fe5b7bd610efe6dab21c0fa25b12cb1c78d061213bece"
+    },
+    "n8n.dump": {
+      "bytes": 647230386,
+      "sha256": "bcc048655ed859badaf23682b747457b35a1a6c513dc98629ea570b33ec198d7"
+    },
+    "local-images.tar.gz": {
+      "bytes": 107512517,
+      "sha256": "a1aec9586994f6b3d70f469ad8ad6e0e5d6b700a0efd1c605647aff73e909777"
+    },
+    "sqlite-online.tar.gz": {
+      "bytes": 78221655,
+      "sha256": "ca3ef4732a1f8bff19ab462bf390c3d970e2531b82d9a58e3e70266d47a791c4"
+    },
+    "host-file-manifest.json": {
+      "bytes": 932270,
+      "sha256": "51a2b4bc2741eafd2bd9388d5c822f4b3e9067201bf04d7ed93f53da30313daf"
+    }
+  },
+  "tests": [
+    {
+      "question": "Is the current n8n database independently restorable?",
+      "criterion": "pg_restore exit-on-error succeeds in disposable database;15 workflows and6 credentials match production inventory",
+      "scope": "Local PostgreSQL17.10 with TCP disabled;86 tables restored; no triggers/workflows started",
+      "decision": "pass; credential-decryption and whole-app restore excluded"
+    },
+    {
+      "question": "Are active Dashboard SQLite caches consistent?",
+      "criterion": "Online readonly source backup; every serialized DB integrity_check ok and restored table counts identical",
+      "scope": "7 active projections under projections-rc1-20260919; configured legacy service.sqlite absent",
+      "decision": "pass"
+    },
+    {
+      "question": "Were runtime data copied and live services preserved?",
+      "criterion": "archive stream succeeds; per-file hashes; current outboxes/barrier archive hashes match before/after; containeridentity/config/starttime unchanged",
+      "scope": "4052 file/symlink manifest entries;4 critical files;4 containers",
+      "decision": "pass"
+    }
+  ],
+  "cycles": {
+    "complete_backup_and_validation_cycles": 1,
+    "sqlite_inventory_correction": "one missing optional legacy file diagnosed; active existing sources backed up; not a second complete backup cycle",
+    "provider_calls": 0,
+    "prior_daily_backup_failures": "known disk blocker; not retried",
+    "budget": "max2 complete cycles; first successful; no new monetary authorization consumed"
+  },
+  "n8n_restore": {
+    "restored_at": "2026-10-03T16:49:11.473536+00:00",
+    "postgres": "17.10",
+    "network": "TCP disabled; private Unix socket",
+    "exit_on_error": true,
+    "workflow_execution": false,
+    "credential_decryption_test": false,
+    "counts": {
+      "workflows": 15,
+      "credentials": 6,
+      "tables": 86
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Scoped Dashboard Supabase SMTP egress policy
+Requires=docker.service
+After=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /opt/dashboard-supabase-20261003/network-egress.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=docker.service

@@ -1,0 +1,8 @@
+{
+  "environment_before_count": 28,
+  "environment_rollback_count": 28,
+  "all_names_unique": true,
+  "all_full_values_equal_as_set": true,
+  "only_list_order_changed": true,
+  "other_HostConfig_equal": true
+}

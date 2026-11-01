@@ -1,0 +1,62 @@
+--- live8f/openai_provider.py
++++ low/openai_provider.py
+@@ -11,7 +11,7 @@
+ import urllib.request
+ 
+ MODEL = 'gpt-5.6-terra'
+-REASONING_EFFORT = 'none'  # Preserve the previous disabled-thinking baseline.
++REASONING_EFFORT = 'low'  # One explicit qualification; no provider fallback.
+ 
+ 
+ def normalize(response, model):
+@@ -27,16 +27,47 @@
+     if status != 'completed':
+         result['error'] = 'Provider response not completed'
+         return result
+-    for item in response.get('output', []):
++    output = response.get('output')
++    if not isinstance(output, list) or not output:
++        result['error'] = 'Missing output items'
++        return result
++    messages = 0
++    for item in output:
++        if not isinstance(item, dict):
++            result['error'] = 'Unexpected output item'
++            return result
++        if item.get('type') == 'reasoning':
++            if (not isinstance(item.get('id'), str) or not item['id']
++                    or item.get('status') not in (None, 'completed')
++                    or not isinstance(item.get('summary'), list)
++                    or any(not isinstance(part, dict) or part.get('type') != 'summary_text'
++                           or not isinstance(part.get('text'), str) for part in item['summary'])
++                    or (item.get('content') is not None and
++                        (not isinstance(item['content'], list) or
++                         any(not isinstance(part, dict) or part.get('type') != 'reasoning_text'
++                             or not isinstance(part.get('text'), str) for part in item['content'])))
++                    or (item.get('encrypted_content') is not None and
++                        not isinstance(item['encrypted_content'], str))):
++                result['error'] = 'Invalid or incomplete reasoning item'
++                return result
++            continue
+         if item.get('type') != 'message' or item.get('role') != 'assistant' or item.get('status') != 'completed':
+             result['error'] = 'Unexpected output item'
+             return result
+-        for block in item.get('content', []):
++        messages += 1
++        blocks = item.get('content')
++        if not isinstance(blocks, list) or not blocks:
++            result['error'] = 'Missing assistant content'
++            return result
++        for block in blocks:
++            if not isinstance(block, dict):
++                result['error'] = 'Provider refused or returned unexpected content'
++                return result
+             if block.get('type') != 'output_text' or not isinstance(block.get('text'), str):
+                 result['error'] = 'Provider refused or returned unexpected content'
+                 return result
+             result['content'].append({'type': 'text', 'text': block['text']})
+-    if not result['content']:
++    if messages != 1 or not result['content']:
+         result['error'] = 'Missing structured output'
+     else:
+         result['stop_reason'] = 'end_turn'

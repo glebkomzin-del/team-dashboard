@@ -1,0 +1,19 @@
+{
+  "status": "actual_gate_failed_not_published",
+  "original_source_body_sha256": "7a77c62f3845cd5888400de24f3a900a897b18993da26aee7bf1cc878f6dcd8d",
+  "job_id": "b646e5ea710df7286553a751649b468b6d76d6e8e198a1697bc3ce25886f92e5",
+  "known_prior_calls": 23,
+  "known_prior_actual_micro_usd": 348644,
+  "single_new_call_index": 23,
+  "request_sha256": "678057415432e2553560bc0d15f313efa7ab96d72a04f9a707be79017e468c36",
+  "response_sha256": "fd3232aedc2ca8ff492f4209992cb33642ac13255e142566b7904791136130d6",
+  "single_new_actual_micro_usd": 74194,
+  "known_total_micro_usd": 422838,
+  "initial_private_permission_failure_before_any_reservation_or_provider_send": true,
+  "technical_fail": "unchanged endstate supplied non-null final_claim",
+  "semantic_fail": "Earlier recurring-check claim was retained despite explicit later withdrawal U0134; summary paragraph 2 remains contradictory",
+  "independent_actual_original_review": "semantic_endstate_code_review FAIL",
+  "automatic_retry": false,
+  "next_strategy": "Original-only relationship probe with unrelated and ambiguous reference cases; manually recover existing published summary preserving human correction and original proposal",
+  "worker_claims_enabled": false
+}

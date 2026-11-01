@@ -1,0 +1,106 @@
+{
+  "archive_note_sha256": "0cf8bfa9f1b81f92c5552f0301f5e4ce50541e0f6b6a095f7a2f157a140481b0",
+  "base_sha256": "7ee44abafe369e746b541e97fb94777ea89dbe4a94a4c9154e9bc9399335ac00",
+  "checks": {
+    "actual_base_materialized": true,
+    "all_human_entry_digests_preserved": true,
+    "all_previous_source_entry_digests_preserved": true,
+    "archive_note_embedded": true,
+    "archive_note_envelope_verified": true,
+    "archive_original_document_verified": true,
+    "future_summary_validated": true,
+    "generation_compiled_verified": true,
+    "local_archive_overlay_summary_visible": true,
+    "no_identity_or_topic_links": true,
+    "observation_additions": 5,
+    "original_checksum": true,
+    "personal_decisions_preserved": true,
+    "raw_observations": 5,
+    "resolved_and_memory_validated": true,
+    "source_payload_prepared": true,
+    "source_version_matches_archive": true,
+    "work_diff_empty": true
+  },
+  "generation_review_sha256": "f6f4e931afdc2797af1fdd8970ac4c8776ce77cb489d56edb040f1f2d7e2504e",
+  "input_sha256": "18ee7b59c231002bf0854fde92d9a012cc87a254edafb7796b8ab6c32fb3a889",
+  "limitations": [
+    "Keine produktive Mutation oder Provideraufruf ausgeführt.",
+    "Der Archiv-Overlay-Test verwendet das verifizierte echte Zieldokument und den vorbereiteten aktiven Note-Envelope; ein vollständiger Archiv-Rebuild aller Revisionen wurde nicht ausgeführt.",
+    "Archive-Original und Journal-Revision müssen vor Backend-Staging erneut autoritativ geprüft werden.",
+    "Owner-Entscheidung und produktiver Nutzerfluss sind nicht abgenommen."
+  ],
+  "payload_sha256": "8dd7aed5f934f855906703fb430a833cc0a28076be76a9c1330bb298de365cf3",
+  "pending": [
+    "authoritative_live_revision_recheck",
+    "backend_generation_stage",
+    "owner_review_and_decision",
+    "production_user_flow"
+  ],
+  "private_artifacts": {
+    "build.py": {
+      "path": "/private/tmp/paid-partial-9db-20261005/prepared/build.py",
+      "sha256": "d18e5cfaf5f927a417fa888a0c6725a193afe1f12c0000086d7f8fad46ca3d4c"
+    },
+    "evidence.json": {
+      "path": "/private/tmp/paid-partial-9db-20261005/prepared/evidence.json",
+      "sha256": "8769b67710b17326e127cb88fe2f7cc0be49627f1536d2ae3df50251e1a06338"
+    },
+    "generation-compiled.json": {
+      "path": "/private/tmp/paid-partial-9db-20261005/prepared/generation-compiled.json",
+      "sha256": "ee108f37615c100b167e47f26a211ae319451eaa7991c6d1bf4b264e2b052746"
+    },
+    "stage-request.json": {
+      "path": "/private/tmp/paid-partial-9db-20261005/prepared/stage-request.json",
+      "sha256": "71318889a856b2889c7fd1d4b7e85282202dbc58db9aa15796d03fb97088e639"
+    },
+    "summary.json": {
+      "path": "/private/tmp/paid-partial-9db-20261005/prepared/summary.json",
+      "sha256": "347b5b9c890531930d41b0dba6a7c23a4e662f705785fa75f8993a6d2b5ae88f"
+    }
+  },
+  "proposal_sha256": "60889de678ad4c0d40ba517b1d4f18ebe60caf69dc33bc2912bc5921c246a36a",
+  "receipts": {
+    "actual_micro_usd": 34726,
+    "additional_provider_micro_usd": 0,
+    "count": 4,
+    "indices": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "review_id": "9ffad67b-7534-4b47-8305-fd7b09609e86",
+  "revision": 224,
+  "source_content_hash": "fa65cdb71cc2a63f1b4d8e1b82495aa7513fd92d46ebd76a257fc246d98da3cb",
+  "source_id_sha256": "879bb3041c3ad66b87365e5e654e1683f283eeaf5b3809a2933fa4e13b4bf4ba",
+  "source_version_id": "9db6eb68e9fc5e8e1a54147a3c5c668ab9734ca0b2e3b8f555a4114da8313549",
+  "stage_request_sha256": "71318889a856b2889c7fd1d4b7e85282202dbc58db9aa15796d03fb97088e639",
+  "status": "locally_prepared_only",
+  "validation_packages": [
+    {
+      "criterion": "Originalhash, vier Request-/Response-Hashes, Calls 0 bis 3, tatsächliche Kosten 34726 microUSD; kein neuer Provideraufruf.",
+      "on_fail": "Keine Generation vorschlagen.",
+      "on_pass": "Bezahlten Befund als Herkunft für einen lokalen Vorschlag verwenden.",
+      "question": "Sind Rohantwort, Original und alle vier Kostenbelege unverändert und vollständig?",
+      "result": "passed",
+      "scope": "Lokaler gesicherter Input und archivierte Originalmetadaten."
+    },
+    {
+      "criterion": "Fünf Beobachtungen gegen Originaleinheiten validiert; Zusammenfassung als kanonischer archive_note-Envelope mit echter Dokument-ID, keine neue Verpflichtung und kein Identitätslink.",
+      "on_fail": "Korrektur am Original, keine Staging-Anfrage.",
+      "on_pass": "Quelleneintrag lokal vorbereiten.",
+      "question": "Erzeugt der korrigierte Vorschlag ausschließlich quellengebundene Aussagen samt später sichtbarer Lesefassung?",
+      "result": "passed",
+      "scope": "resolve_v10, memory.validate, future_summary.from_value, verify_document, verify_note, expand_generation und lokaler Archiv-Overlay mit canonical_archive.summaries."
+    },
+    {
+      "criterion": "Alle bisherigen Source- und Human-Digests gleich, Source-Payload auf echter Basis vorbereitet, Generation compile und verify bestanden, fünf neue Beobachtungen und leerer Work-Diff.",
+      "on_fail": "Keine Staging-Anfrage.",
+      "on_pass": "Stage-Request für den Lead bereitstellen; Live-Revision muss erneut geprüft werden.",
+      "question": "Bleibt die bestehende Journalbasis einschließlich persönlicher Entscheidungen erhalten?",
+      "result": "passed",
+      "scope": "Autoritative readonly Basis Revision 224, logical_entries, materialize, prepare_source, make_plan, compile_generation, verify_generation."
+    }
+  ]
+}

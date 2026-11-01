@@ -1,0 +1,39 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "LOCAL_FOLLOWUP_PASSED_PENDING_HASH_REVIEW",
+  "review_session": "01a1043b-a28e-7032-8330-e83ec00b3dca",
+  "followup_cycles_used": 1,
+  "maximum_cycles": 2,
+  "tests": {
+    "command": "python3 -m unittest -v test_source_direct_route",
+    "passed": 15,
+    "failed": 0,
+    "elapsed_seconds": 0.099
+  },
+  "syntax": {
+    "files": [
+      "source_direct_route.py",
+      "source_direct_preflight_once.py",
+      "test_source_direct_route.py",
+      "final_export_once.py"
+    ],
+    "passed": true
+  },
+  "script_hashes": {
+    "source_direct_route.py": "742a96258b9f42e55e66cd5dfa1babdaa3afe179eadd767a259d12b893187bcc",
+    "source_direct_preflight_once.py": "800ca78008762edb3dc1734a8dc666e88f38dbe97504486f9ada723e5b7d32ae",
+    "test_source_direct_route.py": "2cad59e16453959a8defc3705d92471d1bf0b1a028c9f06c057ab01e82bbee84",
+    "final_export_once.py": "0e61119c979f38fcb6e00ca275141e73a75e7a9007928066f19497b60d1602e3",
+    "export_source.py": "3ee071249949e62877c7b04556cd4d73eae259d61c4d3c2ead877f38030ae3ea",
+    "final_phase_common.py": "e0d1fef713e31cfb5992af9573d520426b48963c6f728e82b0bc35e48dc125b3"
+  },
+  "correction": "Only context-manager mock signature corrected. Actual path parity and existence tested without reading credentials; Root suspected ancestor defect disproved, both production declarations unchanged.",
+  "source_auth": 0,
+  "leases": 0,
+  "source_freeze": 0,
+  "dump": 0,
+  "target_mutations": 0,
+  "operational_go": false,
+  "enforcement": "RULES_ONLY",
+  "historical_counters": "Preserved; this new bounded followup does not reset prior cycles or failures."
+}

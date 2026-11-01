@@ -1,0 +1,47 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "status": "LOCAL_FINAL_INTEGRATION_PASS",
+  "observed_at": "2026-10-04T01:39:43.857431+00:00",
+  "code_hashes": {
+    "final_target_partial_source_return_once.py": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319",
+    "test_final_target_partial_source_return.py": "d480d54f5271e16b33e4daa13488ee1c0a605ff561957cfca79a844e946eb028"
+  },
+  "history": {
+    "initial_cycles": 2,
+    "initial_pass": false,
+    "reviewed_followup_cycles": 2,
+    "followup_scenarios_pass": 47,
+    "root_integration_failed_runs": 2,
+    "authorized_final_integration_runs": 1,
+    "all_previous_failures_preserved": true
+  },
+  "test_primaries": [
+    {
+      "path": "/private/tmp/target-partial-final-integration-tests.txt",
+      "sha256": "d201503d2fd16eb08df75e4aa8ef1d07ea7bcc7418466e56a66bc51f20c1f9ec",
+      "pass": false
+    },
+    {
+      "path": "/private/tmp/target-partial-final-integration-tests-2.txt",
+      "sha256": "a4275137511b956300ae306ce038c05a8f7cd1f48ca1ad39ff98cfe1d6a35984",
+      "pass": false
+    },
+    {
+      "path": "/private/tmp/target-partial-final-integration-authorized-tests.txt",
+      "sha256": "a04c34a5eed16743da55a417f0b117b12103c1cafee969f1d0f67bc527443031",
+      "pass": true
+    }
+  ],
+  "private_final_cases": "/private/tmp/target-partial-final-integration-authorized-run",
+  "current_live_contract": {
+    "path": "/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/hetzner-migration-20261003/final-export-20261004T004000Z/actual-target-api-image-contract.json",
+    "sha256": "6fe59288d0b50434f287ba22af7db26495fa5afb77bd08fa8c31fb65981d4a9d"
+  },
+  "review": {
+    "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/evaluation/target-final-integration-20261004-review.json",
+    "sha256": "704148664c397bc6cca974aaa0e99cfb5bbbbe5652a64d0a8e035a42bbf240ea"
+  },
+  "no_production_mutations": true,
+  "target_go": false,
+  "runtime_enforcement": "RULES_ONLY"
+}

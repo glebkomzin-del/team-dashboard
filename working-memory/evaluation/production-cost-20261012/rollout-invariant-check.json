@@ -1,0 +1,6 @@
+{
+  "actual_generated_ids_normalized_only": true,
+  "unknown_custom_hostname_denied": true,
+  "env_command_readonly_network_drift_denied": true,
+  "not_a_live_rollout": true
+}

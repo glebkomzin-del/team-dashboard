@@ -1,0 +1,96 @@
+{
+  "problem_id": "HZ-MIGRATION-20261003-FINAL-CUTOVER",
+  "subject": "cronSafetyContract",
+  "trigger": "GOAL_GATE",
+  "decision": "CHANGE_APPROACH",
+  "local_continuation_allowed": true,
+  "operational_target_go": false,
+  "diagnosis": "Konkreter Vertragsfehler bestätigt: Der Originalexport verlangt keine aktiven Cron-Jobs. Vier Rückkehr-Guards verlangen stattdessen keine Cron-Definitionen. Die aktuellen Source-/Target-Primärdateien enthalten dieselben zwei vollständig deaktivierten Definitionen. Damit blockieren die Guards einen grundsätzlich zulässigen Rückkehrzustand.",
+  "contract": {
+    "established_requirement": "active_cron=0 und queued_http=0",
+    "original_implementation": "working-memory/ops/hetzner-migration/final_export_once.py:50",
+    "original_observation": "metadata-before-private.json: queues=[{\"active_cron\":0,\"queued_http\":0}]",
+    "current_source_target_definitions_equal": true,
+    "current_definition_count_each": 2,
+    "current_active_values_each": [false, false],
+    "interpretation": "Die Korrektur stellt den etablierten Vertrag wieder her. Sie erlaubt keine aktiven Writer. Definitionen und Historie bleiben erhalten; Löschen, Aktualisieren oder erneuter Source-Dump sind nicht erforderlich."
+  },
+  "scope": {
+    "narrow_guard_exception_supported": true,
+    "authorization_basis": "Bestehender ausdrücklicher Nutzerauftrag zur kontrollierten Migration; dieses Review schafft keine zusätzlichen operativen Rechte.",
+    "allowed_local_changes": [
+      "In final_target_partial_source_return_once.py ausschließlich die beiden Cron-Abfragen in source_frozen und preflight_partial auf WHERE active umstellen.",
+      "In final_prewrite_rollback_once.py ausschließlich die beiden entsprechenden Source-/Target-Cron-Abfragen auf WHERE active umstellen.",
+      "PARTIAL_SHA im Permissions-Followup auf den tatsächlich korrigierten PartialReturn-Hash binden.",
+      "Einen eng begrenzten lokalen Nachweis mit angepassten SQL-Fixtures vorbereiten; geschützte Originalfixtures dabei unverändert erhalten."
+    ],
+    "four_query_strings_alone_fully_sufficient": false,
+    "additional_concrete_finding": "Die bestehenden Vergleiche mit 0 beziehungsweise [{'count':0}] akzeptieren auch false und 0.0. Die SQL-Änderungen allein erfüllen deshalb die ausdrücklich verlangte Zurückweisung fehlerhafter Zählwerte nicht vollständig.",
+    "necessary_scope_adjustment": "Root muss vor dem einzigen Validierungslauf die minimale strikte Integer-/Antwortformprüfung an diesen vier Vergleichsstellen in dasselbe Zweidateienmandat aufnehmen. Das ist eine notwendige Erfüllung des genannten Prüfkriteriums. Dieses Review nimmt eine solche zusätzliche Codeänderung noch nicht ab."
+  },
+  "preservation": {
+    "protected_inventory": "Alle 69 Dateien stimmen aktuell mit protected-final.json überein.",
+    "inventory_detail": "final_prewrite_rollback_once.py und test_final_prewrite_return.py gehören zu diesen 69 Dateien; final_target_partial_source_return_once.py ist dort nicht aufgeführt und muss zusätzlich mit seinen Originalbytes gesichert werden.",
+    "required": "Bestehendes Manifest und Originalbytes unverändert archivieren. Keine rückwirkende Umdefinition alter Hashes. Nur die ausdrücklich benannten Guard-Dateien dürfen ihre bisher geschützten Implementierungen ersetzen; die geschützte Testfixture bleibt unverändert.",
+    "source19": "Hier nicht unabhängig inventarisiert; keine Änderungen erlaubt. Vorhandenen Root-Nachweis erhalten und fehlende Inventarabdeckung ausdrücklich melden."
+  },
+  "budget": {
+    "local_correction_package": 1,
+    "max_narrow_validation_runs": 1,
+    "new_full_test_campaigns": 0,
+    "permission_offline_cycles_consumed": 2,
+    "permission_full_cycles_remaining": 0,
+    "previously_authorized_corrected_image_builds": 1,
+    "previously_authorized_host_completion_dispatches": 1,
+    "additional_operational_attempts_granted": 0,
+    "automatic_repair_loops_after_failure": 0,
+    "failure_endpoint": "Bei fehlendem Pflichtnachweis stoppen und Blockade mit vollständigen Primärbelegen zurückgeben."
+  },
+  "required_narrow_validation": [
+    "Alle vier tatsächlichen Guard-Stellen akzeptieren erhaltene inaktive Jobs und verweigern aktive Jobs.",
+    "Fehlerhafte Antworten einschließlich false, 0.0, null, Zeichenketten und falscher Antwortform werden zurückgewiesen.",
+    "Deaktivierte Source-/Target-Definitionen bleiben unverändert.",
+    "Ablehnung erfolgt vor Source-Grants; Target-Stopp und erneute Source-Prüfung bleiben in ihrer bisherigen Reihenfolge.",
+    "Syntax, PARTIAL_SHA, transitive Rückkehr-Hashbindungen und eng begrenzter Diff stimmen; vollständige Ergebnisse und Fehlerprimärbelege bleiben erhalten."
+  ],
+  "operational_blockers": [
+    "Korrigierte Guards und enger Nachweis liegen noch nicht vor.",
+    "Der frühere zeitgebundene Permissions-GO ist nicht wiederverwendbar.",
+    "Vor Build/Hostabschluss ist ein frisches unabhängiges Review des tatsächlichen korrigierten Hashstands erforderlich.",
+    "Root muss frische hashgebundene Source-/Target-Belege für active_cron=0, net.http_request_queue=0 und vollständige Cron-Definitionsgleichheit mit dem erhaltenen Original und aktuellen Zustand liefern.",
+    "Tatsächliche PartialReturn-Dry-Readiness muss Source-Rechte0, eingefrorene Source43=Baseline=nativeTarget43, keine unbekannte Arbeit, pausiertes n8n, leere Outboxes, inaktiven Timer, ursprüngliche Aliase und keine bekannten Writer belegen.",
+    "Die ausführbare Rückkehr einschließlich tatsächlicher Helper-Abhängigkeiten und Host-Hashbindungen muss vor weiterer Target-Aktivierung gesichert sein."
+  ],
+  "counters_and_acceptances": {
+    "original_restore": "1 PASS; 88 Tabellen und 68572 Zeilen erhalten.",
+    "original_runtime": "1 FAILED PermissionDenied; bleibt FAILED.",
+    "cron_discovery": "Eigenständiger belegter Vertragskonflikt innerhalb desselben Cutover-Problems; kein Reset oder Umbenennen des Runtimefehlers.",
+    "new_attempt_consumption": "Lokale Collector-Primärbelege zeigen keine Permissions-Marker; Projektstatus bestätigt keinen Build-/Hostversuch. Keine eigene Remoteverifikation.",
+    "accepted_baselines": "Runtime13, Healthy7, Partial48 und Permissions36 bleiben für unveränderte Aussagen und geprüfte Versionen anerkannt.",
+    "prohibited_retries": "Kein erneuter Runtime-, Restore-, Vault-, ACL-/Config- oder API-Start-Zyklus."
+  },
+  "evidence": {
+    "base": "working-memory/.local/hetzner-migration-20261003/final-export-20261004T004000Z",
+    "cron_result": "cron-current-original-contract-1/result.json",
+    "source_primary_sha256": "209adef2df284887e35d8279415406521e984d3f3da642be72bab7a002708b9e",
+    "target_primary_sha256": "e85a4848fa42fa803d48929413452486721681775cb306e6bf2abf37b2ed5f0b",
+    "metadata_before_sha256": "dcb7911a41835573ee95b3d417cb9faf2bb41a08ccfcfbff6ac774219e511c44",
+    "reviewed_partial_sha256": "b04ffb635c314eb70744cff9a9321092134f685e9a95e20ad297710318dfc319",
+    "reviewed_prewrite_sha256": "22bc47896a8e8f5fabdb8028814e89b443a26abcaf40d5a5c790e18845e27b2f",
+    "reviewed_permissions_sha256": "dd9c283bb73680964d7e18e215bbb02f2dc4afb084e5adcee0271513666bfa2d"
+  },
+  "root_smallest_next_step": "Originalbytes sichern und genau ein lokales Zweiguard-Korrekturpaket konkretisieren, einschließlich der notwendigen strikten Zählwertprüfung, PARTIAL_SHA und isolierten Fixtures. Danach höchstens ein enger Validierungslauf. Erst dessen tatsächliches Ergebnis und korrigierter Hashstand können den operativen GO erneut begründen.",
+  "provenance": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "sandbox": "read-only",
+    "approval": "never",
+    "session": "01a104d0-adaa-7ae0-a2a4-9de73fbb595a",
+    "runtime_header": "working-memory/.local/hetzner-migration-20261003/current-evidence/native-cron-contract-adjudication-1/stderr-private.txt:1-35",
+    "identity_verified": "Eigener tatsächlicher Header gelesen; Session verschieden vom vorherigen Reviewer.",
+    "governance": "/Users/glebkomzin/.agents/skills/project-governance/SKILL.md",
+    "references_loaded": ["independent-review.md", "recovery.md"],
+    "performed": "Lokale Originalbelege, Hashes und Code geprüft. Keine Änderungen, Tests, Delegation oder Remoteoperationen.",
+    "enforcement": "RULES_ONLY"
+  }
+}

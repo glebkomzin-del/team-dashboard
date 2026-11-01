@@ -1,0 +1,22 @@
+{
+  "behavior": "verified generation compilation reuses already validated current projection as before-state and returns its verified after-projection for publication; existing checksum, identity, human-decision and state-hash checks remain",
+  "candidate_sha256": {
+    "generation_review.py": "f74b7c4c54bdf1ed4a28f340c2ecd2f86d69f45cb5fd7b290a2ff103fd1d6c7f",
+    "journal_projection.py": "07d5945f69c62c657442b0feeb8cee7551bc7783724e47f0a2dfafabc9df61a2"
+  },
+  "limits": "Local speed is not proof of live cold GET under 45 seconds or public 33.8MB transfer; Root review, image rebuild, cold authenticated UI acceptance required. No production writes or HTTP/provider calls in this package.",
+  "live_image_at_check": "sha256:8f72278bafb04e24dd04468d941dedaf0ead4d1638cebf4081edf600e185e471 healthy",
+  "patch_sha256": "a48b8401db5bd1aa957990b9f6a0ada7f5397e045051260daa552b74beda2cd3",
+  "source_sha256": {
+    "generation_review.py": "9b004be7326f12d11b6033f1034ce7c9487eeed97d4ff8288e430d5a52526c1e",
+    "journal_projection.py": "1e248f8cc17e7e110b92a0a855270caba3703e040d74e04e0205fbc6f7ec54b0"
+  },
+  "status": "private_patch_only_no_deployment",
+  "tests": {
+    "existing_generation_unittest": "18/18 pass",
+    "invalid_cases": "unknown generation format and inconsistent re-signed result both deny without destination or leftover temp file",
+    "real_revision_226_cold_replay": "paired baseline 20.75 seconds; first patch 16.76 seconds; final patch 12.58 seconds, local disposable SQLite only",
+    "real_revision_226_review": "baseline and final SHA256 both 05cb9f3caf01e9ab8a845f6dbf21f4f077e59f47d51e4add96a654329a8e3c1b; 33,434,630 canonical JSON bytes",
+    "sqlite_tables": "10 of 11 tables exact rows equal; runs differs only generated id and created_at, remaining business fields exactly equal (213 rows)"
+  }
+}

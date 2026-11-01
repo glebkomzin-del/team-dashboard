@@ -1,0 +1,24 @@
+{
+  "started_utc": "2026-10-05T19:01:00.839040+00:00",
+  "completed_utc": "2026-10-05T19:01:01.448550+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@178.105.167.26",
+    "python3 - <<'SOURCE'\nimport subprocess\nq=\"SELECT json_build_object('active_jobs',(SELECT json_agg(x) FROM (SELECT j.id,j.state,j.reason,j.event_date,d.title,j.updated_at,j.attempts,count(m.*) call_rows,count(m.response_json) received,sum(m.actual_micro_usd) actual_micro_usd FROM wm_jobs j JOIN wm_archive_documents d ON d.id=j.document_id LEFT JOIN wm_model_calls m ON m.job_id=j.id WHERE j.state IN ('running','review','prepared') GROUP BY j.id,d.title) x),'old_review_preserved',(SELECT json_build_object('body_hash',d.body_hash,'body_sha_valid',d.body_hash=encode(extensions.digest(convert_to(d.body,'UTF8'),'sha256'),'hex'),'calls',(SELECT json_agg(json_build_object('index',m.call_index,'response_hash',m.response_hash,'cost',m.actual_micro_usd)) FROM wm_model_calls m WHERE m.job_id=j.id),'decision',(SELECT json_agg(json_build_object('action',action,'reason',reason,'recorded_at',recorded_at)) FROM wm_job_decisions WHERE job_id=j.id)) FROM wm_jobs j JOIN wm_archive_documents d ON d.id=j.document_id WHERE j.id='a34706df2728e22f1c0b7648cac2a06402982a708df669d5d90fec6eb7c246f5'))::text\"\nr=subprocess.run(['docker','exec','dashboard-supabase-20261003-db-1','psql','-U','postgres','-d','postgres','-XAt','-v','ON_ERROR_STOP=1','-c',q],capture_output=True,text=True);print(r.stdout);print(r.stderr);raise SystemExit(r.returncode)\nSOURCE"
+  ],
+  "exit_code": 1,
+  "outputs": {
+    "stdout": {
+      "sha256": "fe95d8734780ffc9d939baf4bc092b60ec2c00c8ba11467c0f16683db5aff482",
+      "bytes": 236
+    },
+    "stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}

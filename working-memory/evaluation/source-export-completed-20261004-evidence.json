@@ -1,0 +1,19 @@
+{
+  "status": "SOURCE_EXPORT_AND_TRANSFER_COMPLETED",
+  "old_outer_status": "FAILED",
+  "transfer_status": "RECOVERED",
+  "run_dir": "/opt/dashboard-supabase-20261003/final-export-20261004T004000Z",
+  "review_sha256": "96a6fb82a9e1133196c372b615da95ec724425d4fc791fb49589fcb3c3d761aa",
+  "dump_bytes": 321266826,
+  "dump_sha256": "58354077f342b7516d14d8cfaa93ffc2136a1d7eee441b045fd05f7f96b95fc4",
+  "source_frozen": true,
+  "archive_vault_mac_verified": true,
+  "server_all_hashes_verified": true,
+  "old_fragment_preserved": true,
+  "append_attempts": 1,
+  "append_bytes": 11024010,
+  "small_file_uploads": 5,
+  "additional_source_leases": 0,
+  "additional_dumps": 0,
+  "target_operational_go": false
+}

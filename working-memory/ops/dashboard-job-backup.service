@@ -1,0 +1,23 @@
+[Unit]
+Description=Dashboard Job backup with isolated restore verification
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+WorkingDirectory=/opt/dashboard-memory-canonical-draft
+ExecStart=/usr/bin/python3 /opt/dashboard-memory-canonical-draft/scheduled_backup.py
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+TimeoutStartSec=45min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/backups/dashboard-job /opt/dashboard-memory-canonical-draft/.local /run/lock

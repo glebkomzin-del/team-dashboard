@@ -1,0 +1,6 @@
+{
+  "archive_wm_append_body_sha256": "aef8f17be9d1fa1a3539b0fae02f450f39d211b983ac9db8c784b9afa3297bc5",
+  "target_wm_append_body_sha256": "aef8f17be9d1fa1a3539b0fae02f450f39d211b983ac9db8c784b9afa3297bc5",
+  "archive_equals_target_body": true,
+  "source_actual_wm_append_body_sha256": "aef8f17be9d1fa1a3539b0fae02f450f39d211b983ac9db8c784b9afa3297bc5"
+}

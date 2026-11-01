@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>de.gleb.dashboard-job.backup-pull</string>
+	<key>LowPriorityIO</key>
+	<true/>
+	<key>Nice</key>
+	<integer>10</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/opt/homebrew/bin/python3</string>
+		<string>/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/offserver_backup.py</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/launch-error.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/glebkomzin/Library/Application Support/Dashboard Job Backup/launch.log</string>
+	<key>StartInterval</key>
+	<integer>21600</integer>
+	<key>Umask</key>
+	<integer>63</integer>
+</dict>
+</plist>

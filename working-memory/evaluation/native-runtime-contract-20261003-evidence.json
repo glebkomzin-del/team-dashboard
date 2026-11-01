@@ -1,0 +1,17 @@
+{
+  "image": "sha256:15a6a820f9d887fac5f0bcd3e2dd29c477d4d5f6a7e82db41bb83cd899f43a2f",
+  "flags": {
+    "MEMORY_READ_ONLY": "0",
+    "MEMORY_INTAKE_ENABLED": "1",
+    "MEMORY_AUTOMATIC_ENABLED": "1",
+    "MEMORY_QA_ENABLED": "1",
+    "MEMORY_ORIGINAL_DELETION_ENABLED": "1"
+  },
+  "server_py_sha256": "3cde7428a6100472a5c54fd80062a65ca2834ac4792c0c02f969474964df979f",
+  "actual_contract": {
+    "qa_post_before_global_readonly_guard": true,
+    "deletion_enabled_plus_readonly_fails_start": true,
+    "readonly_final_phase_requires_qa_and_deletion_disabled": true,
+    "original_flags_must_be_restored_at_writer_open": true
+  }
+}

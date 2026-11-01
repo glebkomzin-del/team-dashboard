@@ -1,0 +1,21 @@
+{
+  "actual_micro_usd": 32619,
+  "actual_send_completed_utc": "2026-10-05T21:50:43.243777+00:00",
+  "actual_send_started_utc": "2026-10-05T21:50:36.226192+00:00",
+  "auto_repeat": false,
+  "old_http400_actual_micro_usd": null,
+  "old_http400_reserved_micro_usd": 221248,
+  "provider_calls": 1,
+  "receipt_sha256": "5c815f72aa9d2e27c8bc3c44a98d813972157c1f311a3d1e6c54e0be70a80cbd",
+  "request_sha256": "6641f19a2253d7fffc6fb4f9a4cf63eef864ebd12d367538dd9b1babf8e723b3",
+  "reserved_micro_usd": 190068,
+  "response_private_path": "/private/tmp/semantic-relation-wirefix-20261005/actual-result/response.json",
+  "response_sha256": "57959af55a9f3bf1d7722351df5d5387f4dd1bfb85d76b6f88c3addb87397937",
+  "result": "RECEIVED_KNOWN_RESPONSE_SEMANTIC_FAILURE_ROOT_OBSERVED_REVIEW_PENDING",
+  "root_counterexamples": [
+    "periodic check relation none despite explicit withdrawal U0134",
+    "CSV candidate anchor U0167 outside actual source_ids U0160-U0164",
+    "case C relation none despite unclear obligation"
+  ],
+  "runtime_published": false
+}

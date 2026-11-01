@@ -1,0 +1,123 @@
+{
+  "problem_id": "UI-STALE-DISABLED-01",
+  "created_at": "2026-10-06T08:45:26.218465+00:00",
+  "status": "implemented_locally_validated; Root_CUA_review_release_liveflow_open",
+  "scope": "Private bounded followup; only processing-status.ts plus status test changed. ProcessingPanel.tsx/MemoryApp.tsx carried unchanged within assigned package. No original repo/prod/git/provider/backend/API writes.",
+  "observed_evidence": {
+    "source": "Root direct public UI at08:40 plus SQL progress-0840.json and server WORKER_STATUS update-after-step evidence; relayed actual evidence, not independently replayed by builder",
+    "actual_contradiction": "Enabled08:38:20, active first Sol call reserved314144 and stillrunning SQL08:41 while old worker disabled made banner say processing halted. No error/review/isolation proved.",
+    "causal_definition": "A preceding disabled worker report can persist until full step returns, so config=true+worker=disabled alone proves neither present halt nor progress."
+  },
+  "decision": "For enabled config and worker disabled classify unknown with explicit unconfirmed-current-status message. Disabled worker plus actual read_only=true or mode readonly stays paused in existing operations contract. Configfalse and positive fullset fence retain priority; absent config stays unknown. No duration, heartbeat, sourceprogress inference or provider activity triggered.",
+  "test_expectation_change": "Only deliberately wrong processingStatus(true,disabled)==paused expectation changed to unknown because of direct counterexample. All other previous17group criteria retained; one additional counterexample group added.",
+  "checks": [
+    {
+      "question": "Can stale disabled falsely halt a genuinely enabled operation, or can correction hide a true stop?",
+      "criterion": "Unknown for active config+preceding disabled; paused for cfgfalse, readonlytrue, mode readonly and fullset blocker; unknown for missing config",
+      "scope": "18 Nodegroups (17 preceding plus one counterexample group)",
+      "command": "node --test tests/processing-status.test.mjs",
+      "exit_code": 0,
+      "result": "18passed0failed0skipped",
+      "decision": "local classifier criterion passed; visible flow remains Root validation"
+    },
+    {
+      "question": "Does narrowly changed source compile with pinned existing source/config?",
+      "criterion": "tsc-b and Vite build succeed",
+      "command": "python3 build-pinned.py -> pnpm build",
+      "exit_code": 0
+    },
+    {
+      "question": "Does assigned React/static package satisfy existing checks?",
+      "criterion": "targeted3file ESLint success",
+      "command": "pnpm exec eslint src/features/working-memory/ProcessingPanel.tsx src/features/working-memory/processing-status.ts src/pages/MemoryApp.tsx",
+      "exit_code": 0
+    },
+    {
+      "question": "Are newbytes reviewable and publishedlease freeze unchanged?",
+      "criterion": "Exact source comparison, patch reconstruction and candidate manifests",
+      "result": "1 of91 src changed; patch reconstructs4 assigned source/test bytes; both10file candidate manifests verified; CSS equal and index JS equal after MemoryAppchunkref normalization"
+    },
+    {
+      "question": "Is safe synthetic Root fixture accessible?",
+      "criterion": "HTTP200 JSONexact and builtin staticHTML",
+      "result": "Passed, no browser UI interaction claimed"
+    }
+  ],
+  "artifacts": {
+    "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source",
+    "candidate": "/private/tmp/dashboard-sol-ui-20261006/candidate-stale-disabled-01",
+    "patch": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/ui-source.patch",
+    "patch_sha256": "29daa7cf44abd745946bb2fdce4055f256f46d5adf073c612e70422b73052b09",
+    "source_bindings_sha256": "07d745999e9cf95ea59d2f676e89bb2e54b130123a0b616964bd94ca67970093",
+    "candidate_SHA256SUMS_sha256": "75fb3126680ae964474531dcfa3cefbff28d87ee9c7ac583fbc5ece0b885409d",
+    "baseline_candidate_SHA256SUMS_sha256": "88e25e2819748079390045ca4c3a76d1427510f92958d63baf19821e444dee60",
+    "baseline_receipt_sha256": "9f20d0263be7ef5e3e75e537581ecdaf43360613b81c0db16de4ed6a8056d55a",
+    "sources": [
+      {
+        "path": "src/features/working-memory/ProcessingPanel.tsx",
+        "baseline_sha256": "459e3cb4be70f3c980aac4a1e62b1fcc83323b46e5e36962e1f306af44f59f39",
+        "source_sha256": "459e3cb4be70f3c980aac4a1e62b1fcc83323b46e5e36962e1f306af44f59f39"
+      },
+      {
+        "path": "src/features/working-memory/processing-status.ts",
+        "baseline_sha256": "e6a04962f3556515a9c67d5186a7e8602c0ea93899b5366078f785b3c3f8cff5",
+        "source_sha256": "12d25ccd25d2b7a2465351aea8ee90fd0f48355ac99c6d895b2824751b049e37"
+      },
+      {
+        "path": "src/pages/MemoryApp.tsx",
+        "baseline_sha256": "416faead097751dcf96b9984e0dafeb52ab9fcd82a4130fa3e26d3f7cbcf5a83",
+        "source_sha256": "416faead097751dcf96b9984e0dafeb52ab9fcd82a4130fa3e26d3f7cbcf5a83"
+      },
+      {
+        "path": "tests/processing-status.test.mjs",
+        "baseline_sha256": "10e2b5102c62b776330b3a5509f73e424e24e4c79bd33f10cf89e939c3e0339e",
+        "source_sha256": "51385b978a35369632b42b2a90cd586188a2f417c8222aa5cb8253ca5854a470"
+      }
+    ]
+  },
+  "evidence_sha256": {
+    "tests.log": "ff10a88d661e6d05c90641a9a51a4da1fc9570b02659d5d565a3b21880200148",
+    "build.log": "18768b629249f516cadd73642e499c3da5f71537a97cee123c301b1fc6936c3c",
+    "lint.log": "386c7233693aaf7d39c882fe7538544799e90d19e8fb6d6fee13bee16eb2b63c",
+    "patch-verification.log": "d1117c2f5c391ddea59a0417e8edd369ddbfcb07d939db0e21056e8573471a9b",
+    "browser-fixture/http-smoke.json": "df0588d0e5e6d8a47a7515ed162717541d84ffe9d7bb5ce23684ff83c679a004",
+    "browser-fixture/serve.py": "963babba91037b3e95bfd2526e1481110cb792a8be7cb0e1aca29840b661df20",
+    "browser-fixture/switch.py": "039c733e178b06b482e6881a634f0f1989fe6abe877e2568110092d61b05a1c7",
+    "browser-fixture/README.md": "4b35b2d58c5fc73fb0a4526accb696eff3105e6d7f184469f6220b618a32ec83",
+    "browser-fixture/cases/disabled.json": "4239e3afa6421356099b87d759e4fbd9cd67b948159494a734600bf453bf49aa",
+    "browser-fixture/cases/readonly-disabled.json": "8c2422a2a38626291905f5b8ec4560d64f874b75cd69dee03e002c1315fb12a5",
+    "browser-fixture/cases/shared-provider.json": "9d975091425578d8b2e02db6b272226e0f8fc13579c0776d769b8acfd79341b2",
+    "browser-fixture/cases/stale-disabled.json": "e79624f771398ad4e1320bf9607e89acf891bfaf345401544b275c797c70188b",
+    "browser-fixture/cases/storage.json": "84294eb93c85b54217045cfe247bff1ca7d94386f59855f3c4d7ef58a0ca1fa6",
+    "browser-fixture/cases/transient.json": "8963fed1160af88ef39c2f3cabf033422a582093a60705f924a3bf589f397da7",
+    "browser-fixture/cases/unexpected.json": "4a721126beffbb8974bef085210b895ca36afb9a57602bc9ef1ca8b7987993d0",
+    "browser-fixture/cases/waiting-retained.json": "da5764801a121ee9216e09f35684355a40c149728a37b9b8174f0265f733075f",
+    "browser-fixture/cases/waiting.json": "70b9acaaa0288bea2ad56fa845dd9a50178f2ed69bd71bc86c362a79336f08a2"
+  },
+  "CUA": {
+    "executed": false,
+    "owner": "Root available CUA context; builder context has no browser surfaces; no global device availability assertion",
+    "screenshots": [],
+    "urls": [
+      "http://127.0.0.1:4181/#uebersicht",
+      "http://127.0.0.1:4181/#einstellungen?section=verarbeitung"
+    ],
+    "switch_command": "python3 /private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/browser-fixture/switch.py stale-disabled",
+    "current_case": "stale-disabled",
+    "also_required_case": "readonly-disabled",
+    "server_session": 76894,
+    "existing4180": "untouched"
+  },
+  "remaining": [
+    "Root independent review and CUA exact candidate visible checks",
+    "Root release and actual public ownerflow",
+    "No processing success or provider response established by synthetic fixture"
+  ],
+  "attempt_history": "One hypothesis-confirmed local implementation; first tests/lint/build passed. Prior UI-LEASE-01 history remains in baseline receipt, not reset.",
+  "budget": {
+    "new_provider_calls": 0,
+    "new_external_costs": 0,
+    "parent_limits": "unchanged; no new timers or monitoring system"
+  },
+  "effective_runtime": "Not independently exposed by available tool fields; not guessed"
+}

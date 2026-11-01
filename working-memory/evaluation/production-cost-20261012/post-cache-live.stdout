@@ -1,0 +1,4 @@
+{"image": "sha256:9f3d69222e0602327d73fe1665e47da05661938575b6a8204ab4cd5d468f85c2", "healthy": "healthy", "running": true, "read_only": true, "memory_bytes": 1610612736, "pipeline": "v11:compact1:gate1:gpt-6.1-sol:753caadf3fb8fea4:canonical1:023a8c7cae48980c"}
+http://127.0.0.1:8798/health 200
+https://178-105-167-26.nip.io/working-memory/health HTTPError
+https://178-105-167-26.nip.io/dashboard/health HTTPError
