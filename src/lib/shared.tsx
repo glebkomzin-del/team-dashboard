@@ -13,7 +13,7 @@ import {
   type AskMemoryMeetingSource, type AskMemoryChunkSource, type AskMemoryItemSource,
 } from '../supabase'
 
-export type Page = 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
+export type Page = 'arbeitsgedaechtnis' | 'uebersicht' | 'sitzungen' | 'aktionen' | 'projekte' | 'ki' | 'textsuche' | 'protokoll' | 'inbox'
 export type SortDir = 'asc' | 'desc' | null
 export type ProjectView = 'table' | 'kanban' | 'gantt'
 export type ActionTab = 'todos' | 'blocker' | 'open'

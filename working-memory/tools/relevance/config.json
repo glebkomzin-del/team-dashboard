@@ -1,0 +1,27 @@
+{
+  "_comment": "Regelbasierte Startgewichte; Kalibrierung darf nur Zahlen und Schwellen verändern. Fehlende Belege tragen null bei.",
+  "weights": {
+    "owner_self": 12,
+    "explicit_commitment": 16,
+    "accepted_request": 10,
+    "reported_action": 5,
+    "conditional_action": 2,
+    "clear_promise": 7,
+    "due_present": 8,
+    "due_soon": 12,
+    "due_overdue": 8,
+    "event_count": 3,
+    "meeting_count": 3,
+    "topic_active": 5,
+    "topic_recent": 4,
+    "person_evidence": 3,
+    "specificity": 4,
+    "claim_length": 3,
+    "artifact_detail": 4,
+    "strong_verb": 4,
+    "weak_verb": -4,
+    "age_staleness": -5
+  },
+  "thresholds": {"standard": 36, "wichtig": 56},
+  "feature_parameters": {"soon_days": 14, "recent_days": 30, "stale_days": 90, "event_cap": 3, "meeting_cap": 3, "topic_active_cap": 3, "person_cap": 3, "specificity_cap": 3, "claim_word_cap": 24}
+}

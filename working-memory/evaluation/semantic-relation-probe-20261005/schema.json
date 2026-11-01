@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cases"],
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "relations"],
+        "properties": {
+          "case_id": {"type": "string", "enum": ["A", "B", "C"]},
+          "relations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["action_id", "earlier_owner", "earlier_object", "earlier_condition", "earlier_evidence", "later_evidence", "relation", "object_link_reason", "final_statement", "review_required"],
+              "properties": {
+                "action_id": {"type": "string", "enum": ["real_pc_check", "real_csv_upload", "real_priority_feedback", "synthetic_stock_check", "synthetic_topic_a"]},
+                "earlier_owner": {"type": "string"},
+                "earlier_object": {"type": "string"},
+                "earlier_condition": {"type": "string"},
+                "earlier_evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+                "later_evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+                "relation": {"type": "string", "enum": ["expressly_withdrawn", "replaced", "independent", "confirmed", "unclear"]},
+                "object_link_reason": {"type": "string"},
+                "final_statement": {"type": "string"},
+                "review_required": {"type": "boolean"}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit_id", "quote"],
+      "properties": {"unit_id": {"type": "string"}, "quote": {"type": "string"}}
+    }
+  }
+}

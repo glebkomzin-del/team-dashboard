@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 from datetime import datetime
 import os
+import json,hashlib,sys
 import sqlite3
 from zoneinfo import ZoneInfo
 from pathlib import Path
@@ -13,8 +14,32 @@ from journal_projection import rebuild
 from canonical_archive import rebuild_archive
 from archive_index import connect as open_archive
 from journal_store import RevisionConflict
+from generation_review import _logical_entries
 from memory import ValidationError
 from review_api import open_readonly
+
+# Only fixed process code can certify reuse. Actual bytes are checked again on
+# every lookup/admission; a mutable or incomplete runtime disables memoization.
+def _generation_binding():
+    root=Path(__file__).resolve().parent
+    try:
+        files=sorted(path for path in root.glob('*.py') if not path.name.startswith('test_'))
+        rules=root/'evaluation/source-corrections.json'
+        if not rules.is_file() or not files:return None
+        identity=[(path.name,hashlib.sha256(path.read_bytes()).hexdigest()) for path in files]
+        identity.append(('evaluation/source-corrections.json',hashlib.sha256(rules.read_bytes()).hexdigest()))
+        return json.dumps([sys.version,sqlite3.sqlite_version,identity],separators=(',',':')).encode()
+    except OSError:return None
+
+_GENERATION_PROCESS_BINDING=_generation_binding()
+_GENERATION_PREFIX_CAP=64*1024*1024
+
+def _generation_cache_bytes(value):
+    # Exact recursive object sizes for this immutable tuple/bytes/scalar entry.
+    return sys.getsizeof(value)+(sum(_generation_cache_bytes(v) for v in value) if isinstance(value,tuple) else 0)
+
+def _generation_bytes(value):
+    return json.dumps(value,sort_keys=True,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode()
 
 def business_date(instant=None):
     zone=ZoneInfo(os.environ.get('MEMORY_TIME_ZONE','Europe/Berlin'))
@@ -37,6 +62,83 @@ class JournalService:
         self.privacy_maintenance=False
         self.privacy_cleanups=[]
         self.private_outboxes=[]
+        self.generation_prefix_lock=threading.Lock()
+        self.generation_prefix=None
+        self.generation_privacy=threading.local()
+        self.register_privacy_cleanup(self._clear_generation_prefix)
+
+    @contextmanager
+    def generation_reader(self):
+        # Generation routes hold this through response serialization. Core
+        # calls in the same thread borrow that real reader, never enter the
+        # non-reentrant privacy_reader twice while maintenance is waiting.
+        depth=getattr(self.generation_privacy,'depth',0)
+        if depth:
+            self.generation_privacy.depth=depth+1
+            try:yield
+            finally:self.generation_privacy.depth=depth
+        else:
+            with self.privacy_reader():
+                self.generation_privacy.depth=1
+                try:yield
+                finally:self.generation_privacy.depth=0
+
+    def _clear_generation_prefix(self):
+        with self.generation_prefix_lock:self.generation_prefix=None
+
+    def generation_base(self,space):
+        # _scope has already fetched and authorized this space. No auth, review,
+        # CAS, archive, config or cost result is memoized here.
+        with self.generation_reader():
+            entries=self.store.entries(through=space['revision'])
+            epoch=space.get('deletion_revision')
+            binding=_generation_binding()
+            supported=(type(epoch) is int and epoch>=0 and isinstance(space.get('id'),str)
+                       and binding is not None and binding==_GENERATION_PROCESS_BINDING)
+            if not supported:
+                self._clear_generation_prefix()
+                return _logical_entries(entries)[0]
+            if len(entries)!=space['revision'] or any(type(e.get('revision')) is not int or e['revision']!=n for n,e in enumerate(entries,1)):
+                raise ValidationError('Generation needs the full contiguous journal')
+            with self.generation_prefix_lock:
+                # A cold request may have occupied this lock for a long time.
+                # Re-read authority/rules after waiting, before any lookup.
+                current=self.store.space()
+                if current.get('id')!=space['id']:
+                    self.generation_prefix=None
+                    raise ValidationError('Generation space changed')
+                if type(current.get('deletion_revision')) is int and current['deletion_revision']!=epoch:
+                    self.generation_prefix=None
+                    raise RevisionConflict('Generation deletion boundary changed')
+                if type(current.get('deletion_revision')) is not int or _generation_binding()!=binding:
+                    self.generation_prefix=None
+                    return _logical_entries(entries)[0]
+                cached=self.generation_prefix;seed=None;offset=0
+                if cached is not None:
+                    scope,prior_binding,count,inputs,outputs,input_hash,output_hash=cached
+                    if (scope==(space['id'],epoch) and prior_binding==binding and type(count) is int
+                        and 0<count<=len(entries) and isinstance(inputs,bytes) and isinstance(outputs,bytes)
+                        and _generation_cache_bytes(cached)<=_GENERATION_PREFIX_CAP
+                        and hashlib.sha256(inputs).digest()==input_hash
+                        and hashlib.sha256(outputs).digest()==output_hash
+                        and not any(e.get('kind')=='redaction' for e in entries[count:])
+                        and _generation_bytes(entries[:count])==inputs):
+                        seed=json.loads(outputs);offset=count
+                    else:self.generation_prefix=None
+                logical,certified=_logical_entries(entries[offset:],_seed=seed)
+                if certified is not None:
+                    count,raw=certified;count+=offset
+                    inputs=_generation_bytes(entries[:count]);outputs=_generation_bytes(raw)
+                    # Recheck the actual rules and authoritative deletion epoch
+                    # after cold proof, before atomically publishing any bytes.
+                    current=self.store.space()
+                    candidate=((space['id'],epoch),binding,count,inputs,outputs,hashlib.sha256(inputs).digest(),hashlib.sha256(outputs).digest())
+                    if (current.get('id')==space['id'] and type(current.get('deletion_revision')) is int
+                        and current['deletion_revision']==epoch and _generation_binding()==binding
+                        and _generation_cache_bytes(candidate)<=_GENERATION_PREFIX_CAP):
+                        self.generation_prefix=candidate
+                    else:self.generation_prefix=None
+                return logical
 
     @contextmanager
     def cache_reader(self):
@@ -142,8 +244,15 @@ class JournalService:
         try:
             if not target.exists():
                 builder=rebuild_archive if archive else rebuild
-                if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
-                else:builder(self.store,target,through=revision)
+                # Preserve the original checkpoint/table replay for every
+                # deletion boundary or unknown epoch; only the intact scope
+                # can reuse this service's existing full RAW certificate.
+                epoch=space.get('deletion_revision')
+                logical_base=(self.generation_base if type(epoch) is int and epoch==0
+                              and getattr(self.generation_privacy,'depth',0)>0 else None)
+                reuse={} if logical_base is None else {'_logical_base':logical_base}
+                if archive:builder(self.store,target,through=revision,journal_through=space['revision'],**reuse)
+                else:builder(self.store,target,through=revision,**reuse)
             db=open_target()
             self.prune(directory,space['id'],target)
             return db
@@ -197,7 +306,12 @@ class JournalService:
         space=self.store.space()
         identity={'role':'owner','id':space['owner_id']}
         projection=self.archive_projection if archive else self.projection
-        with projection(identity):pass
+        # Enter privacy before the cache reader, preserving deletion's lock
+        # order. Existing purge calls own maintenance and keep the old path.
+        if type(space.get('deletion_revision')) is int and space['deletion_revision']==0 and not self.privacy_maintenance:
+            with self.generation_reader(),projection(identity):pass
+        else:
+            with projection(identity):pass
 
     def decide(self, identity, request):
         keys={'command_id','expected_revision','action','target_id','reason','patch'}

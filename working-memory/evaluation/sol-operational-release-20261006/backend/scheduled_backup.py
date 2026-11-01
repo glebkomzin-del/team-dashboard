@@ -5,7 +5,7 @@ configuration, n8n database and data, and an isolated n8n restore receipt.
 """
 import argparse
 from datetime import datetime,timezone,timedelta
-import fcntl,hashlib,json,os
+import fcntl,hashlib,json,os,re
 from pathlib import Path
 import secrets,shutil,subprocess,tarfile,tempfile,time
 from urllib.parse import urlparse
@@ -18,6 +18,7 @@ from gateway_journal import GatewayJournal,TransientGateway
 ROOT=Path('/opt/dashboard-memory-canonical-draft')
 BACKUPS=Path('/var/backups/dashboard-job')
 STATUS=ROOT/'.local/cache/backup-status.json'
+BACKUP_LOCK=Path('/run/lock/dashboard-job-backup.lock')
 RESTORE_BARRIER=Path('/app/.local/restore-barrier/deletions.json')
 DEFAULT_QUESTION_OUTBOX=Path('/app/.local/question-outbox')
 APP_UID=10001
@@ -335,6 +336,10 @@ def backup():
     started=datetime.now(timezone.utc);stamp=started.strftime('%Y%m%dT%H%M%SZ')
     previous=json.loads(STATUS.read_text()) if STATUS.exists() else {}
     report={'state':'running','started_at':started.isoformat(),'last_success_at':previous.get('last_success_at')}
+    invocation=os.environ.get('INVOCATION_ID')
+    if invocation is not None:
+        if not re.fullmatch('[0-9a-f]{32}',invocation):raise RuntimeError('Invalid backup service invocation')
+        report['invocation_id']=invocation
     status(report)
     folder=Path(tempfile.mkdtemp(prefix='.building-',dir=BACKUPS))
     artifact=BACKUPS/('dashboard-'+stamp+'.tar.gz');temporary=artifact.with_suffix('.partial')
@@ -427,7 +432,37 @@ def backup():
         if temporary.exists():temporary.unlink()
 
 
-if __name__=='__main__':
-    with open('/run/lock/dashboard-job-backup.lock','w') as lock:
+def record_service_exit():
+    """ExecStopPost only: record native failure for the same backup invocation."""
+    result=os.environ.get('SERVICE_RESULT')
+    if result=='success':return {'state':'unchanged','service_result':result}
+    if result not in ('timeout','signal','oom-kill','exit-code','core-dump','watchdog','resources','protocol','start-limit-hit','exec-condition'):
+        raise RuntimeError('Unknown backup service result')
+    invocation=os.environ.get('INVOCATION_ID');code=os.environ.get('EXIT_CODE');exit_status=os.environ.get('EXIT_STATUS')
+    if not isinstance(invocation,str) or not re.fullmatch('[0-9a-f]{32}',invocation):
+        raise RuntimeError('Missing backup service invocation')
+    if code not in ('exited','killed','dumped') or not isinstance(exit_status,str) or not re.fullmatch('[A-Za-z0-9]+',exit_status):
+        raise RuntimeError('Missing backup service exit evidence')
+    if code=='exited' and (not exit_status.isdigit() or not 0<=int(exit_status)<=255 or (result=='exit-code' and int(exit_status)==0)):
+        raise RuntimeError('Invalid native failure exit status')
+    with open(BACKUP_LOCK,'a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        result=backup();print(json.dumps({k:v for k,v in result.items() if k in ('state','archive','bytes','sha256','canonical','n8n')}))
+        if STATUS.stat().st_size>16000:raise RuntimeError('Oversized backup status')
+        report=json.loads(STATUS.read_text())
+        if report.get('invocation_id')!=invocation or report.get('state') not in ('running','ok','failed'):
+            raise RuntimeError('Backup service/status invocation mismatch')
+        report.update(state='failed',finished_at=report.get('finished_at') or datetime.now(timezone.utc).isoformat(),
+                      service_result=result,service_exit_code=code,service_exit_status=exit_status)
+        report.setdefault('error_type','ServiceTermination')
+        report.setdefault('diagnostic','Backup service ended without successful completion: '+result)
+        status(report)
+    return {'state':'failed','service_result':result,'invocation_id':invocation}
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser();parser.add_argument('--service-exit-status',action='store_true');args=parser.parse_args()
+    if args.service_exit_status:print(json.dumps(record_service_exit()))
+    else:
+        with open(BACKUP_LOCK,'w') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            result=backup();print(json.dumps({k:v for k,v in result.items() if k in ('state','archive','bytes','sha256','canonical','n8n')}))

@@ -152,7 +152,7 @@ def summaries(db,document_id):
     # Keep both snapshots but present the accepted meeting's text first.
     return sorted(result,key=lambda row:row['origin']!='legacy_meetings')
 
-def rebuild_archive(store,destination,*,through=None,journal_through=None):
+def rebuild_archive(store,destination,*,through=None,journal_through=None,_logical_base=None):
     space=store.space();ceiling=space['archive_revision'] if through is None else through
     if type(ceiling) is not int or not 0<=ceiling<=space['archive_revision']:raise ValidationError('Invalid archive snapshot')
     if journal_through is not None and (type(journal_through) is not int or not 0<=journal_through<=space['revision']):
@@ -191,7 +191,9 @@ def rebuild_archive(store,destination,*,through=None,journal_through=None):
         db.execute('CREATE TABLE active_source_notes (id TEXT PRIMARY KEY,document_id TEXT NOT NULL REFERENCES documents(id),origin TEXT NOT NULL,origin_id TEXT NOT NULL,note_json TEXT NOT NULL,note_hash TEXT NOT NULL)')
         if journal_through is not None:
             from generation_review import logical_entries
-            for entry in logical_entries(store.entries(through=journal_through)):
+            logical=(_logical_base({**space,'revision':journal_through}) if _logical_base is not None
+                     else logical_entries(store.entries(through=journal_through)))
+            for entry in logical:
                 if entry['kind']!='source':continue
                 note=entry['payload'].get('archive_note')
                 if note is None:continue

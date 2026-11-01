@@ -1,0 +1,28 @@
+name: dashboard-memory-preview
+services:
+  memory-preview:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MEMORY_MODEL: claude-opus-5
+    volumes:
+      - memory-preview-data:/app/.local
+    networks:
+      - n8n
+    mem_limit: 512m
+    cpus: 0.5
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # No host port. Accessible only inside the existing Docker network.
+volumes:
+  memory-preview-data:
+networks:
+  n8n:
+    external: true
+    name: n8n_default

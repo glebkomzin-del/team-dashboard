@@ -121,7 +121,7 @@ def prepare_source(db, source, proposal, *, pipeline, model, provenance, usage=N
     finally:scratch.close()
 
 
-def rebuild(store, destination, *, through=None):
+def rebuild(store, destination, *, through=None, _logical_base=None):
     space=store.space()
     ceiling=space['revision'] if through is None else through
     if ceiling>space['revision']:raise ValidationError('Requested future journal revision')
@@ -132,31 +132,37 @@ def rebuild(store, destination, *, through=None):
     try:
         db=connect(path)
         from generation_review import logical_entries,verify_generation
-        entries=list(store.entries(through=ceiling))
-        checkpoints=[(index,entry) for index,entry in enumerate(entries) if entry['kind']=='redaction']
-        logical=[];start=0
-        if checkpoints:
-            index,checkpoint=checkpoints[-1]
-            from projection_snapshot import apply_snapshot
-            if checkpoint['payload'].get('through_revision')!=checkpoint['revision']-1:
-                raise ValidationError('Projection snapshot does not cover the preceding journal boundary')
-            apply_snapshot(db,checkpoint['payload']);logical=checkpoint['payload']['logical_basis'];start=index+1
-        for entry in entries[start:]:
-            if entry['kind']=='source':
-                if not entry['payload'].get('result_sha256'):
-                    raise ValidationError('Source batch lacks an accepted result checksum')
-                source=entry.get('source') or store.source(entry['source_version'])
-                if source['id']!=entry['source_version']:raise ValidationError('Journal source reference mismatch')
-                apply_saved(db,source,entry['payload'])
-                logical.extend(logical_entries([{**entry,'source':source}]))
-            elif entry['kind']=='human':
-                record(db,command_id=entry['command_id'],actor_id=entry['actor_id'],command=entry['payload'])
-                logical.extend(logical_entries([entry]))
-            elif entry['kind']=='generation':
-                generation,logical=verify_generation(logical,entry['payload'],_projection=True,_base_projection=db)
-                try:generation.backup(db)
-                finally:generation.close()
-            else:raise ValidationError('Unknown journal entry')
+        if _logical_base is not None:
+            # The existing service verifies the complete transport/binding and
+            # returns request-owned RAW entries; still replay every Source/Human.
+            from generation_review import _materialize_into
+            _materialize_into(db,_logical_base({**space,'revision':ceiling}))
+        else:
+            entries=list(store.entries(through=ceiling))
+            checkpoints=[(index,entry) for index,entry in enumerate(entries) if entry['kind']=='redaction']
+            logical=[];start=0
+            if checkpoints:
+                index,checkpoint=checkpoints[-1]
+                from projection_snapshot import apply_snapshot
+                if checkpoint['payload'].get('through_revision')!=checkpoint['revision']-1:
+                    raise ValidationError('Projection snapshot does not cover the preceding journal boundary')
+                apply_snapshot(db,checkpoint['payload']);logical=checkpoint['payload']['logical_basis'];start=index+1
+            for entry in entries[start:]:
+                if entry['kind']=='source':
+                    if not entry['payload'].get('result_sha256'):
+                        raise ValidationError('Source batch lacks an accepted result checksum')
+                    source=entry.get('source') or store.source(entry['source_version'])
+                    if source['id']!=entry['source_version']:raise ValidationError('Journal source reference mismatch')
+                    apply_saved(db,source,entry['payload'])
+                    logical.extend(logical_entries([{**entry,'source':source}]))
+                elif entry['kind']=='human':
+                    record(db,command_id=entry['command_id'],actor_id=entry['actor_id'],command=entry['payload'])
+                    logical.extend(logical_entries([entry]))
+                elif entry['kind']=='generation':
+                    generation,logical=verify_generation(logical,entry['payload'],_projection=True,_base_projection=db)
+                    try:generation.backup(db)
+                    finally:generation.close()
+                else:raise ValidationError('Unknown journal entry')
         db.execute('CREATE TABLE projection_cursor (space_id TEXT PRIMARY KEY, revision INTEGER NOT NULL)')
         db.execute('INSERT INTO projection_cursor VALUES (?,?)',(space['id'],ceiling))
         db.execute('PRAGMA wal_checkpoint(TRUNCATE)')

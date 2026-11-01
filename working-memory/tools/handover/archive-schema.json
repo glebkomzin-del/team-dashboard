@@ -1,0 +1,206 @@
+{
+  "counts": {
+    "journal:source": 278,
+    "journal:generation": 24,
+    "journal:human": 11,
+    "documents": 433,
+    "notes": 542
+  },
+  "shapes": {
+    "journal:source": {
+      "outer": [
+        "actor_id",
+        "command_id",
+        "kind",
+        "original_payload_hash",
+        "payload",
+        "recorded_at",
+        "redaction_id",
+        "request_hash",
+        "revision",
+        "source",
+        "source_version"
+      ],
+      "inner": [
+        "actor_id",
+        "command_id",
+        "kind",
+        "original_payload_hash",
+        "payload",
+        "recorded_at",
+        "redaction_id",
+        "request_hash",
+        "revision",
+        "source",
+        "source_version"
+      ],
+      "payload": [
+        "format",
+        "model",
+        "pipeline",
+        "proposal",
+        "provenance",
+        "result_sha256",
+        "usage"
+      ],
+      "source": [
+        "content_hash",
+        "event_date",
+        "id",
+        "observed_at",
+        "redaction_id",
+        "source_id",
+        "space_id",
+        "title",
+        "transcript"
+      ]
+    },
+    "journal:generation": {
+      "outer": [
+        "actor_id",
+        "command_id",
+        "kind",
+        "original_payload_hash",
+        "payload",
+        "recorded_at",
+        "redaction_id",
+        "request_hash",
+        "revision",
+        "source",
+        "source_version"
+      ],
+      "inner": [
+        "actor_id",
+        "command_id",
+        "kind",
+        "original_payload_hash",
+        "payload",
+        "recorded_at",
+        "redaction_id",
+        "request_hash",
+        "revision",
+        "source",
+        "source_version"
+      ],
+      "payload": [
+        "after_counts",
+        "base_sha256",
+        "before_counts",
+        "diff",
+        "entries",
+        "format",
+        "identity_links",
+        "new_sources",
+        "observation_counts",
+        "observation_diff",
+        "personal_decisions_preserved",
+        "reason",
+        "review_sha256",
+        "source_order_review",
+        "source_reviews",
+        "state_hash_format",
+        "state_sha256",
+        "topic_identity_links"
+      ]
+    },
+    "journal:human": {
+      "outer": [
+        "actor_id",
+        "command_id",
+        "kind",
+        "original_payload_hash",
+        "payload",
+        "recorded_at",
+        "redaction_id",
+        "request_hash",
+        "revision",
+        "source",
+        "source_version"
+      ],
+      "inner": [
+        "actor_id",
+        "command_id",
+        "kind",
+        "original_payload_hash",
+        "payload",
+        "recorded_at",
+        "redaction_id",
+        "request_hash",
+        "revision",
+        "source",
+        "source_version"
+      ],
+      "payload": [
+        "action",
+        "event_date",
+        "patch",
+        "reason",
+        "target_id"
+      ]
+    },
+    "documents": {
+      "outer": [
+        "body",
+        "body_hash",
+        "event_date",
+        "export",
+        "export_hash",
+        "id",
+        "metadata_json",
+        "observed_at",
+        "redaction_id",
+        "registered_revision",
+        "source_id",
+        "space_id",
+        "title"
+      ],
+      "inner": [
+        "body",
+        "body_hash",
+        "event_date",
+        "export",
+        "export_hash",
+        "id",
+        "metadata_json",
+        "observed_at",
+        "redaction_id",
+        "registered_revision",
+        "source_id",
+        "space_id",
+        "title"
+      ]
+    },
+    "notes": {
+      "outer": [
+        "document_id",
+        "id",
+        "note_hash",
+        "note_json",
+        "origin",
+        "origin_id",
+        "redaction_id",
+        "registered_revision",
+        "sanitized_note_hash",
+        "space_id"
+      ],
+      "inner": [
+        "document_id",
+        "id",
+        "note_hash",
+        "note_json",
+        "origin",
+        "origin_id",
+        "redaction_id",
+        "registered_revision",
+        "sanitized_note_hash",
+        "space_id"
+      ],
+      "note": [
+        "legacy_record",
+        "link_provenance"
+      ]
+    }
+  },
+  "seconds": 8.089,
+  "returncode": 0
+}

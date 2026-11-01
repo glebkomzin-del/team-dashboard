@@ -6,6 +6,7 @@ export interface ProcessingStatus {
 }
 
 const reasons: Record<string, string> = {
+  verified_image_placeholder: 'Das gesicherte Original enthält Metadaten und einen Bildhinweis. Es bleibt ohne KI-Auswertung im Archiv erhalten.',
   earlier_job_leased: 'Ein bestehender Verarbeitungslauf belegt die frühere Quelle. Weitere Verarbeitung wartet; ein Abschluss oder Fortschritt ist damit noch nicht bestätigt.',
   worker_transient: 'Im Verarbeitungslauf ist eine vorübergehende technische Störung gemeldet. Eine Fortsetzung ist noch nicht bestätigt.',
   storage_unavailable: 'Der Datenzugang ist derzeit nicht verfügbar. Die Verarbeitung ist noch nicht als fortgesetzt bestätigt.',
@@ -57,7 +58,7 @@ export function processingStatus(configEnabled: boolean | null | undefined, work
 }
 
 export interface ProcessingJob {
-  id: string; title?: string; event_date: string; state: string; reason: string | null; technical_isolation?: boolean
+  id: string; title?: string; event_date: string; state: string; reason: string | null; technical_isolation?: boolean; lease_until?: string | null
 }
 export interface Processing {
   config: { enabled: boolean; automatic_from: string | null; budget_micro_usd: number | null } | null
@@ -88,9 +89,32 @@ export function processingFence(processing: Processing | undefined): boolean | u
   return hasReviewBlocker(processing.jobs)
 }
 
-export function operationsStatus(operations: Operations | undefined): ProcessingStatus {
+function hasValidLeaseCalendarDate(value: string): boolean {
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number)
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
+  const days = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  return month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1]
+}
+
+export function operationsStatus(operations: Operations | undefined, now = Date.now()): ProcessingStatus {
   const processing = operations?.processing
+  const archivedImage = operations?.worker.state === 'archived' && operations.worker.reason === 'verified_image_placeholder'
+  const writableArchiveStep = archivedImage && operations?.mode === 'production' && operations.read_only === false
+    && processing?.config?.enabled === true && Number.isInteger(processing.pending_count) && processing.pending_count >= 0
+  // /operations reads the queue freshly, but worker.state is the last completed
+  // step. Only positive current lease evidence may supersede that older pause.
+  if (processing?.config?.enabled === true && operations?.read_only !== true && operations?.mode !== 'readonly'
+      && (['paused', 'disabled'].includes(operations?.worker.state || '') || writableArchiveStep) && processing.blocking_job === null
+      && Number.isFinite(now) && processing.jobs.some(job => job.state === 'running' && job.reason === null
+        && job.technical_isolation === false && typeof job.lease_until === 'string'
+        && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(job.lease_until)
+        && hasValidLeaseCalendarDate(job.lease_until) && Date.parse(job.lease_until) > now)) {
+    return { kind: 'running', message: 'Beim letzten Abruf war eine Quelle zur Verarbeitung belegt. Ein Abschluss oder Fortschritt ist noch nicht bestätigt.' }
+  }
   let status = processingStatus(processing === undefined ? undefined : processing.config?.enabled ?? null, operations?.worker.state)
+  if (writableArchiveStep) status = processing.pending_count > 0
+    ? { kind: 'waiting', message: 'Die letzte Quelle wurde im Archiv behalten. Weitere Quellen sind noch unvollständig; aktuell ist kein aktiver Verarbeitungslauf bestätigt.' }
+    : { kind: 'configured', message: 'Die letzte Quelle wurde im Archiv behalten. Automatische Verarbeitung wartet auf neue Meetings.' }
   if (processing?.config?.enabled === true && operations?.worker.state === 'disabled' && (operations.read_only === true || operations.mode === 'readonly')) status = { kind: 'paused', message: 'Automatische Verarbeitung ist im Lesemodus ausgeschaltet.' }
   if (processing?.config?.enabled === true && (status.kind !== 'unknown' || operations?.worker.state === 'disabled')) {
     const fence = processingFence(processing)
@@ -113,4 +137,11 @@ export function isolationMessage(processing: Processing | undefined): string {
 export function processingReason(reason: string | null | undefined) {
   if (!reason) return
   return reasons[reason] || 'Der technische Grund ist noch nicht eingeordnet. Prüfe den Verarbeitungsstand.'
+}
+
+// Keep the actionable full job record ahead of chronological isolated sources.
+export function processingJobsBlockerFirst(processing: Processing): ProcessingJob[] {
+  const blockerId = processingFence(processing) === true ? processing.blocking_job?.id : undefined
+  const blocker = processing.jobs.find(job => job.id === blockerId)
+  return blocker ? [blocker, ...processing.jobs.filter(job => job.id !== blocker.id)] : processing.jobs
 }

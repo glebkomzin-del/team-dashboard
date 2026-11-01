@@ -1,0 +1,18 @@
+flowchart LR
+  n0(["Neues Transkript"]):::verified
+  n1{"Automatik zulässig#63;"}:::verified
+  n2["Quellengebundene Verarbeitung"]:::verified
+  n3["Summary im Archiv"]:::verified
+  n4["Sichtbare Meetings#45;Seite"]:::verified
+  n5(["Nur Transkript sichtbar"]):::inferred
+  n0 --> n1
+  n1 -->|"Ja"| n2
+  n1 -->|"Nein #47; pausiert"| n5
+  n2 -->|"erfolgreich"| n3
+  n2 -->|"Job pausiert#47;fehlerhaft"| n5
+  n3 -->|"keine direkte Übernahme"| n4
+  n4 -->|"ai#95;summary leer"| n5
+  classDef verified fill:#eaf4ef,stroke:#33785e,color:#18362b
+  classDef inferred fill:#fff5df,stroke:#a67318,color:#624811,stroke-dasharray:5 3
+  classDef planned fill:#edf1fe,stroke:#6276bd,color:#263964,stroke-dasharray:5 3
+  classDef example fill:#f0f3f5,stroke:#84959e,color:#293e49

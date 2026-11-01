@@ -1,6 +1,8 @@
 {
-  "authority": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006103000_isolate_processing_job_failures.sql",
+  "authority": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006123000_bound_processing_status_isolation.sql",
   "authority_moved": false,
-  "copy": "sql-authority-copy/20261006103000_isolate_processing_job_failures.sql",
-  "sha256": "958d2ace29452beb4f7de9d10c748f331d462692aa9980e8b367b0ca34fec68c"
+  "copy": "sql-authority-copy/20261006123000_bound_processing_status_isolation.sql",
+  "predecessor_authority": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006103000_isolate_processing_job_failures.sql",
+  "predecessor_copy_preserved": "sql-authority-copy/20261006103000_isolate_processing_job_failures.sql",
+  "sha256": "8654d1c19dd3c3d32eb821dac00234a070a741ef1d841eef0cf51a0b9d7b1b3a"
 }

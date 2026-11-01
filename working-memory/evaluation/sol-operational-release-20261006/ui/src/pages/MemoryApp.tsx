@@ -60,8 +60,9 @@ export function MemoryShell({ local = false, userId = '' }: { local?: boolean; u
   const processing = operations?.updating ? undefined : operations?.data?.processing
   const aggregateBlocker = processingFence(processing) === true ? processing?.blocking_job : undefined
   const leasedJob = processing?.jobs.find(job => job.id === operations?.data?.worker.job_id)
-  const problemJob = aggregateBlocker || leasedJob || (operationalStatus.kind === 'paused' ? processing?.jobs.find(job => job.technical_isolation !== true && job.state === 'review') : processing?.jobs.find(job => job.state === 'review'))
-  const problemReason = operations?.data?.worker.reason || problemJob?.reason
+  const workerPauseSuperseded = operationalStatus.kind === 'running' && ['paused', 'disabled'].includes(operations?.data?.worker.state || '')
+  const problemJob = aggregateBlocker || (workerPauseSuperseded ? undefined : leasedJob) || (operationalStatus.kind === 'paused' ? processing?.jobs.find(job => job.technical_isolation !== true && job.state === 'review') : processing?.jobs.find(job => job.state === 'review'))
+  const problemReason = workerPauseSuperseded ? problemJob?.reason : operations?.data?.worker.reason || problemJob?.reason
   useEffect(() => {
     document.documentElement.classList.add('light')
     document.documentElement.style.colorScheme = 'light'

@@ -1,0 +1,4 @@
+
+DROP TABLE IF EXISTS decisions CASCADE;
+DROP TABLE IF EXISTS embeddings CASCADE;
+;

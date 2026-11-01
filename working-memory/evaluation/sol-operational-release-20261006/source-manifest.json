@@ -1,5 +1,22 @@
 {
   "backend_copied": 138,
+  "base_head": "3376a277f8c567a28513bfe1c2ac59e39c07131a",
+  "current_repair": {
+    "at_utc": "2026-10-06T17:23:31.439385+00:00",
+    "build_manifest_sha256": "3f5e3d29178207a01f86a6054cc869d8caf8266fb545d5d7f921b548e64b5d66",
+    "complete_release": false,
+    "final_freeze": false,
+    "fresh_full_namespace_read_verified": false,
+    "generation_review_sha256": "b63900e2ed0fae2b92db5db3e13536f85c05b717fd7decd2aab451f61c8c5f41",
+    "graph_sha256": "532af78016bab2b8d61a4d383b5f0e222171ea29948c999fac44664deb14efd9",
+    "historical_p2_package_manifest_sha256": "b456a3df1e15149c2a386543f0b933e087e96db53587310318e23ae6e21cd3df",
+    "image_id": "sha256:89e6d0e6523ad16c6247b695ee2ec4a80ff356a7b071c881e2be94faaa62bf13",
+    "original_source_dockerfile_sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+    "recipe_dependency": "local base tag in Repair.Dockerfile must resolve to recorded base_image_id; rebuilding not performed by this package",
+    "recipe_sha256": "c5f2cfe1f87dc7f77f771ca7f31885d3651445989e6b9ade64497bf03664d837",
+    "technical_install_proof": "evidence/release/current-repair/install-readonly-spec-public.json",
+    "untouched_source_binding": "historical frozen304 metadata; FileProvider current total read unavailable"
+  },
   "excluded_sensitive_config": [
     {
       "external_source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/evaluation/source-corrections.json",
@@ -10,11 +27,11 @@
   ],
   "files": [
     {
-      "bytes": 165,
+      "bytes": 170,
       "mode": "100644",
       "path": "backend/Dockerfile",
-      "sha256": "a6d2442fa0be66fcc75eeefeaf96ef7913df978753e944975d8aac1d6034a78b",
-      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/Dockerfile"
+      "sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/Dockerfile"
     },
     {
       "bytes": 1983,
@@ -80,11 +97,18 @@
       "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/check_processing.py"
     },
     {
-      "bytes": 13120,
+      "bytes": 13771,
       "mode": "100644",
       "path": "backend/compact_reconcile.py",
-      "sha256": "495efaebcbab26e8c41db086a6e963a4eee93dc5b14725ceeaad40afec027921",
-      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/compact_reconcile.py"
+      "sha256": "6e9c71b31aba782a69009ec67985140989ac55c3f628de20516bc006ec688065",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/compact_reconcile.py"
+    },
+    {
+      "bytes": 616,
+      "mode": "100644",
+      "path": "backend/compose.yaml",
+      "sha256": "75375975999dd6b084651244ecf2bddb4779045edca678a9a95bf7ae27a061dc",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/compose.yaml"
     },
     {
       "bytes": 6462,
@@ -360,18 +384,18 @@
       "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/gateway_journal.py"
     },
     {
-      "bytes": 23518,
+      "bytes": 25598,
       "mode": "100644",
       "path": "backend/generation_review.py",
-      "sha256": "f74b7c4c54bdf1ed4a28f340c2ecd2f86d69f45cb5fd7b290a2ff103fd1d6c7f",
-      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/generation_review.py"
+      "sha256": "cb4edc2fcef7732e7762c394e70e3841183d202de2c5dd2c4282408b0dbf3a79",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/generation_review.py"
     },
     {
-      "bytes": 14033,
+      "bytes": 14523,
       "mode": "100644",
       "path": "backend/generation_service.py",
-      "sha256": "95ea22ea2056d9957fd1b9c0c4eba71382be6d4cfce887823fb12a3f64a210f6",
-      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/generation_service.py"
+      "sha256": "60282b2f1d96dbada3063c2a296488ba8ea011990c5c490731b2af6b5e3db5e3",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/generation_service.py"
     },
     {
       "bytes": 19581,
@@ -416,11 +440,11 @@
       "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/journal_projection.py"
     },
     {
-      "bytes": 11153,
+      "bytes": 17194,
       "mode": "100644",
       "path": "backend/journal_service.py",
-      "sha256": "dc8af8292f874f1743ad72fa9b8a1434d1f6bdf2b347168c767800964e3e7cb1",
-      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/journal_service.py"
+      "sha256": "9f93a83d7c6fdc8d871d7c3c3db48481b7cefc6c38a0c3f8bd3b78742635041b",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/journal_service.py"
     },
     {
       "bytes": 6391,
@@ -556,11 +580,11 @@
       "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/question_jobs.py"
     },
     {
-      "bytes": 9108,
+      "bytes": 9805,
       "mode": "100644",
       "path": "backend/reconcile.py",
-      "sha256": "03442eaade3bc4af46ee69f88a74ead0053f6c8bf0718bea44d0a14481b25c1a",
-      "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/reconcile.py"
+      "sha256": "7f165f110e850320a80427f481022f93e5bef6bae91130b0741f8b48df4cc80e",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/reconcile.py"
     },
     {
       "bytes": 8352,
@@ -941,11 +965,11 @@
       "source": "/private/tmp/dashboard-sol-operational-20261006/candidate-token-fix/schema/20261006103000_isolate_processing_job_failures.sql"
     },
     {
-      "bytes": 39923,
+      "bytes": 40105,
       "mode": "100644",
       "path": "backend/server.py",
-      "sha256": "0b529e2bd179b2e49680dc4f445300d51c23dac93d720e46596a1387b37945bc",
-      "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/server.py"
+      "sha256": "29e84b34b463cfa430729f7c0ab08db543bcb2f57e5d0a0a3e91c8be4c374f05",
+      "source": "/private/tmp/dashboard-compact-expansion-identity-fix-20261006/source/server.py"
     },
     {
       "bytes": 4120,
@@ -1018,6 +1042,20 @@
       "source": "/private/tmp/dashboard-sol-operational-20261006/token-fix.patch"
     },
     {
+      "bytes": 963051,
+      "mode": "100644",
+      "path": "evidence/graph/current-repair-graph.json",
+      "sha256": "6a294fe4a1609155a47812834cfb06d8b34fb2e2864a8a6f77c32ab3d9afc43c",
+      "source": "/private/tmp/dashboard-p3-final-own-source-preparation-20261006/current-repair-graph.json"
+    },
+    {
+      "bytes": 989,
+      "mode": "100644",
+      "path": "evidence/graph/current-repair-receipt.json",
+      "sha256": "731a7bf70d7bfc1b9f070ca8dda7b12f0aaeff0f2fe779ca3996604492f247f7",
+      "source": "/private/tmp/dashboard-p3-final-own-source-preparation-20261006/current-repair-receipt.json"
+    },
+    {
       "bytes": 951782,
       "mode": "100644",
       "path": "evidence/graph/graph.json",
@@ -1025,11 +1063,81 @@
       "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/graph-sol-counter/graph.json"
     },
     {
+      "bytes": 939377,
+      "mode": "100644",
+      "path": "evidence/graph/p2-graph.json",
+      "sha256": "0abc1e681525de3124852c31d1fd71daa488cb8ef43a0e055d3ee1efcc941b04",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/graph-sol-parent/graph.json"
+    },
+    {
       "bytes": 809,
       "mode": "100644",
       "path": "evidence/graph/receipt.json",
       "sha256": "bdcd4eed524519b6d99eb726bd17deea2161c648b6aa9daf77d33c2a818082b3",
       "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/graph-sol-counter/receipt.json"
+    },
+    {
+      "bytes": 104,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/contract-tests.stderr",
+      "sha256": "35e173770e8b2ae664bb6a561f29ed51afa8d5f7cc9761dbdfa594317be439b2",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/contract-tests.stderr"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/contract-tests.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/contract-tests.stdout"
+    },
+    {
+      "bytes": 1163,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/independent-go-v2.json",
+      "sha256": "2cc78960dbba1aab7fbb58f9741f7183961ae4f7fc41c60a31a6b761e267c3aa",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/final-backup-independent-go-v2.json"
+    },
+    {
+      "bytes": 1776,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/preparation-receipt.json",
+      "sha256": "a4627a74c96eb437460b10fe7dce51baf1fdc8e91baa5997765c75e92e7e52d8",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/preparation-receipt.json"
+    },
+    {
+      "bytes": 281,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/sql-explain-proof.json",
+      "sha256": "52bf0f61276fbd25be29161ac983cfeaaad7964e59f873e038277ae858af99d1",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/sql-explain-proof.json"
+    },
+    {
+      "bytes": 3089,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/stage-manifest.json",
+      "sha256": "3a4db042074e4a97a702d46301aa3518dd178100e0433f9bef50ae1d0f103781",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/stage-manifest.json"
+    },
+    {
+      "bytes": 21211,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/supplement-manifest.json",
+      "sha256": "a475bd0f4cee28591ff82918c9f3ff8b3d1aae2b40b85826ddbf79c003489974",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/payload/supplement-manifest.json"
+    },
+    {
+      "bytes": 757,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/supplement-proof.json",
+      "sha256": "0805e89221932aff42d8b562c8986937c8d4ed269d0e9ea9ea36b5e157dd4812",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/supplement-proof.json"
+    },
+    {
+      "bytes": 4263,
+      "mode": "100644",
+      "path": "evidence/recovery-v2/test_recovery_contract.py",
+      "sha256": "d13c38525bd4484b2fb091b2297e864f58e25d8da23af01358ca708804704da7",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/test_recovery_contract.py"
     },
     {
       "bytes": 1330,
@@ -1053,11 +1161,116 @@
       "source": "/private/tmp/dashboard-sol-root-token-fix-20261006/package/build-manifest.json"
     },
     {
+      "bytes": 170,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/OriginalSource.Dockerfile",
+      "sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 157,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/Repair.Dockerfile",
+      "sha256": "c5f2cfe1f87dc7f77f771ca7f31885d3651445989e6b9ade64497bf03664d837",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/build-manifest.json",
+      "sha256": "3f5e3d29178207a01f86a6054cc869d8caf8266fb545d5d7f921b548e64b5d66",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 786,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/historical-stage-latency-public.json",
+      "sha256": "46ff773a8823d8076e63f118f40395b6f5c9585c7876407df17fab31e7feb5cc",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 1089,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/image-receipt-public.json",
+      "sha256": "94086abbe4fcd987db877f60283649834449a94d8177e955df717fe8187f746c",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 243,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/install-data-preservation-public.json",
+      "sha256": "39cf15807baf7c585ef041d846cc3f4a541ba9d5d9327ad336d9a854944f9af9",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
+      "bytes": 1345,
+      "mode": "100644",
+      "path": "evidence/release/current-repair/install-readonly-spec-public.json",
+      "sha256": "f715caec48d3ce809dbd1a2712642523a099f6cd3e16216385e3e04264c44d51",
+      "source": "prepared public technical allowlist / direct local AST output"
+    },
+    {
       "bytes": 730,
       "mode": "100644",
       "path": "evidence/release/owner-cua-bindings.json",
       "sha256": "416f693e347954f0c1b422a179decafb090b02e91c97394ae056b98578608749",
       "source": "private owner artifacts hash binding"
+    },
+    {
+      "bytes": 2220,
+      "mode": "100644",
+      "path": "evidence/release/p2/actual-n8n-restore-02.json",
+      "sha256": "6c08607d5b66bd93aec10368a35223ea2e9b8f7894c172d4442fd7f7c8a5a4d2",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/actual-n8n-restore-02.json"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/p2/base-build-manifest.json",
+      "sha256": "313c648519acedd693632837ddab54cf4b65a7198bd49734db628360c61e1a31",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/base-build-manifest.json"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "evidence/release/p2/build-manifest.json",
+      "sha256": "e8e50bea00f5ba529e797e699307bb43b12110f2c27b2107f6c9eccb86c2044f",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/build-manifest.json"
+    },
+    {
+      "bytes": 764,
+      "mode": "100644",
+      "path": "evidence/release/p2/cutover-result.json",
+      "sha256": "2e53c01154bc78afa86f24af88139fa4a260417cd49a9c5066d534f4b1176d3a",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/cutover-result.json"
+    },
+    {
+      "bytes": 5672,
+      "mode": "100644",
+      "path": "evidence/release/p2/enable-independent-review.json",
+      "sha256": "d83228e2d28fba2d40870d69db8ce44ee299ba939f2a1ecb8df3eace74fd30a9",
+      "source": "/private/tmp/dashboard-enable-gate-20261006/review-result.json"
+    },
+    {
+      "bytes": 1029,
+      "mode": "100644",
+      "path": "evidence/release/p2/image-receipt.json",
+      "sha256": "edafa96527ec9fcc56eaac9977b01ff2f254656928c59ac849072b9e9f4942f4",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/image-receipt.json"
+    },
+    {
+      "bytes": 623,
+      "mode": "100644",
+      "path": "evidence/release/p2/installed.json",
+      "sha256": "dbae95415af68f14d85eb57a5dfdfb7ee79060d94b1f788dafc6c7142ac2bd1e",
+      "source": "/private/tmp/dashboard-sol-root-paidwait-release-20261006/installed.json"
+    },
+    {
+      "bytes": 17048,
+      "mode": "100644",
+      "path": "evidence/release/p2/package-manifest.json",
+      "sha256": "b456a3df1e15149c2a386543f0b933e087e96db53587310318e23ae6e21cd3df",
+      "source": "/private/tmp/dashboard-sol-parent-release-20261006/package/package-manifest.json"
     },
     {
       "bytes": 1724,
@@ -1109,11 +1322,46 @@
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/lint.log"
     },
     {
+      "bytes": 2334,
+      "mode": "100644",
+      "path": "evidence/ui/p2-causal-proof.json",
+      "sha256": "4e110f7b0bafd5a84201110de5d63fc059a36adeb4a387012045016534bcbd91",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/followup-causal-proof.json"
+    },
+    {
+      "bytes": 8666,
+      "mode": "100644",
+      "path": "evidence/ui/p2-local-historical-receipt.json",
+      "sha256": "177398e897376f7e36de2931a6e18ecbc7e3a65f75604c69f29d935b984b8ed1",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/receipt-lease-override-01.json"
+    },
+    {
+      "bytes": 1144,
+      "mode": "100644",
+      "path": "evidence/ui/p2-source-bindings.json",
+      "sha256": "6222d83227b50ee093aaba9884a708dad349cfe33c863d87cc4864d741697d81",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source-manifest.json"
+    },
+    {
       "bytes": 114,
       "mode": "100644",
       "path": "evidence/ui/patch-verification.log",
       "sha256": "d1117c2f5c391ddea59a0417e8edd369ddbfcb07d939db0e21056e8573471a9b",
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/patch-verification.log"
+    },
+    {
+      "bytes": 1824,
+      "mode": "100644",
+      "path": "evidence/ui/published-p2-preparation-manifest.json",
+      "sha256": "cef982a87671a3f17ca97c674526a705b2e403f7765a55b47e59cfca044e1b1a",
+      "source": "/private/tmp/dashboard-sol-root-ui-release-20261006/release-manifest.json"
+    },
+    {
+      "bytes": 930,
+      "mode": "100644",
+      "path": "evidence/ui/published-p2-static-proof.json",
+      "sha256": "9b60753bde6d8f7ceef4a5c40cbda12e33a586901e2e97f00b0229a7a86ce72b",
+      "source": "/private/tmp/dashboard-sol-root-ui-release-20261006/actual-public-static-proof.json"
     },
     {
       "bytes": 8303,
@@ -1144,11 +1392,46 @@
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/ui-source.patch"
     },
     {
+      "bytes": 3637,
+      "mode": "100644",
+      "path": "recovery-v2/RECOVERY.md",
+      "sha256": "df112354d9530df9688eeb69f3c9bd3bd26a54d7d69b1db1b3306543f025b280",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/RECOVERY.md"
+    },
+    {
+      "bytes": 9427,
+      "mode": "100644",
+      "path": "recovery-v2/enriched-fingerprint.sql",
+      "sha256": "c2394aa13faae4db8bd2c0ec033d169d194fccc00d8be02996c8c33f3d50e3d7",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/enriched-fingerprint.sql"
+    },
+    {
+      "bytes": 7529,
+      "mode": "100644",
+      "path": "recovery-v2/full_backup_once.py",
+      "sha256": "89c804126b162e83a8dce7a0fc8a1929a38d24bc6b4fd98598c351f5c2227612",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/full_backup_once.py"
+    },
+    {
+      "bytes": 5339,
+      "mode": "100644",
+      "path": "recovery-v2/restore_enriched.py",
+      "sha256": "d0e2c94d57138d1bda5166083c8433310ac4d3422bb026e0f4b92d415c8f5113",
+      "source": "/private/tmp/dashboard-final-backup-preparation-20261006/supplement-v2/restore_enriched.py"
+    },
+    {
       "bytes": 25144,
       "mode": "100644",
       "path": "sql-authority-copy/20261006103000_isolate_processing_job_failures.sql",
       "sha256": "958d2ace29452beb4f7de9d10c748f331d462692aa9980e8b367b0ca34fec68c",
       "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006103000_isolate_processing_job_failures.sql"
+    },
+    {
+      "bytes": 2218,
+      "mode": "100644",
+      "path": "sql-authority-copy/20261006123000_bound_processing_status_isolation.sql",
+      "sha256": "8654d1c19dd3c3d32eb821dac00234a070a741ef1d841eef0cf51a0b9d7b1b3a",
+      "source": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/supabase/migrations/20261006123000_bound_processing_status_isolation.sql"
     },
     {
       "bytes": 350,
@@ -1620,11 +1903,11 @@
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/PlannerEditor.tsx"
     },
     {
-      "bytes": 11920,
+      "bytes": 12138,
       "mode": "100644",
       "path": "ui/src/features/working-memory/ProcessingPanel.tsx",
-      "sha256": "459e3cb4be70f3c980aac4a1e62b1fcc83323b46e5e36962e1f306af44f59f39",
-      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/ProcessingPanel.tsx"
+      "sha256": "b959e912d4dc9eaf64030758bd6b03b9913e1c08986dade9a31d9a6e60737c15",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/src/features/working-memory/ProcessingPanel.tsx"
     },
     {
       "bytes": 9855,
@@ -1676,11 +1959,11 @@
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/preferences.ts"
     },
     {
-      "bytes": 8908,
+      "bytes": 10701,
       "mode": "100644",
       "path": "ui/src/features/working-memory/processing-status.ts",
-      "sha256": "12d25ccd25d2b7a2465351aea8ee90fd0f48355ac99c6d895b2824751b049e37",
-      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/features/working-memory/processing-status.ts"
+      "sha256": "f36578edceb9193de7c84bb55b9c8f6281a3c79a6ec767d634b79f038cf0af0e",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/src/features/working-memory/processing-status.ts"
     },
     {
       "bytes": 32370,
@@ -1802,11 +2085,11 @@
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/MeetingsPage.tsx"
     },
     {
-      "bytes": 15008,
+      "bytes": 15233,
       "mode": "100644",
       "path": "ui/src/pages/MemoryApp.tsx",
-      "sha256": "416faead097751dcf96b9984e0dafeb52ab9fcd82a4130fa3e26d3f7cbcf5a83",
-      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/src/pages/MemoryApp.tsx"
+      "sha256": "c53d544d9e702453f82e0a157f0ee4aa6428d6808d7e581f68be7c902f9b6b67",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/src/pages/MemoryApp.tsx"
     },
     {
       "bytes": 43285,
@@ -1865,11 +2148,25 @@
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/tailwind.config.js"
     },
     {
-      "bytes": 12836,
+      "bytes": 4573,
+      "mode": "100644",
+      "path": "ui/tests/memory-shell-status.test.mjs",
+      "sha256": "f186be16b2ecd1aa259b41a45129f1c50042b3f8578f518ae0a3da5265bfe3c5",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/tests/memory-shell-status.test.mjs"
+    },
+    {
+      "bytes": 6487,
+      "mode": "100644",
+      "path": "ui/tests/processing-panel.test.mjs",
+      "sha256": "44c13e97d03c53133bab06d3ced3822a3add952f98f11d8fc8966a53e9edb9b3",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/tests/processing-panel.test.mjs"
+    },
+    {
+      "bytes": 18136,
       "mode": "100644",
       "path": "ui/tests/processing-status.test.mjs",
-      "sha256": "51385b978a35369632b42b2a90cd586188a2f417c8222aa5cb8253ca5854a470",
-      "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/tests/processing-status.test.mjs"
+      "sha256": "8be80e8585c36b6e79993912e1f3bbb680c05d6f471980c270e2e113d32eb403",
+      "source": "/private/tmp/dashboard-blocking-job-ui-fix-20261006/source/tests/processing-status.test.mjs"
     },
     {
       "bytes": 727,
@@ -1898,8 +2195,118 @@
       "path": "ui/vite.config.ts",
       "sha256": "081a7b8664605b559be54a4bf6605bbed75230b4c61f7f455ea68127ed897285",
       "source": "/private/tmp/dashboard-sol-ui-20261006/ui-stale-disabled-01/source/vite.config.ts"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/OriginalSource.Dockerfile",
+      "bytes": 170,
+      "mode": "100644",
+      "sha256": "d2c2135b1452f6cbab29dc42edfc704d377b654779adf5c5f571df239abb8b4d",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/Repair.Dockerfile",
+      "bytes": 155,
+      "mode": "100644",
+      "sha256": "a4ed10c6d8394868a6946ce4fabe9c74f5ff7ac576b9827d9c1dcbd5e32d670c",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/build-manifest.json",
+      "bytes": 14967,
+      "mode": "100644",
+      "sha256": "0c1b612bdd394bb8e76da36e4e93b17a3706ff7825a9b5424b1aa6706e2e2a7f",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/compact_reconcile.patch",
+      "bytes": 669,
+      "mode": "100644",
+      "sha256": "7b6a7dc8ee4687416d7cb58f433847e2c288684e1f5ec80539c0607d810a53ea",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/corrected-n8n-guard-receipt.json",
+      "bytes": 824,
+      "mode": "100644",
+      "sha256": "847f01b9b3ae9b7cbe7454e99c44730cd85049fc094798ef57ddd2bdba4b7c0f",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/image-receipt.json",
+      "bytes": 1366,
+      "mode": "100644",
+      "sha256": "c58add316c2fcdfee3ea27721804b0bd5d7f8160ff9d38e6c377adc8277838db",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/rollout-and-recovery-binding.json",
+      "bytes": 1876,
+      "mode": "100644",
+      "sha256": "18572ddaf0b8dfcff60d34992e6178c07b1e547310e2f34bd941552dd5d688e9",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/runtime13.json",
+      "bytes": 1188,
+      "mode": "100644",
+      "sha256": "af6acb258bc52c2fc4bd920861e25e110a4eb5a148fb2966f5b1be8ebf810a94",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/technical-review-receipt.json",
+      "bytes": 27690,
+      "mode": "100644",
+      "sha256": "c388117e56be26f9e9610376fa1d99b366c6343bf1983f5d57ee21e7e57bbaf2",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
+    },
+    {
+      "path": "evidence/release/p3-direct-current/test-plan-and-results.json",
+      "bytes": 3390,
+      "mode": "100644",
+      "sha256": "ac1789fa513f20efe2c386e87d0648f9fae07c0b031fb726855cf32ec5d7b43c",
+      "source": "P3 exact public technical binding; private original bodies/config excluded"
     }
   ],
+  "final_actual_acceptance_and_enable": "Root-owned; this preparation makes no later execution claim",
+  "final_full_backup_and_database_restore": "pending Root actual evidence; historical preparation receipts remain historical",
+  "manifest_count_interpretation": {
+    "build_map_total": 139,
+    "copied_build_map_entries": 138,
+    "disjoint_non_schema_entries": 91,
+    "excluded_sensitive_entries": 1,
+    "schema_entries_included_in_build_map": 48
+  },
   "manifest_entries": 139,
-  "sql_selected": 48
+  "package_manifest_sha256": "b456a3df1e15149c2a386543f0b933e087e96db53587310318e23ae6e21cd3df",
+  "preparation_at_utc": "2026-10-06T15:35:56.365435+00:00",
+  "prepared_final_completion": false,
+  "sql_selected": 48,
+  "current_p3": {
+    "at_utc": "2026-10-06T20:06:12.438906+00:00",
+    "image_id": "sha256:c07075ed2c911d83d052d256593fe05aaa72edb57c3cb54f84f6537e19b407e6",
+    "pipeline": "v11:compact1:gate1:gpt-6.1-sol:88fc544001f40996:canonical1:42317499c5d8a62a",
+    "source139_manifest_sha256": "0c1b612bdd394bb8e76da36e4e93b17a3706ff7825a9b5424b1aa6706e2e2a7f",
+    "approved_five_module_map": {
+      "compact_reconcile.py": "6e9c71b31aba782a69009ec67985140989ac55c3f628de20516bc006ec688065",
+      "generation_review.py": "cb4edc2fcef7732e7762c394e70e3841183d202de2c5dd2c4282408b0dbf3a79",
+      "generation_service.py": "60282b2f1d96dbada3063c2a296488ba8ea011990c5c490731b2af6b5e3db5e3",
+      "journal_service.py": "9f93a83d7c6fdc8d871d7c3c3db48481b7cefc6c38a0c3f8bd3b78742635041b",
+      "server.py": "29e84b34b463cfa430729f7c0ab08db543bcb2f57e5d0a0a3e91c8be4c374f05"
+    },
+    "original_Dockerfile_unchanged": true,
+    "overlay_recipe_sha256": "a4ed10c6d8394868a6946ce4fabe9c74f5ff7ac576b9827d9c1dcbd5e32d670c",
+    "public_evidence": "evidence/release/p3-direct-current",
+    "graph_sha256": "6a294fe4a1609155a47812834cfb06d8b34fb2e2864a8a6f77c32ab3d9afc43c",
+    "graph_nodes": 745,
+    "graph_edges": 2217,
+    "historical_89_fields_retained": true,
+    "actual_install_and_routing": "OPEN_UNTIL_ROOT_PROOF",
+    "processing_native_owner_HTTP_enable": "OPEN",
+    "backup_pair_isolated_restore_source_after_restore": "OPEN",
+    "source_copy_status": "FIVE_APPROVED_SOURCE_FILES_POSITIVELY_READ_BEFORE_AND_DIRECTLY_VERIFIED_AFTER",
+    "final_freeze": false,
+    "final_completed": false,
+    "unknown_attempts_cost_counters": "UNKNOWN_NOT_RESET",
+    "source_copy_at_utc": "2026-10-06T20:06:55.816019+00:00"
+  }
 }

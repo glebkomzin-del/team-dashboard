@@ -149,7 +149,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(200,{'reviews':rows,'revision':space['revision']})
         if path.startswith('/generation-reviews/'):
             from generation_service import inspect
-            return self.send_json(200,inspect(JOURNAL,self.identity,path.removeprefix('/generation-reviews/')))
+            with JOURNAL.generation_reader():
+                return self.send_json(200,inspect(JOURNAL,self.identity,path.removeprefix('/generation-reviews/')))
         if path.startswith('/operations/jobs/'):
             from job_recovery import inspect
             result,_=inspect(JOURNAL,self.identity,path.removeprefix('/operations/jobs/'),params.get('command_id',[''])[0])
@@ -363,7 +364,8 @@ class Handler(BaseHTTPRequestHandler):
                     from source_edit import stage
                 else:
                     from generation_service import stage
-                return self.send_json(200,stage(JOURNAL,self.identity,request))
+                with JOURNAL.generation_reader():
+                    return self.send_json(200,stage(JOURNAL,self.identity,request))
             except PermissionError:return self.send_json(403,{'error':'Access denied'})
             except RevisionConflict:return self.send_json(409,{'error':'Der Ausgangsstand hat sich geändert. Der Prüfentwurf muss erneut abgeglichen werden.'})
             except (ValueError,TypeError,KeyError):return self.send_json(400,{'error':'Der Prüfentwurf ist unvollständig oder nicht durch archivierte Originale gedeckt.'})
@@ -380,7 +382,8 @@ class Handler(BaseHTTPRequestHandler):
                     result=decide(JOURNAL,self.identity,request)
                 elif urlparse(self.path).path=='/generation-decisions':
                     from generation_service import decide
-                    result=decide(JOURNAL,self.identity,request)
+                    with JOURNAL.generation_reader():
+                        return self.send_json(200,decide(JOURNAL,self.identity,request))
                 else:result=JOURNAL.decide(self.identity,request)
                 return self.send_json(200,result)
             except PermissionError:return self.send_json(403,{'error':'Access denied'})

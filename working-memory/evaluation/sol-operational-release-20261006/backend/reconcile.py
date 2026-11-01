@@ -56,6 +56,16 @@ def candidates(db, meeting, proposal, prior_days_only=False):
         fields = ('id', 'title', 'claim', 'matter', 'owner', 'status', 'due_text',
                   'due_reference_date', 'condition_text', 'last_changed')
         value = {key: item.get(key) for key in fields}
+        # A work title is not a matter identity. Bind its original parent from
+        # the stored work event, even when search returned no hit for that matter.
+        parent = db.execute('''SELECT o.matter_id FROM work_events e
+            JOIN observations o ON o.id=e.observation_id
+            WHERE e.work_id=? AND e.event_date<=?
+            ORDER BY e.rowid LIMIT 1''', (item['id'], meeting['meeting_date'][:10])).fetchone()
+        if not parent:
+            parent = db.execute('''SELECT matter_id FROM observations
+                WHERE id=? AND event_date<=?''', (item['id'], meeting['meeting_date'][:10])).fetchone()
+        value['parent_matter_id'] = parent[0] if parent else None
         value['original_commitment_evidence'] = (item.get('history') or [{}])[0].get('quotes', [])
         result.append(value)
     return result

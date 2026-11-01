@@ -196,8 +196,9 @@ def verify(folder):
             if call.get('sanitized_'+field+'_hash') and not call.get('redaction_id'):raise ValidationError('Sanitized question call lacks a deletion ledger')
             if raw is not None and (effective is None or hashlib.sha256(raw.encode()).hexdigest()!=effective):raise ValidationError('Question call checksum mismatch')
             if raw is None and h is not None and not call.get('redaction_id'):raise ValidationError('Question call lost content without a deletion ledger')
+    verified_logical=None
     if generations:
-        from generation_review import logical_entries,verify_generation
+        from generation_review import _logical_entries,verify_generation
         journal=list(store.entries());review_ids=set()
         for generation in generations:
             if generation['payload'].get('format')=='wm-redacted-generation-v1':
@@ -209,13 +210,26 @@ def verify(folder):
             if generation['review_sha256']!=generation['payload'].get('review_sha256'):
                 raise ValidationError('Generation review checksum differs from its envelope')
             if generation.get('job_id') and generation['job_id'] not in jobs:raise ValidationError('Generation recovery job is missing')
-            base=logical_entries(journal[:generation['expected_revision']]);verify_generation(base,generation['payload'])
+        # Every review is checked against its exact boundary; only fully
+        # verified earlier RAW transport is reused within this frozen check.
+        logical=[];cursor=0
+        for generation in sorted((value for value in generations if value['payload'].get('format')!='wm-redacted-generation-v1'),key=lambda value:value['expected_revision']):
+            ceiling=generation['expected_revision']
+            if ceiling>cursor:
+                logical,_=_logical_entries(journal[cursor:ceiling],_seed=list(logical));cursor=ceiling
+            verify_generation(logical,generation['payload'])
             if generation['state']=='accepted':
                 revision=generation['decision_result'].get('revision')
                 if type(revision) is not int or not 1<=revision<=len(journal):raise ValidationError('Accepted generation receipt is missing')
                 accepted=journal[revision-1]
                 if accepted['kind']!='generation' or accepted['command_id']!=generation['decision_command_id'] or accepted['actor_id']!=generation['decision_actor_id'] or accepted['payload']!=generation['payload']:
                     raise ValidationError('Accepted generation differs from immutable journal')
+        # Preserve the original redaction/checkpoint reconstruction path.
+        if not any(entry['kind']=='redaction' for entry in journal):
+            logical,_=_logical_entries(journal[cursor:],_seed=list(logical))
+            def verified_logical(boundary):
+                if boundary!=space:raise ValidationError('Verified backup prefix boundary changed')
+                return logical
     with tempfile.TemporaryDirectory(prefix='verify-backup-') as tmp:
         archive_path=Path(tmp)/'archive.sqlite';rebuild_archive(store,archive_path)
         archive=open_archive(archive_path,readonly=True)
@@ -232,7 +246,7 @@ def verify(folder):
                     if audit['job_id']==job['id'] and audit['body_hash']!=row['body_hash']:
                         raise ValidationError('Technical isolation original changed')
         finally:archive.close()
-        projection_path=Path(tmp)/'projection.sqlite';rebuild(store,projection_path)
+        projection_path=Path(tmp)/'projection.sqlite';rebuild(store,projection_path,_logical_base=verified_logical)
         db=connect(projection_path)
         try:
             if db.execute('pragma integrity_check').fetchone()[0]!='ok':raise ValidationError('Projection restore integrity failure')

@@ -97,26 +97,45 @@ def expand_generation(base,payload):
 
 
 def logical_entries(entries):
+    return _logical_entries(entries)[0]
+
+
+def _logical_entries(entries, *, _seed=None):
     """Remove transport metadata, retaining the last accepted generation if any."""
-    logical=[]
-    for entry in entries:
-        if entry['kind']=='generation':
-            payload=entry['payload']
-            verify_generation(logical,payload)
-            logical=expand_generation(logical,payload)
-        elif entry['kind']=='redaction':
-            from projection_snapshot import verify_snapshot
-            payload=verify_snapshot(entry['payload'])
-            logical=deepcopy(payload['logical_basis'])
-        elif entry['kind']=='source':
-            source=entry.get('source')
-            if not source or source['id']!=entry.get('source_version',source['id']):
-                raise ValidationError('Generation needs every pinned source, not a floating reference')
-            logical.append(_entry({'kind':'source','source':{key:source[key] for key in SOURCE_FIELDS},'payload':entry['payload']}))
-        elif entry['kind']=='human':
-            logical.append(_entry({key:entry[key] for key in ('kind','command_id','actor_id','payload')}))
-        else:raise ValidationError('Generation contains an unknown journal entry')
-    return logical
+    logical=[] if _seed is None else _seed;projection=None;certified=None
+    try:
+        for position,entry in enumerate(entries,1):
+            if entry['kind']=='generation':
+                payload=entry['payload']
+                if projection is None:projection,_=materialize(logical)
+                following,_,verified_raw=verify_generation(logical,payload,_projection=True,_base_projection=projection,_raw_entries=True)
+                projection.close();projection=following
+                logical=verified_raw
+                certified=(position,list(logical))
+                continue
+            if entry['kind']=='redaction':
+                if projection is not None:
+                    projection.close();projection=None
+                from projection_snapshot import verify_snapshot
+                payload=verify_snapshot(entry['payload'])
+                logical=deepcopy(payload['logical_basis']);certified=None
+            elif entry['kind']=='source':
+                if _seed is not None and projection is None:projection,_=materialize(logical)
+                source=entry.get('source')
+                if not source or source['id']!=entry.get('source_version',source['id']):
+                    raise ValidationError('Generation needs every pinned source, not a floating reference')
+                logical.append(_entry({'kind':'source','source':{key:source[key] for key in SOURCE_FIELDS},'payload':entry['payload']}))
+            elif entry['kind']=='human':
+                if _seed is not None and projection is None:projection,_=materialize(logical)
+                logical.append(_entry({key:entry[key] for key in ('kind','command_id','actor_id','payload')}))
+            else:raise ValidationError('Generation contains an unknown journal entry')
+            if projection is not None:
+                # The prefix was fully verified in this request. Replay only
+                # its appended entry with materialize's identical predicates.
+                _materialize_into(projection,[logical[-1]],prior=logical[:-1])
+        return logical,certified
+    finally:
+        if projection is not None:projection.close()
 
 
 def materialize(entries, *, prepare=False, human_guard='field-v1', prepare_sources=None):
@@ -124,34 +143,45 @@ def materialize(entries, *, prepare=False, human_guard='field-v1', prepare_sourc
         raise ValidationError('Selective source preparation requires prepare mode')
     if prepare_sources is not None:
         prepare_sources=set(prepare_sources)
-    db=connect(':memory:');normalized=[];sources=set();humans=set();last_date=None
+    db=connect(':memory:')
     try:
-        for raw in entries:
-            entry=deepcopy(_entry(raw))
-            if entry['kind']=='source':
-                source=entry['source'];payload=entry['payload']
-                if source['source_id'] in sources:raise ValidationError('Generation repeats a source identity')
-                if last_date is not None and source['event_date']<last_date:raise ValidationError('Generation source order is not chronological')
-                sources.add(source['source_id']);last_date=source['event_date']
-                should_prepare=prepare and (prepare_sources is None or source['source_id'] in prepare_sources)
-                if should_prepare:
-                    entry['payload']=prepare_source(db,source,payload['proposal'],pipeline=payload['pipeline'],model=payload['model'],
-                        provenance=payload['provenance'],usage=payload.get('usage'),matter_links=payload.get('matter_links'),
-                        human_guard=human_guard)
-                    if 'archive_note' in payload:entry['payload']['archive_note']=deepcopy(payload['archive_note'])
-                elif not payload.get('result_sha256'):raise ValidationError('Generation lacks an accepted result checksum')
-                apply_saved(db,source,entry['payload'])
-            elif entry['kind']=='redacted_source':
-                from journal_projection import apply_redacted_saved
-                apply_redacted_saved(db,entry['package'])
-            else:
-                if entry['command_id'] in humans:raise ValidationError('Generation repeats a personal decision')
-                humans.add(entry['command_id'])
-                record(db,command_id=entry['command_id'],actor_id=entry['actor_id'],command=entry['payload'])
-            normalized.append(entry)
-        return db,normalized
+        return db,_materialize_into(db,entries,prepare=prepare,human_guard=human_guard,prepare_sources=prepare_sources)
     except Exception:
         db.close();raise
+
+
+def _materialize_into(db,entries,*,prior=(),prepare=False,human_guard='field-v1',prepare_sources=None):
+    # Only logical_entries supplies a prior, together with its own positively
+    # verified live projection. No cross-request cache or caller flag is used.
+    normalized=[]
+    sources={e['source']['source_id'] for e in prior if e['kind']=='source'}
+    humans={e['command_id'] for e in prior if e['kind']=='human'}
+    dates=[e['source']['event_date'] for e in prior if e['kind']=='source']
+    last_date=dates[-1] if dates else None
+    for raw in entries:
+        entry=deepcopy(_entry(raw))
+        if entry['kind']=='source':
+            source=entry['source'];payload=entry['payload']
+            if source['source_id'] in sources:raise ValidationError('Generation repeats a source identity')
+            if last_date is not None and source['event_date']<last_date:raise ValidationError('Generation source order is not chronological')
+            sources.add(source['source_id']);last_date=source['event_date']
+            should_prepare=prepare and (prepare_sources is None or source['source_id'] in prepare_sources)
+            if should_prepare:
+                entry['payload']=prepare_source(db,source,payload['proposal'],pipeline=payload['pipeline'],model=payload['model'],
+                    provenance=payload['provenance'],usage=payload.get('usage'),matter_links=payload.get('matter_links'),
+                    human_guard=human_guard)
+                if 'archive_note' in payload:entry['payload']['archive_note']=deepcopy(payload['archive_note'])
+            elif not payload.get('result_sha256'):raise ValidationError('Generation lacks an accepted result checksum')
+            apply_saved(db,source,entry['payload'])
+        elif entry['kind']=='redacted_source':
+            from journal_projection import apply_redacted_saved
+            apply_redacted_saved(db,entry['package'])
+        else:
+            if entry['command_id'] in humans:raise ValidationError('Generation repeats a personal decision')
+            humans.add(entry['command_id'])
+            record(db,command_id=entry['command_id'],actor_id=entry['actor_id'],command=entry['payload'])
+        normalized.append(entry)
+    return normalized
 
 
 def _observations(db):
@@ -342,16 +372,22 @@ def compile_generation(base,plan,*,source_reviews,identity_links,reason,state_ha
         if after_db:after_db.close()
 
 
-def verify_generation(base,payload,*,_projection=False,_base_projection=None):
+def verify_generation(base,payload,*,_projection=False,_base_projection=None,_raw_entries=False):
+    if type(_raw_entries) is not bool or (_raw_entries and not _projection):
+        raise ValidationError('Raw entries require verified projection replay')
     if not isinstance(payload,dict) or payload.get('format')!=FORMAT:raise ValidationError('Unknown generation format')
     unsigned={k:v for k,v in payload.items() if k!='review_sha256'}
     if digest(unsigned)!=payload.get('review_sha256'):raise ValidationError('Generation review checksum mismatch')
     if digest(base)!=payload.get('base_sha256'):raise ValidationError('Generation base has changed')
-    checked=compile_generation(base,expand_generation(base,payload),source_reviews=payload['source_reviews'],identity_links=payload['identity_links'],reason=payload['reason'],state_hash_format=payload.get('state_hash_format'),topic_identity_links=payload.get('topic_identity_links'),source_order_review=payload.get('source_order_review'),projection_rules=payload.get('projection_rules','legacy'),_retain_projection=_projection,_base_projection=_base_projection)
+    raw=expand_generation(base,payload)
+    checked=compile_generation(base,raw,source_reviews=payload['source_reviews'],identity_links=payload['identity_links'],reason=payload['reason'],state_hash_format=payload.get('state_hash_format'),topic_identity_links=payload.get('topic_identity_links'),source_order_review=payload.get('source_order_review'),projection_rules=payload.get('projection_rules','legacy'),_retain_projection=_projection,_base_projection=_base_projection)
     if _projection:
         checked,projection,prepared=checked
     if checked!=payload:
         if _projection:projection.close()
         raise ValidationError('Generation no longer reproduces the reviewed result')
-    if _projection:return projection,prepared
+    if _projection:
+        # Only expose the exact expanded transport after the complete immutable
+        # package comparison, never substitute normalized preparation output.
+        return (projection,prepared,raw) if _raw_entries else (projection,prepared)
     return True

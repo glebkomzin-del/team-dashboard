@@ -1,0 +1,152 @@
+{
+  "title": "Warum neue Meetings nur Transkripte zeigen können",
+  "summary": "Datenfluss zwischen der alten Meetings-Ansicht und der neuen quellengebundenen Verarbeitung.",
+  "snapshot": "2026-09-09 · commit 87aa669 · lokale Änderungen vorhanden",
+  "coverage": {
+    "checked": [
+      "meeting-os/src/supabase.ts und App.tsx: alte Meetings-Ansicht",
+      "meeting-os/working-memory/canonical_worker.py: neue Verarbeitung",
+      "meeting-os/working-memory/future_summary.py: Summary-Erzeugung",
+      "meeting-os/working-memory/server.py: Archiv-Auslieferung"
+    ],
+    "unknown": [
+      "Aktueller Produktionswert von enabled, automatic_from und Budget",
+      "Status und Fehlermeldung der konkreten neueren Meetings",
+      "Welcher Deploy/Build im sichtbaren Dashboard aktiv ist"
+    ]
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Warum die sichtbare Liste abweichen kann",
+      "description": "Die alte Meetings-Seite und die neue Verarbeitung schreiben bzw. lesen unterschiedliche Speicherorte.",
+      "direction": "LR",
+      "nodes": [
+        {
+          "id": "transcript",
+          "label": "Neues Transkript",
+          "kind": "terminal",
+          "status": "verified",
+          "detail": "Eine Quelle wird als Original/Transkript aufgenommen.",
+          "then": "In den neuen Verarbeitungs- und Archivfluss einreihen",
+          "sources": [{"path": "meeting-os/working-memory/server.py", "line": 265, "note": "Archivierung und Queueing"}]
+        },
+        {
+          "id": "eligible",
+          "label": "Automatik zulässig?",
+          "kind": "decision",
+          "status": "verified",
+          "detail": "Erfordert aktivierte Konfiguration, ein Startdatum und ein Datum ab diesem Startdatum.",
+          "exceptions": ["Bei deaktivierter Verarbeitung oder historischem Datum erreicht die Quelle kein Modell."],
+          "sources": [{"path": "meeting-os/working-memory/canonical_worker.py", "line": 61, "note": "Konfigurations- und Datumssperre"}]
+        },
+        {
+          "id": "worker",
+          "label": "Quellengebundene Verarbeitung",
+          "status": "verified",
+          "detail": "Der Worker verarbeitet das gesamte Original mit einem an der Journal-Revision fixierten Kontext.",
+          "exceptions": ["Budget, unbekannter Provider-Ausgang, Kontextwechsel, Validierungs- oder Transportfehler pausieren den Job."],
+          "sources": [{"path": "meeting-os/working-memory/canonical_worker.py", "line": 90, "note": "Verarbeitung"}, {"path": "meeting-os/working-memory/canonical_worker.py", "line": 107, "note": "Pausengründe"}]
+        },
+        {
+          "id": "archive_summary",
+          "label": "Summary im Archiv",
+          "status": "verified",
+          "detail": "Die Summary entsteht innerhalb desselben erfolgreichen Extraktionsaufrufs und wird als source_summary-Archivnotiz publiziert.",
+          "sources": [{"path": "meeting-os/working-memory/future_summary.py", "line": 1, "note": "Keine Neu-Summary für Altbestand"}, {"path": "meeting-os/working-memory/canonical_worker.py", "line": 95, "note": "Summary erzeugen"}, {"path": "meeting-os/working-memory/canonical_worker.py", "line": 100, "note": "Archivnotiz publizieren"}]
+        },
+        {
+          "id": "legacy_meetings",
+          "label": "Sichtbare Meetings-Seite",
+          "status": "verified",
+          "detail": "Sie liest ausschließlich die alte Supabase-Tabelle meetings, insbesondere deren ai_summary-Feld.",
+          "sources": [{"path": "meeting-os/src/supabase.ts", "line": 56, "note": "Abfrage der Tabelle meetings"}, {"path": "meeting-os/src/App.tsx", "line": 1041, "note": "Anzeige von ai_summary oder Keine Zusammenfassung"}]
+        },
+        {
+          "id": "missing",
+          "label": "Nur Transkript sichtbar",
+          "kind": "terminal",
+          "status": "inferred",
+          "detail": "Das tritt ein, wenn kein ai_summary in der alten meetings-Tabelle steht. Eine neue Archiv-Summary wird von dieser Seite nicht abgefragt.",
+          "sources": [{"path": "meeting-os/working-memory/server.py", "line": 120, "note": "Summary-Verfügbarkeit existiert im separaten Archiv-Endpunkt"}, {"path": "meeting-os/src/supabase.ts", "line": 56, "note": "Kein Archiv-Endpunkt in der Meetings-Abfrage"}]
+        }
+      ],
+      "edges": [
+        {"from": "transcript", "to": "eligible"},
+        {"from": "eligible", "to": "worker", "label": "Ja"},
+        {"from": "eligible", "to": "missing", "label": "Nein / pausiert"},
+        {"from": "worker", "to": "archive_summary", "label": "erfolgreich"},
+        {"from": "worker", "to": "missing", "label": "Job pausiert/fehlerhaft"},
+        {"from": "archive_summary", "to": "legacy_meetings", "label": "keine direkte Übernahme"},
+        {"from": "legacy_meetings", "to": "missing", "label": "ai_summary leer"}
+      ]
+    },
+    {
+      "id": "date_gate",
+      "title": "Startdatum und bisherige Summaries",
+      "description": "Was der geprüfte Projektstand über die Grenze am 08.09.2026 aussagt.",
+      "direction": "TD",
+      "nodes": [
+        {
+          "id": "before",
+          "label": "Vor dem Startdatum",
+          "status": "verified",
+          "detail": "Historische Quellen werden absichtlich nicht automatisch erneut kostenpflichtig verarbeitet oder zusammengefasst.",
+          "exceptions": ["Eine manuelle, explizit autorisierte Verarbeitung wäre ein anderer Vorgang."],
+          "sources": [{"path": "meeting-os/working-memory/canonical_worker.py", "line": 63, "note": "Datumsgate"}, {"path": "meeting-os/working-memory/docs/EVALUATION.md", "line": 11, "note": "Keine automatische Wiederverarbeitung alter Quellen"}]
+        },
+        {
+          "id": "from_eighth",
+          "label": "Ab 08.09.2026",
+          "status": "verified",
+          "detail": "Der geprüfte Deployment-Nachweis nennt automatic_from = 2026-09-08. Das ist ein dokumentierter Wert, nicht der live ausgelesene Produktionswert.",
+          "sources": [{"path": "meeting-os/working-memory/evaluation/terra-deployment-2026-09-07.json", "line": 20, "note": "Deployment-Nachweis"}]
+        },
+        {
+          "id": "old_summary",
+          "label": "Ältere sichtbare Summary",
+          "status": "inferred",
+          "detail": "Die von dir genannte letzte sichtbare Summary kann aus der älteren meetings.ai_summary-Datenhaltung stammen. Das konkrete Meeting wurde nicht live abgefragt.",
+          "sources": [{"path": "meeting-os/src/supabase.ts", "line": 59, "note": "Altes Summary-Feld"}]
+        }
+      ],
+      "edges": [
+        {"from": "before", "to": "from_eighth", "label": "Automatikgrenze"},
+        {"from": "old_summary", "to": "before", "label": "möglicher alter Speicherpfad"}
+      ]
+    },
+    {
+      "id": "what_to_check",
+      "title": "Welche Live-Prüfung die Ursache entscheidet",
+      "description": "Die folgenden Punkte sind nicht aus dem Repository allein ableitbar.",
+      "direction": "LR",
+      "nodes": [
+        {
+          "id": "operations",
+          "label": "Live-Processing-Status",
+          "status": "verified",
+          "detail": "Der Operations-Endpunkt liefert Konfiguration, Worker-Status und Verarbeitungsstatus.",
+          "sources": [{"path": "meeting-os/working-memory/server.py", "line": 108, "note": "Operations-Antwort"}]
+        },
+        {
+          "id": "job_detail",
+          "label": "Job des konkreten Meetings",
+          "status": "verified",
+          "detail": "Der Jobzustand unterscheidet queued, running/prepared, applied und pausierte Gründe.",
+          "sources": [{"path": "meeting-os/working-memory/canonical_worker.py", "line": 46, "note": "Job-Claim und Zustände"}, {"path": "meeting-os/working-memory/canonical_worker.py", "line": 107, "note": "Pausengründe"}]
+        },
+        {
+          "id": "storage_match",
+          "label": "Archiv-Summary gegen meetings.ai_summary",
+          "status": "verified",
+          "detail": "Prüfen, ob die neue Archiv-Summary existiert, während die alte Tabelle leer bleibt. Das würde die beobachtete Diskrepanz direkt erklären.",
+          "sources": [{"path": "meeting-os/working-memory/server.py", "line": 120, "note": "Archiv-Summary"}, {"path": "meeting-os/src/supabase.ts", "line": 56, "note": "alte Tabellenansicht"}]
+        }
+      ],
+      "edges": [
+        {"from": "operations", "to": "job_detail"},
+        {"from": "job_detail", "to": "storage_match"}
+      ]
+    }
+  ]
+}

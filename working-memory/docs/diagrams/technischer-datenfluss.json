@@ -1,0 +1,611 @@
+{
+  "title": "Wie Meeting OS Text technisch verarbeitet",
+  "summary": "Speichern, indexieren, lesen und an die KI übergeben sind getrennte Schritte. Klicke auf einen Knoten für Details und Codebelege.",
+  "snapshot": "20.09.2026 · Chat ohne Kostenlimit, Titelkorrekturen und Original-Löschung produktiv; n8n und automatische Verarbeitung wieder aktiv. Rückstand wird verarbeitet.",
+  "coverage": {
+    "checked": [
+      "Importadapter, kanonisches Archiv/Journal, Hybridverarbeitung, Suchindex, Fragenservice und Backupcode"
+    ],
+    "unknown": [
+      "Fachliche Qualität jeder Modellantwort ist nicht durch Strukturtests bewiesen.",
+      "Kein echtes Original wurde zur Prüfung gelöscht. Löschablauf mit synthetischen Originalen, Aufgaben, Chatbelegen und Wiederherstellung geprüft."
+    ]
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Technischer Überblick",
+      "direction": "LR",
+      "nodes": [
+        {
+          "id": "input",
+          "label": "Teams → n8n → Import",
+          "detail": "n8n liest die DOCX-Datei und liefert einen geprüften vollständigen Text. Die Eingangsstrecke führt selbst keine fachliche KI-Auswertung aus.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/drive_intake.py"
+            }
+          ],
+          "target": "ingest"
+        },
+        {
+          "id": "archive",
+          "label": "Originalarchiv · dauerhaft gespeichert",
+          "detail": "Originaltext, Export und Metadaten werden mit Prüfsummen und Versionen gespeichert. Das Original ist die Belegquelle; es wird nicht durch die Zusammenfassung ersetzt.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/canonical_archive.py"
+            }
+          ],
+          "target": "storage"
+        },
+        {
+          "id": "extract",
+          "label": "Extraktion · KI liest neues Original",
+          "detail": "Dieser Modellaufruf bekommt das vollständige neue Transkript und feste Extraktionsregeln, noch keinen gesamten Altbestand.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py"
+            }
+          ],
+          "target": "ingest"
+        },
+        {
+          "id": "index",
+          "label": "Suchindex · Text + Vektoren gespeichert",
+          "detail": "Passagen und strukturierte Einträge werden für Volltext- und Ähnlichkeitssuche indexiert. Embeddings sind Suchhilfen, kein zusätzliches Wissen.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_index.py"
+            }
+          ],
+          "target": "storage"
+        },
+        {
+          "id": "compare",
+          "label": "Abgleich · KI liest ausgewählten Kontext",
+          "detail": "Passende Aufgaben, Wissensaussagen, Originalpassagen und Korrekturbeispiele werden gesucht. Aktuelles Original und ausgewählte Kandidaten fließen in Prüfung und Abgleich.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py"
+            }
+          ],
+          "target": "learning"
+        },
+        {
+          "id": "journal",
+          "label": "Journal → aktueller Arbeitsstand",
+          "detail": "Validierte Vorschläge und Nutzerentscheidungen werden dauerhaft journalisiert. Der lesbare Aufgaben-/Wissensstand wird deterministisch daraus aufgebaut.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_projection.py"
+            }
+          ],
+          "target": "storage"
+        },
+        {
+          "id": "chat",
+          "label": "Chat · direkte Abfrage oder belegte Suche",
+          "detail": "Mengenfragen können ohne Modell aus der vollständigen Aufgabenprojektion beantwortet werden. Andere Fragen erhalten ausgewählte Belege plus begrenzten Gesprächskontext.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ],
+          "target": "chat"
+        }
+      ],
+      "edges": [
+        {
+          "from": "input",
+          "to": "archive",
+          "label": "speichern"
+        },
+        {
+          "from": "archive",
+          "to": "extract",
+          "label": "lesen"
+        },
+        {
+          "from": "archive",
+          "to": "index",
+          "label": "indexieren"
+        },
+        {
+          "from": "index",
+          "to": "compare",
+          "label": "suchen"
+        },
+        {
+          "from": "extract",
+          "to": "compare",
+          "label": "Aussagen + Belegstellen"
+        },
+        {
+          "from": "compare",
+          "to": "journal",
+          "label": "prüfen, dann speichern"
+        },
+        {
+          "from": "journal",
+          "to": "index",
+          "label": "geänderte Einträge indexieren"
+        },
+        {
+          "from": "journal",
+          "to": "chat",
+          "label": "gezielt lesen"
+        },
+        {
+          "from": "index",
+          "to": "chat",
+          "label": "relevante Treffer"
+        }
+      ]
+    },
+    {
+      "id": "ingest",
+      "title": "Verarbeitung: Kontext pro Stufe",
+      "direction": "TD",
+      "nodes": [
+        {
+          "id": "in",
+          "label": "Eingang prüfen",
+          "detail": "Dateityp, Quellidentität, Datum, Zeichencodierung, vollständigen Text und Größenlimit prüfen. Bei Fehler ablehnen statt still kürzen.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/drive_intake.py"
+            }
+          ]
+        },
+        {
+          "id": "save",
+          "label": "Original speichern + Auftrag einreihen",
+          "detail": "Inhaltsidentität verhindert doppelte Verarbeitung unveränderter Quellen. Fehlende oder blockierte Aufträge müssen betrieblich sichtbar bleiben.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/drive_intake.py"
+            }
+          ]
+        },
+        {
+          "id": "one",
+          "label": "KI 1: vollständiges neues Original",
+          "detail": "Regeln + Titel/Datum + nummerierte Originalzeilen. Extrahiert Aussagen, Suchanfragen und belegte Zusammenfassung. Kein kompletter alter Aufgabenbestand.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py"
+            }
+          ]
+        },
+        {
+          "id": "find",
+          "label": "Hybridsuche im bisherigen Bestand",
+          "detail": "Suchanfragen aus der Extraktion und einzelnen Aussagen. Aufgaben haben eigene Trefferquote, damit Archivpassagen sie nicht verdrängen.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py"
+            }
+          ]
+        },
+        {
+          "id": "two",
+          "label": "KI 2: Zuordnung und Lebenszyklus",
+          "detail": "Vorläufige Aussagen + ausgewählte vorhandene Aufgaben/Belege/Korrekturen + neues Original. Kompakte Tabellen vermeiden wiederholte gleiche Texte. Mehrere begrenzte Pakete möglich.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/compact_reconcile.py"
+            }
+          ]
+        },
+        {
+          "id": "gate",
+          "label": "Prüfung vor Übernahme",
+          "detail": "Quellen-IDs, Textbelege, bekannte Ziel-IDs, Struktur und Konflikte prüfen; zusätzliche KI-Prüfung für Aufgabenänderungen. Technische Prüfung beweist nicht automatisch fachliche Wahrheit.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py"
+            }
+          ]
+        },
+        {
+          "id": "write",
+          "label": "Ergebnisse + Aufrufbelege speichern",
+          "detail": "Journal erhält angenommene Ergebnisse; Requests/Responses und Kosten werden separat gespeichert. Unklar abgeschlossene Modellaufrufe werden nicht blind erneut bezahlt.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/durable_calls.py"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "in",
+          "to": "save",
+          "label": ""
+        },
+        {
+          "from": "save",
+          "to": "one",
+          "label": "Auftrag freigegeben"
+        },
+        {
+          "from": "one",
+          "to": "find",
+          "label": ""
+        },
+        {
+          "from": "find",
+          "to": "two",
+          "label": ""
+        },
+        {
+          "from": "two",
+          "to": "gate",
+          "label": ""
+        },
+        {
+          "from": "gate",
+          "to": "write",
+          "label": "nur gültige Ergebnisse"
+        }
+      ]
+    },
+    {
+      "id": "chat",
+      "title": "Chat: Welche Daten werden gelesen?",
+      "direction": "TD",
+      "nodes": [
+        {
+          "id": "q",
+          "label": "Frage + Gesprächsbezug",
+          "detail": "Gesprächsverlauf dient zur Auflösung von Bezügen, nicht als Wahrheitsquelle. Aktuelle Originalbelege müssen jede fachliche Behauptung tragen.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ]
+        },
+        {
+          "id": "route",
+          "label": "Unterstützte Mengenfrage?",
+          "detail": "Nur eindeutig verstandene Abfragen dürfen direkt vollständig gezählt werden. Nicht verstandene Personen-/Themen-/Zeitfilter dürfen nicht ignoriert werden.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ]
+        },
+        {
+          "id": "sql",
+          "label": "Aufgabenprojektion vollständig lesen",
+          "detail": "Zählung oder Liste wird deterministisch erstellt. Kein KI-Aufruf nötig; Datenstand und Filter müssen offengelegt werden.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ]
+        },
+        {
+          "id": "retrieve",
+          "label": "Passende Textstellen suchen",
+          "detail": "Volltext- und Vektorsuche plus Originalzugriff. Es wird eine Auswahl gelesen, nicht bei jeder Frage das gesamte Archiv.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ]
+        },
+        {
+          "id": "context",
+          "label": "Kontextpaket bilden",
+          "detail": "Frage + begrenzter Gesprächsbezug + ausgewählte Aufgaben/Wissen/Originalpassagen. Grenzen und fehlende Verarbeitung müssen sichtbar bleiben.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ]
+        },
+        {
+          "id": "answer",
+          "label": "KI antwortet mit Beleg-IDs",
+          "detail": "Modell liest nur dieses Paket. Beleg-IDs werden geprüft. Eine Suchantwort darf keine unbelegte Vollständigkeit beanspruchen.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/qa_service.py"
+            }
+          ]
+        },
+        {
+          "id": "receipt",
+          "label": "Antwort und Kostenbeleg speichern",
+          "detail": "Dauerhafte Request-ID verhindert doppelte Ausführung bei Wiederholung. Kosten werden erfasst; auf Nutzerwunsch gibt es kein festes Chat-Kostenlimit. Gespeicherte Antwortquittungen ermöglichen Wiederherstellung ohne erneuten Modellaufruf. Chat ändert keine Aufgaben.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/question_calls.py"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "q",
+          "to": "route",
+          "label": ""
+        },
+        {
+          "from": "route",
+          "to": "sql",
+          "label": "ja"
+        },
+        {
+          "from": "route",
+          "to": "retrieve",
+          "label": "sonst"
+        },
+        {
+          "from": "retrieve",
+          "to": "context",
+          "label": ""
+        },
+        {
+          "from": "context",
+          "to": "answer",
+          "label": ""
+        },
+        {
+          "from": "answer",
+          "to": "receipt",
+          "label": ""
+        },
+        {
+          "from": "sql",
+          "to": "receipt",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "learning",
+      "title": "Korrekturen: Was lernt das System?",
+      "direction": "TD",
+      "nodes": [
+        {
+          "id": "edit",
+          "label": "Nutzer korrigiert einen Eintrag",
+          "detail": "Interpretationsfehler und tatsächliche spätere Änderung sind unterschiedliche Ereignisse. Eine neue Frist ist nicht automatisch ein Fehler des früheren Modells.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/human_decisions.py"
+            }
+          ]
+        },
+        {
+          "id": "event",
+          "label": "Korrektur im Journal speichern",
+          "detail": "Datum, betroffener Eintrag, Änderung und Begründung bleiben nachvollziehbar. Modellgewichte werden nicht verändert.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/human_decisions.py"
+            }
+          ]
+        },
+        {
+          "id": "state",
+          "label": "Aktuellen Stand ableiten",
+          "detail": "Gültige Korrektur wirkt auf die aktuelle Darstellung. Originalaussage und historische Fassung bleiben als Herkunft nachvollziehbar.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/human_decisions.py"
+            }
+          ]
+        },
+        {
+          "id": "feedback",
+          "label": "Korrekturbeispiel indexieren",
+          "detail": "Frühere Interpretation und begründete Korrektur werden als abrufbares Beispiel gespeichert. Nicht jede Korrektur wird zu einer globalen Regel.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_index.py"
+            }
+          ]
+        },
+        {
+          "id": "match",
+          "label": "Bei ähnlichem Fall gezielt abrufen",
+          "detail": "Hybridsuche lädt passende Beispiele. Neue Aussage wird dennoch gegen ihr eigenes Original geprüft.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py"
+            }
+          ]
+        },
+        {
+          "id": "guard",
+          "label": "Widerspruch prüfen",
+          "detail": "Manuell geschützte Werte dürfen nicht beiläufig überschrieben werden. Feldbezogene Konfliktprüfung ersetzt pauschale Prüfpflicht.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/human_decisions.py"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "edit",
+          "to": "event",
+          "label": ""
+        },
+        {
+          "from": "event",
+          "to": "state",
+          "label": ""
+        },
+        {
+          "from": "event",
+          "to": "feedback",
+          "label": ""
+        },
+        {
+          "from": "feedback",
+          "to": "match",
+          "label": ""
+        },
+        {
+          "from": "state",
+          "to": "guard",
+          "label": ""
+        },
+        {
+          "from": "match",
+          "to": "guard",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "title": "Wo liegt was?",
+      "direction": "TD",
+      "nodes": [
+        {
+          "id": "pg",
+          "label": "Supabase PostgreSQL · dauerhaft",
+          "detail": "Autoritativer Bestand: Originalarchiv, Journal, Aufträge, Modellbelege, Suchdokumente und Vektoren. Chatfragen und ihre Aufrufbelege sind ebenfalls dauerhaft gespeichert.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/gateway_journal.py"
+            }
+          ]
+        },
+        {
+          "id": "local",
+          "label": "Hetzner SQLite · rekonstruierbarer Lesecache",
+          "detail": "Aus Journal und Archiv entstehen lokale Projektionen. Sie sind keine zweite unabhängige Wahrheit. Wiederaufbau erfolgt ohne Modellaufruf.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py"
+            }
+          ]
+        },
+        {
+          "id": "ram",
+          "label": "Pro Verarbeitung · temporärer Kontext",
+          "detail": "Textpakete und Kandidaten werden im Prozess zusammengestellt. Der gesendete Modellrequest kann zusätzlich als dauerhafter Aufrufbeleg gespeichert sein.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/durable_calls.py"
+            }
+          ]
+        },
+        {
+          "id": "provider",
+          "label": "KI-Anbieter · übergebener Request",
+          "detail": "Nur das jeweilige Kontextpaket wird an den Anbieter geschickt. Anbieteraufbewahrung ist getrennt von App-Speicherung und nicht mit App-Löschen gleichzusetzen.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/openai_provider.py"
+            }
+          ]
+        },
+        {
+          "id": "backup",
+          "label": "Sicherung · zusätzliche Kopie",
+          "detail": "Export enthält Originale, Journal, Aufträge und Aufrufbelege einschließlich Suchdaten. Wiederherstellungsprüfung liest und rekonstruiert den Bestand.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/canonical_backup.py"
+            }
+          ]
+        },
+        {
+          "id": "delete",
+          "label": "Original löschen · Ableitungen behalten",
+          "detail": "Produktive Löschregel: Aufgaben, Wissen und deren übernommene Belegzitate bleiben erhalten. Das vollständige Original, Suchpassagen und technische Volltextkopien werden bereinigt. Laufende Verarbeitung wird vorher abgeschlossen; eine Löschmarkierung verhindert verspätete Rückschreibungen. Ältere Backups laufen regulär aus; eine aktuelle externe Löschsperre blockiert ihre Wiederherstellung. Anbieteraufbewahrung bleibt davon getrennt.",
+          "status": "verified",
+          "sources": [
+            {
+              "path": "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/human_decisions.py"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "pg",
+          "to": "local",
+          "label": "lesen / rekonstruieren"
+        },
+        {
+          "from": "local",
+          "to": "ram",
+          "label": "gezielt lesen"
+        },
+        {
+          "from": "ram",
+          "to": "provider",
+          "label": "Request senden"
+        },
+        {
+          "from": "provider",
+          "to": "pg",
+          "label": "Antwortbeleg speichern"
+        },
+        {
+          "from": "pg",
+          "to": "backup",
+          "label": "sichern"
+        },
+        {
+          "from": "delete",
+          "to": "pg",
+          "label": "Löschumfang anwenden"
+        },
+        {
+          "from": "delete",
+          "to": "local",
+          "label": "Cache ungültig machen"
+        },
+        {
+          "from": "delete",
+          "to": "backup",
+          "label": "Aufbewahrung beachten"
+        }
+      ]
+    }
+  ]
+}

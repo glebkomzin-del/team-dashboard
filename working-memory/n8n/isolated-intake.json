@@ -1,0 +1,84 @@
+{
+  "name": "Dashboard Job – isolierter Importtest",
+  "nodes": [
+    {
+      "id": "manual",
+      "name": "Manueller Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "source",
+      "name": "Originalquelle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "throw new Error(\"Vor dem Test eine konkrete Originalquelle als JSON einsetzen: source_id, event_date, title, transcript.\");"
+      }
+    },
+    {
+      "id": "intake",
+      "name": "Quelle dauerhaft übernehmen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-preview:8791/sources",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_PRIVATE_CREDENTIAL_ID",
+          "name": "Dashboard memory preview"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manueller Test": {
+      "main": [
+        [
+          {
+            "node": "Originalquelle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Originalquelle": {
+      "main": [
+        [
+          {
+            "node": "Quelle dauerhaft übernehmen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

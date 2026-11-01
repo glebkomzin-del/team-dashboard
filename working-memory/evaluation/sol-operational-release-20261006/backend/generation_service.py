@@ -1,5 +1,7 @@
 """Durable generation previews and owner decisions; saved evidence only."""
 from copy import deepcopy
+from contextlib import nullcontext
+from functools import wraps
 import json,re
 from uuid import UUID
 
@@ -77,9 +79,20 @@ def _scope(service,identity,*,staging=False):
     return space
 
 
-def _base(service,space):return logical_entries(service.store.entries(through=space['revision']))
+def _base(service,space):
+    if hasattr(service,'generation_base'):return service.generation_base(space)
+    return logical_entries(service.store.entries(through=space['revision']))
 
 
+def _generation_operation(function):
+    @wraps(function)
+    def guarded(service,*args,**kwargs):
+        with service.generation_reader() if hasattr(service,'generation_reader') else nullcontext():
+            return function(service,*args,**kwargs)
+    return guarded
+
+
+@_generation_operation
 def stage(service,identity,request):
     keys={'review_id','expected_revision','label','changes','identity_links','topic_links','reason','job_id'}
     if not isinstance(request,dict) or set(request) not in (keys,keys|{'source_order_review'}):raise ValidationError('Invalid generation staging request')
@@ -114,6 +127,7 @@ def stage(service,identity,request):
     return service.store.call('generation_stage',review_id=review_id,expected_revision=expected,label=request['label'],payload=payload,job_id=request['job_id'])
 
 
+@_generation_operation
 def inspect(service,identity,review_id):
     review_id=str(UUID(review_id));space=_scope(service,identity)
     row=service.store.call('generation_review',review_id=review_id)
@@ -166,6 +180,7 @@ def inspect(service,identity,review_id):
         'source_order_changes':order_changes,'source_order_reason':order_review['reason'] if order_review else None}
 
 
+@_generation_operation
 def decide(service,identity,request):
     keys={'review_id','command_id','expected_revision','review_sha256','action','reason'}
     if not isinstance(request,dict) or set(request)!=keys or request['action'] not in ('accept','reject'):

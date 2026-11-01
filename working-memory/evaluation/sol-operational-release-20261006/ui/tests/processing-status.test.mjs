@@ -1,6 +1,78 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { hasReviewBlocker, isolationMessage, operationsStatus, processingFence, processingReason, processingStatus } from '../src/features/working-memory/processing-status.ts'
+import { hasReviewBlocker, isolationMessage, operationsStatus, processingFence, processingJobsBlockerFirst, processingReason, processingStatus } from '../src/features/working-memory/processing-status.ts'
+
+const archiveNow = Date.parse('2026-10-07T00:00:00Z')
+const archiveStep = (jobs = []) => {
+  const data = operations(jobs, { worker: 'archived', isolated_count: 0 })
+  data.read_only = false
+  data.worker.reason = 'verified_image_placeholder'
+  data.processing.blocking_job = null
+  return data
+}
+
+test('a verified image archive step is not an unknown fault or proof of queue completion', () => {
+  const data = archiveStep([job('queued', false)])
+  assert.equal(operationsStatus(data, archiveNow).kind, 'waiting')
+  assert.match(operationsStatus(data, archiveNow).message, /noch unvollständig/)
+  assert.equal(operationsStatus(archiveStep(), archiveNow).kind, 'configured')
+  assert.match(processingReason(data.worker.reason), /ohne KI-Auswertung im Archiv/)
+})
+
+test('a real current lease may supersede the last archived image step', () => {
+  const active = { ...job('running', false), lease_until: '2026-10-07T00:10:00Z' }
+  assert.equal(operationsStatus(archiveStep([active]), archiveNow).kind, 'running')
+  for (const lease of [undefined, null, '2026-10-06T23:59:59Z', 'not-a-date', '2026-02-30T00:10:00Z']) {
+    assert.equal(operationsStatus(archiveStep([{ ...active, lease_until: lease }]), archiveNow).kind, 'waiting')
+  }
+  for (const isolation of [undefined, true, 'false']) {
+    assert.notEqual(operationsStatus(archiveStep([{ ...active, technical_isolation: isolation }]), archiveNow).kind, 'running')
+  }
+})
+
+test('archive status requires positive configuration and writing mode, not absence of errors', () => {
+  for (const enabled of [false, undefined, null, 'true']) {
+    const data = archiveStep([job('queued', false)])
+    data.processing.config.enabled = enabled
+    assert.notEqual(operationsStatus(data, archiveNow).kind, 'waiting')
+    assert.notEqual(operationsStatus(data, archiveNow).kind, 'running')
+  }
+  for (const mode of [undefined, '', 'readonly', 'unexpected']) {
+    const data = archiveStep([{ ...job('running', false), lease_until: '2026-10-07T00:10:00Z' }])
+    data.mode = mode
+    assert.equal(operationsStatus(data, archiveNow).kind, 'unknown')
+  }
+  for (const readOnly of [undefined, null, true, 'false']) {
+    const data = archiveStep([{ ...job('running', false), lease_until: '2026-10-07T00:10:00Z' }])
+    data.read_only = readOnly
+    assert.equal(operationsStatus(data, archiveNow).kind, 'unknown')
+  }
+  for (const pending of [undefined, null, -1, 0.5, '0']) {
+    const data = archiveStep()
+    data.processing.pending_count = pending
+    assert.equal(operationsStatus(data, archiveNow).kind, 'unknown')
+  }
+})
+
+test('archive completion never hides a real or unproved whole-queue fence', () => {
+  const data = archiveStep([job('queued', false)])
+  data.processing.blocking_job = hiddenBlocker('provider_shared_failure')
+  assert.equal(operationsStatus(data, archiveNow).kind, 'paused')
+  data.processing.blocking_job = { id: 'unknown', state: 'review' }
+  assert.equal(operationsStatus(data, archiveNow).kind, 'unknown')
+  const missing = archiveStep(Array.from({ length: 100 }, () => job('review', true)))
+  delete missing.processing.blocking_job
+  missing.processing.pending_count = 101
+  assert.equal(operationsStatus(missing, archiveNow).kind, 'unknown')
+})
+
+test('unknown archive reasons remain unknown even with a current lease', () => {
+  for (const reason of [undefined, null, 'new_archive_reason', 'provider_outcome_unknown']) {
+    const data = archiveStep([{ ...job('running', false), lease_until: '2026-10-07T00:10:00Z' }])
+    data.worker.reason = reason
+    assert.equal(operationsStatus(data, archiveNow).kind, 'unknown')
+  }
+})
 
 test('processing status distinguishes configuration, activity, pauses and unknown states', () => {
   assert.equal(processingStatus(null, 'disabled').kind, 'not-configured')
@@ -219,4 +291,97 @@ test('an enabled configuration with a preceding disabled worker report never pro
   assert.equal(operationsStatus(data).kind, 'paused')
   delete data.processing
   assert.equal(operationsStatus(data).kind, 'unknown')
+})
+
+
+test('the global blocker uses the full matching job record and precedes all 13 isolated sources', () => {
+  const isolates = Array.from({ length: 13 }, (_, i) => ({ ...job('review', true), id: `isolated-${i}` }))
+  const blocker = { ...job('review', false), id: '2aaeaa4d7e20c91eefb03cc5c83694b3850202cb651d6ad8ad6f551cc2a57e63', title: 'Global blocking meeting', reason: 'transport_failed' }
+  const pending = Array.from({ length: 30 }, (_, i) => ({ ...job('queued', false), id: `pending-${i}` }))
+  const processing = operations([...isolates, blocker, ...pending]).processing
+  processing.blocking_job = { ...blocker, source_id: 'source-blocker', title: 'Summary metadata must not replace the full job' }
+  const before = [...processing.jobs]
+  const displayed = processingJobsBlockerFirst(processing)
+  assert.equal(displayed[0], blocker)
+  assert.equal(displayed.length, 44)
+  assert.deepEqual(displayed.slice(1, 3), isolates.slice(0, 2))
+  assert.deepEqual(processing.jobs, before)
+  assert.equal(new Set(displayed.map(item => item.id)).size, 44)
+})
+
+test('a missing full job never creates a synthetic actionable row; null or unknown fences preserve order', () => {
+  const processing = isolatedSlice().processing
+  processing.blocking_job = hiddenBlocker('transport_failed')
+  assert.equal(processingJobsBlockerFirst(processing), processing.jobs)
+  assert.equal(processingJobsBlockerFirst(processing).some(item => item.id === 'hidden-blocker'), false)
+  for (const evidence of [null, undefined, {}, { ...hiddenBlocker('transport_failed'), technical_isolation: true }]) {
+    processing.blocking_job = evidence
+    assert.equal(processingJobsBlockerFirst(processing), processing.jobs)
+  }
+})
+
+
+const leaseNow = Date.parse('2026-10-06T13:00:00Z')
+const leaseOperations = () => {
+  const data = operations([{ ...job('running', false), id: 'new-running-job', lease_until: '2026-10-06T13:10:00.123456+00:00' }, job('queued', false)], { worker: 'paused', isolated_count: 0 })
+  data.worker.reason = 'transport_failed'
+  data.worker.job_id = 'previous-completed-job'
+  data.processing.blocking_job = null
+  return data
+}
+
+test('fresh running lease plus enabled config and explicit no-blocker supersedes last completed paused/disabled step', () => {
+  for (const state of ['paused', 'disabled']) {
+    const data = leaseOperations(); data.worker.state = state
+    assert.equal(operationsStatus(data, leaseNow).kind, 'running')
+    assert.match(operationsStatus(data, leaseNow).message, /Abschluss oder Fortschritt ist noch nicht bestätigt/)
+    // Worker job_id can belong to the previous source, not this active lease.
+    assert.notEqual(data.worker.job_id, data.processing.jobs[0].id)
+  }
+})
+
+test('expired, absent or malformed leases and non-running/isolated/reasoned jobs never supersede paused status', () => {
+  for (const lease of [null, undefined, '', '2099', 'not-a-date', '2026-13-01T13:10:00Z', '2026-10-06T13:00:00Z', '2026-10-06T12:59:59Z']) {
+    const data = leaseOperations(); data.processing.jobs[0].lease_until = lease
+    assert.equal(operationsStatus(data, leaseNow).kind, 'paused')
+  }
+  for (const patch of [{state:'queued'}, {state:'prepared'}, {state:'review'}, {technical_isolation:true}, {technical_isolation:undefined}, {reason:'transport_failed'}]) {
+    const data=leaseOperations();Object.assign(data.processing.jobs[0],patch)
+    assert.notEqual(operationsStatus(data,leaseNow).kind,'running')
+  }
+  assert.notEqual(operationsStatus(leaseOperations(),NaN).kind,'running')
+})
+
+test('an active lease cannot override disabled config, owner readonly, global blocker or unknown/unavailable state', () => {
+  const data = leaseOperations(); data.processing.config.enabled = false
+  assert.equal(operationsStatus(data,leaseNow).kind,'paused')
+  data.processing.config.enabled = true
+  for (const patch of [{read_only:true},{mode:'readonly'}]) {
+    assert.notEqual(operationsStatus({...data,...patch},leaseNow).kind,'running')
+  }
+  for (const state of ['unavailable','unknown','unexpected']) {
+    assert.equal(operationsStatus({...data,worker:{state}},leaseNow).kind,'unknown')
+  }
+  for (const blocker of [undefined, {}, hiddenBlocker('transport_failed')]) {
+    data.processing.blocking_job=blocker
+    assert.notEqual(operationsStatus(data,leaseNow).kind,'running')
+  }
+  data.processing.blocking_job=null
+  data.processing.config=null
+  assert.notEqual(operationsStatus(data,leaseNow).kind,'running')
+})
+
+
+test('calendar-invalid lease days cannot become active by Date.parse normalization; valid leap dates and PG zones/microseconds remain accepted', () => {
+  const now = Date.parse('2027-01-01T12:00:00Z')
+  for (const lease of ['2027-02-30T13:10:00Z', '2027-04-31T13:10:00Z', '2027-02-29T13:10:00Z', '2100-02-29T13:10:00Z']) {
+    const data=leaseOperations();data.processing.jobs[0].lease_until=lease
+    assert.equal(operationsStatus(data,now).kind,'paused',lease)
+  }
+  for (const lease of ['2028-02-29T13:10:00Z', '2028-02-29T13:10:00.123456+02:00', '2028-02-29T13:10:00.123456-05:30']) {
+    const data=leaseOperations();data.processing.jobs[0].lease_until=lease
+    assert.equal(operationsStatus(data,now).kind,'running',lease)
+    data.worker.state='unavailable'
+    assert.equal(operationsStatus(data,now).kind,'unknown')
+  }
 })
