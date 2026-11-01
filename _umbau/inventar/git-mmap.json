@@ -2,11 +2,11 @@
   "funktionen": [
     {
       "text": "Git pack-objects wartete im erfassten Prozess-Sample in der Kette loose_object_info → map_fd → mmap; der Aufruf stammt aus dem Traversieren von Trees.",
-      "quelle": "/tmp/dashboard-migrate-pack-sample.txt:30"
+      "quelle": "_umbau/dashboard-migrate-pack-sample.txt:30"
     },
     {
       "text": "Die Git-Commit-Ausgabe wartete bei der Berechnung des Diffstats ebenfalls auf mmap.",
-      "quelle": "/tmp/dashboard-migrate-commit-sample.txt:30"
+      "quelle": "_umbau/dashboard-migrate-commit-sample.txt:30"
     }
   ],
   "entscheidungen": [],
@@ -29,7 +29,7 @@
   "offene_punkte": [
     {
       "text": "Die Ursache der langen mmap-Wartezeit im Betriebssystem ist unbekannt; aus einem Stack-Sample allein folgt weder Korruption noch eine bestimmte Ursache.",
-      "quelle": "/tmp/dashboard-migrate-pack-sample.txt:46"
+      "quelle": "_umbau/dashboard-migrate-pack-sample.txt:46"
     },
     {
       "text": "Nicht geprüft ist, ob das Kit die gesetzten Ausführungspfade für alle Git-Unterprozesse übernimmt und ob ein NO_MMAP-Build das Problem hier tatsächlich behebt.",
@@ -37,7 +37,11 @@
     },
     {
       "text": "Ein zusätzliches Git-Pack durch gewöhnliches git pack-objects oder git repack wurde nicht als wirksame Abhilfe belegt: das laufende pack-objects trifft selbst auf die mmap-Wartestelle.",
-      "quelle": "/tmp/dashboard-migrate-pack-sample.txt:30"
+      "quelle": "_umbau/dashboard-migrate-pack-sample.txt:30"
     }
-  ]
+  ],
+  "pruefung_nach_diagnose": {
+    "text": "Die temporäre Git-2.50.1-Version mit NO_MMAP wurde anschließend gebaut; ein vollständiger isolierter Klon enthält 2796 identische erreichbare Objekte und besteht git fsck. Die Betriebssystemursache bleibt unbekannt.",
+    "quelle": "_umbau/git-ohne-mmap-pruefung.json"
+  }
 }

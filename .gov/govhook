@@ -1,0 +1,519 @@
+#!/usr/bin/env python3
+"""Agent-Leitplanken; keine Imports aus gov, keine App-Abhängigkeiten.
+
+Quellen: Auftrag §5, ENTWURF §5/10–12, KONZEPT Dateieigentümer;
+https://code.claude.com/docs/en/hooks (Eingaben, Exit 2, additionalContext).
+Annahme: Shell-Prüfung ist bestmöglich, kein Shell-Interpreter/Sabotageschutz.
+Die Git-Gates bleiben die harte Grenze. Codex: learn.chatgpt.com/docs/hooks.
+"""
+import ast
+import contextlib
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import subprocess
+import sys
+import time
+
+COMMAND_ROLES = {'vision': 'produkt', 'build': 'bau', 'migrate': 'umbau'}
+
+
+class Block(Exception):
+    pass
+
+
+def deny(message):
+    raise Block(message)
+
+
+class Claude:
+    def __init__(self, data):
+        self.data = data
+        self.cwd = Path(data['cwd']).resolve()
+        self.session = data['session_id']
+        if not isinstance(self.session, str) or not re.fullmatch(r'[A-Za-z0-9_-]+', self.session):
+            deny('Ungültige Session-Kennung.')
+        self.agent = {'worker_mechanisch': 'worker', 'planner_fein': 'planner'}.get(data.get('agent_type', ''), data.get('agent_type', ''))
+
+    def writes(self):
+        tool = self.data.get('tool_name')
+        args = self.data.get('tool_input', {})
+        if tool == 'Bash':
+            return [], args['command']
+        if tool in ('Edit', 'Write', 'MultiEdit', 'NotebookEdit'):
+            return [args['notebook_path' if tool == 'NotebookEdit' else 'file_path']], None
+        return [], None
+
+    def context(self, event, text):
+        print(json.dumps({'hookSpecificOutput': {'hookEventName': event,
+                                                'additionalContext': text}}, ensure_ascii=False))
+
+
+class Codex(Claude):
+    def __init__(self, data):
+        super().__init__(data)
+        # Belegt: PreToolUse enthält keine Helferrolle, nur SubagentStop.
+        self.agent = data.get('agent_type', '') if data.get('hook_event_name') == 'SubagentStop' else ''
+
+    def writes(self):
+        if self.data.get('tool_name') == 'apply_patch':
+            patch = self.data['tool_input']['command']
+            paths = re.findall(r'^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+)$', patch, re.M)
+            return paths, None
+        return super().writes()
+
+    def prompt_role(self):
+        # Annahme: Der Skill-/Befehlstext steht wörtlich am Anfang des Prompts.
+        first = self.data['prompt'].split('\n', 1)[0]
+        match = re.match(r'^[\$/](vision|build|migrate)(?=\s|$)', first)
+        return COMMAND_ROLES[match[1]] if match else None
+
+
+ADAPTERS = {'claude': Claude, 'codex': Codex}
+
+
+class Policy:
+    def __init__(self, adapter):
+        self.a = adapter
+        self.env = os.environ.copy()
+        # Quelle: git-scm.com/docs/githooks (lokale Git-Variablen entfernen).
+        # Identität und globale Test-/Nutzerkonfiguration bleiben erhalten.
+        for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_PREFIX',
+                    'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+                    'GIT_IMPLICIT_WORK_TREE', 'GOV_TOKEN'):
+            self.env.pop(key, None)
+        self.env['GIT_TERMINAL_PROMPT'] = '0'
+        self.root = Path(self.git('rev-parse', '--show-toplevel')).resolve()
+        self.common = (self.a.cwd / self.git('rev-parse', '--git-common-dir')).resolve()
+        listing = self.git('worktree', 'list', '--porcelain', '-z')
+        self.roots = [Path(x[9:]).resolve() for x in listing.split('\0') if x.startswith('worktree ')]
+        self.main = self.roots[0]
+        self.home = self.common / 'gov'
+        self.config = json.loads((self.main / '.gov/config.json').read_text())
+        self.mark = self.home / 'sessions' / (self.a.session + '.json')
+        self.role = json.loads(self.mark.read_text())['role'] if self.mark.exists() else None
+        finished = self.main / '.gov/migration.json'
+        if self.role == 'umbau' and finished.exists() and json.loads(finished.read_text()).get('abgeschlossen'):
+            with self.locked():
+                if self.mark.exists() and json.loads(self.mark.read_text()).get('role') == 'umbau':
+                    self.mark.unlink()
+            self.role = None
+
+    def git(self, *args, cwd=None):
+        p = subprocess.run(['git', '-C', str(cwd or self.a.cwd), *args], env=self.env,
+                           text=True, capture_output=True, timeout=10)
+        if p.returncode:
+            raise RuntimeError('Git konnte den Projektpfad nicht bestimmen: ' + p.stderr.strip())
+        return p.stdout.strip()
+
+    @contextlib.contextmanager
+    def locked(self):
+        self.home.mkdir(parents=True, exist_ok=True)
+        with (self.home / 'lock').open('a') as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            yield
+
+    def state(self):
+        state = json.loads((self.home / 'state.json').read_text())
+        path = self.main / '.gov/register.json'
+        if path.exists():
+            register = json.loads(path.read_text())
+            features = state.get('features', {})
+            state.update(register)
+            state['features'] = {fid: {**item, **{k: v for k, v in features.get(fid, {}).items()
+                                                if k in ('branch', 'worktree')}}
+                                 for fid, item in register['features'].items()}
+        return state
+
+    def statuses(self):
+        rows = {}
+        for line in (self.main / 'roadmap.md').read_text().splitlines():
+            cols = [x.strip() for x in line.split('|')]
+            if len(cols) == 6 and re.fullmatch(r'F-\d{3,}', cols[1]):
+                rows[cols[1]] = cols[3]
+        return rows
+
+    def feature(self, status):
+        relative = self.a.cwd.relative_to(self.main) if self.a.cwd.is_relative_to(self.main) else None
+        if relative is not None and len(relative.parts) > 1 and relative.parts[0] == '.worktrees':
+            match = re.match(r'(F-\d{3,})(?:-|$)', relative.parts[1])
+            return match[1] if match else None
+        candidates = [fid for fid, value in self.statuses().items() if value == status]
+        return candidates[0] if len(candidates) == 1 else None
+
+    def gov(self, *args):
+        return subprocess.run([str(self.root / '.gov/gov'), *args], cwd=self.a.cwd,
+                              env=self.env, text=True, capture_output=True)
+
+    def path_kind(self, value, cwd):
+        path = (cwd / os.path.expanduser(value)).resolve()
+        if path == self.common or path.is_relative_to(self.common):
+            return '.git', path, self.main
+        root = next((r for r in sorted(self.roots, key=lambda x: len(x.parts), reverse=True)
+                     if path == r or path.is_relative_to(r)), None)
+        if root is None:
+            return 'code', path, None
+        rel = path.relative_to(root)
+        parts = rel.parts
+        # Auch noch nicht registrierte .worktrees und deren Pfade korrekt zuordnen.
+        if len(parts) >= 2 and parts[0] == '.worktrees':
+            root = root / parts[0] / parts[1]
+            parts = parts[2:]
+        if not parts:
+            return 'geschützter Projektordner', path, root
+        if parts[0] == '.worktrees':
+            return 'geschützter Projektordner', path, root
+        if tuple(x.casefold() for x in parts[:2]) == ('archiv', 'governance-alt'):
+            return 'archiv', path, root
+        if parts[0] in ('.git', '.gov', '.claude', '.codex', '.agents', 'journal', 'decisions'):
+            return parts[0], path, root
+        if parts[-1] in ('feature.md', 'plan.md'):
+            return parts[-1], path, root
+        if parts[0] == 'features':
+            return 'Wissensordner', path, root
+        if len(parts) == 1 and parts[0] in ('vision.md', 'START.md', 'roadmap.md', 'CLAUDE.md', 'AGENTS.md'):
+            return parts[0], path, root
+        return 'code', path, root
+
+    def write(self, value, cwd):
+        kind, path, root = self.path_kind(value, cwd)
+        agent = self.a.agent
+        if agent in ('reviewer', 'pruefer'):
+            deny('Prüfende Helfer dürfen nichts schreiben: ' + str(path))
+        if agent == 'leser':
+            relative = path.relative_to(self.root).as_posix() if path.is_relative_to(self.root) else ''
+            if not re.fullmatch(r'_umbau/inventar/[A-Za-z0-9][A-Za-z0-9_-]*\.json', relative):
+                deny('Leser schreiben nur _umbau/inventar/<bereich>.json.')
+            return
+        if kind in ('archiv', '.git', '.gov', '.claude', '.codex', '.agents', 'journal', 'decisions',
+                    'roadmap.md', 'CLAUDE.md', 'AGENTS.md', 'Wissensordner', 'geschützter Projektordner'):
+            deny('Geschützter Pfad; Änderungen nur über gov: ' + str(path))
+        if agent == 'worker' and kind != 'code':
+            deny('Worker schreiben nur Code, keine Wissensdateien.')
+        if agent == 'planner':
+            if kind != 'plan.md' or root == self.main:
+                deny('Planner schreiben nur plan.md in der Feature-Arbeitskopie.')
+            return
+        if kind == 'code':
+            return
+        if kind == 'plan.md' and self.role == 'bau' and root != self.main:
+            return
+        if kind in ('vision.md', 'START.md', 'feature.md') and self.role == 'produkt' and root == self.main:
+            return
+        deny('Rolle ' + str(self.role or 'ohne Rollenmarke') + ' darf diese Wissensdatei nicht schreiben: ' + str(path))
+
+    def gov_command(self, args):
+        agent = self.a.agent
+        if args and args[0] == 'package-review' and (self.role != 'bau' or agent):
+            deny('Paketprüfung gehört ausschließlich zur Bau-Session.')
+        if args and args[0] == 'vision-confirm' and (self.role != 'produkt' or agent):
+            deny('Vision-Bestätigung gehört ausschließlich zur Produkt-Session.')
+        report = args and (args[0] == 'bericht' or args[:2] == ['migrate', 'bericht'])
+        if report and (agent in ('worker', 'planner', 'reviewer', 'pruefer', 'leser', 'schreiber') or self.role):
+            return  # Argumente und Pfade prüft gov; Shell-Umleitungen bleiben separat gesperrt.
+        read_only = args and args[0] in ('verify', 'show', 'status', 'roadmap')
+        if agent in ('reviewer', 'pruefer', 'leser') and not read_only:
+            deny('Reviewer dürfen nur gov verify/show/status/roadmap ausführen.')
+        if agent == 'worker' and not read_only and (not args or args[0] != 'commit'):
+            deny('Worker speichern nur ihren Task-Commit; Wissen pflegt Bau.')
+        if agent == 'planner' and not read_only and not (
+                args and (args[0] == 'commit' or args[:3] in (['id', 'next', 'P'], ['id', 'next', 'T']))):
+            deny('Planner dürfen nur ihren Plan und dessen Kennungen pflegen.')
+        if not self.role and not agent and not read_only and (not args or args[0] != 'commit'):
+            deny('Ohne Rollenmarke ist nur ein Task-Commit erlaubt.')
+        roles = []
+        for i, token in enumerate(args):
+            if token == '--role':
+                roles.append(args[i + 1] if i + 1 < len(args) else '')
+            elif token.startswith('--role='):
+                roles.append(token.split('=', 1)[1])
+        allowed = {'worker': {'task'}, 'planner': {'bau'}, 'reviewer': set()}.get(
+            agent, {'produkt': {'produkt'}, 'bau': {'bau', 'task', 'gov'}, None: {'task'}}.get(self.role, set()))
+        if any(role not in allowed for role in roles):
+            deny('Die gov-Rolle passt nicht zur Session oder zum Helfer.')
+        if agent == 'worker' and not read_only and roles != ['task']:
+            deny('Worker-Commit benötigt --role task.')
+
+    def git_command(self, args, cwd):
+        main = self.config['main_branch']
+        i = 0
+        while i < len(args) and args[i].startswith('-'):
+            flag = args[i]
+            if flag == '-C':
+                cwd = (cwd / args[i + 1]).resolve()
+                i += 2
+            elif flag == '-c':
+                if args[i + 1].lower().split('=')[0] == 'core.hookspath':
+                    deny('core.hooksPath darf nicht umgangen werden.')
+                i += 2
+            elif flag.lower().startswith('-ccore.hookspath'):
+                deny('core.hooksPath darf nicht umgangen werden.')
+            else:
+                i += 1
+        if i == len(args):
+            return
+        cmd, rest = args[i], args[i + 1:]
+        if '--no-verify' in rest or (cmd == 'commit' and any(re.fullmatch(r'-[a-zA-Z]*n[a-zA-Z]*', x) for x in rest)):
+            deny('Git-Hooks dürfen nicht mit --no-verify oder commit -n umgangen werden.')
+        if cmd == 'update-ref' or (cmd == 'config' and any(x.lower().split('=')[0] == 'core.hookspath' for x in rest)):
+            deny('Git-Referenzen und core.hooksPath nur über gov ändern.')
+        if cmd in ('merge', 'rebase') and self.git('branch', '--show-current', cwd=cwd) == main:
+            deny('Merge/Rebase auf dem Hauptzweig nur über gov merge.')
+        if cmd == 'push':
+            for token in rest:
+                if token in ('-f', '--force', '--mirror', '--all') or token.startswith(('--force=', '--force-with-lease', '--force-if-includes', '+')) or re.fullmatch(r'-[a-zA-Z]*f[a-zA-Z]*', token):
+                    deny('Force-Push und pauschaler Push sind gesperrt.')
+                destination = token.rsplit(':', 1)[-1].removeprefix('refs/heads/')
+                if destination == main or '*' in destination:
+                    deny('Push auf den Hauptzweig nur über gov.')
+            # Annahme: Ohne explizite Ref kann Git push.default/push-Refspec nutzen.
+            # Bekannte Hauptzweig-Ziele aus der Konfiguration ebenfalls sperren.
+            operands = [x for x in rest if not x.startswith('-')]
+            if self.git('branch', '--show-current', cwd=cwd) == main and (
+                    len(operands) <= 1 or 'HEAD' in operands):
+                deny('Push vom Hauptzweig nur über gov.')
+            configured = subprocess.run(['git', '-C', str(cwd), 'config', '--get-regexp',
+                                         r'^(remote\..*\.push|branch\..*\.merge)$'],
+                                        env=self.env, text=True, capture_output=True).stdout
+            if len(operands) <= 1 and any(
+                    x.rsplit(':', 1)[-1].removeprefix('refs/heads/') == main for x in configured.split()):
+                deny('Das konfigurierte Push-Ziel ist der Hauptzweig.')
+        if self.a.agent in ('reviewer', 'leser') and cmd not in ('status', 'diff', 'log', 'show', 'rev-parse', 'ls-files', 'grep', 'blame'):
+            deny('Reviewer dürfen nur lesende Git-Befehle ausführen.')
+        for index, arg in enumerate(rest):
+            if arg.startswith('--output='):
+                self.write(arg.split('=', 1)[1], cwd)
+            elif arg == '--output' and index + 1 < len(rest):
+                self.write(rest[index + 1], cwd)
+        if cmd in ('rm', 'mv', 'restore'):
+            for target in rest:
+                if not target.startswith('-'):
+                    self.write(target, cwd)
+        if cmd == 'checkout' and '--' in rest:
+            for target in rest[rest.index('--') + 1:]:
+                self.write(target, cwd)
+
+    def python_writes(self, script, cwd):
+        # Annahme: Statische Literale sind prüfbar; dynamischer Code bleibt Git-Grenze.
+        tree = ast.parse(script)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            name = node.func.id if isinstance(node.func, ast.Name) else getattr(node.func, 'attr', '')
+            def literal(n):
+                return n.value if isinstance(n, ast.Constant) and isinstance(n.value, str) else None
+            if name == 'open' and node.args:
+                mode = literal(node.args[1]) if len(node.args) > 1 else 'r'
+                mode = next((literal(x.value) for x in node.keywords if x.arg == 'mode'), mode)
+                if mode and any(x in mode for x in 'wax+'):
+                    target = literal(node.args[0])
+                    if target:
+                        self.write(target, cwd)
+            if name in ('write_text', 'write_bytes', 'unlink', 'rmdir', 'rename', 'replace', 'open') and isinstance(node.func, ast.Attribute):
+                obj = node.func.value
+                if isinstance(obj, ast.Call) and obj.args and literal(obj.args[0]):
+                    if name != 'open' or (node.args and any(x in (literal(node.args[0]) or '') for x in 'wax+')):
+                        self.write(literal(obj.args[0]), cwd)
+                if name in ('rename', 'replace') and node.args and literal(node.args[0]):
+                    self.write(literal(node.args[0]), cwd)
+
+    def shell(self, command, cwd=None, package_review_only=False):
+        cwd = cwd or self.a.cwd
+        if not package_review_only and 'GOV_TOKEN' in command:
+            deny('GOV_TOKEN darf nicht im Befehl verwendet werden.')
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=';&|<>()\n')
+        lexer.whitespace_split = True
+        lexer.whitespace = ' \t\r'
+        tokens = list(lexer)
+        segments, current = [], []
+        for token in tokens:
+            if token and all(char in ';&|()\n' for char in token):
+                if current:
+                    segments.append(current)
+                current = []
+            else:
+                current.append(token)
+        if current:
+            segments.append(current)
+        if package_review_only:
+            # Umbau hat noch keine Kit-Gates. Nur den neuen Laufzeitbefehl
+            # sperren; seine übrigen Shell-/Dateiaktionen bleiben unberührt.
+            for words in segments:
+                for i, word in enumerate(words):
+                    if Path(word).name == 'gov' and words[i + 1:i + 2] == ['package-review']:
+                        self.gov_command(words[i + 1:])
+                    if word in ('sh', 'bash', 'zsh') and words[i + 1:i + 2] == ['-c'] and len(words) > i + 2:
+                        self.shell(words[i + 2], cwd, package_review_only=True)
+            return
+        for words in segments:
+            # Umleitungen auch bei ansonsten erlaubten gov-/Lesebefehlen prüfen.
+            args = []
+            i = 0
+            while i < len(words):
+                token = words[i]
+                if token in ('>', '>>', '>|', '&>', '&>>', '<>'):
+                    if i + 1 >= len(words):
+                        deny('Unvollständige Schreibumleitung.')
+                    self.write(words[i + 1], cwd)
+                    i += 2
+                else:
+                    args.append(token)
+                    i += 1
+            while args and (re.match(r'^\w+=', args[0]) or args[0] in ('env', 'command', 'exec', 'sudo')):
+                args.pop(0)
+            if not args:
+                continue
+            exe = Path(args[0]).name
+            rest = args[1:]
+            if exe == 'cd' and rest:
+                cwd = (cwd / rest[0]).resolve()
+                continue
+            if exe in ('sh', 'bash', 'zsh') and '-c' in rest:
+                self.shell(rest[rest.index('-c') + 1], cwd)
+                continue
+            is_gov = (cwd / args[0]).resolve() == (self.root / '.gov/gov').resolve() or args[0].endswith('/.gov/gov') or args[0] == '.gov/gov'
+            if exe.startswith('python') and rest and (rest[0] == '.gov/gov' or rest[0].endswith('/.gov/gov')):
+                is_gov, rest = True, rest[1:]
+            if is_gov:
+                self.gov_command(rest)
+            elif exe == 'git':
+                self.git_command(rest, cwd)
+            elif exe == 'graphify':
+                if self.a.agent in ('reviewer', 'leser') and (not rest or rest[0] not in ('query', 'path', 'explain', 'affected', 'god-nodes')):
+                    deny('Reviewer dürfen nur lesende Graphify-Befehle ausführen.')
+            elif self.a.agent in ('reviewer', 'pruefer', 'leser'):
+                # Annahme: Enge Positivliste; find -exec, sed e, Interpreter usw.
+                # sind keine verlässlich lesenden Befehle.
+                if exe not in ('cat', 'head', 'tail', 'ls', 'pwd', 'grep', 'rg', 'wc', 'stat', 'file', 'printf', 'echo', 'true') or (exe == 'rg' and any(x == '--pre' or x.startswith('--pre=') for x in rest)):
+                    deny('Reviewer dürfen nur lesende Bash-Befehle ausführen.')
+            if exe in ('tee', 'rm', 'rmdir', 'touch', 'mkdir', 'truncate', 'chmod', 'chown', 'mv', 'cp', 'install', 'ln'):
+                operands = [x for x in rest if not x.startswith('-')]
+                # Bei cp sind Quellen lesend; mv entfernt auch die Quelle.
+                targets = operands[-1:] if exe in ('cp', 'install', 'ln') else operands
+                for target in targets:
+                    self.write(target, cwd)
+                for index, arg in enumerate(rest):
+                    if arg in ('-t', '--target-directory') and index + 1 < len(rest):
+                        self.write(rest[index + 1], cwd)
+                    elif arg.startswith('--target-directory='):
+                        self.write(arg.split('=', 1)[1], cwd)
+            if exe == 'sed' and any(x.startswith('-i') or x == '--in-place' or x.startswith('--in-place=') for x in rest):
+                for target in rest:
+                    if target and not target.startswith('-'):
+                        self.write(target, cwd)
+            if exe.startswith('python') and '-c' in rest:
+                self.python_writes(rest[rest.index('-c') + 1], cwd)
+
+    def dispatch(self, event):
+        data = self.a.data
+        if self.role == 'umbau' and event not in ('UserPromptExpansion', 'UserPromptSubmit'):
+            if event == 'PreToolUse':
+                _, command = self.a.writes()
+                if command is not None:
+                    self.shell(command, package_review_only=True)
+            return
+        if event == 'UserPromptExpansion' or (event == 'UserPromptSubmit' and isinstance(self.a, Codex)
+                                             and self.a.prompt_role()):
+            role = (COMMAND_ROLES.get(data.get('command_name')) if event == 'UserPromptExpansion' else self.a.prompt_role())
+            if role not in ('produkt', 'bau', 'umbau'):
+                return
+            with self.locked():
+                if self.mark.exists():
+                    if json.loads(self.mark.read_text())['role'] != role:
+                        command = next(name for name, value in COMMAND_ROLES.items() if value == role)
+                        deny('Eine Session wechselt nie die Rolle. Bitte eine neue Session mit /' + command + ' starten.')
+                else:
+                    self.mark.parent.mkdir(exist_ok=True)
+                    with self.mark.open('x') as f:
+                        json.dump({'role': role, 'since': time.time()}, f)
+            # Rollenbefehle enthalten Anweisungen; sie sind keine Abnahmeantwort.
+        elif event == 'PreToolUse':
+            paths, command = self.a.writes()
+            for path in paths:
+                self.write(path, self.a.cwd)
+            if command is not None:
+                self.shell(command)
+        elif event == 'UserPromptSubmit' and self.role in ('bau', 'produkt'):
+            # Auch Claude-Rollenaufrufe mit weiteren Anweisungen sind keine Bestätigung.
+            if re.match(r'^[/$](vision|build|migrate)(?=\s|$)', data['prompt']):
+                return
+            with self.locked():
+                entry = {'timestamp': time.time(), 'feature': self.feature('zur Abnahme') if self.role == 'bau' else None,
+                         'role': self.role, 'session_id': self.a.session, 'prompt': data['prompt']}
+                if self.role == 'produkt':
+                    vision = self.main / 'vision.md'
+                    entry['vision_sha256'] = hashlib.sha256(vision.read_bytes()).hexdigest() if vision.exists() else None
+                with (self.home / 'accept-log.jsonl').open('a') as f:
+                    f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        elif event == 'SubagentStop' and self.a.agent in ('worker', 'worker_mechanisch'):
+            with self.locked():
+                fid = self.feature('in Arbeit')
+                state = self.state()
+                tasks = [tid for tid, task in state['tasks'].items()
+                         if (not fid or tid.startswith('T-' + fid[2:] + '-')) and task['status'] == 'in Arbeit'
+                         and state['ids'].get(tid, {}).get('state') == 'aktiv']
+                # Annahme: cwd bei SubagentStop ist nicht sicher die Arbeitskopie.
+                # Ohne fid nur den projektweit eindeutig laufenden Task auswerten.
+            # Niemals flock beim gov-Kind halten. Ein Worker pro Feature (Konzept).
+            if len(tasks) == 1:
+                done = self.gov('task', 'done', tasks[0])
+                if done.returncode:
+                    failed = self.gov('task', 'fail', tasks[0])
+                    if failed.returncode:
+                        print('Task konnte nicht ausgewertet werden: ' + failed.stderr, file=sys.stderr)
+        elif event == 'Stop' and self.role == 'bau':
+            with self.locked():
+                count_file = self.home / ('stop-' + self.a.session + '.count')
+                count = int(count_file.read_text()) if count_file.exists() else 0
+                fid = self.feature('in Arbeit')
+                state = self.state()
+                tasks = [t for tid, t in state['tasks'].items() if fid and tid.startswith('T-' + fid[2:] + '-')
+                         and state['ids'].get(tid, {}).get('state') == 'aktiv']
+                pending = any(t['status'] in ('offen', 'in Arbeit') for t in tasks)
+                parked = any(t['status'] == 'geparkt' for t in tasks)
+                # Geparkte fachliche Fragen stehen ausschließlich im Plan (Konzept).
+                item = state['features'].get(fid, {})
+                plan = Path(item.get('worktree', str(self.root))) / 'features' / item.get('slug', '') / 'plan.md'
+                if plan.exists():
+                    question = re.search(r'^## Offene Fragen an Gleb\s*\n(.*?)(?=^## |\Z)', plan.read_text(), re.M | re.S)
+                    if question:
+                        parked = parked or bool(re.sub(r'<!--.*?-->', '', question[1], flags=re.S).strip())
+                accepting = fid and self.statuses().get(fid) == 'zur Abnahme'
+                continuing = data.get('stop_hook_active', False) is True
+                blocked = pending and not parked and not accepting and count < 3
+                if continuing and count >= 3:
+                    blocked = False
+                count_file.write_text(str(count + 1 if blocked else 0))
+                if blocked:
+                    deny('Es gibt offene Tasks für ' + fid + '. Bitte mit gov next weiterarbeiten (Blockade ' + str(count + 1) + '/3).')
+        elif event == 'SessionStart' and self.role in ('bau', 'produkt'):
+            result = self.gov('start-info', '--role', self.role)
+            if result.returncode:
+                raise RuntimeError(result.stderr)
+            self.a.context(event, result.stdout.strip())
+
+
+def main():
+    event = sys.argv[2] if len(sys.argv) > 2 else ''
+    fail_closed = event in ('PreToolUse', 'UserPromptExpansion')
+    try:
+        adapter = ADAPTERS[sys.argv[1]](json.load(sys.stdin))
+        if event == 'UserPromptSubmit' and isinstance(adapter, Codex):
+            fail_closed = bool(adapter.prompt_role())
+        Policy(adapter).dispatch(event)
+        return 0
+    except Block as exc:
+        print('Governance: ' + str(exc), file=sys.stderr)
+        return 2 if event in ('Stop', 'PreToolUse', 'UserPromptExpansion', 'UserPromptSubmit') else 0
+    except Exception as exc:
+        print('Governance: ' + str(exc), file=sys.stderr)
+        # Prompt-Protokoll, Worker-Ende und Startinformation blockieren nie.
+        return 2 if fail_closed else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -5,7 +5,7 @@
   "main_vor_merge": "451c7878cd1409bef48a5561718c3f1e9cb00034",
   "sicherung": null,
   "datum": "20261101",
-  "phase": "gestartet",
+  "phase": "angewendet",
   "dateien": {
     ".claude/launch.json": "62250d6155c566b036dc3309bcfed4b6d177fbee",
     ".claude/settings.json": "96c347502abee7a721a65cc39adb715e628139f4",
@@ -3936,5 +3936,8 @@
   },
   "annahmen": [
     "Annahme: Testbefehl und Klassifikation werden durch die Session bestimmt."
+  ],
+  "entscheidungen": [
+    "DECISIONS.md:5"
   ]
 }
