@@ -1,0 +1,880 @@
+test_expired_or_missing_sessions_are_rejected (test_access.AccessTests.test_expired_or_missing_sessions_are_rejected) ... ok
+test_other_accounts_and_user_editable_metadata_do_not_authorize (test_access.AccessTests.test_other_accounts_and_user_editable_metadata_do_not_authorize) ... ok
+test_provider_outage_is_distinct_from_expired_login (test_access.AccessTests.test_provider_outage_is_distinct_from_expired_login) ... ok
+test_service_and_owner_are_distinct (test_access.AccessTests.test_service_and_owner_are_distinct) ... ok
+test_corruption_rolls_back_whole_snapshot (test_archive_index.ArchiveIndexTests.test_corruption_rolls_back_whole_snapshot) ... ok
+test_event_and_knowledge_boundaries (test_archive_index.ArchiveIndexTests.test_event_and_knowledge_boundaries) ... ok
+test_full_content_coverage_and_exact_spans (test_archive_index.ArchiveIndexTests.test_full_content_coverage_and_exact_spans) ... ok
+test_metadata_revision_and_identical_titles_keep_identity (test_archive_index.ArchiveIndexTests.test_metadata_revision_and_identical_titles_keep_identity) ... ok
+test_search_input_and_pagination_are_bounded (test_archive_index.ArchiveIndexTests.test_search_input_and_pagination_are_bounded) ... ok
+test_all_sources_queued_without_calls_and_changed_generation_rejected (test_backfill.BackfillTests.test_all_sources_queued_without_calls_and_changed_generation_rejected) ... ok
+test_budget_survives_restart_and_unknown_usage_never_becomes_free (test_backfill.BackfillTests.test_budget_survives_restart_and_unknown_usage_never_becomes_free) ... ok
+test_known_usage_releases_unused_reservation (test_backfill.BackfillTests.test_known_usage_releases_unused_reservation) ... ok
+test_backup_attests_the_barrier_with_the_current_owner (test_backup_operations.BackupOperationTests.test_backup_attests_the_barrier_with_the_current_owner) ... ok
+test_backup_uses_distinct_worker_and_question_receipt_paths (test_backup_operations.BackupOperationTests.test_backup_uses_distinct_worker_and_question_receipt_paths) ... ok
+test_outbox_copy_keeps_settled_file_and_rejects_changed_identity (test_backup_operations.BackupOperationTests.test_outbox_copy_keeps_settled_file_and_rejects_changed_identity) ... ok
+test_public_status_hides_private_paths_and_detects_missing_or_stale_backup (test_backup_operations.BackupOperationTests.test_public_status_hides_private_paths_and_detects_missing_or_stale_backup) ... ok
+test_receipt_manifest_declares_empty_question_outbox (test_backup_operations.BackupOperationTests.test_receipt_manifest_declares_empty_question_outbox) ... ok
+test_restore_barrier_uses_the_private_host_cache_mount (test_backup_operations.BackupOperationTests.test_restore_barrier_uses_the_private_host_cache_mount) ... ok
+test_retention_keeps_recent_and_weekly_verified_archives (test_backup_operations.BackupOperationTests.test_retention_keeps_recent_and_weekly_verified_archives) ... ok
+test_root_backup_returns_barrier_directory_lock_and_file_to_service_user (test_backup_operations.BackupOperationTests.test_root_backup_returns_barrier_directory_lock_and_file_to_service_user) ... ok
+test_display_title_is_separate_from_immutable_source_title (test_canonical_archive.ArchiveTests.test_display_title_is_separate_from_immutable_source_title) ... ok
+test_metadata_only_version_keeps_summary_without_copying_notes (test_canonical_archive.ArchiveTests.test_metadata_only_version_keeps_summary_without_copying_notes) ... ok
+test_missing_or_wrong_space_revision_cannot_replace_previous_cache (test_canonical_archive.ArchiveTests.test_missing_or_wrong_space_revision_cannot_replace_previous_cache) ... ok
+test_redacted_original_keeps_sanitized_derived_summary (test_canonical_archive.ArchiveTests.test_redacted_original_keeps_sanitized_derived_summary) ... ok
+test_restored_search_keeps_exact_original_export_and_existing_summary (test_canonical_archive.ArchiveTests.test_restored_search_keeps_exact_original_export_and_existing_summary) ... ok
+test_tampered_original_metadata_and_summary_are_rejected (test_canonical_archive.ArchiveTests.test_tampered_original_metadata_and_summary_are_rejected) ... ok
+test_title_only_backfill_names_original_without_creating_empty_summary (test_canonical_archive.ArchiveTests.test_title_only_backfill_names_original_without_creating_empty_summary) ... ok
+test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source) ... ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 56809)
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 500, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 488, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 230, in do_GET
+    try:return self.journal_get(path,parse_qs(urlparse(self.path).query))
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 146, in journal_get
+    with JOURNAL.archive_projection(self.identity) as (archive,space):
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 157, in archive_projection
+    db=self._open_projection(space,archive=True)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 145, in _open_projection
+    if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
+               ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/canonical_archive.py", line 194, in rebuild_archive
+    for entry in logical_entries(store.entries(through=journal_through)):
+                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/generation_review.py", line 102, in logical_entries
+    for entry in entries:
+                 ^^^^^^^
+TypeError: 'Mock' object is not iterable
+----------------------------------------
+ERROR
+test_canonical_archive_and_summary_work_without_any_legacy_database (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_canonical_archive_and_summary_work_without_any_legacy_database) ... ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 56813)
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 500, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 488, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 230, in do_GET
+    try:return self.journal_get(path,parse_qs(urlparse(self.path).query))
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 146, in journal_get
+    with JOURNAL.archive_projection(self.identity) as (archive,space):
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 157, in archive_projection
+    db=self._open_projection(space,archive=True)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 145, in _open_projection
+    if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
+               ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/canonical_archive.py", line 194, in rebuild_archive
+    for entry in logical_entries(store.entries(through=journal_through)):
+                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/generation_review.py", line 102, in logical_entries
+    for entry in entries:
+                 ^^^^^^^
+TypeError: 'Mock' object is not iterable
+----------------------------------------
+ERROR
+test_canonical_intake_requires_service_and_only_archives_old_original (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_canonical_intake_requires_service_and_only_archives_old_original) ... ok
+test_drive_manifest_and_intake_have_a_service_only_boundary (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_drive_manifest_and_intake_have_a_service_only_boundary) ... ok
+test_moved_original_exposes_existing_summary_in_catalogue_and_dialog (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_moved_original_exposes_existing_summary_in_catalogue_and_dialog) ... ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 56828)
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 500, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 488, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 230, in do_GET
+    try:return self.journal_get(path,parse_qs(urlparse(self.path).query))
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 146, in journal_get
+    with JOURNAL.archive_projection(self.identity) as (archive,space):
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 157, in archive_projection
+    db=self._open_projection(space,archive=True)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 145, in _open_projection
+    if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
+               ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/canonical_archive.py", line 194, in rebuild_archive
+    for entry in logical_entries(store.entries(through=journal_through)):
+                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/generation_review.py", line 102, in logical_entries
+    for entry in entries:
+                 ^^^^^^^
+TypeError: 'Mock' object is not iterable
+----------------------------------------
+ERROR
+test_owner_boundary_and_snapshot_cache_cannot_expose_another_account (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_owner_boundary_and_snapshot_cache_cannot_expose_another_account) ... ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 56830)
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 500, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/server.py", line 488, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 230, in do_GET
+    try:return self.journal_get(path,parse_qs(urlparse(self.path).query))
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/server.py", line 146, in journal_get
+    with JOURNAL.archive_projection(self.identity) as (archive,space):
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 157, in archive_projection
+    db=self._open_projection(space,archive=True)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/journal_service.py", line 145, in _open_projection
+    if archive:builder(self.store,target,through=revision,journal_through=space['revision'])
+               ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/canonical_archive.py", line 194, in rebuild_archive
+    for entry in logical_entries(store.entries(through=journal_through)):
+                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/generation_review.py", line 102, in logical_entries
+    for entry in entries:
+                 ^^^^^^^
+TypeError: 'Mock' object is not iterable
+----------------------------------------
+ERROR
+test_unknown_canonical_route_does_not_create_legacy_database (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_unknown_canonical_route_does_not_create_legacy_database) ... ok
+test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source (test_canonical_archive_http.FastReviewTests.test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source) ... ok
+test_canonical_archive_and_summary_work_without_any_legacy_database (test_canonical_archive_http.FastReviewTests.test_canonical_archive_and_summary_work_without_any_legacy_database) ... ok
+test_canonical_intake_requires_service_and_only_archives_old_original (test_canonical_archive_http.FastReviewTests.test_canonical_intake_requires_service_and_only_archives_old_original) ... ok
+test_drive_manifest_and_intake_have_a_service_only_boundary (test_canonical_archive_http.FastReviewTests.test_drive_manifest_and_intake_have_a_service_only_boundary) ... ok
+test_moved_original_exposes_existing_summary_in_catalogue_and_dialog (test_canonical_archive_http.FastReviewTests.test_moved_original_exposes_existing_summary_in_catalogue_and_dialog) ... ok
+test_owner_boundary_and_snapshot_cache_cannot_expose_another_account (test_canonical_archive_http.FastReviewTests.test_owner_boundary_and_snapshot_cache_cannot_expose_another_account) ... ok
+test_ready_revision_remains_readable_while_another_revision_builds (test_canonical_archive_http.FastReviewTests.test_ready_revision_remains_readable_while_another_revision_builds) ... ok
+test_review_does_not_open_archive_even_when_archive_is_unavailable (test_canonical_archive_http.FastReviewTests.test_review_does_not_open_archive_even_when_archive_is_unavailable) ... ok
+test_review_remains_available_while_archive_build_is_locked (test_canonical_archive_http.FastReviewTests.test_review_remains_available_while_archive_build_is_locked) ... ok
+test_unknown_canonical_route_does_not_create_legacy_database (test_canonical_archive_http.FastReviewTests.test_unknown_canonical_route_does_not_create_legacy_database) ... ok
+test_warm_cache_still_requires_owner_authorization (test_canonical_archive_http.FastReviewTests.test_warm_cache_still_requires_owner_authorization) ... ok
+test_warm_projection_is_reused_without_replaying_journal (test_canonical_archive_http.FastReviewTests.test_warm_projection_is_reused_without_replaying_journal) ... ok
+test_bounded_multi_record_page_preserves_order_and_complete_restore (test_canonical_backup.BackupTests.test_bounded_multi_record_page_preserves_order_and_complete_restore) ... ok
+test_exact_export_and_full_offline_reconstruction_before_release (test_canonical_backup.BackupTests.test_exact_export_and_full_offline_reconstruction_before_release) ... ok
+test_missing_page_cannot_release_snapshot_or_mark_it_verified (test_canonical_backup.BackupTests.test_missing_page_cannot_release_snapshot_or_mark_it_verified) ... ok
+test_question_requests_calls_and_cost_receipts_are_verified (test_canonical_backup.BackupTests.test_question_requests_calls_and_cost_receipts_are_verified) ... ok
+test_tampering_and_missing_records_fail_independent_restore_check (test_canonical_backup.BackupTests.test_tampering_and_missing_records_fail_independent_restore_check) ... ok
+test_backup_before_external_deletion_watermark_is_refused (test_canonical_restore.RestoreTests.test_backup_before_external_deletion_watermark_is_refused) ... ok
+test_exact_paid_receipts_and_decisions_survive_but_automation_is_paused (test_canonical_restore.RestoreTests.test_exact_paid_receipts_and_decisions_survive_but_automation_is_paused) ... ok
+test_existing_output_is_not_overwritten (test_canonical_restore.RestoreTests.test_existing_output_is_not_overwritten) ... ok
+test_question_cost_ledger_is_included_in_paused_restore (test_canonical_restore.RestoreTests.test_question_cost_ledger_is_included_in_paused_restore) ... ok
+test_even_forged_historical_claim_cannot_reach_provider (test_canonical_worker.CanonicalWorkerTest.test_even_forged_historical_claim_cannot_reach_provider) ... ok
+test_future_meeting_through_real_rules_and_journal_restore (test_canonical_worker.CanonicalWorkerTest.test_future_meeting_through_real_rules_and_journal_restore) ... ok
+test_integrity_failure_is_not_automatic_transport_recovery (test_canonical_worker.CanonicalWorkerTest.test_integrity_failure_is_not_automatic_transport_recovery) ... ok
+test_preclaim_storage_failure_returns_redacted_diagnostic (test_canonical_worker.CanonicalWorkerTest.test_preclaim_storage_failure_returns_redacted_diagnostic) ... ok
+test_transient_failure_uses_durable_transport_pause (test_canonical_worker.CanonicalWorkerTest.test_transient_failure_uses_durable_transport_pause) ... ok
+test_v11_normal_worker_enables_bounded_extraction_recovery (test_canonical_worker.CanonicalWorkerTest.test_v11_normal_worker_enables_bounded_extraction_recovery) ... ok
+test_matching_pipeline_is_ready_and_uses_read_calls_only (test_check_processing.ProcessingPreflightTest.test_matching_pipeline_is_ready_and_uses_read_calls_only) ... ok
+test_mismatch_is_nonzero_and_diagnostic_is_redacted (test_check_processing.ProcessingPreflightTest.test_mismatch_is_nonzero_and_diagnostic_is_redacted) ... ok
+test_missing_configuration_is_an_error (test_check_processing.ProcessingPreflightTest.test_missing_configuration_is_an_error) ... ok
+test_alias_restoration_and_unknown_ids (test_compact_reconcile.CatalogTests.test_alias_restoration_and_unknown_ids) ... ok
+test_empty_search_contract_allows_no_archive_request (test_compact_reconcile.CatalogTests.test_empty_search_contract_allows_no_archive_request) ... ok
+test_old_semantic_candidate_without_common_keywords_is_never_dropped (test_compact_reconcile.CatalogTests.test_old_semantic_candidate_without_common_keywords_is_never_dropped) ... ok
+test_preview_cannot_authorize_topic_without_opening (test_compact_reconcile.CatalogTests.test_preview_cannot_authorize_topic_without_opening) ... ok
+test_preview_explicitly_shortened_and_full_open_exact (test_compact_reconcile.CatalogTests.test_preview_explicitly_shortened_and_full_open_exact) ... ok
+test_semantic_preview_has_no_keyword_requirement_and_keeps_original_untouched (test_compact_reconcile.CatalogTests.test_semantic_preview_has_no_keyword_requirement_and_keeps_original_untouched) ... ok
+test_duplicate_or_missing_observation_is_rejected (test_compact_reconcile.CombinedContractTests.test_duplicate_or_missing_observation_is_rejected) ... ok
+test_fact_kept_without_invented_work_and_complete_current_source (test_compact_reconcile.CombinedContractTests.test_fact_kept_without_invented_work_and_complete_current_source) ... ok
+test_requested_archive_opened_then_reconciled (test_compact_reconcile.CombinedContractTests.test_requested_archive_opened_then_reconciled) ... ok
+test_unknown_archive_id_and_partial_publication_are_rejected (test_compact_reconcile.CombinedContractTests.test_unknown_archive_id_and_partial_publication_are_rejected) ... ok
+test_compact_candidates_pack_full_work_losslessly (test_compact_reconcile.PackingTests.test_compact_candidates_pack_full_work_losslessly) ... ok
+test_gpt6_compact_accepts_420k_and_checks_input_separately (test_compact_reconcile.PackingTests.test_gpt6_compact_accepts_420k_and_checks_input_separately) ... ok
+test_gpt6_noncompact_checks_encoded_input_and_schema (test_compact_reconcile.PackingTests.test_gpt6_noncompact_checks_encoded_input_and_schema) ... ok
+test_invalid_text_reference_fails_closed (test_compact_reconcile.PackingTests.test_invalid_text_reference_fails_closed) ... ok
+test_other_models_keep_existing_compact_character_guard (test_compact_reconcile.PackingTests.test_other_models_keep_existing_compact_character_guard) ... ok
+test_pack_preserves_indices_and_refuses_oversized_singleton (test_compact_reconcile.PackingTests.test_pack_preserves_indices_and_refuses_oversized_singleton) ... ok
+test_round_trip_keeps_null_missing_numbers_false_unicode_and_source_versions (test_compact_reconcile.PackingTests.test_round_trip_keeps_null_missing_numbers_false_unicode_and_source_versions) ... ok
+test_terra_compact_budget_counts_utf8_schema_framing_and_output (test_compact_reconcile.PackingTests.test_terra_compact_budget_counts_utf8_schema_framing_and_output) ... ok
+test_new_promise_uses_one_reconciliation_and_keeps_independent_gate (test_compact_reconcile.PipelineIntegrationTests.test_new_promise_uses_one_reconciliation_and_keeps_independent_gate) ... ERROR
+test_uncertain_compact_update_does_not_require_internal_source_index (test_compact_reconcile.PipelineIntegrationTests.test_uncertain_compact_update_does_not_require_internal_source_index) ... ERROR
+test_all_conditions_met_releases_work_preserving_owner_due_and_original (test_condition_resolution.ConditionResolutionTests.test_all_conditions_met_releases_work_preserving_owner_due_and_original) ... ok
+test_done_work_cannot_reopen_from_condition_resolution (test_condition_resolution.ConditionResolutionTests.test_done_work_cannot_reopen_from_condition_resolution) ... ok
+test_lifecycle_uses_explicit_condition_resolution_not_completion (test_condition_resolution.ConditionResolutionTests.test_lifecycle_uses_explicit_condition_resolution_not_completion) ... ok
+test_missing_confirmation_wrong_state_or_new_condition_reject_atomically (test_condition_resolution.ConditionResolutionTests.test_missing_confirmation_wrong_state_or_new_condition_reject_atomically) ... ok
+test_multiple_condition_fragments_each_need_verbatim_original_evidence (test_condition_resolution.ConditionResolutionTests.test_multiple_condition_fragments_each_need_verbatim_original_evidence) ... ok
+test_no_recorded_condition_cannot_be_cleared_twice (test_condition_resolution.ConditionResolutionTests.test_no_recorded_condition_cannot_be_cleared_twice) ... ok
+test_progress_and_ambiguous_resolution_keep_condition (test_condition_resolution.ConditionResolutionTests.test_progress_and_ambiguous_resolution_keep_condition) ... ok
+test_title_correction_does_not_block_evidenced_condition_resolution (test_condition_resolution.ConditionResolutionTests.test_title_correction_does_not_block_evidenced_condition_resolution) ... ok
+test_all_work_identities_survive_knowledge_selection (test_context_window.ContextWindowTests.test_all_work_identities_survive_knowledge_selection) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py:361: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x109fc26b0>
+  obj, end = self.scan_once(s, idx)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py:361: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10aa77b50>
+  obj, end = self.scan_once(s, idx)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_archive_excludes_same_day_future_and_later_known_revisions (test_context_window.ContextWindowTests.test_archive_excludes_same_day_future_and_later_known_revisions) ... ok
+test_long_current_original_is_complete (test_context_window.ContextWindowTests.test_long_current_original_is_complete) ... ok
+test_retrieval_budget_reserves_prompt_space (test_context_window.ContextWindowTests.test_retrieval_budget_reserves_prompt_space) ... ok
+test_messages_and_conversation_are_restored_in_dependency_order (test_conversation_backup.ConversationBackupTests.test_messages_and_conversation_are_restored_in_dependency_order) ... ok
+test_missing_conversation_wrong_owner_and_duplicate_sequence_are_rejected (test_conversation_backup.ConversationBackupTests.test_missing_conversation_wrong_owner_and_duplicate_sequence_are_rejected) ... ok
+test_pipeline_recovery_audit_survives_restore_and_requires_job (test_conversation_backup.ConversationBackupTests.test_pipeline_recovery_audit_survives_restore_and_requires_job) ... ok
+test_changed_source_or_unrelated_quote_does_not_inherit_correction (test_corrections.CorrectionTests.test_changed_source_or_unrelated_quote_does_not_inherit_correction) ... ok
+test_gate_coverage_and_evidence_are_checked (test_corrections.CorrectionTests.test_gate_coverage_and_evidence_are_checked) ... ok
+test_gate_rejection_blocks_work_but_keeps_knowledge (test_corrections.CorrectionTests.test_gate_rejection_blocks_work_but_keeps_knowledge) ... ok
+test_mixed_evidence_requires_split_without_erasing_other_promise (test_corrections.CorrectionTests.test_mixed_evidence_requires_split_without_erasing_other_promise) ... ok
+test_model_cannot_forge_user_attribution (test_corrections.CorrectionTests.test_model_cannot_forge_user_attribution) ... ok
+test_reducer_applies_correction_even_if_caller_bypasses_processor (test_corrections.CorrectionTests.test_reducer_applies_correction_even_if_caller_bypasses_processor) ... ok
+test_user_correction_overrides_supported_model_and_preserves_input (test_corrections.CorrectionTests.test_user_correction_overrides_supported_model_and_preserves_input) ... ok
+test_changing_ledger_never_attests_an_unstable_snapshot (test_deletion_backup.RestoreBarrierTests.test_changing_ledger_never_attests_an_unstable_snapshot) ... ok
+test_durable_receipt_contains_current_watermark (test_deletion_backup.RestoreBarrierTests.test_durable_receipt_contains_current_watermark) ... ok
+test_missing_path_and_wrong_owner_fail_closed (test_deletion_backup.RestoreBarrierTests.test_missing_path_and_wrong_owner_fail_closed) ... ok
+test_old_database_cannot_overwrite_independent_newer_barrier (test_deletion_backup.RestoreBarrierTests.test_old_database_cannot_overwrite_independent_newer_barrier) ... ok
+test_owner_route_is_feature_gated_and_pollable (test_deletion_http.DeletionHTTPTests.test_owner_route_is_feature_gated_and_pollable) ... ok
+test_service_identity_and_read_only_mode_cannot_delete (test_deletion_http.DeletionHTTPTests.test_service_identity_and_read_only_mode_cannot_delete) ... ok
+test_status_hides_verified_epoch_after_actual_reimport (test_deletion_http.DeletionHTTPTests.test_status_hides_verified_epoch_after_actual_reimport) ... ok
+test_status_returns_only_public_ledger_fields (test_deletion_http.DeletionHTTPTests.test_status_returns_only_public_ledger_fields) ... ok
+test_changed_source_for_same_deletion_id_is_rejected (test_deletion_jobs.DeletionJobTests.test_changed_source_for_same_deletion_id_is_rejected) ... ok
+test_same_durable_identity_runs_once_and_can_be_polled (test_deletion_jobs.DeletionJobTests.test_same_durable_identity_runs_once_and_can_be_polled) ... ok
+test_concurrent_writer_cannot_leave_a_lower_watermark (test_deletion_ledger.DeletionLedgerTest.test_concurrent_writer_cannot_leave_a_lower_watermark) ... ok
+test_corrupt_current_ledger_fails_closed_but_stale_temp_does_not_block (test_deletion_ledger.DeletionLedgerTest.test_corrupt_current_ledger_fails_closed_but_stale_temp_does_not_block) ... ok
+test_current_external_watermark_is_durable_and_tamper_evident (test_deletion_ledger.DeletionLedgerTest.test_current_external_watermark_is_durable_and_tamper_evident) ... ok
+test_missing_ledger_fails_closed (test_deletion_ledger.DeletionLedgerTest.test_missing_ledger_fails_closed) ... ok
+test_same_revision_allows_only_forward_deletion_state (test_deletion_ledger.DeletionLedgerTest.test_same_revision_allows_only_forward_deletion_state) ... ok
+test_watermark_cannot_roll_back_or_drop_a_deletion_identity (test_deletion_ledger.DeletionLedgerTest.test_watermark_cannot_roll_back_or_drop_a_deletion_identity) ... ok
+test_archive_only_purging_workflow_resumes_with_empty_packages (test_deletion_workflow.DeletionWorkflowTests.test_archive_only_purging_workflow_resumes_with_empty_packages) ... ok
+test_cache_registry_rejects_backup_or_outside_paths (test_deletion_workflow.DeletionWorkflowTests.test_cache_registry_rejects_backup_or_outside_paths) ... ok
+test_new_workflow_orders_purge_cache_barrier_and_finalize (test_deletion_workflow.DeletionWorkflowTests.test_new_workflow_orders_purge_cache_barrier_and_finalize) ... ok
+test_private_runtime_removes_disposable_worker_and_blocks_unknown_receipt (test_deletion_workflow.DeletionWorkflowTests.test_private_runtime_removes_disposable_worker_and_blocks_unknown_receipt) ... ok
+test_purging_workflow_resumes_without_original_or_second_purge (test_deletion_workflow.DeletionWorkflowTests.test_purging_workflow_resumes_without_original_or_second_purge) ... ok
+test_registered_cache_invalidation_is_bounded_and_rebuild_is_evidence_only (test_deletion_workflow.DeletionWorkflowTests.test_registered_cache_invalidation_is_bounded_and_rebuild_is_evidence_only) ... ok
+test_service_only_and_unavailable_is_never_a_success_receipt (test_drive_completion.CompletionHTTPTests.test_service_only_and_unavailable_is_never_a_success_receipt) ... ok
+test_bad_document_id_never_queries_storage (test_drive_completion.CompletionTests.test_bad_document_id_never_queries_storage) ... ok
+test_only_durable_publication_produces_a_receipt (test_drive_completion.CompletionTests.test_only_durable_publication_produces_a_receipt) ... ok
+test_superseded_source_cannot_move (test_drive_completion.CompletionTests.test_superseded_source_cannot_move) ... ok
+test_wrong_job_identity_and_missing_manifest_fail_closed (test_drive_completion.CompletionTests.test_wrong_job_identity_and_missing_manifest_fail_closed) ... ok
+test_archive_failure_never_queues (test_drive_intake.DriveIntakeTests.test_archive_failure_never_queues) ... ok
+test_concurrent_identical_archive_write_is_reconciled_without_overwrite (test_drive_intake.DriveIntakeTests.test_concurrent_identical_archive_write_is_reconciled_without_overwrite) ... ok
+test_lossless_unicode_and_known_envelope (test_drive_intake.DriveIntakeTests.test_lossless_unicode_and_known_envelope) ... ok
+test_retry_reuses_first_observation_and_repairs_archive_enqueue_gap (test_drive_intake.DriveIntakeTests.test_retry_reuses_first_observation_and_repairs_archive_enqueue_gap) ... ok
+test_wrong_scope_date_version_and_encoding_rejected (test_drive_intake.DriveIntakeTests.test_wrong_scope_date_version_and_encoding_rejected) ... ok
+test_budget_denial_never_calls_provider (test_durable_calls.DurableCallsTest.test_budget_denial_never_calls_provider) ... ok
+test_call_slot_limit_is_enforced_before_reservation (test_durable_calls.DurableCallsTest.test_call_slot_limit_is_enforced_before_reservation) ... ok
+test_count_failure_cannot_generate_or_consume_a_slot (test_durable_calls.DurableCallsTest.test_count_failure_cannot_generate_or_consume_a_slot) ... ok
+test_lost_reservation_confirmation_never_sends_twice (test_durable_calls.DurableCallsTest.test_lost_reservation_confirmation_never_sends_twice) ... ok
+test_outbox_survives_database_failure_and_restores_only_response (test_durable_calls.DurableCallsTest.test_outbox_survives_database_failure_and_restores_only_response) ... ok
+test_provider_count_reserves_before_sending_and_replay_does_not_recount (test_durable_calls.DurableCallsTest.test_provider_count_reserves_before_sending_and_replay_does_not_recount) ... ok
+test_response_replayed_after_restart_without_spending (test_durable_calls.DurableCallsTest.test_response_replayed_after_restart_without_spending) ... ok
+test_reviewed_retry_appends_after_complete_prior_calls (test_durable_calls.DurableCallsTest.test_reviewed_retry_appends_after_complete_prior_calls) ... ok
+test_tampered_saved_response_rejected (test_durable_calls.DurableCallsTest.test_tampered_saved_response_rejected) ... ok
+test_usage_is_conservative_and_integer (test_durable_calls.DurableCallsTest.test_usage_is_conservative_and_integer) ... ok
+test_count_includes_original_input_and_strict_schema (test_evaluation_token_count.CountTests.test_count_includes_original_input_and_strict_schema) ... ok
+test_exact_reservation_still_covers_full_output_and_price_premiums (test_evaluation_token_count.CountTests.test_exact_reservation_still_covers_full_output_and_price_premiums) ... ok
+test_gpt6_count_preserves_none_effort_and_exact_model (test_evaluation_token_count.CountTests.test_gpt6_count_preserves_none_effort_and_exact_model) ... ok
+test_missing_count_stops (test_evaluation_token_count.CountTests.test_missing_count_stops) ... ok
+test_replayed_request_counts_in_comparison_without_new_spend (test_evaluation_token_count.CountTests.test_replayed_request_counts_in_comparison_without_new_spend) ... ok
+test_redacted_job_detail_accepts_valid_private_replay_hash (test_evidence_repair_runner.EvidenceRepairRunnerTests.test_redacted_job_detail_accepts_valid_private_replay_hash) ... ok
+test_redacted_job_detail_rejects_wrong_private_replay_hash (test_evidence_repair_runner.EvidenceRepairRunnerTests.test_redacted_job_detail_rejects_wrong_private_replay_hash) ... ok
+test_actual_durable_call_marks_only_pinned_repair_without_extra_actions (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_actual_durable_call_marks_only_pinned_repair_without_extra_actions) ... ok
+test_new_slot_is_blocked_before_budget_reservation (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_new_slot_is_blocked_before_budget_reservation) ... ok
+test_only_repaired_extraction_becomes_final_primary_response (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_only_repaired_extraction_becomes_final_primary_response) ... ok
+test_pins_complete_distinct_call_ledgers (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_pins_complete_distinct_call_ledgers) ... ok
+test_private_receipts_bind_text_model_dimensions_and_hashes (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_private_receipts_bind_text_model_dimensions_and_hashes) ... ok
+test_provider_is_disabled (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_provider_is_disabled) ... ok
+test_rebatched_subset_uses_only_matching_saved_vectors (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_rebatched_subset_uses_only_matching_saved_vectors) ... ok
+test_virtual_claim_primes_both_original_embedding_calls (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_virtual_claim_primes_both_original_embedding_calls) ... ok
+test_wrong_cache_scope_stops (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_wrong_cache_scope_stops) ... ok
+test_wrong_request_or_response_identity_stops (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_wrong_request_or_response_identity_stops) ... ok
+test_wrong_saved_response_hash_is_rejected (test_evidence_replay_only_runner.ReplayOnlyRunnerTests.test_wrong_saved_response_hash_is_rejected) ... ok
+test_compressed_error_preserves_safe_diagnostic (test_gateway_search_retry.SearchRetryTests.test_compressed_error_preserves_safe_diagnostic) ... ok
+test_compressed_export_is_lossless_and_requested (test_gateway_search_retry.SearchRetryTests.test_compressed_export_is_lossless_and_requested) ... ok
+test_corrupt_compression_never_becomes_success (test_gateway_search_retry.SearchRetryTests.test_corrupt_compression_never_becomes_success) ... ok
+test_pinned_backup_read_retries_same_cursor_without_duplicate_rows (test_gateway_search_retry.SearchRetryTests.test_pinned_backup_read_retries_same_cursor_without_duplicate_rows) ... ok
+test_pipeline_reads_retry_and_report_redacted_attempt_count (test_gateway_search_retry.SearchRetryTests.test_pipeline_reads_retry_and_report_redacted_attempt_count) ... ok
+test_retry_keeps_identical_search_document_and_never_calls_model (test_gateway_search_retry.SearchRetryTests.test_retry_keeps_identical_search_document_and_never_calls_model) ... ok
+test_search_retry_is_bounded_and_other_mutations_are_single_shot (test_gateway_search_retry.SearchRetryTests.test_search_retry_is_bounded_and_other_mutations_are_single_shot) ... ok
+test_validation_and_revision_errors_are_not_retried (test_gateway_search_retry.SearchRetryTests.test_validation_and_revision_errors_are_not_retried) ... ok
+test_acceptance_receipt_must_reference_exact_journal_actor_and_command (test_generation_backup.GenerationBackupTests.test_acceptance_receipt_must_reference_exact_journal_actor_and_command) ... ok
+test_corrupt_inner_generation_is_rejected_even_with_outer_checksums_updated (test_generation_backup.GenerationBackupTests.test_corrupt_inner_generation_is_rejected_even_with_outer_checksums_updated) ... ok
+test_pending_rejected_and_accepted_reviews_survive_full_export_and_paused_restore (test_generation_backup.GenerationBackupTests.test_pending_rejected_and_accepted_reviews_survive_full_export_and_paused_restore) ... ok
+test_changed_source_preserves_personal_title_date_and_uuid_without_model_calls (test_generation_review.GenerationTests.test_changed_source_preserves_personal_title_date_and_uuid_without_model_calls) ... ok
+test_dependent_update_cannot_silently_attach_to_replaced_same_index (test_generation_review.GenerationTests.test_dependent_update_cannot_silently_attach_to_replaced_same_index) ... ok
+test_dropped_or_rewritten_personal_decision_is_blocked (test_generation_review.GenerationTests.test_dropped_or_rewritten_personal_decision_is_blocked) ... ok
+test_explicit_same_day_reorder_replays_and_keeps_personal_decision (test_generation_review.GenerationTests.test_explicit_same_day_reorder_replays_and_keeps_personal_decision) ... ok
+test_journal_rebuild_preserves_old_revision_and_rejects_broken_replacement (test_generation_review.GenerationTests.test_journal_rebuild_preserves_old_revision_and_rejects_broken_replacement) ... ok
+test_json_object_reordering_preserves_review_but_content_changes_do_not (test_generation_review.GenerationTests.test_json_object_reordering_preserves_review_but_content_changes_do_not) ... ok
+test_late_source_can_be_inserted_before_existing_history_without_reimport (test_generation_review.GenerationTests.test_late_source_can_be_inserted_before_existing_history_without_reimport) ... ok
+test_legacy_generation_without_projection_rule_reproduces_legacy_source_wire_format (test_generation_review.GenerationTests.test_legacy_generation_without_projection_rule_reproduces_legacy_source_wire_format) ... ok
+test_legacy_state_hash_remains_explicitly_supported (test_generation_review.GenerationTests.test_legacy_state_hash_remains_explicitly_supported) ... ok
+test_nested_generation_flattens_only_after_complete_verification (test_generation_review.GenerationTests.test_nested_generation_flattens_only_after_complete_verification) ... ok
+test_new_field_guard_source_does_not_reprepare_retained_legacy_sources (test_generation_review.GenerationTests.test_new_field_guard_source_does_not_reprepare_retained_legacy_sources) ... ok
+test_omitted_changed_same_id_personal_identity_is_blocked (test_generation_review.GenerationTests.test_omitted_changed_same_id_personal_identity_is_blocked) ... ok
+test_order_correction_requires_exact_review_and_cannot_cross_owner_decision (test_generation_review.GenerationTests.test_order_correction_requires_exact_review_and_cannot_cross_owner_decision) ... ok
+test_personal_decision_cannot_move_behind_later_updates (test_generation_review.GenerationTests.test_personal_decision_cannot_move_behind_later_updates) ... ok
+test_reorder_cannot_cross_dates_even_with_a_corresponding_date_change (test_generation_review.GenerationTests.test_reorder_cannot_cross_dates_even_with_a_corresponding_date_change) ... ok
+test_tampered_review_or_stale_base_cannot_replay (test_generation_review.GenerationTests.test_tampered_review_or_stale_base_cannot_replay) ... ok
+test_topic_assignment_is_retained_validated_and_signed_without_followup_references (test_generation_review.GenerationTests.test_topic_assignment_is_retained_validated_and_signed_without_followup_references) ... ok
+test_unreviewed_source_change_and_identity_collision_fail (test_generation_review.GenerationTests.test_unreviewed_source_change_and_identity_collision_fail) ... ok
+test_explicit_identity_link_rebinds_followup_and_personal_decision (test_generation_service.GenerationServiceTests.test_explicit_identity_link_rebinds_followup_and_personal_decision) ... ok
+test_generation_decision_note_is_optional (test_generation_service.GenerationServiceTests.test_generation_decision_note_is_optional) ... ok
+test_inspect_exposes_review_changes_without_raw_plan_or_transcript (test_generation_service.GenerationServiceTests.test_inspect_exposes_review_changes_without_raw_plan_or_transcript) ... ok
+test_lost_acceptance_acknowledgement_reaches_sql_identity_check (test_generation_service.GenerationServiceTests.test_lost_acceptance_acknowledgement_reaches_sql_identity_check) ... ok
+test_lost_stage_acknowledgement_recompiles_original_boundary (test_generation_service.GenerationServiceTests.test_lost_stage_acknowledgement_recompiles_original_boundary) ... ok
+test_only_staging_allows_service_identity_and_it_never_calls_model (test_generation_service.GenerationServiceTests.test_only_staging_allows_service_identity_and_it_never_calls_model) ... ok
+test_owner_is_bound_and_stale_accept_does_not_write (test_generation_service.GenerationServiceTests.test_owner_is_bound_and_stale_accept_does_not_write) ... ok
+test_same_day_order_is_staged_audited_and_exposed_by_title (test_generation_service.GenerationServiceTests.test_same_day_order_is_staged_audited_and_exposed_by_title) ... ok
+test_source_order_cannot_omit_or_repeat_retained_sources (test_generation_service.GenerationServiceTests.test_source_order_cannot_omit_or_repeat_retained_sources) ... ok
+test_stale_inspection_still_verifies_original_boundary_and_detects_tampering (test_generation_service.GenerationServiceTests.test_stale_inspection_still_verifies_original_boundary_and_detects_tampering) ... ok
+test_unarchived_self_consistent_source_is_rejected (test_generation_service.GenerationServiceTests.test_unarchived_self_consistent_source_is_rejected) ... ok
+test_acceptance_and_rejection_notes_are_optional_but_corrections_still_need_context (test_human_decisions.HumanTests.test_acceptance_and_rejection_notes_are_optional_but_corrections_still_need_context) ... ok
+test_approval_without_patch_does_not_lock_future_fields (test_human_decisions.HumanTests.test_approval_without_patch_does_not_lock_future_fields) ... ok
+test_confirm_uncertain_person_without_rewriting_evidence (test_human_decisions.HumanTests.test_confirm_uncertain_person_without_rewriting_evidence) ... ok
+test_correct_confirm_creates_one_task_and_feedback_with_temporal_bounds (test_human_decisions.HumanTests.test_correct_confirm_creates_one_task_and_feedback_with_temporal_bounds) ... ok
+test_corrected_update_changes_only_requested_task (test_human_decisions.HumanTests.test_corrected_update_changes_only_requested_task) ... ok
+test_correction_and_cancellation_preserve_full_history (test_human_decisions.HumanTests.test_correction_and_cancellation_preserve_full_history) ... ok
+test_correction_validation_and_rejection_are_separate (test_human_decisions.HumanTests.test_correction_validation_and_rejection_are_separate) ... ok
+test_human_approved_work_is_valid_target_for_future_proposals (test_human_decisions.HumanTests.test_human_approved_work_is_valid_target_for_future_proposals) ... ok
+test_later_model_cannot_overwrite_manual_status (test_human_decisions.HumanTests.test_later_model_cannot_overwrite_manual_status) ... ok
+test_manual_field_guard_allows_equivalent_and_unrelated_evidenced_updates (test_human_decisions.HumanTests.test_manual_field_guard_allows_equivalent_and_unrelated_evidenced_updates) ... ok
+test_partial_knowledge_correction_preserves_original_and_history (test_human_decisions.HumanTests.test_partial_knowledge_correction_preserves_original_and_history) ... ok
+test_reject_manually_approved_proposal_removes_work (test_human_decisions.HumanTests.test_reject_manually_approved_proposal_removes_work) ... ok
+test_reject_update_does_not_cancel_existing_work (test_human_decisions.HumanTests.test_reject_update_does_not_cancel_existing_work) ... ok
+test_rejected_knowledge_is_auditable_but_not_an_active_search_document (test_human_decisions.HumanTests.test_rejected_knowledge_is_auditable_but_not_an_active_search_document) ... ok
+test_rejected_task_proposal_can_be_explicitly_corrected_later (test_human_decisions.HumanTests.test_rejected_task_proposal_can_be_explicitly_corrected_later) ... ok
+test_retry_is_idempotent_but_changed_command_rejected (test_human_decisions.HumanTests.test_retry_is_idempotent_but_changed_command_rejected) ... ok
+test_unknown_targets_knowledge_promotion_and_evidence_patches_rejected (test_human_decisions.HumanTests.test_unknown_targets_knowledge_promotion_and_evidence_patches_rejected) ... ok
+test_archive_keeps_existing_chunk_identities_when_semantic_chunking_changes (test_hybrid.HybridTests.test_archive_keeps_existing_chunk_identities_when_semantic_chunking_changes) ... ok
+test_blank_chunks_are_not_paid_embedding_inputs (test_hybrid.HybridTests.test_blank_chunks_are_not_paid_embedding_inputs) ... ok
+test_candidate_compaction_is_lossless_and_reuses_repeated_originals (test_hybrid.HybridTests.test_candidate_compaction_is_lossless_and_reuses_repeated_originals) ... ok
+test_catalog_retains_all_candidate_texts_and_identity_without_transport_metadata (test_hybrid.HybridTests.test_catalog_retains_all_candidate_texts_and_identity_without_transport_metadata) ... ok
+test_changed_context_never_reuses_old_response (test_hybrid.HybridTests.test_changed_context_never_reuses_old_response) ... ok
+test_chunks_prefer_speaker_boundaries_and_overlap_only_oversized_blocks (test_hybrid.HybridTests.test_chunks_prefer_speaker_boundaries_and_overlap_only_oversized_blocks) ... ok
+test_cold_index_uses_bounded_multi_document_writes (test_hybrid.HybridTests.test_cold_index_uses_bounded_multi_document_writes) ... ok
+test_compact_unchanged_requires_complete_unique_coverage (test_hybrid.HybridTests.test_compact_unchanged_requires_complete_unique_coverage) ... ok
+test_content_chunks_do_not_drop_tail (test_hybrid.HybridTests.test_content_chunks_do_not_drop_tail) ... ok
+test_embedding_model_change_fails_closed_before_body_cache_lookup (test_hybrid.HybridTests.test_embedding_model_change_fails_closed_before_body_cache_lookup) ... ok
+test_evidence_catalog_uses_one_shared_enum_definition (test_hybrid.HybridTests.test_evidence_catalog_uses_one_shared_enum_definition) ... ok
+test_gate_cannot_close_parent_task_when_only_prerequisite_is_finished (test_hybrid.HybridTests.test_gate_cannot_close_parent_task_when_only_prerequisite_is_finished) ... ok
+test_gate_doubt_cannot_display_high_confidence (test_hybrid.HybridTests.test_gate_doubt_cannot_display_high_confidence) ... ok
+test_knowledge_confirmation_does_not_create_work (test_hybrid.HybridTests.test_knowledge_confirmation_does_not_create_work) ... ok
+test_luna_long_context_budget_uses_decimal_arithmetic (test_hybrid.HybridTests.test_luna_long_context_budget_uses_decimal_arithmetic) ... ok
+test_nested_legacy_summaries_are_indexed_with_original_provenance (test_hybrid.HybridTests.test_nested_legacy_summaries_are_indexed_with_original_provenance) ... ok
+test_old_work_is_indexed_and_future_sources_are_not (test_hybrid.HybridTests.test_old_work_is_indexed_and_future_sources_are_not) ... ok
+test_repeated_quote_keeps_selected_position (test_hybrid.HybridTests.test_repeated_quote_keeps_selected_position) ... ok
+test_request_hash_resume_handles_skipped_cached_embedding_slots (test_hybrid.HybridTests.test_request_hash_resume_handles_skipped_cached_embedding_slots) ... ok
+test_scores_cannot_override_source_guard (test_hybrid.HybridTests.test_scores_cannot_override_source_guard) ... ok
+test_default_extraction_still_stops_after_two_invalid_responses (test_hybrid.StageResumeTests.test_default_extraction_still_stops_after_two_invalid_responses) ... ok
+test_explicit_extraction_recovery_adds_one_catalog_constrained_call (test_hybrid.StageResumeTests.test_explicit_extraction_recovery_adds_one_catalog_constrained_call) ... ok
+test_explicit_mixed_model_routes_only_extraction (test_hybrid.StageResumeTests.test_explicit_mixed_model_routes_only_extraction) ... ok
+test_missing_lifecycle_id_repairs_only_that_stage (test_hybrid.StageResumeTests.test_missing_lifecycle_id_repairs_only_that_stage) ... ok
+test_recovery_stops_after_second_non_evidence_validation_failure (test_hybrid.StageResumeTests.test_recovery_stops_after_second_non_evidence_validation_failure) ... ok
+test_recovery_stops_after_third_invalid_evidence_response (test_hybrid.StageResumeTests.test_recovery_stops_after_third_invalid_evidence_response) ... ok
+test_recovery_stops_when_only_second_failure_is_evidence_related (test_hybrid.StageResumeTests.test_recovery_stops_when_only_second_failure_is_evidence_related) ... ok
+test_transport_error_never_triggers_semantic_model_retry (test_hybrid.StageResumeTests.test_transport_error_never_triggers_semantic_model_retry) ... ok
+test_exact_known_export_and_counterexamples (test_image_placeholder_queue.ImagePlaceholderTests.test_exact_known_export_and_counterexamples) ... ok
+test_worker_closes_only_verified_unpaid_claim_before_provider (test_image_placeholder_queue.ImagePlaceholderTests.test_worker_closes_only_verified_unpaid_claim_before_provider) ... ok
+test_clean_transport_retry_preserves_command_and_stale_view_rejected (test_job_recovery.RecoveryTests.test_clean_transport_retry_preserves_command_and_stale_view_rejected) ... ok
+test_historical_and_changed_originals_cannot_be_reprocessed (test_job_recovery.RecoveryTests.test_historical_and_changed_originals_cannot_be_reprocessed) ... ok
+test_owner_only_and_unknown_paid_outcome_never_retries (test_job_recovery.RecoveryTests.test_owner_only_and_unknown_paid_outcome_never_retries) ... ok
+test_rebase_allows_update_unrelated_to_intervening_personal_correction (test_job_recovery.RecoveryTests.test_rebase_allows_update_unrelated_to_intervening_personal_correction) ... ok
+test_rebase_uses_saved_output_without_model_and_requires_exact_preview (test_job_recovery.RecoveryTests.test_rebase_uses_saved_output_without_model_and_requires_exact_preview) ... ok
+test_retry_after_lost_ack_uses_receipt_even_if_job_changed (test_job_recovery.RecoveryTests.test_retry_after_lost_ack_uses_receipt_even_if_job_changed) ... ok
+test_owner_get_and_post_keep_service_and_other_accounts_out (test_job_recovery_http.RecoveryHTTPTests.test_owner_get_and_post_keep_service_and_other_accounts_out) ... ok
+test_changed_original_rejected (test_journal_projection.ProjectionTests.test_changed_original_rejected) ... ok
+test_changed_saved_result_fails_without_replacing_existing_cache (test_journal_projection.ProjectionTests.test_changed_saved_result_fails_without_replacing_existing_cache) ... ok
+test_legacy_guard_replays_a_previously_accepted_result_hash (test_journal_projection.ProjectionTests.test_legacy_guard_replays_a_previously_accepted_result_hash) ... ok
+test_prepare_does_not_mutate_live_projection_and_rebuild_has_no_api (test_journal_projection.ProjectionTests.test_prepare_does_not_mutate_live_projection_and_rebuild_has_no_api) ... ok
+test_actor_and_event_date_are_server_bound (test_journal_service.ServiceTests.test_actor_and_event_date_are_server_bound) ... ok
+test_cache_maintenance_drains_active_readers_and_blocks_new_ones (test_journal_service.ServiceTests.test_cache_maintenance_drains_active_readers_and_blocks_new_ones) ... ok
+test_changed_repeat_and_stale_revision_are_not_silently_saved (test_journal_service.ServiceTests.test_changed_repeat_and_stale_revision_are_not_silently_saved) ... ok
+test_decision_day_uses_berlin_even_before_utc_midnight (test_journal_service.ServiceTests.test_decision_day_uses_berlin_even_before_utc_midnight) ... ok
+test_other_owner_and_service_cannot_submit_human_decision (test_journal_service.ServiceTests.test_other_owner_and_service_cannot_submit_human_decision) ... ok
+test_repeat_across_dates_uses_saved_receipt (test_journal_service.ServiceTests.test_repeat_across_dates_uses_saved_receipt) ... ok
+test_conflicts_are_distinct_without_exposing_server_body (test_journal_store.JournalTests.test_conflicts_are_distinct_without_exposing_server_body) ... ok
+test_gap_is_rejected (test_journal_store.JournalTests.test_gap_is_rejected) ... ok
+test_retry_preserves_identity_and_expected_revision (test_journal_store.JournalTests.test_retry_preserves_identity_and_expected_revision) ... ok
+test_snapshot_does_not_read_future_entries (test_journal_store.JournalTests.test_snapshot_does_not_read_future_entries) ... ok
+test_version_id_and_destination_cannot_redirect_key (test_journal_store.JournalTests.test_version_id_and_destination_cannot_redirect_key) ... ok
+test_changed_item_requires_new_review (test_legacy_review.LegacyReviewTests.test_changed_item_requires_new_review) ... ok
+test_changed_source_and_multiple_versions_are_not_silently_selected (test_legacy_review.LegacyReviewTests.test_changed_source_and_multiple_versions_are_not_silently_selected) ... ok
+test_composite_item_split_keeps_provenance_and_rejects_hidden_or_stale_work (test_legacy_review.LegacyReviewTests.test_composite_item_split_keeps_provenance_and_rejects_hidden_or_stale_work) ... ok
+test_coverage_keeps_original_identity_and_exact_quotes (test_legacy_review.LegacyReviewTests.test_coverage_keeps_original_identity_and_exact_quotes) ... ok
+test_date_is_source_date_and_may_actions_stay_excluded (test_legacy_review.LegacyReviewTests.test_date_is_source_date_and_may_actions_stay_excluded) ... ok
+test_duplicate_only_cannot_create_hidden_work (test_legacy_review.LegacyReviewTests.test_duplicate_only_cannot_create_hidden_work) ... ok
+test_later_source_progress_requires_separate_existing_identity (test_legacy_review.LegacyReviewTests.test_later_source_progress_requires_separate_existing_identity) ... ok
+test_no_silent_change_to_human_approved_item (test_legacy_review.LegacyReviewTests.test_no_silent_change_to_human_approved_item) ... ok
+test_omitted_item_cannot_pass_as_complete (test_legacy_review.LegacyReviewTests.test_omitted_item_cannot_pass_as_complete) ... ok
+test_supplemental_completion_needs_state_evidence (test_legacy_review.LegacyReviewTests.test_supplemental_completion_needs_state_evidence) ... ok
+test_unknown_quotes_and_invented_due_dates_rejected (test_legacy_review.LegacyReviewTests.test_unknown_quotes_and_invented_due_dates_rejected) ... ok
+test_changed_export_rejected_and_existing_target_never_overwritten (test_legacy_snapshot.LegacySnapshotTests.test_changed_export_rejected_and_existing_target_never_overwritten) ... ok
+test_same_title_never_merges_corrupt_sources_and_all_ids_survive (test_legacy_snapshot.LegacySnapshotTests.test_same_title_never_merges_corrupt_sources_and_all_ids_survive) ... ok
+test_explicit_link_preserves_old_views_and_work_ids_and_rebuild (test_matter_links.MatterLinkTests.test_explicit_link_preserves_old_views_and_work_ids_and_rebuild) ... ok
+test_linked_target_accepts_canonical_matter_without_merging_work (test_matter_links.MatterLinkTests.test_linked_target_accepts_canonical_matter_without_merging_work) ... ok
+test_unknown_cycles_missing_proof_and_silent_v1_additions_rejected (test_matter_links.MatterLinkTests.test_unknown_cycles_missing_proof_and_silent_v1_additions_rejected) ... ok
+test_clear_source_title_and_identity_are_not_rewritten (test_meeting_naming.MeetingNamingTests.test_clear_source_title_and_identity_are_not_rewritten) ... ok
+test_existing_source_without_cited_title_stays_transparent (test_meeting_naming.MeetingNamingTests.test_existing_source_without_cited_title_stays_transparent) ... ok
+test_observed_teams_header_and_person_title (test_meeting_naming.MeetingNamingTests.test_observed_teams_header_and_person_title) ... ok
+test_reviewed_empty_recording_gets_honest_dated_title (test_meeting_naming.MeetingNamingTests.test_reviewed_empty_recording_gets_honest_dated_title) ... ok
+test_same_call_title_requires_exact_source_evidence (test_meeting_naming.MeetingNamingTests.test_same_call_title_requires_exact_source_evidence) ... ok
+test_stored_grounded_title_wins_without_new_model_call (test_meeting_naming.MeetingNamingTests.test_stored_grounded_title_wins_without_new_model_call) ... ok
+test_uncertain_existing_source_is_transparently_named (test_meeting_naming.MeetingNamingTests.test_uncertain_existing_source_is_transparently_named) ... ok
+test_archive_revision_change_blocks_commit (test_meeting_title_backfill.MeetingTitleBackfillTests.test_archive_revision_change_blocks_commit) ... ok
+test_exception_is_blocked_for_substantive_transcript (test_meeting_title_backfill.MeetingTitleBackfillTests.test_exception_is_blocked_for_substantive_transcript) ... ok
+test_invented_title_clear_source_and_changed_body_are_rejected (test_meeting_title_backfill.MeetingTitleBackfillTests.test_invented_title_clear_source_and_changed_body_are_rejected) ... ok
+test_latest_inventory_uses_only_one_envelope_per_source (test_meeting_title_backfill.MeetingTitleBackfillTests.test_latest_inventory_uses_only_one_envelope_per_source) ... ok
+test_plan_requires_complete_review_and_apply_is_dry_by_default (test_meeting_title_backfill.MeetingTitleBackfillTests.test_plan_requires_complete_review_and_apply_is_dry_by_default) ... ok
+test_reviewed_short_no_topic_exception_completes_plan_without_write (test_meeting_title_backfill.MeetingTitleBackfillTests.test_reviewed_short_no_topic_exception_completes_plan_without_write) ... ok
+test_title_and_note_are_strictly_grounded_and_deterministic (test_meeting_title_backfill.MeetingTitleBackfillTests.test_title_and_note_are_strictly_grounded_and_deterministic) ... ok
+test_changed_version_requires_replay_preserving_old_source (test_memory.MemoryTests.test_changed_version_requires_replay_preserving_old_source) ... ok
+test_dependency_is_knowledge_without_personal_task (test_memory.MemoryTests.test_dependency_is_knowledge_without_personal_task) ... ok
+test_exact_matter_title_repairs_unknown_generated_id (test_memory.MemoryTests.test_exact_matter_title_repairs_unknown_generated_id) ... ok
+test_expired_worker_cannot_apply_or_release_new_lease (test_memory.MemoryTests.test_expired_worker_cannot_apply_or_release_new_lease) ... ok
+test_future_context_excluded (test_memory.MemoryTests.test_future_context_excluded) ... ok
+test_invalid_second_observation_rolls_back_entire_projection (test_memory.MemoryTests.test_invalid_second_observation_rolls_back_entire_projection) ... ok
+test_invented_due_expression_rejected (test_memory.MemoryTests.test_invented_due_expression_rejected) ... ok
+test_no_task_limit (test_memory.MemoryTests.test_no_task_limit) ... ok
+test_parallel_connections_one_lease_owner (test_memory.MemoryTests.test_parallel_connections_one_lease_owner) ... ok
+test_pipeline_upgrade_does_not_duplicate_imported_source (test_memory.MemoryTests.test_pipeline_upgrade_does_not_duplicate_imported_source) ... ok
+test_real_conditional_commitment_kept_but_waiting (test_memory.MemoryTests.test_real_conditional_commitment_kept_but_waiting) ... ok
+test_repeated_import_does_not_duplicate_work (test_memory.MemoryTests.test_repeated_import_does_not_duplicate_work) ... ok
+test_review_flag_blocks_closure_even_with_positive_gate (test_memory.MemoryTests.test_review_flag_blocks_closure_even_with_positive_gate) ... ok
+test_review_flag_blocks_creation_even_without_uncertainty_text (test_memory.MemoryTests.test_review_flag_blocks_creation_even_without_uncertainty_text) ... ok
+test_uncertain_close_does_not_finish_real_work (test_memory.MemoryTests.test_uncertain_close_does_not_finish_real_work) ... ok
+test_unknown_update_target_rejected (test_memory.MemoryTests.test_unknown_update_target_rejected) ... ok
+test_work_completed_in_meeting_is_not_open (test_memory.MemoryTests.test_work_completed_in_meeting_is_not_open) ... ok
+test_create_list_load_and_bounded_context (test_memory_chat.ConversationServiceTests.test_create_list_load_and_bounded_context) ... ok
+test_ambiguous_write_returns_clarification_without_mutation (test_memory_chat.MemoryChatQueryTests.test_ambiguous_write_returns_clarification_without_mutation) ... ok
+test_change_since_date_builds_a_time_bounded_search_snapshot (test_memory_chat.MemoryChatQueryTests.test_change_since_date_builds_a_time_bounded_search_snapshot) ... ok
+test_claim_binding_must_quote_answer_text (test_memory_chat.MemoryChatQueryTests.test_claim_binding_must_quote_answer_text) ... ok
+test_conversationless_overview_enters_global_planner_route (test_memory_chat.MemoryChatQueryTests.test_conversationless_overview_enters_global_planner_route) ... ok
+test_explicit_completion_writes_once_but_hypothetical_question_does_not (test_memory_chat.MemoryChatQueryTests.test_explicit_completion_writes_once_but_hypothetical_question_does_not) ... ok
+test_explicit_user_memory_is_provenance_bound_searchable_and_deletable (test_memory_chat.MemoryChatQueryTests.test_explicit_user_memory_is_provenance_bound_searchable_and_deletable) ... ok
+test_global_risk_question_uses_multiple_rounds_without_claiming_completeness (test_memory_chat.MemoryChatQueryTests.test_global_risk_question_uses_multiple_rounds_without_claiming_completeness) ... ok
+test_invalid_answer_binding_gets_one_strict_repair_attempt (test_memory_chat.MemoryChatQueryTests.test_invalid_answer_binding_gets_one_strict_repair_attempt) ... ok
+test_invalid_repair_remains_terminal (test_memory_chat.MemoryChatQueryTests.test_invalid_repair_remains_terminal) ... ok
+test_lost_completion_ack_replays_deleted_memory (test_memory_chat.MemoryChatQueryTests.test_lost_completion_ack_replays_deleted_memory) ... ok
+test_lost_completion_ack_replays_renamed_memory_update (test_memory_chat.MemoryChatQueryTests.test_lost_completion_ack_replays_renamed_memory_update) ... ok
+test_natural_person_task_question_filters_complete_projection (test_memory_chat.MemoryChatQueryTests.test_natural_person_task_question_filters_complete_projection) ... ok
+test_persisted_followup_context_drives_next_week_task_filter (test_memory_chat.MemoryChatQueryTests.test_persisted_followup_context_drives_next_week_task_filter) ... ok
+test_provider_outcome_unknown_does_not_trigger_answer_repair (test_memory_chat.MemoryChatQueryTests.test_provider_outcome_unknown_does_not_trigger_answer_repair) ... ok
+test_unqualified_inventory_question_is_prompted_as_global (test_memory_chat.MemoryChatQueryTests.test_unqualified_inventory_question_is_prompted_as_global) ... ok
+test_empty_observations_fail_even_when_counters_match (test_model_comparison.ModelComparisonTests.test_empty_observations_fail_even_when_counters_match) ... ok
+test_exact_ledger_replay_is_counted_separately_from_fresh_calls (test_model_comparison.ModelComparisonTests.test_exact_ledger_replay_is_counted_separately_from_fresh_calls) ... {"model":"gpt-5.6-terra","paid_ledger_usd":0.00032,"reused":false}
+{"model":"gpt-5.6-terra","paid_ledger_usd":0.00032,"reused":true}
+ok
+test_failed_case_keeps_paid_call_cost_and_marks_stop (test_model_comparison.ModelComparisonTests.test_failed_case_keeps_paid_call_cost_and_marks_stop) ... {"model":"gpt-5.6-terra","paid_ledger_usd":0.00032,"reused":false}
+ok
+test_long_manifest_is_deferred_to_actual_compact_prompt_guard (test_model_comparison.ModelComparisonTests.test_long_manifest_is_deferred_to_actual_compact_prompt_guard) ... ok
+test_manifest_requires_pinned_input_and_expectations (test_model_comparison.ModelComparisonTests.test_manifest_requires_pinned_input_and_expectations) ... ok
+test_pipeline_checks_do_not_pass_empty_or_wrong_counts (test_model_comparison.ModelComparisonTests.test_pipeline_checks_do_not_pass_empty_or_wrong_counts) ... ok
+test_preflight_is_offline_and_has_nonvacuous_gold_cases (test_model_comparison.ModelComparisonTests.test_preflight_is_offline_and_has_nonvacuous_gold_cases) ... ok
+test_real_manifest_rejects_unquoted_gold_and_seed (test_model_comparison.ModelComparisonTests.test_real_manifest_rejects_unquoted_gold_and_seed) ... ok
+test_repeat_is_limited_to_selected_cases (test_model_comparison.ModelComparisonTests.test_repeat_is_limited_to_selected_cases) ... ok
+test_repeat_partitions_identical_request_without_changing_default_scope (test_model_comparison.ModelComparisonTests.test_repeat_partitions_identical_request_without_changing_default_scope) ... {"model":"gpt-5.6-terra","paid_ledger_usd":3.2e-05,"reused":false}
+{"model":"gpt-5.6-terra","paid_ledger_usd":3.2e-05,"reused":true}
+{"model":"gpt-5.6-terra","paid_ledger_usd":6.4e-05,"reused":false}
+{"model":"gpt-5.6-terra","paid_ledger_usd":6.4e-05,"reused":true}
+{"model":"gpt-5.6-terra","paid_ledger_usd":9.6e-05,"reused":false}
+ok
+test_seeded_identity_and_waiting_status_are_required (test_model_comparison.ModelComparisonTests.test_seeded_identity_and_waiting_status_are_required) ... ok
+test_structured_qa_uses_actual_service_without_provider (test_model_comparison.ModelComparisonTests.test_structured_qa_uses_actual_service_without_provider) ... ok
+test_successful_pipeline_result_is_reported_from_local_sqlite (test_model_comparison.ModelComparisonTests.test_successful_pipeline_result_is_reported_from_local_sqlite) ... ok
+test_different_owners_and_conflicting_conditions_cannot_be_collapsed (test_normalize_gate.NormalizeGateTests.test_different_owners_and_conflicting_conditions_cannot_be_collapsed) ... ok
+test_forward_or_cyclic_duplicate_is_rejected (test_normalize_gate.NormalizeGateTests.test_forward_or_cyclic_duplicate_is_rejected) ... ok
+test_same_invitation_has_one_work_identity_and_preserves_both_quotes (test_normalize_gate.NormalizeGateTests.test_same_invitation_has_one_work_identity_and_preserves_both_quotes) ... ok
+test_explicit_promise_cannot_disappear_as_decision (test_normalize_gate.SemanticConsistencyTests.test_explicit_promise_cannot_disappear_as_decision) ... ok
+test_supported_gate_can_resolve_previous_doubt_with_source_evidence (test_normalize_gate.SemanticConsistencyTests.test_supported_gate_can_resolve_previous_doubt_with_source_evidence) ... ok
+test_current_restore_barrier_is_copied_outside_rotating_archives_without_rollback (test_offserver_backup.OffserverBackupTests.test_current_restore_barrier_is_copied_outside_rotating_archives_without_rollback) ... ok
+test_offserver_copy_verifies_every_member_instead_of_trusting_transfer (test_offserver_backup.OffserverBackupTests.test_offserver_copy_verifies_every_member_instead_of_trusting_transfer) ... ok
+test_path_escape_never_becomes_a_verified_bundle (test_offserver_backup.OffserverBackupTests.test_path_escape_never_becomes_a_verified_bundle) ... ok
+test_recent_check_cannot_hide_an_old_copied_backup (test_offserver_backup.OffserverBackupTests.test_recent_check_cannot_hide_an_old_copied_backup) ... ok
+test_even_forged_historical_claim_cannot_reach_provider (test_canonical_worker.CanonicalWorkerTest.test_even_forged_historical_claim_cannot_reach_provider) ... ok
+test_future_meeting_through_real_rules_and_journal_restore (test_canonical_worker.CanonicalWorkerTest.test_future_meeting_through_real_rules_and_journal_restore) ... ok
+test_integrity_failure_is_not_automatic_transport_recovery (test_canonical_worker.CanonicalWorkerTest.test_integrity_failure_is_not_automatic_transport_recovery) ... ok
+test_preclaim_storage_failure_returns_redacted_diagnostic (test_canonical_worker.CanonicalWorkerTest.test_preclaim_storage_failure_returns_redacted_diagnostic) ... ok
+test_transient_failure_uses_durable_transport_pause (test_canonical_worker.CanonicalWorkerTest.test_transient_failure_uses_durable_transport_pause) ... ok
+test_v11_normal_worker_enables_bounded_extraction_recovery (test_canonical_worker.CanonicalWorkerTest.test_v11_normal_worker_enables_bounded_extraction_recovery) ... ok
+test_gpt6_prices_are_below_terra_and_reserve_long_context (test_openai_provider.TerraBudgetTests.test_gpt6_prices_are_below_terra_and_reserve_long_context) ... ok
+test_invalid_usage_stays_reserved_and_budget_survives_restart (test_openai_provider.TerraBudgetTests.test_invalid_usage_stays_reserved_and_budget_survives_restart) ... ok
+test_long_context_prices_full_request_and_reserves_cache_writes (test_openai_provider.TerraBudgetTests.test_long_context_prices_full_request_and_reserves_cache_writes) ... ok
+test_real_saved_usage_pricing_and_no_reasoning_double_charge (test_openai_provider.TerraBudgetTests.test_real_saved_usage_pricing_and_no_reasoning_double_charge) ... ok
+test_terra_receipt_replays_without_second_network_call (test_openai_provider.TerraBudgetTests.test_terra_receipt_replays_without_second_network_call) ... ok
+test_even_forged_historical_claim_cannot_reach_provider (test_openai_provider.TerraCanonicalTests.test_even_forged_historical_claim_cannot_reach_provider) ... ok
+test_future_meeting_through_real_rules_and_journal_restore (test_openai_provider.TerraCanonicalTests.test_future_meeting_through_real_rules_and_journal_restore) ... ok
+test_integrity_failure_is_not_automatic_transport_recovery (test_openai_provider.TerraCanonicalTests.test_integrity_failure_is_not_automatic_transport_recovery) ... ok
+test_preclaim_storage_failure_returns_redacted_diagnostic (test_openai_provider.TerraCanonicalTests.test_preclaim_storage_failure_returns_redacted_diagnostic) ... ok
+test_terra_historical_source_cannot_reach_transport (test_openai_provider.TerraCanonicalTests.test_terra_historical_source_cannot_reach_transport) ... ok
+test_terra_transport_through_rules_and_canonical_publication (test_openai_provider.TerraCanonicalTests.test_terra_transport_through_rules_and_canonical_publication) ... ok
+test_transient_failure_uses_durable_transport_pause (test_openai_provider.TerraCanonicalTests.test_transient_failure_uses_durable_transport_pause) ... ok
+test_v11_normal_worker_enables_bounded_extraction_recovery (test_openai_provider.TerraCanonicalTests.test_v11_normal_worker_enables_bounded_extraction_recovery) ... ok
+test_all_existing_schemas_are_strict_without_weakening (test_openai_provider.TerraTransportTests.test_all_existing_schemas_are_strict_without_weakening) ... ok
+test_gpt6_requests_keep_model_and_none_effort (test_openai_provider.TerraTransportTests.test_gpt6_requests_keep_model_and_none_effort) ... ok
+test_http_errors_do_not_retry_or_leak_response_body (test_openai_provider.TerraTransportTests.test_http_errors_do_not_retry_or_leak_response_body) ... ok
+test_incomplete_and_refusal_never_publish_but_account_usage (test_openai_provider.TerraTransportTests.test_incomplete_and_refusal_never_publish_but_account_usage) ... ok
+test_partial_error_wrong_model_and_timeout_fail_closed (test_openai_provider.TerraTransportTests.test_partial_error_wrong_model_and_timeout_fail_closed) ... ok
+test_request_contract_and_final_response (test_openai_provider.TerraTransportTests.test_request_contract_and_final_response) ... ok
+test_leak_scan_reports_paths_without_repeating_plaintext (test_original_deletion.OriginalDeletionTest.test_leak_scan_reports_paths_without_repeating_plaintext) ... ok
+test_manifest_rejects_quote_or_span_not_present_in_original (test_original_deletion.OriginalDeletionTest.test_manifest_rejects_quote_or_span_not_present_in_original) ... ok
+test_plan_binds_selective_replacement_to_server_before_hash (test_original_deletion.OriginalDeletionTest.test_plan_binds_selective_replacement_to_server_before_hash) ... ok
+test_prepares_attested_manifest_without_full_original_or_auxiliary_copies (test_original_deletion.OriginalDeletionTest.test_prepares_attested_manifest_without_full_original_or_auxiliary_copies) ... ok
+test_receipt_sanitizer_catches_passage_copies_in_later_context (test_original_deletion.OriginalDeletionTest.test_receipt_sanitizer_catches_passage_copies_in_later_context) ... ok
+test_receipt_sanitizer_keeps_unrelated_question_and_answer (test_original_deletion.OriginalDeletionTest.test_receipt_sanitizer_keeps_unrelated_question_and_answer) ... ok
+test_tampering_with_quote_or_identity_fails_without_original (test_original_deletion.OriginalDeletionTest.test_tampering_with_quote_or_identity_fails_without_original) ... ok
+test_ui_label_requires_every_scope_and_discloses_full_quote_coverage (test_original_deletion.OriginalDeletionTest.test_ui_label_requires_every_scope_and_discloses_full_quote_coverage) ... ok
+test_archive_only_input_stages_without_inventing_accepted_source (test_original_deletion_service.OriginalDeletionServiceTest.test_archive_only_input_stages_without_inventing_accepted_source) ... ok
+test_archive_only_snapshot_has_a_deletion_ledger_without_a_package (test_original_deletion_service.OriginalDeletionServiceTest.test_archive_only_snapshot_has_a_deletion_ledger_without_a_package) ... ok
+test_invalid_deletion_input_is_a_validation_error (test_original_deletion_service.OriginalDeletionServiceTest.test_invalid_deletion_input_is_a_validation_error) ... ok
+test_purge_builds_compiler_capable_redacted_checkpoint (test_original_deletion_service.OriginalDeletionServiceTest.test_purge_builds_compiler_capable_redacted_checkpoint) ... ok
+test_purge_uses_latest_epoch_after_explicit_reimport (test_original_deletion_service.OriginalDeletionServiceTest.test_purge_uses_latest_epoch_after_explicit_reimport) ... ok
+test_stage_sanitizes_every_live_source_version_in_one_receipt (test_original_deletion_service.OriginalDeletionServiceTest.test_stage_sanitizes_every_live_source_version_in_one_receipt) ... ok
+test_stage_scans_every_candidate_and_keeps_independent_chat (test_original_deletion_service.OriginalDeletionServiceTest.test_stage_scans_every_candidate_and_keeps_independent_chat) ... ok
+test_diagnostic_exposes_only_fixed_metadata (test_pipeline_runtime.PipelineRuntimeTests.test_diagnostic_exposes_only_fixed_metadata) ... ok
+test_exact_pre_model_transport_failure_is_requeued (test_pipeline_runtime.PipelineRuntimeTests.test_exact_pre_model_transport_failure_is_requeued) ... ok
+test_transient_pause_persists_only_redacted_diagnostic (test_pipeline_runtime.PipelineRuntimeTests.test_transient_pause_persists_only_redacted_diagnostic) ... ok
+test_unavailable_recovery_is_redacted_and_not_retried_here (test_pipeline_runtime.PipelineRuntimeTests.test_unavailable_recovery_is_redacted_and_not_retried_here) ... ok
+test_unknown_call_prepared_or_changed_context_stays_in_review (test_pipeline_runtime.PipelineRuntimeTests.test_unknown_call_prepared_or_changed_context_stays_in_review) ... ok
+test_approval_after_manual_conflict_supersedes_old_planning_status (test_planner.PlannerTests.test_approval_after_manual_conflict_supersedes_old_planning_status) ... ok
+test_conflicting_team_aliases_fail_and_team_change_is_historical (test_planner.PlannerTests.test_conflicting_team_aliases_fail_and_team_change_is_historical) ... ok
+test_former_member_cannot_receive_new_manual_work (test_planner.PlannerTests.test_former_member_cannot_receive_new_manual_work) ... ok
+test_generation_preserves_manual_planning_and_rejects_silent_changes (test_planner.PlannerTests.test_generation_preserves_manual_planning_and_rejects_silent_changes) ... ok
+test_later_manual_status_correction_blocks_conflicting_source_update (test_planner.PlannerTests.test_later_manual_status_correction_blocks_conflicting_source_update) ... ok
+test_manual_task_enters_retrieval_matching_and_evidenced_lifecycle_updates (test_planner.PlannerTests.test_manual_task_enters_retrieval_matching_and_evidenced_lifecycle_updates) ... ok
+test_manual_todo_and_completion_need_no_meeting_or_model (test_planner.PlannerTests.test_manual_todo_and_completion_need_no_meeting_or_model) ... ok
+test_repeated_command_is_idempotent_but_changed_content_fails (test_planner.PlannerTests.test_repeated_command_is_idempotent_but_changed_content_fails) ... ok
+test_same_day_manual_status_before_source_requires_review (test_planner.PlannerTests.test_same_day_manual_status_before_source_requires_review) ... ok
+test_same_day_source_after_create_wins_but_later_manual_status_wins (test_planner.PlannerTests.test_same_day_source_after_create_wins_but_later_manual_status_wins) ... ok
+test_source_planning_preserves_meeting_projection_and_quotes (test_planner.PlannerTests.test_source_planning_preserves_meeting_projection_and_quotes) ... ok
+test_unknown_work_unsupported_fields_and_invalid_dates_are_rejected (test_planner.PlannerTests.test_unknown_work_unsupported_fields_and_invalid_dates_are_rejected) ... ok
+test_action_gate_runs_before_atomic_projection_and_counts_both_calls (test_processor.ProcessorTests.test_action_gate_runs_before_atomic_projection_and_counts_both_calls) ... ok
+test_incomplete_output_is_recorded_and_rejected (test_processor.ProcessorTests.test_incomplete_output_is_recorded_and_rejected) ... ok
+test_provider_transport_error_remains_classifiable_for_bounded_retry (test_processor.ProcessorTests.test_provider_transport_error_remains_classifiable_for_bounded_retry) ... ok
+test_repairs_invalid_time_once_and_counts_both_paid_calls (test_processor.ProcessorTests.test_repairs_invalid_time_once_and_counts_both_paid_calls) ... ok
+test_repeated_invalid_output_never_promotes_partial_data (test_processor.ProcessorTests.test_repeated_invalid_output_never_promotes_partial_data) ... ok
+test_checkpoint_contains_compiler_basis_for_later_generations (test_projection_snapshot.ProjectionSnapshotTest.test_checkpoint_contains_compiler_basis_for_later_generations) ... ok
+test_journal_rebuild_starts_at_latest_privacy_checkpoint (test_projection_snapshot.ProjectionSnapshotTest.test_journal_rebuild_starts_at_latest_privacy_checkpoint) ... ok
+test_snapshot_restores_exact_state_without_deleted_transcript (test_projection_snapshot.ProjectionSnapshotTest.test_snapshot_restores_exact_state_without_deleted_transcript) ... ok
+test_tampering_fails_before_restore (test_projection_snapshot.ProjectionSnapshotTest.test_tampering_fails_before_restore) ... ok
+test_unredacted_sources_keep_their_transcript (test_projection_snapshot.ProjectionSnapshotTest.test_unredacted_sources_keep_their_transcript) ... ok
+test_conversation_contract_is_owner_scoped_and_question_remains_compatible (test_qa_http.QuestionHTTPTests.test_conversation_contract_is_owner_scoped_and_question_remains_compatible) ... ok
+test_enabled_question_is_owner_only_even_in_read_only_mode (test_qa_http.QuestionHTTPTests.test_enabled_question_is_owner_only_even_in_read_only_mode) ... ok
+test_feature_is_off_by_default_boundary (test_qa_http.QuestionHTTPTests.test_feature_is_off_by_default_boundary) ... ok
+test_invalid_and_unknown_provider_results_are_explicit (test_qa_http.QuestionHTTPTests.test_invalid_and_unknown_provider_results_are_explicit) ... ok
+test_long_question_returns_pollable_processing_state (test_qa_http.QuestionHTTPTests.test_long_question_returns_pollable_processing_state) ... ok
+test_memory_action_and_coverage_contract_passes_through_http (test_qa_http.QuestionHTTPTests.test_memory_action_and_coverage_contract_passes_through_http) ... ok
+test_question_budget_accepts_explicit_unlimited_or_positive_integer (test_qa_http.QuestionHTTPTests.test_question_budget_accepts_explicit_unlimited_or_positive_integer) ... ok
+test_unverified_answer_has_a_distinct_error_code (test_qa_http.QuestionHTTPTests.test_unverified_answer_has_a_distinct_error_code) ... ok
+test_all_and_count_task_questions_use_complete_projection_without_provider (test_qa_service.QuestionServiceTests.test_all_and_count_task_questions_use_complete_projection_without_provider) ... ok
+test_default_scope_uses_latest_archive_or_work_event_without_user_date (test_qa_service.QuestionServiceTests.test_default_scope_uses_latest_archive_or_work_event_without_user_date) ... ok
+test_manual_task_is_answered_with_server_built_navigation_and_replay (test_qa_service.QuestionServiceTests.test_manual_task_is_answered_with_server_built_navigation_and_replay) ... ok
+test_model_cannot_create_a_source_link (test_qa_service.QuestionServiceTests.test_model_cannot_create_a_source_link) ... ok
+test_non_json_answer_is_terminal_and_not_resent (test_qa_service.QuestionServiceTests.test_non_json_answer_is_terminal_and_not_resent) ... ok
+test_personal_filter_is_applied_after_status_scope (test_qa_service.QuestionServiceTests.test_personal_filter_is_applied_after_status_scope) ... ok
+test_provider_result_is_not_resent_after_uncertain_receipt (test_qa_service.QuestionServiceTests.test_provider_result_is_not_resent_after_uncertain_receipt) ... ok
+test_request_shape_date_and_completed_hash_fail_closed (test_qa_service.QuestionServiceTests.test_request_shape_date_and_completed_hash_fail_closed) ... ok
+test_retrieval_discloses_scope_freshness_and_compacted_history (test_qa_service.QuestionServiceTests.test_retrieval_discloses_scope_freshness_and_compacted_history) ... ok
+test_retrieval_keeps_relevant_tasks_and_archive_passages_ahead_of_irrelevant_task_mass (test_qa_service.QuestionServiceTests.test_retrieval_keeps_relevant_tasks_and_archive_passages_ahead_of_irrelevant_task_mass) ... ok
+test_service_identity_is_rejected_before_provider (test_qa_service.QuestionServiceTests.test_service_identity_is_rejected_before_provider) ... ok
+test_structured_task_route_rejects_filters_and_conflicting_scopes (test_qa_service.QuestionServiceTests.test_structured_task_route_rejects_filters_and_conflicting_scopes) ... ok
+test_uncertain_terminal_receipt_replays_provider_calls_without_resend (test_qa_service.QuestionServiceTests.test_uncertain_terminal_receipt_replays_provider_calls_without_resend) ... ok
+test_unlimited_budget_is_forwarded_as_null_without_changing_accounting (test_qa_service.QuestionServiceTests.test_unlimited_budget_is_forwarded_as_null_without_changing_accounting) ... ok
+test_user_history_supplies_followup_retrieval_context (test_qa_service.QuestionServiceTests.test_user_history_supplies_followup_retrieval_context) ... ok
+test_working_and_archive_citations_use_canonical_open_targets (test_qa_service.QuestionServiceTests.test_working_and_archive_citations_use_canonical_open_targets) ... ok
+test_background_error_is_delivered_by_poll (test_question_jobs.QuestionJobTests.test_background_error_is_delivered_by_poll) ... ok
+test_long_poll_returns_fast_completion_without_a_processing_round_trip (test_question_jobs.QuestionJobTests.test_long_poll_returns_fast_completion_without_a_processing_round_trip) ... ok
+test_polling_runs_one_background_copy_and_returns_result (test_question_jobs.QuestionJobTests.test_polling_runs_one_background_copy_and_returns_result) ... ok
+test_privacy_maintenance_waits_for_answer_storage_then_clears_it (test_question_jobs.QuestionJobTests.test_privacy_maintenance_waits_for_answer_storage_then_clears_it) ... ok
+test_same_identity_rejects_changed_payload_while_running (test_question_jobs.QuestionJobTests.test_same_identity_rejects_changed_payload_while_running) ... ok
+test_live_wal_snapshot_has_committed_rows_without_sidecars (test_readonly_snapshot.ReadOnlySnapshotTests.test_live_wal_snapshot_has_committed_rows_without_sidecars) ... ok
+test_absence_and_ambiguity_do_not_close_work (test_reconcile.LifecycleTests.test_absence_and_ambiguity_do_not_close_work) ... ok
+test_every_existing_id_must_be_accounted_for (test_reconcile.LifecycleTests.test_every_existing_id_must_be_accounted_for) ... ok
+test_existing_work_completion_keeps_identity_and_exact_evidence (test_reconcile.LifecycleTests.test_existing_work_completion_keeps_identity_and_exact_evidence) ... ok
+test_invalid_lifecycle_item_budget_is_rejected (test_reconcile.LifecycleTests.test_invalid_lifecycle_item_budget_is_rejected) ... ok
+test_lifecycle_partition_also_bounds_response_cardinality (test_reconcile.LifecycleTests.test_lifecycle_partition_also_bounds_response_cardinality) ... ok
+test_lifecycle_partition_preserves_every_identity_under_budget (test_reconcile.LifecycleTests.test_lifecycle_partition_preserves_every_identity_under_budget) ... ok
+test_single_oversized_identity_fails_without_truncation (test_reconcile.LifecycleTests.test_single_oversized_identity_fails_without_truncation) ... ok
+test_unquoted_deadline_or_hidden_owner_change_is_rejected (test_reconcile.LifecycleTests.test_unquoted_deadline_or_hidden_owner_change_is_rejected) ... ok
+test_saved_gate_and_later_lifecycle_review_are_not_gated_twice (test_reproject.ReprojectionTests.test_saved_gate_and_later_lifecycle_review_are_not_gated_twice) ... ok
+test_copies_and_persists_actual_hash_job_and_question_receipts (test_restore_outboxes.RestoreOutboxTests.test_copies_and_persists_actual_hash_job_and_question_receipts) ... ok
+test_empty_manifest_allows_tar_without_empty_directories (test_restore_outboxes.RestoreOutboxTests.test_empty_manifest_allows_tar_without_empty_directories) ... ok
+test_wrong_scope_is_rejected_before_live_receipt_copy (test_restore_outboxes.RestoreOutboxTests.test_wrong_scope_is_rejected_before_live_receipt_copy) ... ok
+test_plan_refuses_changed_historical_source (test_restore_schema.RestoreSchemaTests.test_plan_refuses_changed_historical_source) ... ok
+test_rc2_plan_has_one_checked_bridge_and_orders_deletions (test_restore_schema.RestoreSchemaTests.test_rc2_plan_has_one_checked_bridge_and_orders_deletions) ... ok
+test_restore_refuses_changed_queue_guard (test_restore_schema.RestoreSchemaTests.test_restore_refuses_changed_queue_guard) ... ok
+test_restore_refuses_missing_queue_guard (test_restore_schema.RestoreSchemaTests.test_restore_refuses_missing_queue_guard) ... ok
+test_workspace_schema_fallback_is_the_workspace_supabase_directory (test_restore_schema.RestoreSchemaTests.test_workspace_schema_fallback_is_the_workspace_supabase_directory) ... ok
+test_queued_original_does_not_inflate_processed_source_count (test_review_api.ReviewCoverageTests.test_queued_original_does_not_inflate_processed_source_count) ... ok
+test_archive_requires_auth_and_returns_exact_full_original (test_review_http.ReviewHTTPTests.test_archive_requires_auth_and_returns_exact_full_original) ... ok
+test_invalid_date_unknown_source_and_mutation_cannot_change_db (test_review_http.ReviewHTTPTests.test_invalid_date_unknown_source_and_mutation_cannot_change_db) ... ok
+test_owner_can_read_but_cannot_submit_sources (test_review_http.ReviewHTTPTests.test_owner_can_read_but_cannot_submit_sources) ... ok
+test_private_review_and_original_hash (test_review_http.ReviewHTTPTests.test_private_review_and_original_hash) ... ok
+test_readiness_checks_the_actual_databases (test_review_http.ReviewHTTPTests.test_readiness_checks_the_actual_databases) ... ok
+test_repeated_fault_backoff_is_bounded_and_resets_after_success (test_server_worker.CanonicalWorkerLoopTests.test_repeated_fault_backoff_is_bounded_and_resets_after_success) ... ok
+test_storage_error_is_classified_without_diagnostic_payload (test_server_worker.CanonicalWorkerLoopTests.test_storage_error_is_classified_without_diagnostic_payload) ... ok
+test_transport_error_is_classified_as_transient (test_server_worker.CanonicalWorkerLoopTests.test_transport_error_is_classified_as_transient) ... ok
+test_unexpected_error_is_redacted_and_next_step_runs (test_server_worker.CanonicalWorkerLoopTests.test_unexpected_error_is_redacted_and_next_step_runs) ... ok
+test_active_lease_blocks_later_and_expired_retry_is_bounded (test_service_worker.WorkerTests.test_active_lease_blocks_later_and_expired_retry_is_bounded) ... ok
+test_applied_sources_do_not_block_future_work (test_service_worker.WorkerTests.test_applied_sources_do_not_block_future_work) ... ok
+test_budget_date_and_rules_are_mandatory (test_service_worker.WorkerTests.test_budget_date_and_rules_are_mandatory) ... ok
+test_changed_pipeline_does_not_skip_old_jobs (test_service_worker.WorkerTests.test_changed_pipeline_does_not_skip_old_jobs) ... ok
+test_earlier_failure_blocks_later_meeting (test_service_worker.WorkerTests.test_earlier_failure_blocks_later_meeting) ... ok
+test_every_injected_call_reserves_budget_and_restart_keeps_it (test_service_worker.WorkerTests.test_every_injected_call_reserves_budget_and_restart_keeps_it) ... ok
+test_legacy_date_never_runs_even_if_just_registered (test_service_worker.WorkerTests.test_legacy_date_never_runs_even_if_just_registered) ... ok
+test_completed_promise_needs_state_evidence (test_source_edit.SourceEditTests.test_completed_promise_needs_state_evidence) ... ok
+test_incomplete_saved_result_prefills_without_null_controls_or_invented_evidence (test_source_edit.SourceEditTests.test_incomplete_saved_result_prefills_without_null_controls_or_invented_evidence) ... ok
+test_invented_quote_or_unselected_task_cannot_enter_review (test_source_edit.SourceEditTests.test_invented_quote_or_unselected_task_cannot_enter_review) ... ok
+test_lost_stage_ack_uses_same_original_revision_and_payload (test_source_edit.SourceEditTests.test_lost_stage_ack_uses_same_original_revision_and_payload) ... ok
+test_manual_edit_stages_only_and_never_calls_model (test_source_edit.SourceEditTests.test_manual_edit_stages_only_and_never_calls_model) ... ok
+test_no_saved_result_still_exposes_exact_original_for_manual_review (test_source_edit.SourceEditTests.test_no_saved_result_still_exposes_exact_original_for_manual_review) ... ok
+test_observation_cannot_smuggle_normalized_gate_or_source_fields (test_source_edit.SourceEditTests.test_observation_cannot_smuggle_normalized_gate_or_source_fields) ... ok
+test_only_owner_can_inspect_or_stage (test_source_edit.SourceEditTests.test_only_owner_can_inspect_or_stage) ... ok
+test_replacement_preserves_personal_decision_only_with_explicit_mapping (test_source_edit.SourceEditTests.test_replacement_preserves_personal_decision_only_with_explicit_mapping) ... ok
+test_running_or_finished_job_is_not_editable (test_source_edit.SourceEditTests.test_running_or_finished_job_is_not_editable) ... ok
+test_stale_job_and_revision_block_staging (test_source_edit.SourceEditTests.test_stale_job_and_revision_block_staging) ... ok
+test_owner_get_and_post_keep_service_and_other_accounts_out (test_source_edit_http.SourceEditHTTPTests.test_owner_get_and_post_keep_service_and_other_accounts_out) ... ok
+test_source_editor_http_is_owner_only_staging_and_readonly_aware (test_source_edit_http.SourceEditHTTPTests.test_source_editor_http_is_owner_only_staging_and_readonly_aware) ... ok
+test_anonymous_labels_never_become_identified_work (test_source_identity.IdentityAndTimeTests.test_anonymous_labels_never_become_identified_work) ... ok
+test_same_day_has_identity_only_and_cannot_close_existing_work (test_source_identity.IdentityAndTimeTests.test_same_day_has_identity_only_and_cannot_close_existing_work) ... ok
+test_assembles_text_and_final_cumulative_usage (test_stream.StreamTests.test_assembles_text_and_final_cumulative_usage) ... ok
+test_overload_event_does_not_promote_partial_output (test_stream.StreamTests.test_overload_event_does_not_promote_partial_output) ... ok
+test_total_deadline_is_enforced (test_stream.StreamTests.test_total_deadline_is_enforced) ... ok
+test_truncated_stream_is_not_success_or_final_cost (test_stream.StreamTests.test_truncated_stream_is_not_success_or_final_cost) ... ok
+test_cross_matter_update_rolls_back (test_transitions.TransitionTests.test_cross_matter_update_rolls_back) ... ok
+test_full_transition_sequence (test_transitions.TransitionTests.test_full_transition_sequence) ... ok
+test_name_substring_is_not_personal_identity (test_transitions.TransitionTests.test_name_substring_is_not_personal_identity) ... ok
+test_owner_and_due_changes_require_values (test_transitions.TransitionTests.test_owner_and_due_changes_require_values) ... ok
+test_review_as_of_and_read_only_boundary (test_transitions.TransitionTests.test_review_as_of_and_read_only_boundary) ... ok
+test_bad_payload_rejected (test_transport.TransportTests.test_bad_payload_rejected) ... ok
+test_bounded_backoff_retries_only_transient_failure (test_transport.TransportTests.test_bounded_backoff_retries_only_transient_failure) ... ok
+test_historical_source_never_enters_paid_queue (test_transport.TransportTests.test_historical_source_never_enters_paid_queue) ... ok
+test_original_offsets_survive_crlf_and_unicode (test_transport.TransportTests.test_original_offsets_survive_crlf_and_unicode) ... ok
+test_parallel_repeated_intake_one_durable_job (test_transport.TransportTests.test_parallel_repeated_intake_one_durable_job) ... ok
+test_unauthorized_intake_has_no_side_effect (test_transport.TransportTests.test_unauthorized_intake_has_no_side_effect) ... ok
+
+======================================================================
+ERROR: test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 66, in test_ambiguous_teams_title_is_replaced_in_list_and_dialog_without_mutating_source
+    status,catalogue=self.request('/archive')
+                     ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 27, in request
+    with urlopen(Request(f'http://127.0.0.1:{self.http.server_port}'+path),timeout=3) as result:return result.status,json.load(result)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1349, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1324, in do_open
+    r = h.getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1478, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+                             " response")
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+======================================================================
+ERROR: test_canonical_archive_and_summary_work_without_any_legacy_database (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_canonical_archive_and_summary_work_without_any_legacy_database)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 32, in test_canonical_archive_and_summary_work_without_any_legacy_database
+    status,catalogue=self.request('/archive?as_of=2026-09-06&known_at=2026-09-06T21:00:00Z&q=Zusammenfassung')
+                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 27, in request
+    with urlopen(Request(f'http://127.0.0.1:{self.http.server_port}'+path),timeout=3) as result:return result.status,json.load(result)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1349, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1324, in do_open
+    r = h.getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1478, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+                             " response")
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+======================================================================
+ERROR: test_moved_original_exposes_existing_summary_in_catalogue_and_dialog (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_moved_original_exposes_existing_summary_in_catalogue_and_dialog)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 46, in test_moved_original_exposes_existing_summary_in_catalogue_and_dialog
+    status,result=self.request('/archive?as_of=2026-09-06&known_at=2026-09-06T22:00:00Z')
+                  ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 27, in request
+    with urlopen(Request(f'http://127.0.0.1:{self.http.server_port}'+path),timeout=3) as result:return result.status,json.load(result)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1349, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1324, in do_open
+    r = h.getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1478, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+                             " response")
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+======================================================================
+ERROR: test_owner_boundary_and_snapshot_cache_cannot_expose_another_account (test_canonical_archive_http.CanonicalArchiveHTTPTests.test_owner_boundary_and_snapshot_cache_cannot_expose_another_account)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 77, in test_owner_boundary_and_snapshot_cache_cannot_expose_another_account
+    self.assertEqual(self.request('/archive')[0],200)
+                     ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_canonical_archive_http.py", line 27, in request
+    with urlopen(Request(f'http://127.0.0.1:{self.http.server_port}'+path),timeout=3) as result:return result.status,json.load(result)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1349, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1324, in do_open
+    r = h.getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1478, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+                             " response")
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+======================================================================
+ERROR: test_new_promise_uses_one_reconciliation_and_keeps_independent_gate (test_compact_reconcile.PipelineIntegrationTests.test_new_promise_uses_one_reconciliation_and_keeps_independent_gate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_compact_reconcile.py", line 281, in test_new_promise_uses_one_reconciliation_and_keeps_independent_gate
+    result=process(db,meeting,'gpt-5.6-terra',api=api,compact=True)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 390, in process
+    proposal,final_summary=stage('gate',gate_rules+'\nKandidaten:\n'+encode(candidates)+'\nAlle aktuellen Beobachtungen:\n'+encode([{'index':i,**o} for i,o in enumerate(proposal['observations'])])+'\nVorläufige Zusammenfassung:\n'+encode(raw['meeting_summary'])+'\nBestehende Arbeit:\n'+encode(gate_work)+base,gate_schema,checked_gate,8000)
+                           ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 244, in stage
+    checked=check(raw)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 370, in checked_gate
+    final_summary=apply_endstate(checked,raw,value,originals)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 113, in apply_endstate
+    complete(states,len(observations),'Endstate')
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 110, in complete
+    raise ValidationError(label+' coverage invalid')
+memory.ValidationError: Endstate coverage invalid
+
+======================================================================
+ERROR: test_uncertain_compact_update_does_not_require_internal_source_index (test_compact_reconcile.PipelineIntegrationTests.test_uncertain_compact_update_does_not_require_internal_source_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/test_compact_reconcile.py", line 238, in test_uncertain_compact_update_does_not_require_internal_source_index
+    result = process(db, meeting, 'gpt-5.6-terra', api=API(), compact=True)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 390, in process
+    proposal,final_summary=stage('gate',gate_rules+'\nKandidaten:\n'+encode(candidates)+'\nAlle aktuellen Beobachtungen:\n'+encode([{'index':i,**o} for i,o in enumerate(proposal['observations'])])+'\nVorläufige Zusammenfassung:\n'+encode(raw['meeting_summary'])+'\nBestehende Arbeit:\n'+encode(gate_work)+base,gate_schema,checked_gate,8000)
+                           ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 244, in stage
+    checked=check(raw)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 370, in checked_gate
+    final_summary=apply_endstate(checked,raw,value,originals)
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 113, in apply_endstate
+    complete(states,len(observations),'Endstate')
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/working-memory/hybrid_pipeline.py", line 110, in complete
+    raise ValidationError(label+' coverage invalid')
+memory.ValidationError: Endstate coverage invalid
+
+----------------------------------------------------------------------
+Ran 521 tests in 27.397s
+
+FAILED (errors=6)

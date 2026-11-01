@@ -1,0 +1,12 @@
+[
+  {
+    "pfad": "working-memory/tools/daily/README.md",
+    "ziel": "validation.json",
+    "aufgeloest": "working-memory/tools/daily/validation.json"
+  },
+  {
+    "pfad": "working-memory/tools/daily/README.md",
+    "ziel": "out/2026-10-13/run.json",
+    "aufgeloest": "working-memory/tools/daily/out/2026-10-13/run.json"
+  }
+]

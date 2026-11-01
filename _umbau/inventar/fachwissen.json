@@ -1,0 +1,245 @@
+{
+  "zweck": [
+    {
+      "text": "Das Dashboard soll Änderungen, eigene nächste Aufgaben und ausstehende Zusagen sichtbar machen; Meetings dienen als Quellen.",
+      "quelle": "working-memory/docs/TARGET.md:3"
+    },
+    {
+      "text": "Das Zielbild vom 13.10.2026 beschreibt ein Arbeits-Memory, das relevante Aufgaben mit Kontext verfolgt, Fragen beantwortet und eine vorbereitete Übergabe an die Arbeits-KI ermöglicht.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:4"
+    }
+  ],
+  "zielgruppe": [
+    {
+      "text": "Das Fachziel nennt Gleb als Nutzer; im Zielbild ist eine Übergabe an seine Arbeits-KI vorgesehen.",
+      "quelle": "working-memory/docs/TARGET.md:3"
+    }
+  ],
+  "grenzen": [
+    {
+      "text": "Im Zielbild vom 13.10.2026 endet Phase 1 bei der Übergabe; Ausführung und Vault-Brücke gehören zu Phase 2.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:27"
+    },
+    {
+      "text": "Das Zielbild vom 13.10.2026 fordert für die zusätzliche Arbeits-KI-Bedienung keine Dashboard-UI und nennt VS Code, E-Mail und Power BI als mögliche Kanäle; dies ist keine Aussage über den Wegfall bestehender Dashboard-Oberflächen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:27"
+    },
+    {
+      "text": "Qualität darf bei Kostensenkung laut Zielbild nicht sinken; jede Aussage im Paket soll belegt oder als unbekannt markiert sein.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:32"
+    },
+    {
+      "text": "Der Datenfluss von Arbeitsmeetings über das private System und der Lieferweg an die Arbeit einschließlich Compliance waren im Zielbild vom 13.10.2026 offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:133"
+    },
+    {
+      "text": "Die dokumentierte 140.000-Zeichen-Grenze beschreibt ausdrücklich einen historischen Prototyp und belegt keine aktuelle Produktionsgrenze.",
+      "quelle": "working-memory/docs/TARGET.md:28"
+    }
+  ],
+  "funktionen": [
+    {
+      "text": "Das Zielbild berichtet zum 13.10.2026 über einen lesenden Memory-MCP und quellenbezogene Fragen; Goldfragen-Abnahme und der vollständige Abruf aus VS Code sind darin nicht belegt.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:44"
+    },
+    {
+      "text": "Ein Relevanz-Gate wird im Zielbild als gebaut beschrieben; die Kalibrierung anhand der Bewertungen des Nutzers war offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:41"
+    },
+    {
+      "text": "Erinnerung und Digest werden im Zielbild als gebaut beschrieben; eine Zustellung war nicht angebunden und die Compliance offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:43"
+    },
+    {
+      "text": "Das Zielbild beschreibt ein gebautes Auftragspaket mit Gerüst und Synthese, dessen fachliche Abnahme offen war und bei dem fertig_wenn in den fünf untersuchten Fällen unbelegt blieb.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:47"
+    }
+  ],
+  "entscheidungen": [
+    {
+      "titel": "Manuelle und produktive Übernahme vom 7. September",
+      "datum": "2026-09-07",
+      "text": "Die Quelle dokumentiert eine ausdrücklich bestätigte Übernahme samt finalen Korrekturen und Abschaltung der Altlogik sowie eine historische zunächst pausierte neue Automatik.",
+      "grund": "Grund nicht rekonstruierbar",
+      "ersetzt_durch": "Die dauerhafte Verarbeitung neuer Notizen wurde laut späterem Auftrag vom 21.09.2026 angeordnet.",
+      "quelle": "working-memory/docs/CUTOVER-PLAN.md:3"
+    },
+    {
+      "titel": "Automatische Verarbeitung neuer Notizen",
+      "datum": "2026-09-21",
+      "text": "Der Nutzer beauftragte die dauerhafte automatische Verarbeitung und Speicherung neu hinzukommender Notizen; der frühere Idle-Stopp nach Rückstandsverarbeitung wurde aufgehoben.",
+      "grund": "Grund nicht rekonstruierbar",
+      "ersetzt_durch": "Die dort genannte Terra-Standardannahme wurde laut Auftrag vom 06.10.2026 durch Sol mit begründeter Ausnahme ersetzt.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:645"
+    },
+    {
+      "titel": "Keine automatische Rückkehr zur Source nach Writer-Wechsel",
+      "datum": "2026-10-04",
+      "text": "Nach der Writer-Öffnung darf das frühere Source-Supabase nicht als aktueller Datenstand verbunden oder durch den historischen Rückweg reaktiviert werden; der dokumentierte Rückweg verwendet einen Target-Backup.",
+      "grund": "Der tatsächliche Zielstand und inzwischen entstandene Daten müssen erhalten bleiben.",
+      "ersetzt_durch": "unbekannt",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:201"
+    },
+    {
+      "titel": "Wiederholung der Blockerfehler vermeiden",
+      "datum": "2026-10-05",
+      "text": "Der Nutzer verlangte, den Fehler, der die Verarbeitung blockierte, sowie ähnliche Fälle zukünftig zu verhindern; die Quelle behauptet damit keine erreichte Fehlerfreiheit.",
+      "grund": "Auslöser war der zuvor beobachtete blockierende Verarbeitungsfehler.",
+      "ersetzt_durch": "unbekannt",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:387"
+    },
+    {
+      "titel": "Sol als Standard für aktive Terra-Einsatzstellen",
+      "datum": "2026-10-06",
+      "text": "Gleb beauftragte GPT-6.1 Sol für aktive Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra; für das bekannte Aufgabenprofil ist Medium vorgesehen.",
+      "grund": "Der historische Vergleich mit Sol 6.0 rechtfertigt laut Quelle keine Terra-Ausnahme.",
+      "ersetzt_durch": "unbekannt",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:341"
+    },
+    {
+      "titel": "Technischen Betrieb unabhängig von perfekter fachlicher Qualität ermöglichen",
+      "datum": "2026-10-06",
+      "text": "Gleb änderte die Produktabnahme: Verarbeitung und Rückstandsabbau sollen funktionieren; weitere Lead-Modellbenchmarks sind laut damaligem Auftrag kein Betriebsfreigabetor. Integrität und Sichtbarkeit fehlerhafter Quellen bleiben Pflicht.",
+      "grund": "Fehlende vollständige fachliche Perfektion soll den technischen Betrieb nicht blockieren.",
+      "ersetzt_durch": "Ersetzt die frühere Annahme, vor Öffnung der Verarbeitung sechs perfekte fachliche Vergleichsfälle zu verlangen.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:343"
+    },
+    {
+      "titel": "Phase 1 endet mit vorbereitetem Auftragspaket",
+      "datum": "2026-10-13",
+      "text": "Das damalige Zielbild sieht die vorbereitete Übergabe an die Arbeits-KI als Phase-1-Ziel vor; Ausführung und Vault-Zugriff liegen in Phase 2.",
+      "grund": "Grund nicht rekonstruierbar",
+      "ersetzt_durch": "unbekannt",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:27"
+    }
+  ],
+  "regeln": [
+    {
+      "text": "Nur ausdrückliche Zusage oder angenommene Bitte mit identifizierbarem Verantwortlichen und tragfähigem Originalbeleg begründet neue Arbeit; Wiederholungen aktualisieren eine vorhandene Verpflichtung.",
+      "quelle": "working-memory/docs/TARGET.md:15"
+    },
+    {
+      "text": "Statusänderungen benötigen sicheren Bezug; Personen und Fristen dürfen nicht aus bloßer Teilnahme oder ungenauen Formulierungen geraten werden.",
+      "quelle": "working-memory/docs/TARGET.md:17"
+    },
+    {
+      "text": "Unveränderliche Originalquellen und Versionen, belegte Beobachtungen, Vorgänge, Verpflichtungen und Änderungsereignisse bilden laut Fachziel unterscheidbare Konzepte; ähnliche Namen allein reichen nicht für Zusammenführung.",
+      "quelle": "working-memory/docs/TARGET.md:7"
+    },
+    {
+      "text": "Nur handlungsrelevante Unsicherheit mit Konsequenzen für eine aktuelle Verpflichtung soll eine knappe Entscheidung benötigen; technische Fehler gehören zum Betriebsstatus.",
+      "quelle": "working-memory/docs/TARGET.md:19"
+    },
+    {
+      "text": "Originalquelle vollständig erfassen; spätere Quellen im Ereigniszeitpunkt-Kontext ausschließen; bei historischen Wissensstand-Replays zusätzlich die Kenntnisnahme begrenzen.",
+      "quelle": "working-memory/docs/TARGET.md:23"
+    },
+    {
+      "text": "IDs, Originalbelege, Datumsbezug und zulässige Änderungen unabhängig vom Modell validieren; strukturierte Ausgabe allein beweist keine fachliche Richtigkeit.",
+      "quelle": "working-memory/docs/TARGET.md:26"
+    },
+    {
+      "text": "Daten-, Original-, Hash-, Schema-, Berechtigungs-, Humanentscheidungs- und Kostenintegrität bleiben laut Auftrag vom 06.10.2026 verpflichtend; fehlerhafte Quellen bleiben mit Grund und Wiederaufnahmeweg sichtbar.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:345"
+    },
+    {
+      "text": "Ungeklärte Transportantworten dürfen nicht automatisch doppelt bezahlt werden; fachliche Dashboardprüfungen sind vom technischen Betrieb getrennt.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:345"
+    },
+    {
+      "text": "Restore auf isoliertem leerem Target beginnen und die aktuelle externe Löschbarriere attestieren; ohne nachweislich aktuellen externen Ledger keinen Datenrestore durchführen.",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:201"
+    },
+    {
+      "text": "Beim Dashboard-Restore andere Anwendungen und die gemeinsame produktive n8n-Datenbank nicht pauschal überschreiben oder neu starten.",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:324"
+    },
+    {
+      "text": "Das Zielbild verlangt Nutzerabnahme der Ergebnisse auch bei Reviews, E-Mail-Entwürfen und Erinnerungen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:20"
+    }
+  ],
+  "befehle": [
+    {
+      "text": "Der dokumentierte Restoreprüfweg verlangt vor dem Restore Paket-SHA und alle Einträge mit offserver_backup.verify_bundle zu prüfen; der konkrete Einsatz ist vom aktuellen Betriebszustand abhängig.",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:207"
+    },
+    {
+      "text": "Historische RC2-Anleitung: restore-reviewed.sql wird mit psql -v ON_ERROR_STOP=1 -f restore-reviewed.sql gegen ein geprüftes Ziel ausgeführt; sie gilt nicht automatisch für das aktuelle Ziel.",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:316"
+    }
+  ],
+  "chronik": [
+    {
+      "text": "2026-09-07: Laut historischer Checkliste erfolgten Produktionsdeployment, Annahme der finalen Generation und Stilllegung der Altlogik.",
+      "quelle": "working-memory/docs/CUTOVER-PLAN.md:1"
+    },
+    {
+      "text": "2026-09-21: Dauerhafte automatische Verarbeitung und Speicherung neuer Notizen wurde beauftragt.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:645"
+    },
+    {
+      "text": "2026-10-04: Ein dokumentierter Writer-Wechsel auf das Target begrenzt den zulässigen Rückweg.",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:201"
+    },
+    {
+      "text": "2026-10-06: Der Nutzer beauftragte Sol als Standard und änderte die damaligen Produktabnahmekriterien.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:341"
+    },
+    {
+      "text": "2026-10-12: Der dokumentierte Betriebsstand berichtet von einer Vollsicherung mit isoliertem Wiederherstellungstest; das ist ein historischer Beleg.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:9"
+    },
+    {
+      "text": "2026-10-13: Das Zielbild beschreibt Phase 1, ihre Teilbausteine und offene fachliche Abnahmen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:4"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "text": "Die Kalibrierung des Relevanz-Gates anhand von Nutzerbewertungen war im Zielbild vom 13.10.2026 offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:41"
+    },
+    {
+      "text": "Für das Memory waren eine fachliche Goldfragen-Abnahme und der Nachweis des Abrufs aus VS Code offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:44"
+    },
+    {
+      "text": "Zustellung von Erinnerungen und deren Compliance waren offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:43"
+    },
+    {
+      "text": "Die Abnahme der Auftragspakete und die Unterscheidung unbelegter Annahmen von unbekannten Angaben waren offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:47"
+    },
+    {
+      "text": "Lieferweg zur Arbeit und Zulässigkeit des Datenflusses Arbeitsmeetings → privates System → Arbeits-KI waren ungeklärt.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:129"
+    },
+    {
+      "text": "Das vorgeschlagene Hot-Set und ein wöchentlicher Vollabgleich waren zum 13.10.2026 weder produktiv freigegeben noch in ihrer Wirksamkeit ausreichend nachgewiesen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:91"
+    },
+    {
+      "text": "Der verpflichtende Hot-Set-Fall Alter 25 Tage/Rang 12 und die Prüfung an neuen Meetings waren zum 13.10.2026 offen.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:143"
+    },
+    {
+      "text": "Das Zielbild nennt frühere, für die Optimierung relevante Gespräche außerhalb des damals zugänglichen Kontexts als fehlend.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:134"
+    },
+    {
+      "text": "Der lokale Indexaufbau wurde im Zielbild mit etwa 100 Sekunden beschrieben; ein persistenter Cache fehlte damals.",
+      "quelle": "working-memory/docs/ZIELBILD-PHASE1.md:149"
+    },
+    {
+      "text": "Ein vollständiger Wiederaufbau nach physischem Serververlust wurde im Restore-Runbook vom 04.10.2026 nicht als durchgeführt ausgewiesen.",
+      "quelle": "working-memory/docs/RESTORE-RUNBOOK.md:209"
+    },
+    {
+      "text": "Die Fachvorgabe beschreibt einen unabhängigen Testsatz und Quellzuordnung als Qualitätsziele; die frühere Annahme perfekter Vergleichsfälle als Voraussetzung für den technischen Betrieb wurde später ausdrücklich geändert.",
+      "quelle": "working-memory/docs/NEXT-OPERATIONS.md:343"
+    }
+  ],
+  "annahmen": []
+}

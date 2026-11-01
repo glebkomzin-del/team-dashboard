@@ -1,0 +1,16 @@
+Fehler: Befehl fehlgeschlagen: git -c core.hooksPath=/dev/null
+The following paths are ignored by one of your .gitignore files:
+_umbau/git-ohne-mmap-build.log
+_umbau/gruene-vorpruefung.log
+_umbau/isolierte-installation.log
+_umbau/isolierter-build.log
+_umbau/node-gruener-teil.log
+_umbau/python-basis.log
+_umbau/python-portabel.log
+_umbau/snapshot-commit.log
+_umbau/start.log
+hint: Use -f if you really want to add them.
+hint: Disable this message with "git config set advice.addIgnoredFile false"
+
+Git-Wurzel: /Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os; Dateien: 75438; Repos: 0; Geheimnis-Pfade: 4
+Blocker: B3, B4, B5

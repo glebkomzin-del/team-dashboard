@@ -1,0 +1,7 @@
+{
+  "methode": "Hochspezifische Tokenmuster und eingebettete Service-Rollen-JWTs; Dateinamen separat ausgeschlossen. Keine Garantie für sämtliche Geheimnisformate.",
+  "gepruefte_pfade": 1963,
+  "fund_pfade": [
+    "supabase/functions/ingest-transcript/index.ts"
+  ]
+}

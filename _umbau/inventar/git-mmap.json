@@ -1,0 +1,43 @@
+{
+  "funktionen": [
+    {
+      "text": "Git pack-objects wartete im erfassten Prozess-Sample in der Kette loose_object_info → map_fd → mmap; der Aufruf stammt aus dem Traversieren von Trees.",
+      "quelle": "/tmp/dashboard-migrate-pack-sample.txt:30"
+    },
+    {
+      "text": "Die Git-Commit-Ausgabe wartete bei der Berechnung des Diffstats ebenfalls auf mmap.",
+      "quelle": "/tmp/dashboard-migrate-commit-sample.txt:30"
+    }
+  ],
+  "entscheidungen": [],
+  "regeln": [
+    {
+      "text": "NO_MMAP ist eine Build-Option des offiziellen Git-Quellbaums; die zugehörige Implementierung ersetzt die Abbildung durch gepuffertes xpread.",
+      "quelle": "https://github.com/git/git/blob/master/Makefile#L133; https://github.com/git/git/blob/master/compat/mmap.c#L22"
+    },
+    {
+      "text": "Git repack -d entfernt nach dem Packen redundante Packs und lose Objekte; eine solche Bereinigung ist hier nicht erforderlich.",
+      "quelle": "https://git-scm.com/docs/git-repack#Documentation/git-repack.txt--d"
+    }
+  ],
+  "befehle": [
+    {
+      "text": "Annahme: Eine zusätzliche, nur temporär gebaute Git-Version mit NO_MMAP=1 könnte die nachgewiesene mmap-Wartestelle umgehen; sie wurde hier nicht gebaut oder getestet. Erst einen Wegwerf-Clone gegen gespeicherte Referenzen und Objektprüfsummen testen, dann das Werkzeug ausschließlich für neue Kit-Kindprozesse bereitstellen. Kein globales Installieren und keine Änderung der Objektdateien.",
+      "quelle": "https://github.com/git/git/blob/master/Makefile#L133; https://github.com/git/git/blob/master/compat/mmap.c#L22"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "text": "Die Ursache der langen mmap-Wartezeit im Betriebssystem ist unbekannt; aus einem Stack-Sample allein folgt weder Korruption noch eine bestimmte Ursache.",
+      "quelle": "/tmp/dashboard-migrate-pack-sample.txt:46"
+    },
+    {
+      "text": "Nicht geprüft ist, ob das Kit die gesetzten Ausführungspfade für alle Git-Unterprozesse übernimmt und ob ein NO_MMAP-Build das Problem hier tatsächlich behebt.",
+      "quelle": "https://github.com/git/git/blob/master/compat/mmap.c#L22"
+    },
+    {
+      "text": "Ein zusätzliches Git-Pack durch gewöhnliches git pack-objects oder git repack wurde nicht als wirksame Abhilfe belegt: das laufende pack-objects trifft selbst auf die mmap-Wartestelle.",
+      "quelle": "/tmp/dashboard-migrate-pack-sample.txt:30"
+    }
+  ]
+}

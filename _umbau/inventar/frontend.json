@@ -1,0 +1,208 @@
+{
+  "funktionen": [
+    {
+      "name": "Anmeldung und Navigation",
+      "text": "Die Oberfläche bietet Anmeldung, Passwortwiederherstellung und Navigation durch die Arbeits- und Wissensbereiche.",
+      "quelle": "src/pages/MemoryApp.tsx:57",
+      "grenzen": "Die Produktionsansicht verlangt eine Sitzung; reale Anmeldung und Passwortwiederherstellung wurden bei dieser Inventur nicht geprüft. Quelle: src/pages/MemoryApp.tsx:83",
+      "kriterien": [
+        {
+          "text": "Die Anmeldemaske bietet Anmeldung und Anforderung eines Wiederherstellungslinks.",
+          "quelle": "src/features/auth/AuthForms.tsx:11"
+        },
+        {
+          "text": "Nach Prüfung der Sitzung zeigt die Anwendung entweder Anmeldemaske, Passwortwiederherstellung oder die Arbeitsoberfläche.",
+          "quelle": "src/pages/MemoryApp.tsx:83"
+        },
+        {
+          "text": "Die Navigation bietet Übersicht, Todos, Team, Fragen, Prüfungen, Meetings, Wissen und Einstellungen.",
+          "quelle": "src/pages/MemoryApp.tsx:17"
+        }
+      ]
+    },
+    {
+      "name": "Arbeitsübersicht und Aufgabenplanung",
+      "text": "Die Oberfläche zeigt den Arbeitsstand und bietet Wochenplanung, Aufgabenbearbeitung und Statuswechsel.",
+      "quelle": "src/pages/ProductivityPage.tsx:53",
+      "grenzen": "Bearbeitung hängt von einem bestätigten aktuellen Stand ab; historische Stände sind schreibgeschützt. Quelle: src/pages/ProductivityPage.tsx:210",
+      "kriterien": [
+        {
+          "text": "Die Übersicht zeigt für heute geplante und überfällige Aufgaben und führt zur Wochenplanung.",
+          "quelle": "src/features/working-memory/WorkspaceOverview.tsx:15"
+        },
+        {
+          "text": "Die Aufgabenansicht bietet Wochenwechsel, Suche und Filter.",
+          "quelle": "src/pages/ProductivityPage.tsx:213"
+        },
+        {
+          "text": "Ein Todo kann mit Titel, Zuständigkeit, Plantag, Frist, Priorität und Notiz angelegt oder geplant werden.",
+          "quelle": "src/features/working-memory/PlannerEditor.tsx:25"
+        },
+        {
+          "text": "Ein Statuswechsel sendet einen revisionsgebundenen Änderungsauftrag.",
+          "quelle": "src/pages/ProductivityPage.tsx:182"
+        }
+      ]
+    },
+    {
+      "name": "Teamansicht und Teamverwaltung",
+      "text": "Die Oberfläche zeigt Aufgaben nach Teamumfang und bietet eine Verwaltung des direkten Teams.",
+      "quelle": "src/pages/ProductivityPage.tsx:215",
+      "grenzen": "Die Teamübersicht unterscheidet aktive, ehemalige und weitere Kontakte. Quelle: src/pages/ProductivityPage.tsx:215",
+      "kriterien": [
+        {
+          "text": "Die Teamansicht bietet die Auswahl zwischen aktivem Team, ehemaligen Personen und weiteren Kontakten.",
+          "quelle": "src/pages/ProductivityPage.tsx:215"
+        },
+        {
+          "text": "Unter Einstellungen kann das direkte Team verwaltet werden.",
+          "quelle": "src/pages/SettingsPage.tsx:81"
+        },
+        {
+          "text": "Die Teamverwaltung erklärt, dass frühere Namen und Schreibweisen die Zuordnung bestehender Todos unterstützen.",
+          "quelle": "src/pages/SettingsPage.tsx:65"
+        }
+      ]
+    },
+    {
+      "name": "Wissen und Prüfungen",
+      "text": "Die Oberfläche zeigt Aussagen und erlaubt bei bearbeitbarem aktuellem Stand, Vorschläge zu übernehmen, zu verwerfen oder zu korrigieren.",
+      "quelle": "src/pages/ProductivityPage.tsx:186",
+      "grenzen": "Historische Wissensstände sind schreibgeschützt; Entscheidungen werden revisionsgebunden gesendet. Quelle: src/pages/ProductivityPage.tsx:192",
+      "kriterien": [
+        {
+          "text": "Wissen und Prüfungen lassen sich nach Suchtext, Person, Thema und Art filtern.",
+          "quelle": "src/pages/ProductivityPage.tsx:217"
+        },
+        {
+          "text": "Ein geöffnetes Wissenselement zeigt Inhalt und Belegbewertung und kann zum Original führen.",
+          "quelle": "src/pages/ProductivityPage.tsx:230"
+        },
+        {
+          "text": "Prüfung erlaubt Übernehmen oder Bestätigen; beim Verwerfen öffnet sich ein Bearbeitungsdialog.",
+          "quelle": "src/pages/ProductivityPage.tsx:186"
+        }
+      ]
+    },
+    {
+      "name": "Meetingarchiv",
+      "text": "Die Oberfläche lädt archivierte Meetings und bietet Original, gespeicherte Zusammenfassung sowie einen Löschablauf für ein Original.",
+      "quelle": "src/pages/ArchivePage.tsx:29",
+      "grenzen": "Der Löschaufruf erfordert eine ausgewählte Quelle und eine Bestätigung; ein laufender Löschvorgang kann mit derselben Kennung fortgesetzt werden. Quelle: src/pages/ArchivePage.tsx:63",
+      "kriterien": [
+        {
+          "text": "Die Meetingdetails laden das angeforderte Archivoriginal.",
+          "quelle": "src/pages/ArchivePage.tsx:44"
+        },
+        {
+          "text": "Wo Zusammenfassungen vorhanden sind, kann zwischen Zusammenfassung und Original gewechselt werden.",
+          "quelle": "src/pages/ArchivePage.tsx:85"
+        },
+        {
+          "text": "Der Löschvorgang startet erst nach Bestätigung und kann nach Unterbrechung fortgesetzt werden.",
+          "quelle": "src/pages/ArchivePage.tsx:63"
+        }
+      ]
+    },
+    {
+      "name": "Notizen fragen",
+      "text": "Die Oberfläche bietet Gespräche über Notizen und ordnet Antworten ihrer Anfrage und ihrem Gespräch zu.",
+      "quelle": "src/features/working-memory/NotesChat.tsx:121",
+      "grenzen": "Bei fehlender Zuordnung zeigt die Oberfläche einen Fehler statt einer unzugeordneten Antwort. Quelle: src/features/working-memory/NotesChat.tsx:254",
+      "kriterien": [
+        {
+          "text": "Ein Gespräch kann angelegt und aus der Gesprächsliste ausgewählt werden.",
+          "quelle": "src/features/working-memory/NotesChat.tsx:185"
+        },
+        {
+          "text": "Eine Frage wird über die Fragen-Schnittstelle gesendet.",
+          "quelle": "src/features/working-memory/NotesChat.tsx:224"
+        },
+        {
+          "text": "Bei einer nicht zuordenbaren Antwort oder unterbrochenen Verbindung erscheint ein Fehler mit Wiederholungsmöglichkeit.",
+          "quelle": "src/features/working-memory/NotesChat.tsx:254"
+        }
+      ]
+    },
+    {
+      "name": "Einstellungen und Verarbeitungsübersicht",
+      "text": "Die Oberfläche bietet Geräteeinstellungen und zeigt Informationen über Verarbeitung, Budget und Sicherungen.",
+      "quelle": "src/pages/SettingsPage.tsx:68",
+      "grenzen": "Angezeigte Kosten sind eine Kostenübersicht und keine Anbieterrechnung. Quelle: src/features/working-memory/ProcessingPanel.tsx:73",
+      "kriterien": [
+        {
+          "text": "Startseite und Darstellung können für das Gerät eingestellt werden.",
+          "quelle": "src/pages/SettingsPage.tsx:77"
+        },
+        {
+          "text": "Der Bereich Verarbeitung zeigt den vom Dienst gelieferten Status und behandelt nicht erreichbare Daten als Fehler.",
+          "quelle": "src/features/working-memory/ProcessingPanel.tsx:26"
+        },
+        {
+          "text": "Sicherungszustände und gegebenenfalls veraltete Sicherungen werden angezeigt.",
+          "quelle": "src/features/working-memory/ProcessingPanel.tsx:51"
+        },
+        {
+          "text": "Kostenreservierung, Budget und gegebenenfalls wartende Quellen werden dargestellt.",
+          "quelle": "src/features/working-memory/ProcessingPanel.tsx:69"
+        }
+      ]
+    }
+  ],
+  "entscheidungen": [],
+  "regeln": [
+    {
+      "text": "Ein historischer Wissensstand lässt sich anzeigen; Änderungen sind dort gesperrt.",
+      "quelle": "src/pages/ProductivityPage.tsx:212"
+    },
+    {
+      "text": "Ein gespeicherter oder noch nicht bestätigter Datenstand ist nur zur Anzeige bestimmt; bei fehlgeschlagener Aktualisierung bleibt Bearbeiten gesperrt.",
+      "quelle": "src/features/working-memory/useReviewSnapshot.ts:34"
+    },
+    {
+      "text": "Planung einer aus Meetings stammenden Arbeit ändert laut Änderungsgrund nicht die ursprüngliche Meetingzusage.",
+      "quelle": "src/features/working-memory/PlannerEditor.tsx:31"
+    },
+    {
+      "text": "Originalbearbeitung bereitet nur einen Vergleich vor; der Arbeitsstand ändert sich erst nach ausdrücklicher Übernahme und dafür wird keine KI-Anfrage gesendet.",
+      "quelle": "src/features/working-memory/SourceEditor.tsx:114"
+    },
+    {
+      "text": "Bei unklaren Kosten bleibt die volle Reservierung angerechnet; die Kostenübersicht ist keine Anbieterrechnung.",
+      "quelle": "src/features/working-memory/ProcessingPanel.tsx:72"
+    },
+    {
+      "text": "Bei Zugangssperre 401 oder 403 wird der gespeicherte Ansichtsstand gelöscht.",
+      "quelle": "src/features/working-memory/useReviewSnapshot.ts:24"
+    },
+    {
+      "text": "Ein neues Passwort muss in der Oberfläche mindestens acht Zeichen lang sein.",
+      "quelle": "src/features/auth/AuthForms.tsx:49"
+    }
+  ],
+  "befehle": [
+    {
+      "text": "npm run build führt TypeScript-Projektprüfung und Vite-Build aus.",
+      "quelle": "package.json:8"
+    },
+    {
+      "text": "npm run lint führt ESLint aus.",
+      "quelle": "package.json:9"
+    },
+    {
+      "text": "npm run dev startet Vite.",
+      "quelle": "package.json:7"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "text": "Der Test für eine eigenständige Betriebsroute widerspricht dem aktuellen Routing: Der Test verbietet die Behandlung von #betrieb, der Code leitet diese Route nach Einstellungen/Verarbeitung um.",
+      "quelle": "tests/planning-route.test.mjs:7; src/features/working-memory/planning.ts:28"
+    },
+    {
+      "text": "Die hier inventarisierten Nutzerhandlungen sind aus dem Code abgeleitet; eine echte angemeldete Browser- oder Produktionsprüfung ist in dieser Inventur unbekannt.",
+      "quelle": "src/pages/MemoryApp.tsx:57"
+    }
+  ],
+  "annahmen": []
+}

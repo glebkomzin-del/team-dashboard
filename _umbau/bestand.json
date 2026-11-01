@@ -1,0 +1,570 @@
+{
+  "features": [
+    {
+      "key": "zugang",
+      "name": "Anmeldung und Navigation",
+      "sentence": "Die Oberfläche bietet Anmeldung, Passwortwiederherstellung und Navigation durch die Arbeits- und Wissensbereiche. Quelle: src/pages/MemoryApp.tsx:57",
+      "source": "src/pages/MemoryApp.tsx:57",
+      "criteria": [
+        {
+          "key": "zugang_criterion_1",
+          "text": "Die Anmeldemaske bietet Anmeldung und Anforderung eines Wiederherstellungslinks. Quelle: src/features/auth/AuthForms.tsx:11"
+        },
+        {
+          "key": "zugang_criterion_2",
+          "text": "Nach Prüfung der Sitzung zeigt die Anwendung entweder Anmeldemaske, Passwortwiederherstellung oder die Arbeitsoberfläche. Quelle: src/pages/MemoryApp.tsx:83"
+        },
+        {
+          "key": "zugang_criterion_3",
+          "text": "Die Navigation bietet Übersicht, Todos, Team, Fragen, Prüfungen, Meetings, Wissen und Einstellungen. Quelle: src/pages/MemoryApp.tsx:17"
+        }
+      ]
+    },
+    {
+      "key": "planung",
+      "name": "Arbeitsübersicht und Aufgabenplanung",
+      "sentence": "Die Oberfläche zeigt den Arbeitsstand und bietet Wochenplanung, Aufgabenbearbeitung und Statuswechsel. Quelle: src/pages/ProductivityPage.tsx:53",
+      "source": "src/pages/ProductivityPage.tsx:53",
+      "criteria": [
+        {
+          "key": "planung_criterion_1",
+          "text": "Die Übersicht zeigt für heute geplante und überfällige Aufgaben und führt zur Wochenplanung. Quelle: src/features/working-memory/WorkspaceOverview.tsx:15"
+        },
+        {
+          "key": "planung_criterion_2",
+          "text": "Die Aufgabenansicht bietet Wochenwechsel, Suche und Filter. Quelle: src/pages/ProductivityPage.tsx:213"
+        },
+        {
+          "key": "planung_criterion_3",
+          "text": "Ein Todo kann mit Titel, Zuständigkeit, Plantag, Frist, Priorität und Notiz angelegt oder geplant werden. Quelle: src/features/working-memory/PlannerEditor.tsx:25"
+        },
+        {
+          "key": "planung_criterion_4",
+          "text": "Ein Statuswechsel sendet einen revisionsgebundenen Änderungsauftrag. Quelle: src/pages/ProductivityPage.tsx:182"
+        },
+        {
+          "key": "planung_criterion_5",
+          "text": "Die Übersicht wird aus der revisionsgebundenen Arbeitsprojektion geliefert. Quelle: working-memory/server.py:177"
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "name": "Teamansicht und Teamverwaltung",
+      "sentence": "Die Oberfläche zeigt Aufgaben nach Teamumfang und bietet eine Verwaltung des direkten Teams. Quelle: src/pages/ProductivityPage.tsx:215",
+      "source": "src/pages/ProductivityPage.tsx:215",
+      "criteria": [
+        {
+          "key": "team_criterion_1",
+          "text": "Die Teamansicht bietet die Auswahl zwischen aktivem Team, ehemaligen Personen und weiteren Kontakten. Quelle: src/pages/ProductivityPage.tsx:215"
+        },
+        {
+          "key": "team_criterion_2",
+          "text": "Unter Einstellungen kann das direkte Team verwaltet werden. Quelle: src/pages/SettingsPage.tsx:81"
+        },
+        {
+          "key": "team_criterion_3",
+          "text": "Die Teamverwaltung erklärt, dass frühere Namen und Schreibweisen die Zuordnung bestehender Todos unterstützen. Quelle: src/pages/SettingsPage.tsx:65"
+        }
+      ]
+    },
+    {
+      "key": "pruefung",
+      "name": "Wissen prüfen und korrigieren",
+      "sentence": "Die Oberfläche zeigt Aussagen und erlaubt bei bearbeitbarem aktuellem Stand, Vorschläge zu übernehmen, zu verwerfen oder zu korrigieren. Quelle: src/pages/ProductivityPage.tsx:186",
+      "source": "src/pages/ProductivityPage.tsx:186",
+      "criteria": [
+        {
+          "key": "pruefung_criterion_1",
+          "text": "Wissen und Prüfungen lassen sich nach Suchtext, Person, Thema und Art filtern. Quelle: src/pages/ProductivityPage.tsx:217"
+        },
+        {
+          "key": "pruefung_criterion_2",
+          "text": "Ein geöffnetes Wissenselement zeigt Inhalt und Belegbewertung und kann zum Original führen. Quelle: src/pages/ProductivityPage.tsx:230"
+        },
+        {
+          "key": "pruefung_criterion_3",
+          "text": "Prüfung erlaubt Übernehmen oder Bestätigen; beim Verwerfen öffnet sich ein Bearbeitungsdialog. Quelle: src/pages/ProductivityPage.tsx:186"
+        },
+        {
+          "key": "pruefung_criterion_4",
+          "text": "Gültige persönliche Entscheidungen werden dem Journal hinzugefügt. Quelle: working-memory/journal_service.py:224"
+        },
+        {
+          "key": "pruefung_criterion_5",
+          "text": "Die Originalbearbeitung zeigt einen vorbereiteten Vergleich und bietet eine ausdrückliche Übernahme. Quelle: src/features/working-memory/SourceEditor.tsx:114"
+        }
+      ]
+    },
+    {
+      "key": "archiv",
+      "name": "Originale aufnehmen und einsehen",
+      "sentence": "Der Dienst kann Drive-Originale mit Version archivieren; die Oberfläche bietet Originale und gespeicherte Zusammenfassungen. Quelle: working-memory/drive_intake.py:52; src/pages/ArchivePage.tsx:29",
+      "source": "working-memory/drive_intake.py:52; src/pages/ArchivePage.tsx:29",
+      "criteria": [
+        {
+          "key": "archiv_criterion_1",
+          "text": "Die Annahme prüft Dokumentformat, Quellidentität und vollständigen Transkripttext. Quelle: working-memory/drive_intake.py:12"
+        },
+        {
+          "key": "archiv_criterion_2",
+          "text": "Vorhandene identische Versionen werden wiederverwendet; abweichende Identität wird zurückgewiesen. Quelle: working-memory/drive_intake.py:54"
+        },
+        {
+          "key": "archiv_criterion_3",
+          "text": "Die Meetingdetails laden das angeforderte Archivoriginal. Quelle: src/pages/ArchivePage.tsx:44"
+        },
+        {
+          "key": "archiv_criterion_4",
+          "text": "Wo Zusammenfassungen vorhanden sind, kann zwischen Zusammenfassung und Original gewechselt werden. Quelle: src/pages/ArchivePage.tsx:85"
+        },
+        {
+          "key": "archiv_criterion_5",
+          "text": "Das Archiv kann nach Suchbegriff und zeitlichen Parametern abgefragt werden. Quelle: working-memory/server.py:145"
+        }
+      ]
+    },
+    {
+      "key": "fragen",
+      "name": "Notizen fragen",
+      "sentence": "Die Oberfläche bietet Gespräche über Notizen und ordnet Antworten ihrer Anfrage und ihrem Gespräch zu. Quelle: src/features/working-memory/NotesChat.tsx:121",
+      "source": "src/features/working-memory/NotesChat.tsx:121",
+      "criteria": [
+        {
+          "key": "fragen_criterion_1",
+          "text": "Ein Gespräch kann angelegt und aus der Gesprächsliste ausgewählt werden. Quelle: src/features/working-memory/NotesChat.tsx:185"
+        },
+        {
+          "key": "fragen_criterion_2",
+          "text": "Eine Frage wird über die Fragen-Schnittstelle gesendet. Quelle: src/features/working-memory/NotesChat.tsx:224"
+        },
+        {
+          "key": "fragen_criterion_3",
+          "text": "Bei einer nicht zuordenbaren Antwort oder unterbrochenen Verbindung erscheint ein Fehler mit Wiederholungsmöglichkeit. Quelle: src/features/working-memory/NotesChat.tsx:254"
+        },
+        {
+          "key": "fragen_criterion_4",
+          "text": "Gespräche lassen sich erstellen, auflisten und anhand ihrer Kennung abrufen. Quelle: working-memory/memory_chat.py:28"
+        },
+        {
+          "key": "fragen_criterion_5",
+          "text": "Fragen werden bei aktivierter Funktion über einen Frageauftrag eingereicht. Quelle: working-memory/server.py:298"
+        }
+      ]
+    },
+    {
+      "key": "verarbeitung",
+      "name": "Verarbeitung und Kostenbelege",
+      "sentence": "Hinterlegte Quellaufträge werden verarbeitet; Providerabrufe werden mit Reservierung und Beleg geführt. Quelle: working-memory/canonical_worker.py:58",
+      "source": "working-memory/canonical_worker.py:58",
+      "criteria": [
+        {
+          "key": "verarbeitung_criterion_1",
+          "text": "Vor einem Providerabruf werden Kosten reserviert und die Anfrageidentität anhand des Hashes geprüft. Quelle: working-memory/durable_calls.py:49"
+        },
+        {
+          "key": "verarbeitung_criterion_2",
+          "text": "Eine bereits gespeicherte Antwort wird wiederverwendet. Quelle: working-memory/durable_calls.py:68"
+        }
+      ]
+    },
+    {
+      "key": "loeschung",
+      "name": "Originalquelltext löschen",
+      "sentence": "Ein angemeldeter Eigentümer kann bei aktivierter Funktion die Löschung eines Originalquelltexts beantragen und den Status abfragen. Quelle: working-memory/server.py:219",
+      "source": "working-memory/server.py:219",
+      "criteria": [
+        {
+          "key": "loeschung_criterion_1",
+          "text": "Der Löschvorgang startet erst nach Bestätigung und kann nach Unterbrechung fortgesetzt werden. Quelle: src/pages/ArchivePage.tsx:63"
+        },
+        {
+          "key": "loeschung_criterion_2",
+          "text": "Der Auftrag wird für die Eigentümerrolle angenommen und kann bei längerer Ausführung einen Zwischenstatus liefern. Quelle: working-memory/server.py:319"
+        },
+        {
+          "key": "loeschung_criterion_3",
+          "text": "Die Löschung erstellt einen vorbereiteten, quellbezogenen Bereinigungsplan und verarbeitet Kandidaten seitenweise. Quelle: working-memory/original_deletion_service.py:36"
+        },
+        {
+          "key": "loeschung_criterion_4",
+          "text": "Die Ausführung prüft den Projektionsstand vor dem Löschaufruf. Quelle: working-memory/original_deletion_service.py:66"
+        }
+      ]
+    },
+    {
+      "key": "sicherung",
+      "name": "Sicherung exportieren und prüfen",
+      "sentence": "Der Sicherungslauf kann Journal, Archiv und zugehörige Aufträge an einer festen Grenze exportieren und prüfen. Quelle: working-memory/canonical_backup.py:232",
+      "source": "working-memory/canonical_backup.py:232",
+      "criteria": [
+        {
+          "key": "sicherung_criterion_1",
+          "text": "Der Export bindet sich an eine Snapshot-Kennung und prüft die Seitenfolge. Quelle: working-memory/canonical_backup.py:232"
+        },
+        {
+          "key": "sicherung_criterion_2",
+          "text": "Das Manifest enthält Dateigrößen und SHA-256-Prüfsummen; anschließend wird der Export verifiziert. Quelle: working-memory/canonical_backup.py:251"
+        }
+      ]
+    },
+    {
+      "key": "betrieb",
+      "name": "Geräteeinstellungen und Betriebsübersicht",
+      "sentence": "Die Oberfläche bietet Geräteeinstellungen und zeigt Informationen über Verarbeitung, Budget und Sicherungen. Quelle: src/pages/SettingsPage.tsx:68",
+      "source": "src/pages/SettingsPage.tsx:68",
+      "criteria": [
+        {
+          "key": "betrieb_criterion_1",
+          "text": "Startseite und Darstellung können für das Gerät eingestellt werden. Quelle: src/pages/SettingsPage.tsx:77"
+        },
+        {
+          "key": "betrieb_criterion_2",
+          "text": "Der Bereich Verarbeitung zeigt den vom Dienst gelieferten Status und behandelt nicht erreichbare Daten als Fehler. Quelle: src/features/working-memory/ProcessingPanel.tsx:26"
+        },
+        {
+          "key": "betrieb_criterion_3",
+          "text": "Sicherungszustände und gegebenenfalls veraltete Sicherungen werden angezeigt. Quelle: src/features/working-memory/ProcessingPanel.tsx:51"
+        },
+        {
+          "key": "betrieb_criterion_4",
+          "text": "Kostenreservierung, Budget und gegebenenfalls wartende Quellen werden dargestellt. Quelle: src/features/working-memory/ProcessingPanel.tsx:69"
+        },
+        {
+          "key": "betrieb_criterion_5",
+          "text": "Die Statusantwort enthält Betriebsmodus, Verarbeitungsstatus und Sicherungsstatus. Quelle: working-memory/server.py:139"
+        },
+        {
+          "key": "betrieb_criterion_6",
+          "text": "Einzelne Aufträge können über eine Betriebsroute eingesehen werden. Quelle: working-memory/server.py:135"
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "key": "historisch_1",
+      "title": "Kostenanalyse ohne neue bezahlte OpenAI-Aufrufe",
+      "text": "2026-10-12: - **Entscheidung:** Analyse und Planung nur anhand vorhandener Messdaten (Ledger, gespeicherte Requests); Delegation an lesende Sub-Agents mit komprimierter Rückgabe. - **Grund:** Das Testbudget aus dem Kostenpaket ist ausgeschöpft bzw. ohne neue Freigabe nicht nutzbar; Flex lieferte keine belastbaren Vergleiche. - **Verworfen:** Sofortige weitere Vergleichsläufe mit echten Meetings (Kosten, keine neue Freigabe). Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "DECISIONS.md:5",
+      "reason": "Testbudget ausgeschöpft bzw. ohne neue Freigabe nicht nutzbar; Flex lieferte keine belastbaren Vergleiche.",
+      "alternatives": "Sofortige weitere Vergleichsläufe mit echten Meetings verworfen.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_2",
+      "title": "Historische Umstellung auf Governance 4.0",
+      "text": "2026-10-30T16:31:00: Grund: Gleb beauftragte am 30.10.2026 ausdrücklich die lokale Umstellung auf Projekt-Governance 4.0. Ausgeführt mit dem vorhandenen Umstellungswerkzeug im Wurzelordner der installierten Version. Bisheriges Wissen bleibt unter wissen/ erhalten; knowledge/ verweist darauf. Frühere Übersichten sind unverändert unter .governance/alt-v3/ erhalten. Bestehende Produktarbeit und Produktionssysteme wurden nicht geändert. Historische Freigaben gelten nicht als neue Freigaben. Erhalt, Wiederholung und Rückbau wurden in einer getrennten Kopie geprüft. Nachweis: outputs/governance-4-umstellung-20261030.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/produkt/D-20261030-163100-6d91-governance-4-umstellung.md:13",
+      "reason": "Gleb beauftragte am 30.10.2026 ausdrücklich die lokale Umstellung auf Projekt-Governance 4.0.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_3",
+      "title": "Reguläre Verarbeitung der 22 festgelegten Quellen",
+      "text": "2026-10-29T00:29:25: Genau die 22 festgelegten Originale wurden auf Glebs ausdrückliche Anweisung vollständig mit der normalen KI-Pipeline ausgewertet; synthetische kostenpflichtige Proben blieben ausgeschlossen. Modelle, Tarife, Originale, bestehende Quellen und persönliche Entscheidungen waren zu erhalten. Grund: Die spätere Anweisung, die 22 Quellen ganz normal durch die Pipeline zu schicken, änderte den zuvor auf kostenfreie Diagnose begrenzten Umfang genau für diese realen Quellen. Belege: meeting-os/working-memory/evaluation/processing-repair-20261028/README.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-002925-e233-regulaerer-22-quellen-auftrag.md:13",
+      "reason": "Die spätere Anweisung, die 22 Quellen ganz normal durch die Pipeline zu schicken, änderte den zuvor auf kostenfreie Diagnose begrenzten Umfang genau für diese realen Quellen.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_4",
+      "title": "Gebundenes Ausgabelimit für Quelle 16",
+      "text": "2026-10-29T00:31:33: Nur die exakt per ursprünglichem Requesthash gebundene Extraktionsanfrage von Quelle16 durfte im geprüften zusätzlichen Versuch 48000 statt 24000 Ausgabetokens verwenden. Prompt, Schema, Modell, Tarif und Inhaltsprüfungen blieben unverändert; Budgetreservierung verwendete das höhere tatsächliche Limit. Grund: der bekannte vollständige Anbieterabschluss benannte max_output_tokens und war bereits korrekt mit 149115 Mikro-USD verbucht. Keine globale Erhöhung der Limits. Beleg: Reparaturkapsel reprocess/README.md. Historischer Eintrag mit dokumentierter Ablösung.",
+      "source": "wissen/verarbeitung/D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit.md:13",
+      "reason": "der bekannte vollständige Anbieterabschluss benannte max_output_tokens und war bereits korrekt mit 149115 Mikro-USD verbucht.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_5",
+      "title": "Normaler dauerhafter Kostenweg",
+      "text": "2026-10-29T00:31:33: Für die Vollpipeline wird der bestehende normale Reserve-/Empfangsweg mit unveränderlichen Einzelplätzen verwendet; alte Antworten, Reservierungen und Kosten bleiben erhalten. Ein Import bekannter Antworten und eine Wiederaufnahme lösen keinen erneuten Versand aus, ungeklärte Reservierungen sperren weitere Sends. Grund: der manuelle 32er-Weg ist zu klein und ein blindes Zurücksetzen würde Herkunft und Abrechnung beschädigen. Keine produktive Schemaänderung. Belege: Reparaturkapsel reprocess/README.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003133-71d1-normaler-dauerhafter-kostenweg.md:13",
+      "reason": "der manuelle 32er-Weg ist zu klein und ein blindes Zurücksetzen würde Herkunft und Abrechnung beschädigen.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_6",
+      "title": "Ein geprüfter weiterer Normalversuch für Quelle 15",
+      "text": "2026-10-29T00:31:33: Nach konkreter Inhaltsprüfung wurde für Quelle15 genau ein weiterer vollständiger Normalversuch mit neuem auditiertem Befehl, getrennten Antworten und unveränderten Validatoren zugelassen. Der gesperrte Schnellretry wurde nicht als erlaubt ausgegeben. Grund: das erste Modell hatte Gesprächszeit und Aufgabenfrist widersprüchlich eingeordnet; die korrekte Datumsprüfung sollte erhalten bleiben. Beide Versuche sind getrennt und einmal abgerechnet. Beleg: Reparaturkapsel reprocess/README.md. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch.md:13",
+      "reason": "das erste Modell hatte Gesprächszeit und Aufgabenfrist widersprüchlich eingeordnet; die korrekte Datumsprüfung sollte erhalten bleiben.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_7",
+      "title": "Präzise Kontextfortsetzung für Quelle 16",
+      "text": "2026-10-29T00:31:33: Quelle16 wurde nach dem belegten Kontextstopp im selben Versuch mit allen 123 Antworten der Plätze2–124 fortgesetzt. Nur die gebundenen normalen compact-Stufen durften den vorhandenen exakten Eingabetoken-Count statt der konservativen Byte-Schätzung nutzen; Count plus4096 plus vollem normalen Ausgabelimit musste weiterhin höchstens1050000 sein. Derselbe Count ging in die normale Kostenreservierung ein, kein neuer Vollversuch oder doppelter Kostenbereich entstand. Grund: genaue Zählung beseitigte den falschen Größenstopp ohne Datenkürzung oder gelockerte Inhaltsprüfung. Belege: Reparaturkapsel reprocess/context-report.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung.md:13",
+      "reason": "genaue Zählung beseitigte den falschen Größenstopp ohne Datenkürzung oder gelockerte Inhaltsprüfung.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_8",
+      "title": "Normalbetrieb nach vollständiger Übernahmeprüfung",
+      "text": "2026-10-29T00:31:34: Nach der vollständigen Prüfung aller22 Übernahmen und des echten Dashboardcaches wurden die ursprünglichen Betriebsflags und Ressourcen wiederhergestellt: Lesemodus aus, Automatik/Annahme/Fragen/Originallöschung an, eine CPU und1.5GiB RAM mit ursprünglichem Swaplimit. Grund: die höheren Ressourcen und Verarbeitungssperren waren vorübergehende Betriebshilfen; ein gestarteter Batch allein war kein Abschlussbeleg. Nach Neustart wurden Daten, Cache, Gesundheit und fehlende Neustartschleife geprüft. Belege: Reparaturkapsel audit/cache-final.json, runtime-restored.json und runtime-stability.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003134-2610-normalbetrieb-nach-vollpruefung.md:13",
+      "reason": "die höheren Ressourcen und Verarbeitungssperren waren vorübergehende Betriebshilfen; ein gestarteter Batch allein war kein Abschlussbeleg.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_9",
+      "title": "Archivkopien bis zur ausdrücklichen Löschfreigabe",
+      "text": "2026-10-29T00:31:34: Die24 temporären archive.sqlite-Arbeitskopien mit1571074048Bytes bleiben bis zur ausdrücklichen Löschfreigabe erhalten. Eine mögliche Bereinigung ist auf die einzelnen manifestgebundenen Prüfsummen begrenzt und schließt Originale, Ergebnisse, Modellbelege und Sicherungen aus. Grund: Glebs Regel14 verlangt Freigabe für Löschungen außerhalb des Repos; seine Freigabe des Serverzugangs ist keine Löschfreigabe. Die aktuelle Aufforderung zur Wissenspflege erteilt ebenfalls keine solche Freigabe. Beleg: Reparaturkapsel audit/scratch-cleanup-plan.json. Historischer Eintrag mit dokumentierter Ablösung.",
+      "source": "wissen/verarbeitung/D-20261029-003134-276a-archivkopien-bis-loeschfreigabe.md:13",
+      "reason": "Glebs Regel14 verlangt Freigabe für Löschungen außerhalb des Repos; seine Freigabe des Serverzugangs ist keine Löschfreigabe.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_10",
+      "title": "Abgegrenzte Reparaturkapsel und lokale Sicherung",
+      "text": "2026-10-29T00:31:34: Reparatur und Betriebswerkzeuge wurden in einer abgegrenzten Kapsel gehalten; fremde Hauptstandsdateien wurden nicht überschrieben und kein Push ausgeführt. Grund: zu Beginn war der Hauptstand bereits parallel verändert beziehungsweise teilweise unversioniert. Lokale Commits und vollständiges Rücklesen sichern die geprüfte Kapsel;979 fremde Indexdatensätze einschließlich6 vorgemerkter Änderungen blieben unverändert. Belege: Reparaturkapsel README.md und audit/private/local-save.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung.md:13",
+      "reason": "zu Beginn war der Hauptstand bereits parallel verändert beziehungsweise teilweise unversioniert.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_11",
+      "title": "Präzisierung der Ausgabe- und Versuchsfolge von Quelle 16",
+      "text": "2026-10-29T00:35:17: Quelle16 erhielt nach dem bekannten 24000-Token-Abschluss einen geprüften Vollversuch: Befehl e9a2a394-dab8-5585-b7ee-7570223ac4b8, Startplatz2. Ausschließlich die durch den ursprünglichen Requesthash gebundene Extraktionsanfrage durfte48000 Ausgabetokens verwenden; Prompt, Schema, Modell, Tarif und Inhaltsprüfungen blieben unverändert. Die spätere präzise Kontextprüfung setzte genau diesen Befehl fort und erzeugte keinen weiteren Vollversuch. Grund: der gespeicherte Abschluss benannte max_output_tokens und war bereits korrekt mit149115Mikro-USD verbucht; eine globale Limiterhöhung war unnötig. Präzisierung des älteren Eintrags zur Abgrenzung von neuem Vollversuch und späterer Fortsetzung. Beleg: Reparaturkapsel reprocess/README.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge.md:13",
+      "reason": "der gespeicherte Abschluss benannte max_output_tokens und war bereits korrekt mit149115Mikro-USD verbucht; eine globale Limiterhöhung war unnötig.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_12",
+      "title": "Begrenzter Speicher- und Diagnosefix",
+      "text": "2026-10-29T00:39:47: Der produktive Reparaturumfang blieb auf memory.py, openai_provider.py und die daraus abgeleitete Pipelinekennung begrenzt. Bereits vom Gate gesperrte Aufgabenänderungen werden als Wissen des ursprünglichen bekannten Bereichs erhalten und erzeugen kein Arbeitsereignis; wirksame bereichsfremde Änderungen bleiben abgewiesen. Der Provideradapter erhält ausschließlich begrenzte technische Streamdiagnosen, keine freien Fehlertexte oder Geheimnisse; automatische Wiederholungen und Modelle wurden nicht global erweitert. Grund: die doppelte Wirksamkeitsprüfung hatte zwei gesamte Quellen trotz bereits gesperrter Aufgabenwirkung abgewiesen, während sichere Diagnosen für die späteren Altfehler fehlten. Echte Vorher-Nachher-Wiederholungen und29 Tests bestätigten diese eng begrenzte Reparatur. Belege: Reparaturkapsel replay/README.md, replay/overlay/memory.py und provider/openai_provider.py. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix.md:13",
+      "reason": "die doppelte Wirksamkeitsprüfung hatte zwei gesamte Quellen trotz bereits gesperrter Aufgabenwirkung abgewiesen, während sichere Diagnosen für die späteren Altfehler fehlten.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "historisch_13",
+      "title": "Freigabe ausschließlich der 24 Archivarbeitskopien",
+      "text": "2026-10-29T09:13:58: Gleb hat am29.10.2026 ausdrücklich freigegeben: Ja, nur diese Arbeitskopien entfernen. Die Freigabe gilt ausschließlich den24 im Manifest768be63bc2b40387a5e5ca07f9c8d3eb8bfdd6e043dc4a2931403dc8d8f38679 bezeichneten temporären archive.sqlite-Dateien mit1571074048Bytes. Vor dem Löschen sind Originalpfade, Prüfsummen, abgeschlossene Zielaufträge und die unveränderte geprüfte Sicherung zu kontrollieren; veränderte Dateien bleiben unangetastet. Ergebnisse, Originaldaten, Modellbelege, Sicherungen und andere Arbeitskopien sind ausgenommen. Bereits fehlende Dateien werden als bereits entfernt ausgewiesen. Grund: Die konkrete Löschfreigabe erfüllt jetzt Regel14; die frühere allgemeine Serverzugangsfreigabe allein hatte dafür nicht genügt. Beleg: aktuelle Nutzerantwort und Reparaturkapsel audit/scratch-cleanup-plan.json. Historisch abgeschlossener Einzelauftrag.",
+      "source": "wissen/verarbeitung/D-20261029-091358-2648-freigabe-nur-24-archivkopien.md:13",
+      "reason": "Die konkrete Löschfreigabe erfüllt jetzt Regel14; die frühere allgemeine Serverzugangsfreigabe allein hatte dafür nicht genügt.",
+      "alternatives": "keine ausdrücklich genannt",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_1",
+      "title": "Manuelle und produktive Übernahme vom 7. September",
+      "text": "2026-09-07: Die Quelle dokumentiert eine ausdrücklich bestätigte Übernahme samt finalen Korrekturen und Abschaltung der Altlogik sowie eine historische zunächst pausierte neue Automatik. Historische Fortschreibung: Die dauerhafte Verarbeitung neuer Notizen wurde laut späterem Auftrag vom 21.09.2026 angeordnet. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/CUTOVER-PLAN.md:3",
+      "reason": "Grund nicht rekonstruierbar",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_2",
+      "title": "Automatische Verarbeitung neuer Notizen",
+      "text": "2026-09-21: Der Nutzer beauftragte die dauerhafte automatische Verarbeitung und Speicherung neu hinzukommender Notizen; der frühere Idle-Stopp nach Rückstandsverarbeitung wurde aufgehoben. Historische Fortschreibung: Die dort genannte Terra-Standardannahme wurde laut Auftrag vom 06.10.2026 durch Sol mit begründeter Ausnahme ersetzt. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:645",
+      "reason": "Grund nicht rekonstruierbar",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_3",
+      "title": "Keine automatische Rückkehr zur Source nach Writer-Wechsel",
+      "text": "2026-10-04: Nach der Writer-Öffnung darf das frühere Source-Supabase nicht als aktueller Datenstand verbunden oder durch den historischen Rückweg reaktiviert werden; der dokumentierte Rückweg verwendet einen Target-Backup. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/RESTORE-RUNBOOK.md:201",
+      "reason": "Der tatsächliche Zielstand und inzwischen entstandene Daten müssen erhalten bleiben.",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_4",
+      "title": "Wiederholung der Blockerfehler vermeiden",
+      "text": "2026-10-05: Der Nutzer verlangte, den Fehler, der die Verarbeitung blockierte, sowie ähnliche Fälle zukünftig zu verhindern; die Quelle behauptet damit keine erreichte Fehlerfreiheit. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:387",
+      "reason": "Auslöser war der zuvor beobachtete blockierende Verarbeitungsfehler.",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_5",
+      "title": "Sol als Standard für aktive Terra-Einsatzstellen",
+      "text": "2026-10-06: Gleb beauftragte GPT-6.1 Sol für aktive Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra; für das bekannte Aufgabenprofil ist Medium vorgesehen. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:341",
+      "reason": "Der historische Vergleich mit Sol 6.0 rechtfertigt laut Quelle keine Terra-Ausnahme.",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_6",
+      "title": "Technischen Betrieb unabhängig von perfekter fachlicher Qualität ermöglichen",
+      "text": "2026-10-06: Gleb änderte die Produktabnahme: Verarbeitung und Rückstandsabbau sollen funktionieren; weitere Lead-Modellbenchmarks sind laut damaligem Auftrag kein Betriebsfreigabetor. Integrität und Sichtbarkeit fehlerhafter Quellen bleiben Pflicht. Historische Fortschreibung: Ersetzt die frühere Annahme, vor Öffnung der Verarbeitung sechs perfekte fachliche Vergleichsfälle zu verlangen. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:343",
+      "reason": "Fehlende vollständige fachliche Perfektion soll den technischen Betrieb nicht blockieren.",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    },
+    {
+      "key": "fachhistorie_7",
+      "title": "Phase 1 endet mit vorbereitetem Auftragspaket",
+      "text": "2026-10-13: Das damalige Zielbild sieht die vorbereitete Übergabe an die Arbeits-KI als Phase-1-Ziel vor; Ausführung und Vault-Zugriff liegen in Phase 2. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/ZIELBILD-PHASE1.md:27",
+      "reason": "Grund nicht rekonstruierbar",
+      "alternatives": "Keine ausdrücklich festgehalten.",
+      "parents": [
+        "V"
+      ]
+    }
+  ],
+  "replacements": [
+    {
+      "old": "historisch_4",
+      "new": "historisch_11"
+    },
+    {
+      "old": "historisch_9",
+      "new": "historisch_13"
+    }
+  ],
+  "journal": [
+    {
+      "text": "2026-09-07: Laut historischer Checkliste erfolgten Produktionsdeployment, Annahme der finalen Generation und Stilllegung der Altlogik. (aus Historie). Quelle: working-memory/docs/CUTOVER-PLAN.md:1",
+      "ids": []
+    },
+    {
+      "text": "2026-09-21: Dauerhafte automatische Verarbeitung und Speicherung neuer Notizen wurde beauftragt. (aus Historie). Quelle: working-memory/docs/NEXT-OPERATIONS.md:645",
+      "ids": []
+    },
+    {
+      "text": "2026-10-04: Ein dokumentierter Writer-Wechsel auf das Target begrenzt den zulässigen Rückweg. (aus Historie). Quelle: working-memory/docs/RESTORE-RUNBOOK.md:201",
+      "ids": []
+    },
+    {
+      "text": "2026-10-06: Der Nutzer beauftragte Sol als Standard und änderte die damaligen Produktabnahmekriterien. (aus Historie). Quelle: working-memory/docs/NEXT-OPERATIONS.md:341",
+      "ids": []
+    },
+    {
+      "text": "2026-10-12: Der dokumentierte Betriebsstand berichtet von einer Vollsicherung mit isoliertem Wiederherstellungstest; das ist ein historischer Beleg. (aus Historie). Quelle: working-memory/docs/NEXT-OPERATIONS.md:9",
+      "ids": []
+    },
+    {
+      "text": "2026-10-13: Das Zielbild beschreibt Phase 1, ihre Teilbausteine und offene fachliche Abnahmen. (aus Historie). Quelle: working-memory/docs/ZIELBILD-PHASE1.md:4",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:43: Historische offene Frage oder Hypothese (aus Historie; damaliger Status ersetzt): Die genaue ursprüngliche Ursache der 22 alten ValueError-Streamabschlüsse ist weiterhin nicht belegt; die vorhandene Streamdiagnose belegt nur die sichere technische Korrektur, nicht die historische Ursache. Historischer Nachfolgeeintrag: F-20261029-003133-2c14-historische-streamursachen-unbekannt. Quelle: wissen/verarbeitung/H-20261029-002743-3643-urspruengliche-streamursache.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historische Annahme (aus Historie; damaliger Status ersetzt): Für Quelle 16 wurde die konservative Kontextschätzung nicht als tatsächlicher Promptumfang behandelt: providerfreier Replay rekonstruierte den unveränderten Prompt und zählte exakt 258657 Eingabetokens; mit 59736 Ausgabe und 4096 Reserve ergaben sich 322489 Tokens innerhalb der Grenze. Historischer Nachfolgeeintrag: A-20261029-003132-39f5-exaktcount-anfragegleichheit. Quelle: wissen/verarbeitung/A-20261029-002744-6796-exakter-eingabetoken-count.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historische Annahme (aus Historie; damaliger Status ersetzt): Die ausgewiesenen 5.812318 USD für die 22 Quellen wurden aus eindeutigen Nutzungsbelegen berechnet; ungeklärte historische Kosten sind nicht als null angesetzt. Eine Rechnungsabnahme ist damit nicht belegt. Historischer Nachfolgeeintrag: A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich. Quelle: wissen/verarbeitung/A-20261029-002744-b8c1-kosten-aus-nutzungsbelegen.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historische offene Frage oder Hypothese (aus Historie; damaliger Status ersetzt): Ob das Dashboard im angemeldeten Browser erfolgreich lädt, bleibt unbekannt; es ist kein angemeldeter Browserabruf belegt und Zugangsdaten wurden dort nicht eingegeben. Historischer Nachfolgeeintrag: F-20261029-003133-5c3b-browser-und-passwortabnahme. Quelle: wissen/verarbeitung/F-20261029-002744-0f73-angemeldete-browserabnahme.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historische offene Frage oder Hypothese (aus Historie; damaliger Status aktiv): Ein Zusammenhang zwischen Sandbox und IO_ERROR bleibt eine Hypothese; die vorliegenden Abschlussbelege stellen ihn nicht als nachgewiesene Ursache fest. Quelle: wissen/verarbeitung/H-20261029-002744-2619-sandbox-io-error.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historisch verworfener Ansatz (aus Historie; damaliger Status aktiv): Eine Lockerung des Datumvalidators wurde verworfen. Grund: die korrekte Zurückweisung von Quelle 15 beruhte auf einer falsch als Frist behandelten Gesprächszeit; ein vollständiger geprüfter Normalversuch löste den Fall ohne Abschwächung der Validierung. Quelle: wissen/verarbeitung/V-20261029-002744-06e7-datumvalidator-lockern.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historisch verworfener Ansatz (aus Historie; damaliger Status ersetzt): Eine verlustbehaftete Kürzung von Originalen oder Kandidaten zur Kontextbegrenzung wurde verworfen. Grund: providerfreier Replay zählte den unveränderten Prompt exakt und ermöglichte die Fortsetzung mit allen 123 bekannten Antworten innerhalb desselben Limits. Historischer Nachfolgeeintrag: V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung. Quelle: wissen/verarbeitung/V-20261029-002744-3d64-verlustbehaftete-katalogkuerzung.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historisch verworfener Ansatz (aus Historie; damaliger Status ersetzt): Der anfängliche 32-Beleg-Importweg wurde verworfen. Grund: der vorhandene normale Kostenweg konnte die 32 bereits bezahlten Antworten ohne erneute Provideranfrage prüfen und übernehmen. Historischer Nachfolgeeintrag: V-20261029-003132-3a0f-manueller-32er-vollpipelineweg. Quelle: wissen/verarbeitung/V-20261029-002744-4365-32-beleg-importweg.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historisch verworfener Ansatz (aus Historie; damaliger Status aktiv): Blindes Reset und gesperrter Fast-Retry wurden als Wiederholungswege verworfen. Grund: sie umgehen die nachgewiesene normale Wiederholungs- und Kostenlogik; die dokumentierte Wiederholung erfolgte vollständig geprüft über den normalen Weg. Quelle: wissen/verarbeitung/V-20261029-002744-5f7f-blindes-reset-und-fastretry.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historisch verworfener Ansatz (aus Historie; damaliger Status aktiv): Synthetische kostenpflichtige Providerproben wurden verworfen. Grund: sie erzeugen unnötige reale Kosten und belegen nicht den historischen Lauf; die Kostenableitung stützt sich auf eindeutige Nutzungsbelege. Quelle: wissen/verarbeitung/V-20261029-002744-a102-synthetische-providerprobe.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:27:44: Historisch verworfener Ansatz (aus Historie; damaliger Status ersetzt): Der 32-Beleg-Weg wurde verworfen. Grund: er wurde durch den vorhandenen normalen Kostenweg ersetzt, der bereits bezahlte Antworten ohne erneute Provideranfrage prüfen und übernehmen konnte. Historischer Nachfolgeeintrag: V-20261029-003132-3a0f-manueller-32er-vollpipelineweg. Quelle: wissen/verarbeitung/V-20261029-002744-fc15-32-belegweg.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:31:32: Historische Annahme (aus Historie; damaliger Status aktiv): Für die Freigabe wurde vorausgesetzt, dass der vorhandene Anbieter-Zähler denselben Prompt samt Schema und Framing wie die Generierung zählt. Der Offline-Replay maß nur Bytes und Hashes; erst die reale Fortsetzung zählte 258657 Eingabetokens. Dieser Wert stimmte mit der späteren Generierungsnutzung überein; mit 59736 Ausgabe und 4096 Reserve ergaben sich 322489 innerhalb 1050000. Die Übereinstimmung dieses Falls ist kein pauschaler Nachweis für andere Modelle oder Parameter. Belege: reprocess/context-report.md und audit/reprocess22-final.json in der Reparaturkapsel. Quelle: wissen/verarbeitung/A-20261029-003132-39f5-exaktcount-anfragegleichheit.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:31:32: Historische Annahme (aus Historie; damaliger Status aktiv): Bei der Berechnung der neuen Kosten wurde vorausgesetzt, dass die hinterlegten call_budget-Preise und erfassten Tarifangaben zur jeweiligen Nutzung passen. Die 5.812318 USD sind aus eindeutigen Nutzungsbelegen berechnet; eine Anbieterrechnung wurde nicht abgeglichen. Ungeklärte historische Kosten wurden nicht als null angesetzt. Beleg: meeting-os/working-memory/evaluation/processing-repair-20261028/audit/reprocess22-final.json. Quelle: wissen/verarbeitung/A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:31:32: Historisch verworfener Ansatz (aus Historie; damaliger Status aktiv): Der manuelle, auf 32 Belege begrenzte Wiederherstellungsweg wurde für vollständige Quellenläufe verworfen. Grund: ein realer Quellenlauf benötigte mehr als 32 Aufrufe; der bestehende normale Kostenweg unterstützt längere vollständige Läufe. Die bereits bezahlten 32 Antworten wurden dort unverändert importiert und nicht erneut angefordert; verworfen wurde nicht ihr Import. Belege: Reparaturkapsel reprocess/README.md und audit/reprocess32-import-readback.json. Quelle: wissen/verarbeitung/V-20261029-003132-3a0f-manueller-32er-vollpipelineweg.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:31:32: Historisch verworfener Ansatz (aus Historie; damaliger Status aktiv): Eine verlustbehaftete Kürzung von Originalen, Kandidaten oder Katalog wurde für Quelle16 verworfen. Grund: der providerfreie Replay belegte eine konservative Byte-Schätzung von 1062612; die spätere echte Eingabetokenzählung ergab 258657 und bewies die Zulässigkeit des unveränderten Kontexts unter derselben Grenze. Alle 123 vorhandenen Antworten wurden im selben Versuch wiederverwendet. Der Offline-Replay selbst führte keinen Anbieter-Tokenzähler aus. Belege: Reparaturkapsel reprocess/context-report.md und audit/reprocess22-final.json. Quelle: wissen/verarbeitung/V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:31:33: Historische offene Frage oder Hypothese (aus Historie; damaliger Status aktiv): Welche konkreten Ursachen die 22 ursprünglichen ValueError-Streamabschlüsse hatten, bleibt ungeklärt: ihre eigentlichen Streamfehler wurden damals nicht ausreichend gespeichert. Der später bei Quelle16 nachgewiesene Tokenlimit-Abschluss belegt nicht die Ursachen aller alten Fehler. Die erfolgreiche erneute Verarbeitung ersetzt diesen historischen Ursachenbeleg nicht. Beleg: Reparaturkapsel README.md. Quelle: wissen/verarbeitung/F-20261029-003133-2c14-historische-streamursachen-unbekannt.md:13",
+      "ids": []
+    },
+    {
+      "text": "2026-10-29T00:31:33: Historische offene Frage oder Hypothese (aus Historie; damaliger Status aktiv): Der Agent hat nach der Reparatur weder einen Abruf mit angemeldeter Nutzersitzung noch die Passwort-Zurücksetzung technisch verifiziert. Belegt sind die 22 Übernahmen, der tatsächlich aktuelle Backendcache und öffentliches Health HTTP200; die angemeldete Browserabnahme bleibt davon getrennt offen. Der frühere Nutzerscreenshot ist kein nachträglicher Agententest. Beleg: Reparaturkapsel README.md. Quelle: wissen/verarbeitung/F-20261029-003133-5c3b-browser-und-passwortabnahme.md:13",
+      "ids": []
+    }
+  ]
+}

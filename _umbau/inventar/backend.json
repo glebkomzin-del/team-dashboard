@@ -1,0 +1,200 @@
+{
+  "funktionen": [
+    {
+      "name": "Originale aufnehmen und archivieren",
+      "text": "Ein Dienst kann überprüfte Drive-Originale samt Version archivieren und für die Verarbeitung vormerken.",
+      "quelle": "working-memory/drive_intake.py:52",
+      "kriterien": [
+        {
+          "text": "Die Annahme prüft Dokumentformat, Quellidentität und vollständigen Transkripttext.",
+          "quelle": "working-memory/drive_intake.py:12"
+        },
+        {
+          "text": "Vorhandene identische Versionen werden wiederverwendet; abweichende Identität wird zurückgewiesen.",
+          "quelle": "working-memory/drive_intake.py:54"
+        },
+        {
+          "text": "Die HTTP-Annahme ist auf die Dienstrolle beschränkt.",
+          "quelle": "working-memory/server.py:372"
+        }
+      ]
+    },
+    {
+      "name": "Archiv und Arbeitsstand einsehen",
+      "text": "Angemeldete Eigentümer können den Arbeitsstand sowie Quellen und Archiv abrufen.",
+      "quelle": "working-memory/server.py:145",
+      "kriterien": [
+        {
+          "text": "Das Archiv kann nach Suchbegriff und zeitlichen Parametern abgefragt werden.",
+          "quelle": "working-memory/server.py:145"
+        },
+        {
+          "text": "Die Übersicht wird aus der revisionsgebundenen Arbeitsprojektion geliefert.",
+          "quelle": "working-memory/server.py:177"
+        },
+        {
+          "text": "Beim Öffnen einer Projektion wird die Eigentümerzuordnung geprüft.",
+          "quelle": "working-memory/journal_service.py:108"
+        }
+      ]
+    },
+    {
+      "name": "Verarbeitung und Kosten absichern",
+      "text": "Hinterlegte Quellaufträge werden verarbeitet; Providerabrufe werden mit Reservierung und Beleg geführt.",
+      "quelle": "working-memory/canonical_worker.py:58",
+      "kriterien": [
+        {
+          "text": "Vor einem Providerabruf werden Kosten reserviert und die Anfrageidentität anhand des Hashes geprüft.",
+          "quelle": "working-memory/durable_calls.py:49"
+        },
+        {
+          "text": "Eine bereits gespeicherte Antwort wird wiederverwendet.",
+          "quelle": "working-memory/durable_calls.py:68"
+        },
+        {
+          "text": "Bei unbekanntem Providerergebnis unterbleibt ein automatischer erneuter Versand.",
+          "quelle": "working-memory/durable_calls.py:82"
+        }
+      ]
+    },
+    {
+      "name": "Persönliche Entscheidungen speichern",
+      "text": "Ein angemeldeter Eigentümer kann Entscheidungen zum Arbeitsstand und zu Prüfungen einreichen.",
+      "quelle": "working-memory/server.py:353",
+      "kriterien": [
+        {
+          "text": "Entscheidungsanfragen setzen eine Eigentümerrolle voraus.",
+          "quelle": "working-memory/server.py:353"
+        },
+        {
+          "text": "Eine wiederverwendete Entscheidungskennung mit anderem Inhalt oder eine veraltete Revision wird abgelehnt.",
+          "quelle": "working-memory/journal_service.py:202"
+        },
+        {
+          "text": "Gültige persönliche Entscheidungen werden dem Journal hinzugefügt.",
+          "quelle": "working-memory/journal_service.py:224"
+        }
+      ]
+    },
+    {
+      "name": "Fragen und Gespräche",
+      "text": "Ein angemeldeter Eigentümer kann bei aktivierter Funktion Gespräche und Fragen verwalten.",
+      "quelle": "working-memory/server.py:282",
+      "kriterien": [
+        {
+          "text": "Gespräche lassen sich erstellen, auflisten und anhand ihrer Kennung abrufen.",
+          "quelle": "working-memory/memory_chat.py:28"
+        },
+        {
+          "text": "Fragen werden bei aktivierter Funktion über einen Frageauftrag eingereicht.",
+          "quelle": "working-memory/server.py:298"
+        },
+        {
+          "text": "Antworten ohne ausreichende Belegverweise können zurückgewiesen werden.",
+          "quelle": "working-memory/qa_service.py:98"
+        }
+      ]
+    },
+    {
+      "name": "Quelloriginale löschen",
+      "text": "Ein angemeldeter Eigentümer kann bei aktivierter Funktion die Löschung eines Originalquelltexts beantragen und den Status abfragen.",
+      "quelle": "working-memory/server.py:219",
+      "kriterien": [
+        {
+          "text": "Der Auftrag wird für die Eigentümerrolle angenommen und kann bei längerer Ausführung einen Zwischenstatus liefern.",
+          "quelle": "working-memory/server.py:319"
+        },
+        {
+          "text": "Die Löschung erstellt einen vorbereiteten, quellbezogenen Bereinigungsplan und verarbeitet Kandidaten seitenweise.",
+          "quelle": "working-memory/original_deletion_service.py:36"
+        },
+        {
+          "text": "Die Ausführung prüft den Projektionsstand vor dem Löschaufruf.",
+          "quelle": "working-memory/original_deletion_service.py:66"
+        }
+      ]
+    },
+    {
+      "name": "Sicherung und Prüfung",
+      "text": "Der Sicherungslauf kann Journal, Archiv und zugehörige Aufträge an einer festen Grenze exportieren und prüfen.",
+      "quelle": "working-memory/canonical_backup.py:232",
+      "kriterien": [
+        {
+          "text": "Der Export bindet sich an eine Snapshot-Kennung und prüft die Seitenfolge.",
+          "quelle": "working-memory/canonical_backup.py:232"
+        },
+        {
+          "text": "Das Manifest enthält Dateigrößen und SHA-256-Prüfsummen; anschließend wird der Export verifiziert.",
+          "quelle": "working-memory/canonical_backup.py:251"
+        }
+      ]
+    },
+    {
+      "name": "Betriebsstatus und Wiederherstellung",
+      "text": "Ein angemeldeter Eigentümer kann den Betriebsstatus einschließlich Verarbeitungs- und Sicherungsstatus einsehen.",
+      "quelle": "working-memory/server.py:139",
+      "kriterien": [
+        {
+          "text": "Die Statusantwort enthält Betriebsmodus, Verarbeitungsstatus und Sicherungsstatus.",
+          "quelle": "working-memory/server.py:139"
+        },
+        {
+          "text": "Einzelne Aufträge können über eine Betriebsroute eingesehen werden.",
+          "quelle": "working-memory/server.py:135"
+        }
+      ]
+    }
+  ],
+  "entscheidungen": [],
+  "regeln": [
+    {
+      "text": "Nur die passende Eigentümerkennung darf eine persönliche Arbeitsgedächtnisprojektion öffnen.",
+      "quelle": "working-memory/journal_service.py:108"
+    },
+    {
+      "text": "Unvollständige oder übergroße Drive-Originale werden abgelehnt; der Inhalt wird nicht gekürzt.",
+      "quelle": "working-memory/drive_intake.py:12"
+    },
+    {
+      "text": "Eine Anfrage mit unbekanntem Providerergebnis wird nicht automatisch erneut versandt.",
+      "quelle": "working-memory/durable_calls.py:71"
+    },
+    {
+      "text": "Frühere Gesprächsbeiträge sind Referenzkontext und kein Beleg für eine Antwort.",
+      "quelle": "working-memory/memory_chat.py:61"
+    },
+    {
+      "text": "Antworten mit ausreichender Evidenz benötigen bekannte Quellenverweise.",
+      "quelle": "working-memory/qa_service.py:98"
+    },
+    {
+      "text": "Unerwartete Quellidentität oder konkurrierende nicht identische Archivdaten führen zu einem Konflikt.",
+      "quelle": "working-memory/drive_intake.py:52"
+    }
+  ],
+  "befehle": [
+    {
+      "text": "Der Container startet den Dienst mit python server.py.",
+      "quelle": "working-memory/Dockerfile:16"
+    },
+    {
+      "text": "Die Vorschau-Compose-Konfiguration baut ihren Dienst aus dem Arbeitsgedächtnisverzeichnis.",
+      "quelle": "working-memory/compose.yaml:3"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "text": "Die HTTP-Tests zum kanonischen Archiv und zur Eigentümergrenze sind bei der aktuellen Suite teilweise rot; Ursache und Folgen sind gesondert zu prüfen.",
+      "quelle": "working-memory/test_canonical_archive_http.py:30"
+    },
+    {
+      "text": "Zwei kompakte Pipeline-Integrationstests endeten in der aktuellen Suite mit Fehlern; Ursache und Folgen sind gesondert zu prüfen.",
+      "quelle": "working-memory/test_compact_reconcile.py:193"
+    },
+    {
+      "text": "Annahme: Code und lokale Tests allein belegen weder die aktuelle externe Bereitstellung noch eine angemeldete reale Browserabnahme.",
+      "quelle": "working-memory/server.py:190"
+    }
+  ],
+  "annahmen": []
+}

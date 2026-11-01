@@ -1,0 +1,7 @@
+{
+  "pfad": "/var/folders/ls/20kh61p92md74lhm10v2vjz00000gn/T/dashboard-migrate-build-acjukht8",
+  "kopierte_dateien": 103,
+  "install_cmd": "pnpm install --offline --frozen-lockfile --ignore-scripts",
+  "installation_exit": 0,
+  "build_exit": 0
+}

@@ -1,0 +1,13 @@
+{
+  "pfad": "/var/folders/ls/20kh61p92md74lhm10v2vjz00000gn/T/dashboard-git-no-mmap-43wvuzei",
+  "source": "https://github.com/git/git/archive/refs/tags/v2.50.1.tar.gz",
+  "version": "2.50.1",
+  "optionen": [
+    "NO_MMAP=1",
+    "NO_GETTEXT=1",
+    "NO_TCLTK=1",
+    "NO_PERL=1",
+    "NO_PYTHON=1"
+  ],
+  "build_exit": 0
+}
