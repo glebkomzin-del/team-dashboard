@@ -683,6 +683,11 @@
       "slug": "F-013-offener-punkt",
       "name": "Offener Punkt",
       "cycle": 1
+    },
+    "F-014": {
+      "slug": "F-014-offener-punkt",
+      "name": "Offener Punkt",
+      "cycle": 1
     }
   }
 }
