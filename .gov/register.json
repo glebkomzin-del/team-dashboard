@@ -546,10 +546,17 @@
       ],
       "state": "aktiv",
       "text": "Ein Teil der Python-Regressionen benötigt absichtlich unversionierte private Ergebnisdateien, etwa evaluation/source-corrections.json; diese werden nicht in den Umbau importiert. Der portable grüne Prüfbefehl enthält nur ohne diese Daten ausführbare Tests. Quelle: working-memory/README.md:38."
+    },
+    "F-016": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Den eingebetteten Zugangswert der alten Edge Function ingest-transcript gesondert bereinigen und seine Gültigkeit beziehungsweise erforderliche Rotation klären; keine Änderung externer Zugänge im Umbau. Quelle: archiv/governance-alt/umbau-20261101/geheimnis-vorpruefung.json."
     }
   },
   "counters": {
-    "F": 15,
+    "F": 16,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
