@@ -539,10 +539,17 @@
       ],
       "state": "aktiv",
       "text": "Wiederherstellungswerkzeuge bestimmen den äußeren supabase/-Pfad über zwei Elternverzeichnisse; die unveränderten Originalpfade bleiben bestehen. Die Kopie im Repository ersetzt keinen geprüften Deploy-/Restoreweg. Quelle: working-memory/restore_schema.py:23."
+    },
+    "F-015": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Ein Teil der Python-Regressionen benötigt absichtlich unversionierte private Ergebnisdateien, etwa evaluation/source-corrections.json; diese werden nicht in den Umbau importiert. Der portable grüne Prüfbefehl enthält nur ohne diese Daten ausführbare Tests. Quelle: working-memory/README.md:38."
     }
   },
   "counters": {
-    "F": 14,
+    "F": 15,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
