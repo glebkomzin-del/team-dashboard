@@ -23,3 +23,4 @@ Der aktuelle Feature-Status wird ausschließlich von gov geschrieben.
 | F-018 | Offener Punkt | Idee | Für das Memory waren eine fachliche Goldfragen-Abnahme und der Nachweis des Abrufs aus VS Code offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:44 |
 | F-019 | Offener Punkt | Idee | Zustellung von Erinnerungen und deren Compliance waren offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:43 |
 | F-020 | Offener Punkt | Idee | Die Abnahme der Auftragspakete und die Unterscheidung unbelegter Annahmen von unbekannten Angaben waren offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:47 |
+| F-021 | Offener Punkt | Idee | Lieferweg zur Arbeit und Zulässigkeit des Datenflusses Arbeitsmeetings → privates System → Arbeits-KI waren ungeklärt. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:129 |
