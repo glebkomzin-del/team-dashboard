@@ -1,0 +1,46 @@
+{
+  "produkt": {
+    "claude": "Opus 5.5",
+    "codex": "GPT-6 Astra"
+  },
+  "planner": {
+    "claude": "Opus 5.5",
+    "codex": "GPT-6 Astra"
+  },
+  "planner_fein": {
+    "claude": "Sonnet 5.5",
+    "codex": "GPT-6.1 Sol"
+  },
+  "reviewer": {
+    "claude": "Opus 5.5",
+    "codex": "GPT-6 Astra"
+  },
+  "bau": {
+    "claude": "Sonnet 5.5",
+    "codex": "GPT-6.1 Sol"
+  },
+  "worker": {
+    "claude": "Sonnet 5.5",
+    "codex": "GPT-6.1 Sol"
+  },
+  "worker_mechanisch": {
+    "claude": "Haiku 5.5",
+    "codex": "GPT-6.1 Terra"
+  },
+  "umbau": {
+    "claude": "Opus 5.5",
+    "codex": "GPT-6 Astra"
+  },
+  "leser": {
+    "claude": "Haiku 5.5",
+    "codex": "GPT-6.1 Terra"
+  },
+  "schreiber": {
+    "claude": "Sonnet 5.5",
+    "codex": "GPT-6.1 Sol"
+  },
+  "pruefer": {
+    "claude": "Opus 5.5",
+    "codex": "GPT-6 Astra"
+  }
+}

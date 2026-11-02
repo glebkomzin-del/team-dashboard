@@ -1,0 +1,5 @@
+{
+  "main_branch": "main",
+  "test_cmd": "python3 -m unittest discover -s tests",
+  "tests_dir": "tests"
+}

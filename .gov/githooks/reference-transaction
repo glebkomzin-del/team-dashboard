@@ -1,0 +1,5 @@
+#!/bin/sh
+# Nur prepared kann eine Ref-Änderung ablehnen; andere Phasen brauchen kein Python.
+[ "$1" = "prepared" ] || exit 0
+root=$(git rev-parse --show-toplevel) || exit 1
+exec python3 "$root/.gov/gov" hook reference-transaction "$@"

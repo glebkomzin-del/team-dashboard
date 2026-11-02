@@ -1,0 +1,3411 @@
+#!/usr/bin/env python3
+"""Project-Governance-Kit, Phase 1–3. Nur Python-Standardbibliothek.
+
+Git-Verträge: https://git-scm.com/docs/githooks und /docs/git-worktree.
+flock: https://docs.python.org/3/library/fcntl.html (Unix).
+Claude-/Codex-Installation: install_agents.
+"""
+import argparse
+import contextlib
+import copy
+import datetime as dt
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import shlex
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+from urllib.parse import unquote
+
+
+ID = re.compile(r"\b(?:F-\d{3,}|A-\d{3,}-\d+|P-\d{3,}-\d+|T-\d{3,}-\d+-\d+|E-\d{3,})\b")
+STAND = re.compile(r"<!-- gov:stand -->.*?<!-- /gov:stand -->", re.S)
+ROLES = ("produkt", "bau", "task", "gov")
+COMMAND_ROLES = {"vision": "produkt", "build": "bau", "migrate": "umbau"}
+HOOKS = ("pre-commit", "commit-msg", "pre-merge-commit", "reference-transaction", "pre-push")
+
+
+def graph_update(cwd):
+    try:
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve().parent / 'global/graph-aktuell'),
+                          '--cwd', str(cwd)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True, env=clean_env())
+    except OSError:
+        pass
+
+
+TRANSITIONS = {
+    ("Idee", "ausgearbeitet"): "produkt",
+    ("ausgearbeitet", "freigegeben"): "produkt",
+    ("freigegeben", "in Arbeit"): "bau",
+    ("in Arbeit", "zur Abnahme"): "bau",
+    ("zur Abnahme", "fertig"): "bau",
+    ("zur Abnahme", "in Arbeit"): "bau",
+    ("zur Abnahme", "ausgearbeitet"): "bau",
+    ("fertig", "ausgearbeitet"): "produkt",
+}
+
+
+class Fehler(Exception):
+    pass
+
+
+def require(condition, message):
+    if not condition:
+        raise Fehler(message)
+
+
+def clean_env():
+    env = os.environ.copy()
+    # Git dokumentiert das Entfernen lokaler Git-Variablen für fremde Repos.
+    for key in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_PREFIX",
+                "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+                "GIT_IMPLICIT_WORK_TREE"):
+        env.pop(key, None)
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    return env
+
+
+def run(args, cwd=None, env=None, check=True, data=None):
+    p = subprocess.run(args, cwd=cwd, env=env, input=data, text=True,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if check and p.returncode:
+        raise Fehler("Befehl fehlgeschlagen: " + " ".join(map(str, args[:3])) + "\n" + p.stderr.strip() + "\n" + p.stdout.strip())
+    return p
+
+
+def atomic(path, content):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix="." + path.name, dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def json_write(path, value):
+    atomic(path, json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+
+
+def read(path):
+    return Path(path).read_text(encoding="utf-8")
+
+
+def report_paths(base, ident):
+    require(isinstance(ident, str) and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', ident),
+            'Bericht-ID muss eine Kennung oder ein Bereich ohne Pfadbestandteile sein.')
+    folder = base / ident
+    require(not base.is_symlink() and not folder.is_symlink(), 'Berichtpfad darf kein Symlink sein.')
+    return sorted((p for p in folder.glob('*.md') if p.stem.isdigit()), key=lambda p: int(p.stem))
+
+
+def bericht(base, args):
+    paths = report_paths(base, args.id)
+    if args.liste:
+        for path in paths:
+            print(path)
+        return
+    body = sys.stdin.read()
+    require(len(body.splitlines()) <= 15, 'Bericht abgelehnt: höchstens 15 Zeilen erlaubt.')
+    missing = [name for name in ('Ergebnisort', 'Prüfung', 'Entdeckungen', 'Offen')
+               if not re.search(r'^(?:#{1,6} +)?' + name + r'(?::(?: .*)?|[ \t]*)$', body, re.M)]
+    require(not missing, 'Bericht abgelehnt: Pflichtüberschrift fehlt: ' + ', '.join(missing))
+    folder = base / args.id
+    folder.mkdir(parents=True, exist_ok=True)
+    # Exklusives Erstellen schützt auch gleichzeitige Helfer ohne gemeinsame Gov-Sperre.
+    attempt = max((int(p.stem) for p in paths), default=0) + 1
+    while True:
+        path = folder / (str(attempt) + '.md')
+        try:
+            with path.open('x', encoding='utf-8') as f:
+                f.write('Status: ' + args.status + '\n' + body.rstrip('\n') + '\n')
+            break
+        except FileExistsError:
+            attempt += 1
+    print(path)
+
+
+def slug(value):
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "feature"
+
+
+def section(text, title):
+    m = re.search(r"^## " + re.escape(title) + r"\s*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    return m.group(1) if m else ""
+
+
+def without_comments(text):
+    return re.sub(r"<!--.*?-->", "", text, flags=re.S)
+
+
+class Gov:
+    def __init__(self):
+        # Lokaler Hook-Index bleibt für staged-Prüfungen erhalten; fremde Kopien
+        # bekommen immer clean_env(), insbesondere bei commit --only.
+        self.root = Path(run(["git", "rev-parse", "--show-toplevel"]).stdout.strip()).resolve()
+        common = self.git("rev-parse", "--git-common-dir").strip()
+        self.common = (self.root / common).resolve()
+        self.home = self.common / "gov"
+        listing = self.git("worktree", "list", "--porcelain", "-z")
+        self.main = Path(next(x[9:] for x in listing.split("\0") if x.startswith("worktree "))).resolve()
+        config = self.main / ".gov/config.json"
+        self.config = json.loads(read(config)) if config.exists() else {
+            "main_branch": "main", "tests_dir": "tests", "test_cmd": "python3 -m unittest discover -s tests"}
+        self.branch = self.config["main_branch"]
+        self.state = {}
+
+    def git(self, *args, cwd=None, check=True, local_index=False, env=None):
+        target = Path(cwd or self.root).resolve()
+        environment = (os.environ.copy() if local_index and target == self.root else clean_env())
+        if env:
+            environment.update(env)
+        return run(["git", "-C", str(target), *map(str, args)], env=environment, check=check).stdout
+
+    def result(self, *args, cwd=None):
+        return run(["git", "-C", str(cwd or self.root), *map(str, args)], env=clean_env(), check=False)
+
+    @contextlib.contextmanager
+    def locked(self, persist=True):
+        self.home.mkdir(parents=True, exist_ok=True)
+        with (self.home / "lock").open("a") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            self._locked = True
+            try:
+                self.load()
+                if persist and (self.home / "state.json").exists() and (self.main / ".gov/config.json").exists():
+                    self.save()  # Alte Installationen unter derselben Sperre übernehmen.
+                yield
+            finally:
+                self._locked = False
+
+    def load(self):
+        p = self.home / "state.json"
+        self.state = json.loads(read(p)) if p.exists() else {}
+        for key in ("ids", "counters", "features", "tasks", "locks", "areas", "accepted", "rounds"):
+            self.state.setdefault(key, {})
+        register = self.main / ".gov/register.json"
+        if register.exists():
+            durable = json.loads(read(register))
+            local_features = self.state["features"]
+            self.state.update(durable)
+            self.state["features"] = {
+                fid: {**item, **{k: v for k, v in local_features.get(fid, {}).items()
+                                if k in ("branch", "worktree")}}
+                for fid, item in durable["features"].items()}
+        # Vision-Reife kommt ausschließlich aus dem versionierten Register.
+        self.state["vision"] = durable.get("vision", {}) if register.exists() else {}
+        # Ein Klon öffnet die abgeschlossene Bestandsaufnahme nicht erneut.
+        if "bestand_offen" not in self.state and register.exists():
+            self.state["bestand_offen"] = False
+
+    def save(self):
+        if getattr(self, "_import_planning", False):
+            return
+        require(getattr(self, "_locked", False), "Speichern benötigt die gov-Sperre.")
+        durable = {key: self.state[key] for key in ("ids", "counters", "accepted")}
+        durable["vision"] = self.state.get("vision", {})
+        durable["features"] = {fid: {k: v for k, v in item.items() if k in ("slug", "name", "cycle")}
+                               for fid, item in self.state["features"].items()}
+        register = self.main / ".gov/register.json"
+        self.main_ready()
+        if not register.exists() or json.loads(read(register)) != durable:
+            json_write(register, durable)
+        # Auch nach einem gescheiterten Commit muss die Reservierung zuerst in Git.
+        self.commit("gov", "Register aktualisiert", cwd=self.main, paths=[register], persist=False)
+        transient = {k: v for k, v in self.state.items() if k not in ("ids", "counters", "accepted", "features", "vision")}
+        transient["features"] = {fid: {k: v for k, v in item.items() if k in ("branch", "worktree")}
+                                 for fid, item in self.state["features"].items()
+                                 if any(k in item for k in ("branch", "worktree"))}
+        json_write(self.home / "state.json", transient)
+
+    def template(self, filename, **values):
+        base = Path(__file__).resolve().parent / "templates" / filename
+        text = read(base)
+        for key, value in values.items():
+            text = text.replace("{{" + key + "}}", value)
+        return text
+
+    def main_ready(self):
+        require(self.git("branch", "--show-current", cwd=self.main).strip() == self.branch,
+                "Die Hauptarbeitskopie muss auf " + self.branch + " stehen.")
+
+    def ident(self, ident, kind=None, active=False):
+        item = self.state["ids"].get(ident)
+        require(item is not None, "Unbekannte Kennung: " + str(ident))
+        require(not kind or ident.startswith(kind + "-"), "Falsche Kennungsart: " + ident)
+        require(not active or item["state"] == "aktiv", "Kennung ist ersetzt: " + ident)
+        return item
+
+    def feature_of(self, ident):
+        self.ident(ident)
+        require(ident[0] in "FAPT", "Diese Kennung gehört nicht zu einem Feature.")
+        return "F-" + ident.split("-")[1]
+
+    def feature_path(self, fid, cwd=None, name="feature.md"):
+        self.ident(fid, "F")
+        return Path(cwd or self.root) / "features" / self.state["features"][fid]["slug"] / name
+
+    def feature_worktree(self, fid):
+        item = self.state["features"][fid]
+        require(item.get("worktree") and Path(item["worktree"]).is_dir(), "Zuerst gov worktree " + fid + " aufrufen.")
+        path = Path(item["worktree"])
+        require(self.git("branch", "--show-current", cwd=path).strip() == item.get("branch"),
+                "Feature-Arbeitskopie steht auf falschem Zweig: " + fid)
+        return path
+
+    def statuses(self):
+        p = self.main / "roadmap.md"
+        rows = {}
+        for line in read(p).splitlines() if p.exists() else []:
+            cols = [x.strip() for x in line.split("|")]
+            if len(cols) == 6 and re.fullmatch(r"F-\d{3,}", cols[1]):
+                require(cols[1] not in rows, "Kennung wiederverwendet in Roadmap: " + cols[1])
+                rows[cols[1]] = cols[3]
+        return rows
+
+    def status(self, fid):
+        self.ident(fid, "F")
+        require(fid in self.statuses(), "Feature fehlt in der Roadmap: " + fid)
+        return self.statuses()[fid]
+
+    def allocate(self, kind, parents, text="", requested=None):
+        require(kind in "FAPTE" and len(kind) == 1, "Unbekannte Kennungsart.")
+        expected = {"F": "V", "A": "F", "P": "A", "T": "P", "E": "FV"}[kind]
+        require(parents, "Übergeordnete Kennung fehlt.")
+        for parent in parents:
+            require(parent == "V" if kind == "F" else parent[0] in expected,
+                    "Verweis muss nach oben zeigen: " + kind + " → " + parent)
+            if parent != "V":
+                self.ident(parent, active=True)
+        require(kind in "PE" or len(parents) == 1, "Genau eine übergeordnete Kennung erforderlich.")
+        if kind in "APT":
+            features = {self.feature_of(x) for x in parents}
+            require(len(features) == 1, "Eltern müssen zum selben Feature gehören.")
+            prefix = next(iter(features)).split("-")[1]
+            if kind == "T":
+                prefix = parents[0][2:]
+            key = kind + "-" + prefix
+        else:
+            key = kind
+        number = self.state["counters"].get(key, 0) + 1
+        ident = key + "-" + (f"{number:03d}" if kind in "FE" else str(number))
+        require(requested is None or requested == ident, "Kennung wiederverwendet oder nicht die nächste freie Kennung: " + str(requested))
+        require(ident not in self.state["ids"], "Kennung wiederverwendet: " + ident)
+        self.state["counters"][key] = number
+        self.state["ids"][ident] = {"parents": parents, "state": "aktiv", "text": text}
+        if kind == "T":
+            self.state["tasks"][ident] = {"status": "offen", "failures": 0, "since": ""}
+        # Reservierungen werden vor jedem weiteren Dateizugriff dauerhaft geschrieben.
+        self.save()
+        return ident
+
+    def token_path(self, cwd):
+        return self.home / "tokens" / (hashlib.sha256(str(Path(cwd).resolve()).encode()).hexdigest() + ".json")
+
+    @contextlib.contextmanager
+    def token(self, cwd, role, task=None, operation="commit", main=False, paths=None):
+        p = self.token_path(cwd)
+        nonce = secrets.token_hex(24)
+        json_write(p, {"role": role, "task": task, "operation": operation, "main": main,
+                       "expires": time.time() + 120, "nonce": nonce, "paths": paths})
+        try:
+            yield {"GOV_TOKEN": nonce}
+        finally:
+            p.unlink(missing_ok=True)
+
+    def get_token(self, required=True):
+        p = self.token_path(self.root)
+        token = json.loads(read(p)) if p.exists() else {}
+        valid = (token.get("expires", 0) > time.time() and
+                 token.get("nonce") == os.environ.get("GOV_TOKEN") and token.get("role") in ROLES)
+        require(not required or valid, "Kein gültiges Commit-Token; nutze gov commit.")
+        return token if valid else {}
+
+    def role_branch(self, role, cwd):
+        branch = self.git("branch", "--show-current", cwd=cwd).strip()
+        require(branch, "Commits auf abgelöstem HEAD sind nicht erlaubt.")
+        require(role != "produkt" or branch == self.branch, "Produkt-Commits sind nur auf dem Hauptzweig erlaubt.")
+        require(role not in ("bau", "task") or branch.startswith("feat/"),
+                "Bau- und Task-Commits sind nur auf Feature-Zweigen erlaubt.")
+        return branch
+
+    def commit(self, role, message, task=None, cwd=None, paths=None, operation="commit", persist=True):
+        cwd = Path(cwd or self.root)
+        branch = self.role_branch(role, cwd)
+        if task:
+            self.ident(task, "T", active=True)
+        require(role != "task" or task, "Code-Commit benötigt eine Task-Kennung.")
+        if paths:
+            paths = [str(Path(p).relative_to(cwd)) if Path(p).is_absolute() else str(p) for p in paths]
+            self.git("add", "--", *paths, cwd=cwd)
+            if self.result("diff", "--cached", "--quiet", "--", *paths, cwd=cwd).returncode == 0:
+                return
+        if persist:
+            self.save()
+        with self.token(cwd, role, task, operation, branch == self.branch, paths) as env:
+            args = ["commit", "-m", message]
+            if paths:
+                args += ["--only", "--", *paths]
+            self.git(*args, cwd=cwd, env=env)
+        if role == "bau":
+            for fid, item in self.state["features"].items():
+                if item.get("branch") == branch and self.feature_path(fid, cwd, "plan.md").exists():
+                    self.state["areas"][fid] = self.area_values(fid, cwd)
+            self.save()
+
+    def journal(self, text, ids=()):
+        self.main_ready()
+        require("\n" not in text and "\r" not in text, "Journalereignisse bestehen aus einer Zeile.")
+        for ident in ids:
+            self.ident(ident)
+        month = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m")
+        p = self.main / "journal" / (month + ".md")
+        old = read(p) if p.exists() else self.template("journal.md", monat=month)
+        line = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds") + " " + " ".join(ids) + " " + text
+        atomic(p, old + line.strip() + "\n")
+        self.commit("gov", "Journal: " + text, cwd=self.main, paths=[p])
+
+    def criteria(self, fid, cwd=None):
+        text = read(self.feature_path(fid, cwd or self.main))
+        entries = re.findall(r"^- (A-\d{3,}-\d+):\s*(.+)$", section(text, "Abnahme"), re.M)
+        result = {}
+        for ident, value in entries:
+            self.ident(ident, "A")
+            require(ident not in result, "Kennung wiederverwendet: " + ident)
+            require(self.feature_of(ident) == fid, "Kriterium gehört zu anderem Feature: " + ident)
+            result[ident] = value
+        return result
+
+    def active_criteria(self, fid, cwd=None):
+        return {k: v for k, v in self.criteria(fid, cwd).items() if self.ident(k)["state"] == "aktiv"}
+
+    def plan(self, fid, cwd=None):
+        p = self.feature_path(fid, cwd, "plan.md")
+        require(p.exists(), "Plan fehlt: " + str(p))
+        return read(p)
+
+    def stand(self, fid):
+        lines = ["<!-- gov:stand -->"]
+        for tid, task in self.state["tasks"].items():
+            if self.feature_of(tid) == fid:
+                replaced = self.ident(tid).get("replaced_by")
+                lines.append(f"{tid}: {task['status']}; Fehlschläge: {task['failures']}; in Arbeit seit: {task['since']}" +
+                             ("; ersetzt durch " + replaced if replaced else "") +
+                             ("; Prüfung fehlgeschlagen: " + task["pruefung_fehler"] if task.get("pruefung_fehler") else ""))
+        return "\n".join(lines + ["<!-- /gov:stand -->"])
+
+    def update_stand(self, fid, cwd):
+        p = self.feature_path(fid, cwd, "plan.md")
+        text = read(p)
+        require(len(STAND.findall(text)) == 1, "Plan benötigt genau einen gov:stand-Block.")
+        atomic(p, STAND.sub(lambda _: self.stand(fid), text))
+        self.commit("bau", "Task-Stand " + fid, cwd=cwd, paths=[p])
+
+    def project_tests(self, cwd):
+        command = self.config.get("test_cmd", "").strip()
+        require(command, "Kein Testbefehl konfiguriert; .gov/config.json:test_cmd setzen.")
+        # Annahme: test_cmd ist eine bewusst gewählte lokale Shell-Anweisung.
+        p = subprocess.run(command, cwd=cwd, env=clean_env(), shell=True,
+                           text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        require(p.returncode == 0, "Projekttests sind rot.\n" + p.stdout + p.stderr)
+
+    def parse_plan(self, fid, cwd):
+        text = without_comments(self.plan(fid, cwd))
+        packages, tasks = {}, {}
+        package = task = None
+        for line in text.splitlines():
+            pm = re.match(r"### (P-\d{3,}-\d+)\s+(.+)", line)
+            tm = re.match(r"- (T-\d{3,}-\d+-\d+)\s+(.+)", line)
+            if pm:
+                package, task = pm[1], None
+                require(package not in packages, "Kennung wiederverwendet: " + package)
+                packages[package] = {"refs": [], "tasks": []}
+            elif tm:
+                task = tm[1]
+                require(package is not None, "Task ohne Paket: " + task)
+                require(task not in tasks, "Kennung wiederverwendet: " + task)
+                tasks[task] = package
+                packages[package]["tasks"].append(task)
+            elif line.strip().startswith("Bezug:") and package and not task:
+                packages[package]["refs"] += ID.findall(line)
+            elif line.strip().startswith("Riskant:") and package and not task:
+                value = line.strip().removeprefix("Riskant:").strip()
+                require(value in ("ja", "nein") and "riskant" not in packages[package],
+                        "Riskant: genau einmal mit ja oder nein angeben: " + package)
+                packages[package]["riskant"] = value == "ja"
+        for pid, item in packages.items():
+            registered = self.ident(pid, "P")
+            require(self.feature_of(pid) == fid, "Paket gehört zu anderem Feature: " + pid)
+            require(item["refs"] and set(item["refs"]) == set(registered["parents"]), "Paket-Bezug stimmt nicht mit dem Register überein: " + pid)
+            require("riskant" in item, "Riskant: fehlt im Paket: " + pid)
+        for tid, pid in tasks.items():
+            require(self.ident(tid, "T")["parents"] == [pid], "Task verweist auf falsches Paket: " + tid)
+        return packages, tasks
+
+    def package_finished(self, item):
+        active = [t for t in item["tasks"] if self.ident(t)["state"] == "aktiv"]
+        return bool(active) and all(self.state["tasks"][t]["status"] == "fertig" for t in active)
+
+    def package_review_gate(self, packages, cwd, starting=None):
+        head = self.git("rev-parse", "HEAD", cwd=cwd).strip()
+        for pid, item in packages.items():
+            if pid == starting or not item["riskant"] or not self.package_finished(item):
+                continue
+            review = self.state.get("package_reviews", {}).get(pid, {})
+            require(review.get("frei") is True and review.get("commit") == head,
+                    "Paketfreigabe für aktuellen Stand fehlt: " + pid +
+                    "; Reviewer prüfen lassen, dann gov package-review " + pid + " --frei.")
+
+    def package_review(self, pid, frei=False, befunde=None):
+        self.ident(pid, "P", active=True)
+        fid = self.feature_of(pid)
+        cwd = self.feature_worktree(fid)
+        require(self.root in (self.main, cwd), "Paket gehört zu einer anderen Feature-Arbeitskopie.")
+        require(self.status(fid) == "in Arbeit", "Paketprüfung erfordert Feature-Status in Arbeit.")
+        self.check_holder(fid, cwd)
+        packages, _ = self.parse_plan(fid, cwd)
+        require(pid in packages, "Paket fehlt im Plan: " + pid)
+        require(packages[pid]["riskant"], "Paket ist nicht riskant: " + pid)
+        require(self.package_finished(packages[pid]), "Alle aktiven Paket-Tasks müssen fertig sein.")
+        require(frei or (befunde and befunde.strip()), "Befundtext darf nicht leer sein.")
+        # Annahme wie bei task start --reviewed: Die Bau-Session trägt das
+        # Ergebnis des tatsächlich aufgerufenen Reviewers ein; kein Aufrufbeweis.
+        self.state.setdefault("package_reviews", {})[pid] = {
+            "frei": frei, "befunde": befunde or "", "commit": self.git("rev-parse", "HEAD", cwd=cwd).strip()}
+        self.save()
+        print(pid + (": frei" if frei else ": Befunde"))
+
+    def check_references(self, fid, cwd):
+        feature = without_comments(read(self.feature_path(fid, cwd)))
+        plan = STAND.sub("", self.plan(fid, cwd))
+        documents = [("feature", feature), ("plan", without_comments(plan))]
+        for kind, text in documents:
+            for ident in ID.findall(text):
+                self.ident(ident)
+            owner = fid if kind == "feature" else None
+            for line in text.splitlines():
+                if not line.strip():
+                    continue
+                definitions = (re.match(r"^- (A-\d{3,}-\d+):", line) if kind == "feature" else
+                               re.match(r"^(?:### |\- )(P-\d{3,}-\d+|T-\d{3,}-\d+-\d+)\s", line))
+                if definitions:
+                    owner = definitions[1]
+                if kind == "plan" and line.startswith("## "):
+                    owner = fid
+                refs = ID.findall(line)
+                for ident in refs:
+                    if ident == owner or (kind == "feature" and ident == fid):
+                        continue
+                    if "ersetzt durch " + ident in line:
+                        require(owner and self.ident(owner).get("replaced_by") == ident, "Ersetzung stimmt nicht mit dem Register überein.")
+                        continue
+                    if owner:
+                        allowed = {"F": "E", "A": "FE", "P": "AFE", "T": "PAFE"}[owner[0]]
+                        require(ident[0] in allowed, "Verweis nach unten: " + owner + " → " + ident)
+                        require(ident[0] == "E" or self.feature_of(ident) == fid, "Verweis auf fremdes Feature: " + ident)
+
+    def check_decisions(self, cwd):
+        seen = set()
+        for path in (Path(cwd) / "decisions").glob("*.md"):
+            text = without_comments(read(path))
+            title = re.search(r"^# (E-\d{3,})\s", text, re.M)
+            require(title, "Entscheidung benötigt eine E-Kennung im Titel: " + path.name)
+            eid = title[1]
+            self.ident(eid, "E")
+            require(eid not in seen, "Kennung wiederverwendet: " + eid)
+            seen.add(eid)
+            for ident in ID.findall(text):
+                self.ident(ident)
+                require(ident == eid or ident.startswith("F-"), "Verweis nach unten in Entscheidung: " + ident)
+
+    def verify(self, fid=None, task=None, cwd=None, tests=True):
+        cwd = Path(cwd or self.root)
+        if task:
+            self.ident(task, "T", active=True)
+            fid = self.feature_of(task)
+        fids = [fid] if fid else [f for f in self.state["features"] if self.feature_path(f, cwd, "plan.md").exists()]
+        self.check_decisions(cwd)
+        for feature in fids:
+            self.check_references(feature, cwd)
+            criteria = self.active_criteria(feature, cwd)
+            require(criteria, "Keine aktiven Abnahmekriterien: " + feature)
+            packages, tasks = self.parse_plan(feature, cwd)
+            covered = {a for p in packages.values() if p["tasks"] for a in p["refs"]}
+            missing = set(criteria) - covered
+            require(not missing, "Abdeckung fehlt: " + ", ".join(sorted(missing)))
+            # Auch registrierte, versehentlich aus dem Plan entfernte Tasks bleiben sichtbar.
+            registered = {t for t in self.state["tasks"] if self.feature_of(t) == feature and self.ident(t)["state"] == "aktiv"}
+            require(registered <= tasks.keys(), "Registrierte Tasks fehlen im Plan: " + ", ".join(sorted(registered - tasks.keys())))
+        directories = self.config["tests_dir"]
+        directories = [directories] if isinstance(directories, str) else directories
+        require(isinstance(directories, list) and all(isinstance(x, str) and x for x in directories),
+                "tests_dir muss Text oder eine Liste von Ordnernamen sein.")
+        for directory in directories:
+            tests_dir = (cwd / directory).resolve()
+            require(tests_dir.is_relative_to(cwd.resolve()), "Testordner muss im Projekt liegen.")
+            for p in tests_dir.rglob("*") if tests_dir.exists() else []:
+                if p.is_file() and not p.is_symlink() and not secret_path(str(p.relative_to(cwd))):
+                    text = p.read_bytes().decode("utf-8", errors="replace")
+                    for ident in set(ID.findall(p.name + "\n" + text)):
+                        if ident.startswith("A-"):
+                            require(ident in self.state["ids"], "Unbekanntes Kriterium im Test: " + ident)
+                            require(self.ident(ident)["state"] != "ersetzt", "Test verweist auf ersetztes Kriterium: " + ident)
+        if task:
+            _, tasks = self.parse_plan(fid, cwd)
+            require(task in tasks, "Task fehlt im Plan: " + task)
+            log = self.git("log", "--format=%B", "HEAD", cwd=cwd)
+            require(task in ID.findall(log), "Kein Commit mit Task-Kennung: " + task)
+        if tests:
+            self.project_tests(cwd)
+
+    def area_values(self, fid, cwd):
+        m = re.search(r"^Bereiche:[ \t]*([^\n]*)", self.plan(fid, cwd), re.M)
+        return sorted({x.strip().casefold() for x in m[1].split(",") if x.strip()}) if m else []
+
+    def areas_check(self, fid, cwd, areas=None):
+        areas = self.area_values(fid, cwd) if areas is None else areas
+        require(areas, "Der Plan muss berührte Bereiche nennen.")
+        for other, status in self.statuses().items():
+            if other != fid and status == "in Arbeit":
+                item = self.state["features"][other]
+                other_cwd = Path(item.get("worktree", self.main))
+                current = self.area_values(other, other_cwd) if self.feature_path(other, other_cwd, "plan.md").exists() else self.state["areas"].get(other, [])
+                overlap = set(areas) & set(current)
+                require(not overlap, "Warten auf " + other + ": gemeinsame Bereiche " + ", ".join(sorted(overlap)))
+        return areas
+
+    def take_lock(self, target, holder, minutes=90):
+        self.ident(target)
+        require(target[0] in "FT", "Nur Features und Tasks können gesperrt werden.")
+        require(minutes > 0, "Sperrdauer muss positiv sein.")
+        current = self.state["locks"].get(target, {})
+        require(current.get("expires", 0) <= time.time() or current.get("holder") == holder,
+                "Sperre belegt: " + target + " durch " + str(current.get("holder")))
+        self.state["locks"][target] = {"holder": holder, "expires": time.time() + minutes * 60}
+
+    def check_holder(self, target, cwd):
+        lock = self.state["locks"].get(target, {})
+        # Annahme: Die späteren Adapter liefern GOV_SESSION_ID; ohne Adapter
+        # identifiziert der absolute Arbeitskopie-Pfad den Halter.
+        holder = os.environ.get("GOV_SESSION_ID", str(cwd))
+        require(lock.get("expires", 0) <= time.time() or lock.get("holder") == holder,
+                "Sperre belegt: " + target + " durch " + str(lock.get("holder")))
+
+    def set_status(self, fid, new, role):
+        old = self.status(fid)
+        require(TRANSITIONS.get((old, new)) == role, "Statusübergang oder Rolle nicht erlaubt: " + old + " → " + new + " (" + role + ")")
+        self.main_ready()
+        cwd = self.feature_worktree(fid) if role == "bau" else self.main
+        self.check_holder(fid, cwd)
+        if new == "ausgearbeitet":
+            require(self.state.get("vision", {}).get("tragfaehig") is True,
+                    "Vision ist noch nicht tragfähig; zuerst gov vision-confirm.")
+            p = self.feature_path(fid, self.main)
+            research = without_comments(section(read(p), "Recherche"))
+            require(re.search(r"https?://\S+|^\s*Quelle:\s*\S+", research, re.M), "Recherche mit Quellen fehlt: " + p.name)
+            require(self.active_criteria(fid), "Mindestens ein aktives Abnahmekriterium ist erforderlich.")
+        if new == "in Arbeit":
+            self.state["areas"][fid] = self.areas_check(fid, cwd)
+            self.take_lock(fid, os.environ.get("GOV_SESSION_ID", str(cwd)))
+        if new == "zur Abnahme":
+            feature = self.feature_path(fid, cwd)
+            main_feature = self.result("rev-parse", "--verify", self.branch + ":" + str(feature.relative_to(cwd)), cwd=cwd)
+            require(main_feature.returncode == 0 and feature.is_file() and
+                    self.git("hash-object", "--no-filters", feature, cwd=cwd).strip() == main_feature.stdout.strip(),
+                    "feature.md ist veraltet oder geändert; zuerst gov sync " + fid + " aufrufen.")
+            self.verify(fid, cwd=cwd)
+            packages, tasks = self.parse_plan(fid, cwd)
+            self.package_review_gate(packages, cwd)
+            require(all(self.state["tasks"][t]["status"] == "fertig" for t in tasks if self.ident(t)["state"] == "aktiv"), "Es gibt unfertige Tasks.")
+            criteria = self.active_criteria(fid, cwd)
+            accepted = self.state["accepted"].setdefault(fid, {})
+            pending = [a for a, value in criteria.items() if accepted.get(a) != value]
+            self.state["rounds"][fid] = {"since": time.time(), "mapping": {str(n): a for n, a in enumerate(pending, 1)}, "criteria": criteria}
+        if new == "fertig":
+            require(fid in self.state["rounds"], "Keine Abnahmerunde vorhanden.")
+            criteria = self.active_criteria(fid, cwd)
+            accepted = self.state["accepted"].get(fid, {})
+            require(all(accepted.get(a) == v for a, v in criteria.items()), "Für jedes offene Kriterium ist ein protokolliertes passt erforderlich.")
+        if old == "fertig":
+            self.state["features"][fid]["cycle"] = self.state["features"][fid].get("cycle", 1) + 1
+        if new != "in Arbeit":
+            self.state["locks"].pop(fid, None)
+        p = self.main / "roadmap.md"
+        text = read(p)
+        text = re.sub(r"^(\| " + re.escape(fid) + r" \| [^|]* \| )[^|]*( \|.*)$", lambda m: m[1] + new + m[2], text, flags=re.M)
+        self.state["bestand_offen"] = False
+        self.save()
+        atomic(p, text)
+        self.commit("gov", fid + ": " + new, cwd=self.main, paths=[p])
+        self.journal("Status: " + old + " → " + new, [fid])
+        print(fid + ": " + new)
+
+    def worktree(self, fid):
+        require(self.status(fid) in ("freigegeben", "in Arbeit", "zur Abnahme"), "Bau startet nur nach Freigabe.")
+        self.main_ready()
+        item = self.state["features"][fid]
+        cycle = item.get("cycle", 1)
+        suffix = "" if cycle == 1 else "-aenderung-" + str(cycle)
+        name = item["slug"] + suffix
+        branch = "feat/" + name
+        path = self.main / ".worktrees" / name
+        if not path.exists():
+            self.git("worktree", "add", "-b", branch, path, self.branch, cwd=self.main)
+            try:
+                if (self.main / 'graphify-out').is_dir():
+                    shutil.copytree(self.main / 'graphify-out', path / 'graphify-out', dirs_exist_ok=True)
+            except OSError:
+                pass
+        require(self.git("branch", "--show-current", cwd=path).strip() == branch, "Arbeitskopie steht auf falschem Zweig.")
+        item.update(worktree=str(path), branch=branch)
+        self.save()
+        p = self.feature_path(fid, path, "plan.md")
+        if not p.exists():
+            atomic(p, self.template("plan.md", id=fid))
+            self.update_stand(fid, path)
+        print(path)
+
+    def next_action(self, tid):
+        self.ident(tid, "T")
+        task = self.state["tasks"][tid]
+        count = task["failures"]
+        return "park" if count >= 4 or task["status"] == "geparkt" else "review" if count == 2 else "retry"
+
+    def task_action(self, action, tid, reviewed=False):
+        self.ident(tid, "T", active=True)
+        fid = self.feature_of(tid)
+        cwd = self.feature_worktree(fid)
+        require(self.root in (self.main, cwd), "Task gehört zu einer anderen Feature-Arbeitskopie.")
+        task = self.state["tasks"][tid]
+        if action in ("done", "fail") and task["status"] != "in Arbeit":
+            print("Bereits ausgewertet: " + tid)
+            return
+        require(self.status(fid) == "in Arbeit", "Task-Bau erfordert Feature-Status in Arbeit.")
+        self.check_holder(fid, cwd)
+        self.check_holder(tid, cwd)
+        packages, tasks = self.parse_plan(fid, cwd)
+        require(tid in tasks, "Task fehlt im Plan.")
+        if action == "start":
+            self.package_review_gate(packages, cwd, starting=tasks[tid])
+            require(task["status"] != "fertig", "Fertige Tasks bleiben abgeschlossen; gov fixtask verwenden.")
+            require(task["failures"] < 4 and task["status"] != "geparkt", "Task ist geparkt; Korrektur-Task anlegen.")
+            require(self.next_action(tid) != "review" or reviewed, "Zuerst Reviewer; danach start --reviewed.")
+            self.areas_check(fid, cwd)
+            holder = os.environ.get("GOV_SESSION_ID", str(cwd))
+            self.take_lock(fid, holder)
+            self.take_lock(tid, holder)
+            self.state.get("package_reviews", {}).pop(tasks[tid], None)
+            task.update(status="in Arbeit", since=dt.datetime.now(dt.timezone.utc).isoformat())
+        elif action == "done":
+            try:
+                self.verify(task=tid, cwd=cwd)
+            except Fehler as exc:
+                task["pruefung_fehler"] = " ".join(str(exc).split())
+                self.save()
+                self.update_stand(fid, cwd)
+                raise
+            task.pop("pruefung_fehler", None)
+            task["status"] = "fertig"
+        elif action == "fail":
+            task["failures"] += 1
+            task["status"] = "geparkt" if task["failures"] >= 4 else "offen"
+        elif action == "park":
+            task["status"] = "geparkt"
+        if action != "start":
+            self.state["locks"].pop(tid, None)
+        self.save()
+        self.update_stand(fid, cwd)
+        if action != "start":
+            self.journal("Task " + task["status"] + "; Fehlschläge: " + str(task["failures"]), [fid, tid])
+        print(self.next_action(tid) if action == "fail" else tid + ": " + task["status"])
+        if action == "start":
+            for path in report_paths(self.home / "berichte", tid):
+                print(path)
+
+    def vision_confirm(self):
+        if self.state.get("vision", {}).get("tragfaehig") is True:
+            print("Vision ist bereits tragfähig (belastbar, nicht endgültig).")
+            return
+        text = read(self.main / "vision.md")
+        for title in ("Wofür", "Für wen", "Was ausdrücklich nicht", "Recherche"):
+            body = section(text, title)
+            if title == "Was ausdrücklich nicht" and not body:
+                body = section(text, "Ausdrücklich nicht")  # bisherige Kit-Vorlage
+            require(without_comments(body).strip(), "Vision-Abschnitt fehlt oder ist leer: " + title)
+        research = without_comments(section(text, "Recherche"))
+        require(re.search(r"https?://\S+|^\s*Quelle:\s*\S+", research, re.M),
+                "Recherche mit Quellen fehlt: vision.md")
+        digest = hashlib.sha256(text.encode()).hexdigest()
+        path = self.home / "accept-log.jsonl"
+        confirmation = None
+        for raw in read(path).splitlines() if path.exists() else []:
+            entry = json.loads(raw)
+            require(isinstance(entry, dict), "Ungültiges Bestätigungs-Protokoll.")
+            if entry.get("role") != "produkt":
+                continue
+            require(isinstance(entry.get("timestamp"), (int, float)) and isinstance(entry.get("prompt"), str),
+                    "Ungültiges Bestätigungs-Protokoll.")
+            # Annahme: Eine eigenständige Antwort bestätigt die zuvor vorgelegte
+            # Vision. Hash-Bindung verhindert Zustimmung zu nachträglichem Text.
+            answer = entry["prompt"].strip().rstrip(".!?,;:…").casefold()
+            if entry.get("vision_sha256") == digest and answer in ("passt", "alles passt", "vision passt"):
+                confirmation = entry
+        require(confirmation, "Keine klare protokollierte Bestätigung der Produkt-Session für diese Vision.")
+        self.state["vision"] = {"tragfaehig": True, "quelle": "Produkt-Protokoll",
+                                "timestamp": confirmation["timestamp"], "sha256": digest}
+        self.save()
+        print("Vision ist tragfähig (belastbar, nicht endgültig).")
+
+    def accept(self, fid):
+        require(self.status(fid) == "zur Abnahme", "Abnahme erfordert Status zur Abnahme.")
+        round_ = self.state["rounds"].get(fid)
+        require(round_, "Keine Abnahmerunde vorhanden.")
+        p = self.home / "accept-log.jsonl"
+        accepted = self.state["accepted"].setdefault(fid, {})
+        for raw in read(p).splitlines() if p.exists() else []:
+            entry = json.loads(raw)
+            # Annahme: Phase 2/3 schreiben {timestamp: Unix-Sekunden, feature,
+            # role: bau, prompt: unveränderter Nutzertext}; kein CLI-Text als Ersatz.
+            require(isinstance(entry, dict), "Ungültige Zeile im Abnahme-Protokoll: JSON-Objekt erwartet.")
+            require(isinstance(entry.get("timestamp"), (int, float)) and isinstance(entry.get("prompt"), str),
+                    "Ungültiges Abnahme-Protokoll: timestamp als Unix-Sekunden und prompt als Text erforderlich.")
+            if entry.get("feature") != fid or entry.get("role") != "bau" or entry["timestamp"] <= round_["since"]:
+                continue
+            for line in entry.get("prompt", "").splitlines():
+                line = line.strip().rstrip(".!?,;:…")
+                if re.search(r"\bnicht\b", line, re.I):
+                    continue
+                ids = []
+                if line.casefold() == "alles passt" or (line.casefold() == "passt" and len(round_["mapping"]) == 1):
+                    ids = list(round_["mapping"].values())
+                else:
+                    match = re.fullmatch(r"((?:\d+|A-\d{3,}-\d+)(?:\s*,\s*(?:\d+|A-\d{3,}-\d+))*)\s+passt", line, re.I)
+                    if match:
+                        ids = [round_["mapping"].get(x.strip(), x.strip()) for x in match[1].split(",")]
+                for aid in ids:
+                    if aid in round_["mapping"].values():
+                        accepted[aid] = round_["criteria"][aid]
+        self.save()
+        self.guide(fid)
+
+    def guide(self, fid):
+        round_ = self.state["rounds"].get(fid)
+        require(round_, "Noch keine Abnahmeanleitung; zuerst zur Abnahme setzen.")
+        accepted = self.state["accepted"].get(fid, {})
+        print("Bitte je Kriterium prüfen und mit ‚1 passt‘ oder ‚1 passt nicht, weil …‘ antworten.")
+        for number, aid in round_["mapping"].items():
+            text = round_["criteria"][aid]
+            print(number + ". " + text + (" [passt protokolliert]" if accepted.get(aid) == text else ""))
+        self.start_info(fid, expire=False)
+
+    def sync(self, fid):
+        cwd = self.feature_worktree(fid)
+        require(not self.git("status", "--porcelain", cwd=cwd).strip(), "Arbeitskopie ist nicht sauber; Änderungen zuerst speichern.")
+        with self.token(cwd, "gov", operation="sync") as env:
+            try:
+                self.git("merge", "--no-edit", self.branch, cwd=cwd, env=env)
+            except Fehler as exc:
+                raise Fehler("Abgleich angehalten. Konflikte in " + str(cwd) + " lösen, mit gov commit --role gov speichern und gov sync erneut aufrufen; sonst parken.\n" + str(exc))
+
+    def merge(self, fid):
+        require(self.status(fid) == "fertig", "Zusammenführen nur bei Feature-Status fertig.")
+        self.main_ready()
+        require(not self.git("status", "--porcelain", cwd=self.main).strip(), "Hauptarbeitskopie ist nicht sauber.")
+        self.sync(fid)
+        cwd = self.feature_worktree(fid)
+        item = self.state["features"][fid]
+        branch = item["branch"]
+        revision = self.branch + ".." + branch
+        # Trailer über Git parsen: gleichnamiger Nachrichtentext genügt nicht.
+        roles = self.git("log", "--no-merges", "--format=%H%x00%(trailers:key=Gov-Role,valueonly)%x00",
+                         revision, cwd=cwd).split("\0")
+        missing_roles = [sha.strip() for sha, role in zip(roles[0::2], roles[1::2]) if not role.strip()]
+        require(not missing_roles, "Gov-Role-Trailer fehlt in Feature-Commits: " + ", ".join(missing_roles))
+        # Harte Grenze auch für Commits mit umgangenen Hooks; Umbenennungen
+        # enthalten mit --no-renames die Löschung der bisherigen Entscheidung.
+        raw = self.git("diff", "--name-status", "--no-renames", "-z", self.branch, "HEAD", cwd=cwd).split("\0")
+        protected = {"roadmap.md", "vision.md", "START.md", "feature", "journal", ".gov", ".claude",
+                     ".codex", ".agents", "AGENTS.md", "CLAUDE.md", "archiv", "schreibweise"}
+        for status, path in zip(raw[0::2], raw[1::2]):
+            kind = self.category(path)
+            require(kind not in protected, "Geschützte Datei im Feature-Diff: " + path)
+            if kind == "decisions":
+                require(status == "A", "Entscheidungen dürfen nur neu angelegt werden: " + path)
+        log = self.git("log", "--format=%B", revision, cwd=cwd)
+        # Bei Wiederöffnung gehören frühere, bereits integrierte Tasks zur Historie.
+        _, tasks = self.parse_plan(fid, cwd)
+        previous = set(ID.findall(self.git("log", "--format=%(trailers:key=Gov-Task,valueonly)", self.branch, cwd=cwd)))
+        needed = {t for t in tasks if self.ident(t)["state"] == "aktiv" and t not in previous}
+        require(needed <= set(ID.findall(log)), "Task-Kennung fehlt in Feature-Commits: " + ", ".join(sorted(needed - set(ID.findall(log)))))
+        self.verify(fid, cwd=cwd)
+        accepted = self.state["accepted"].get(fid, {})
+        require(all(accepted.get(a) == text for a, text in self.active_criteria(fid, cwd).items()),
+                "Abnahme passt nicht zum synchronisierten Stand; Feature wieder öffnen und erneut abnehmen.")
+        require(all(self.state["tasks"][t]["status"] == "fertig" for t in tasks if self.ident(t)["state"] == "aktiv"), "Unfertige Tasks verhindern den Merge.")
+        with self.token(self.main, "gov", operation="merge", main=True) as env:
+            self.git("merge", "--no-ff", "-m", "Feature " + fid + " zusammengeführt", branch, cwd=self.main, env=env)
+        self.journal("Feature zusammengeführt", [fid])
+        graph_update(self.main)
+        remotes = self.git("remote", cwd=self.main).splitlines()
+        if remotes:
+            remote = "origin" if "origin" in remotes else remotes[0]
+            with self.token(self.main, "gov", operation="push", main=True) as env:
+                self.git("push", remote, self.branch, cwd=self.main, env=env)
+        print(fid + ": zusammengeführt")
+
+    def product_info(self):
+        ready = self.state.get("vision", {}).get("tragfaehig") is True
+        print("Vision: " + ("tragfähig (belastbar, nicht endgültig)" if ready else "noch nicht tragfähig"))
+        def work(path):
+            return without_comments(section(read(path), "Arbeitsstand")).strip() if path.exists() else ""
+        vision = work(self.main / "vision.md")
+        if vision:
+            print("Vision – Arbeitsstand:\n" + vision)
+        half, waiting, open_ = [], [], []
+        for fid, status in self.statuses().items():
+            path = self.feature_path(fid, self.main)
+            current = work(path)
+            if status == "Idee" and current:
+                half.append(fid)
+            if status == "ausgearbeitet":
+                waiting.append(fid)
+            if status not in ("Idee", "ausgearbeitet", "freigegeben"):
+                continue
+            if current:
+                open_.append(fid + " – Arbeitsstand:\n" + current)
+            if status == "ausgearbeitet":
+                item = self.state["features"][fid]
+                plan = self.feature_path(fid, Path(item.get("worktree", self.main)), "plan.md")
+                questions = without_comments(section(read(plan), "Offene Fragen an Gleb")).strip() if plan.exists() else ""
+                # Noch nicht in feature.md übernommene Bau-Fragen sichtbar halten.
+                remaining = [line for line in questions.splitlines() if line.strip() and line not in current]
+                if remaining:
+                    open_.append(fid + " – aus Bau zu übernehmen:\n" + "\n".join(remaining))
+        print("Halb ausgearbeitet: " + (", ".join(half) or "keine"))
+        print("Wartet auf Freigabe: " + (", ".join(waiting) or "keine"))
+        print("Offene Feature-Arbeitsstände:\n" + ("\n".join(open_) or "keine"))
+
+    def start_info(self, fid=None, expire=True, role="bau"):
+        if role == "produkt":
+            self.product_info()
+            return
+        if expire:
+            for target, lock in list(self.state["locks"].items()):
+                if lock["expires"] <= time.time():
+                    print("Abgelaufene Sperre freigegeben: " + target + " (" + lock["holder"] + ")")
+                    del self.state["locks"][target]
+            self.save()
+        for feature, item in self.state["features"].items():
+            if fid and feature != fid:
+                continue
+            cwd = Path(item.get("worktree", self.main))
+            p = self.feature_path(feature, cwd, "plan.md")
+            if p.exists():
+                questions = section(read(p), "Offene Fragen an Gleb").strip()
+                if questions:
+                    print(feature + " – Offene Fragen an Gleb:\n" + questions)
+        for tid, task in self.state["tasks"].items():
+            if (not fid or self.feature_of(tid) == fid) and self.ident(tid)["state"] == "aktiv" and task["status"] in ("in Arbeit", "geparkt"):
+                print(tid + ": " + task["status"] + "; nächste Aktion: " + self.next_action(tid))
+
+    def staged(self, path, old=False):
+        spec = ("HEAD:" if old else ":") + path
+        return self.git("show", spec, check=False, local_index=True)
+
+    @staticmethod
+    def spelling(path):
+        first = path.split("/")[0]
+        canonical = {x.casefold(): x for x in ("START.md", "vision.md", "roadmap.md", "features", "decisions", "journal")}
+        return canonical.get(first.casefold(), first) != first
+
+    def check_spelling(self):
+        paths = self.git("ls-files", "-z").split("\0")
+        paths += [p.name for p in self.main.iterdir()]
+        wrong = sorted({p for p in paths if self.spelling(p)})
+        require(not wrong, "Falsche Schreibweise im Projekt: " + ", ".join(wrong) +
+                ". Erlaubt sind START.md, vision.md, roadmap.md, features/, decisions/, journal/.")
+
+    @staticmethod
+    def category(path):
+        if Gov.spelling(path):
+            return "schreibweise"
+        if path.casefold() == "archiv/governance-alt" or path.casefold().startswith("archiv/governance-alt/"):
+            return "archiv"
+        if path in ("START.md", "vision.md", "roadmap.md", "AGENTS.md", "CLAUDE.md", ".gitignore"):
+            return path
+        if path.startswith("_umbau/"):
+            return "umbau"
+        if path.startswith("features/"):
+            return "feature" if path.endswith("/feature.md") else "plan" if path.endswith("/plan.md") else "wissen"
+        for prefix in ("decisions", "journal", ".gov", ".claude", ".codex", ".agents"):
+            if path.startswith(prefix + "/"):
+                return prefix
+        return "code"
+
+    def pre_commit(self, token):
+        role = token["role"]
+        branch = self.role_branch(role, self.root)
+        # --no-renames: Verschieben einer Entscheidung enthält dann ein verbotenes D.
+        raw = self.git("diff", "--cached", "--name-status", "--no-renames", "-z", local_index=True).split("\0")
+        changes = list(zip(raw[0::2], raw[1::2]))
+        initializing = token.get("operation") == "init"
+        merge_pending = self.result("rev-parse", "-q", "--verify", "MERGE_HEAD").returncode == 0
+        sync = role == "gov" and merge_pending and branch != self.branch
+        allowed = {
+            "produkt": {"START.md", "vision.md", "feature", "decisions"},
+            "bau": {"plan", "decisions"},
+            "task": {"code", ".gitignore"},
+            "gov": {"roadmap.md", "journal", ".gov", ".claude", ".codex", ".agents", "AGENTS.md", "CLAUDE.md", ".gitignore", "plan"},
+        }
+        for status, path in changes:
+            kind = self.category(path)
+            require(kind != "schreibweise", "Falsche Schreibweise im Projekt: " + path)
+            migrating = role == "gov" and token.get("operation") == "migrate" and branch == self.branch
+            if kind == "umbau":
+                require(migrating and status == "D", "Umbau-Unterlagen dürfen nur beim Abschluss archiviert werden.")
+                continue
+            if kind == "archiv":
+                require(migrating, "Archiv ist geschützt; nur gov migrate darf es ändern: " + path)
+                continue
+            if path == ".gov/register.json" and (branch != self.branch or self.root != self.main):
+                require(sync and self.staged(path) == self.git("show", self.branch + ":" + path),
+                        "Register darf nur in der Hauptarbeitskopie geändert werden.")
+            require(not (branch == self.branch and kind == "code"), "Direkte Code-Commits auf dem Hauptzweig sind verboten.")
+            if sync:
+                # Konfliktauflösung darf übernommene Produkt-Dateien nur unverändert
+                # vom Hauptzweig aufnehmen. Code bleibt einem Task-Commit vorbehalten.
+                if kind not in allowed[role]:
+                    source = self.git("show", self.branch + ":" + path, check=False)
+                    require(self.staged(path) == source, "Abgleich darf geschützte Inhalte nur vom Hauptzweig übernehmen: " + path)
+            else:
+                require(kind in allowed[role] or (migrating and kind in ("feature", "decisions")), "Rolle " + role + " darf diese Datei nicht committen: " + path)
+            if kind == "decisions":
+                require(status == "A", "Entscheidungen dürfen nur neu angelegt werden: " + path)
+            if kind == "journal":
+                require(status != "D" and self.staged(path).startswith(self.staged(path, old=True)), "Journal darf nur angehängt werden: " + path)
+            if kind == "plan":
+                found = re.search(r"(?:^|/)(F-\d{3,})-", path)
+                require(found, "Plan-Pfad benötigt eine Feature-Kennung.")
+                fid = found[1]
+                new = self.staged(path)
+                require(STAND.findall(new) == [self.stand(fid)], "Plan-Stand-Block stimmt nicht mit state.json überein.")
+                if role == "gov" and not sync and not initializing:
+                    old = self.staged(path, old=True)
+                    require(STAND.sub("", new) == STAND.sub("", old), "Rolle gov darf nur den Plan-Stand-Block ändern.")
+                if role == "bau":
+                    item = self.state["features"].get(fid, {})
+                    require(item.get("branch") == branch, "Bau darf nur den Plan des eigenen Features ändern.")
+                    if self.status(fid) == "in Arbeit":
+                        m = re.search(r"^Bereiche:[ \t]*([^\n]*)", new, re.M)
+                        areas = sorted({v.strip().casefold() for v in m[1].split(",") if v.strip()}) if m else []
+                        self.areas_check(fid, self.root, areas)
+            if kind == "feature":
+                # Der versionierte Hauptzweig zählt, nicht eine lokal gefälschte
+                # Roadmap. Sync darf identische Produkt-Dateien übernehmen.
+                if not sync:
+                    owner = next((fid for fid, item in self.state["features"].items()
+                                  if path == "features/" + item["slug"] + "/feature.md"), None)
+                    require(owner, "Feature-Pfad ist nicht registriert: " + path)
+                    roadmap = self.git("show", self.branch + ":roadmap.md", check=False)
+                    match = re.search(r"^\| " + re.escape(owner) + r" \| [^|]* \| ([^|]+) \|", roadmap, re.M)
+                    require(not match or match[1].strip() not in ("in Arbeit", "zur Abnahme"),
+                            "feature.md gehört bei in Arbeit/zur Abnahme Bau und ist gesperrt: " + owner)
+                ids = re.findall(r"^- (A-\d{3,}-\d+):", self.staged(path), re.M)
+                require(len(ids) == len(set(ids)), "Kennung wiederverwendet in feature.md.")
+                for aid in ids:
+                    self.ident(aid, "A")
+        if role == "task":
+            tid = token.get("task")
+            require(tid, "Code-Commit benötigt eine Task-Kennung.")
+            self.ident(tid, "T", active=True)
+            fid = self.feature_of(tid)
+            require(self.state["features"][fid].get("branch") == branch, "Task gehört nicht zu diesem Feature-Zweig.")
+            plan = self.git("show", "HEAD:" + str(self.feature_path(fid).relative_to(self.root)).replace("feature.md", "plan.md"), check=False)
+            require(re.search(r"^- " + re.escape(tid) + r"\s", plan, re.M), "Task-Kennung fehlt im versionierten Plan: " + tid)
+
+    def hook(self, name, args):
+        self.load()
+        if name == "reference-transaction":
+            if not args or args[0] != "prepared":
+                return
+            updates = [x.split() for x in sys.stdin.read().splitlines()]
+            # Git merge --abort kann die unveränderte Ref erneut schreiben.
+            # Belegt durch den Integrationstest: keine Hauptzweig-Änderung bei old == new.
+            if any(len(x) == 3 and x[0] != x[1] and x[2] == "refs/heads/" + self.branch for x in updates):
+                token = self.get_token()
+                require(token.get("main"), "Hauptzweig darf nur über gov geändert werden.")
+            return
+        if name == "pre-push":
+            token = self.get_token(required=False)
+            for line in sys.stdin.read().splitlines():
+                local_ref, local_sha, remote_ref, remote_sha = line.split()
+                require(set(local_sha) != {"0"}, "Löschen von Remote-Zweigen ist kein erlaubter Push.")
+                if remote_ref == "refs/heads/" + self.branch:
+                    require(token.get("main") and token.get("operation") == "push", "Push auf den Hauptzweig nur mit gov-Token.")
+                if set(remote_sha) != {"0"}:
+                    require(self.result("merge-base", "--is-ancestor", remote_sha, local_sha).returncode == 0,
+                            "Force-Push (Nicht-Fast-Forward) ist verboten.")
+            return
+        token = self.get_token()
+        if name == "pre-commit":
+            self.pre_commit(token)
+        elif name == "pre-merge-commit":
+            branch = self.git("branch", "--show-current").strip()
+            require((branch == self.branch and token.get("main") and token.get("operation") == "merge") or
+                    (branch != self.branch and token.get("operation") == "sync"), "Zusammenführen nur über gov merge oder gov sync.")
+        elif name == "commit-msg":
+            require(args, "Pfad der Commit-Nachricht fehlt.")
+            path = Path(args[0])
+            message = read(path)
+            # Vorhandene Rollen-Trailer können nicht die Token-Rolle überstimmen.
+            message = re.sub(r"^Gov-(?:Role|Task):.*\n?", "", message, flags=re.M).strip()
+            if token["role"] == "task":
+                self.pre_commit(token)
+                tid = token["task"]
+                if not message.startswith(tid + ":"):
+                    message = tid + ": " + message
+                message += "\n\nGov-Task: " + tid
+            # Task und Rolle müssen im selben Trailer-Block stehen, damit Git
+            # Gov-Task später als Trailer statt als Nachrichtentext ausliest.
+            message += ("\n" if token["role"] == "task" else "\n\n") + "Gov-Role: " + token["role"] + "\n"
+            # Der aufrufende gov-Prozess hält flock bis Git und alle Hooks enden.
+            atomic(path, message)
+        else:
+            raise Fehler("Unbekannter Git-Hook: " + name)
+
+    def idea(self, name, sentence, bestand=False):
+        self.main_ready()
+        require(self.root == self.main, "Ideen werden in der Hauptarbeitskopie angelegt.")
+        require(not bestand or self.state.get("bestand_offen") is True,
+                "Bestandsaufnahme ist geschlossen oder das Projekt war bei Einrichtung leer.")
+        require(not any(c in name + sentence for c in "\n\r|"), "Name und Satz dürfen keine Zeilenumbrüche oder Tabellen-Trennzeichen enthalten.")
+        fid = self.allocate("F", ["V"], sentence)
+        self.state["features"][fid] = {"slug": fid + "-" + slug(name), "name": name, "cycle": 1}
+        self.save()
+        p = self.feature_path(fid, self.main)
+        atomic(p, self.template("feature.md", id=fid, name=name, satz=sentence))
+        self.commit("produkt", "Idee " + fid, cwd=self.main, paths=[p])
+        roadmap = self.main / "roadmap.md"
+        status = "fertig" if bestand else "Idee"
+        atomic(roadmap, read(roadmap) + f"| {fid} | {name} | {status} | {sentence} |\n")
+        self.commit("gov", "Roadmap: " + fid, cwd=self.main, paths=[roadmap])
+        self.journal(("Bestand: " if bestand else "Idee: ") + name, [fid])
+        print(fid)
+
+    def import_bestand(self, data):
+        """Interner U2-Einstieg; benötigt locked(). Schema siehe ENTWURF Abschnitt 15."""
+        self.main_ready()
+        require(self.root == self.main, "Bestand wird in der Hauptarbeitskopie importiert.")
+        require(self.state.get("bestand_offen") is True, "Bestandsaufnahme ist geschlossen.")
+        original = copy.deepcopy(self.state)
+        aliases, documents, journal = {}, {}, []
+
+        def line(value):
+            require(isinstance(value, str) and value.strip() and not any(c in value for c in "\n\r|"),
+                    "Importtexte müssen nichtleere Einzelzeilen ohne Tabellen-Trennzeichen sein.")
+            return value
+
+        def remember(row, ident):
+            key = row.get("key", ident)
+            require(isinstance(key, str) and key and key not in aliases and
+                    (key == ident or not ID.fullmatch(key)), "Doppelter oder ungültiger Importschlüssel: " + str(key))
+            aliases[key] = ident
+            return ident
+
+        def resolve(key):
+            ident = aliases.get(key, key)
+            if ident != "V":
+                self.ident(ident)
+            return ident
+
+        self._import_planning = True
+        try:
+            require(isinstance(data, dict), "Bestandsimport benötigt ein Objekt.")
+            roadmap = read(self.main / "roadmap.md")
+            for row in data.get("features", []):
+                name, sentence = line(row["name"]), line(row["sentence"])
+                fid = remember(row, self.allocate("F", ["V"], sentence))
+                self.state["features"][fid] = {"slug": fid + "-" + slug(name), "name": name, "cycle": 1}
+                text = self.template("feature.md", id=fid, name=name, satz=sentence)
+                criteria = []
+                for criterion in row.get("criteria", []):
+                    criterion = {"text": criterion} if isinstance(criterion, str) else criterion
+                    value = line(criterion["text"])
+                    aid = remember(criterion, self.allocate("A", [fid], value))
+                    criteria.append("- " + aid + ": " + value)
+                    self.state["accepted"].setdefault(fid, {})[aid] = value
+                text = text.replace("## Abnahme\n", "## Abnahme\n" + "\n".join(criteria) + "\n")
+                if row.get("source"):
+                    text = text.replace("## Recherche\n", "## Recherche\nQuelle: " + line(row["source"]) + "\n")
+                documents[self.feature_path(fid, self.main)] = text
+                roadmap += f"| {fid} | {name} | fertig | {sentence} |\n"
+                journal.append(("Bestand: " + name, [fid]))
+            for row in data.get("decisions", []):
+                title, value, source = line(row["title"]), line(row["text"]), line(row["source"])
+                parents = [resolve(x) for x in row.get("parents", ["V"])]
+                eid = remember(row, self.allocate("E", parents, value))
+                self.state["ids"][eid]["source"] = source
+                path = self.main / "decisions" / (eid + "-" + slug(title) + ".md")
+                documents[path] = self.template("decision.md", id=eid, titel=title, text=value,
+                    bezug=", ".join(parents), grund=line(row.get("reason", source)),
+                    alternativen=line(row.get("alternatives", "Keine festgehalten."))) + "\nQuelle: " + source + "\n"
+                journal.append(("Entscheidung: " + title, [eid]))
+            for row in data.get("replacements", []):
+                old, new = resolve(row["old"]), resolve(row["new"])
+                item = self.ident(old, active=True)
+                self.ident(new, active=True)
+                require(old != new and old[0] == new[0], "Ersetzung benötigt andere Kennung gleicher Art.")
+                require(old[0] not in "APT" or self.feature_of(old) == self.feature_of(new),
+                        "Ersetzung muss im selben Feature liegen.")
+                item.update(state="ersetzt", replaced_by=new)
+                journal.append(("ersetzt durch " + new, [old, new]))
+            for row in data.get("journal", []):
+                row = {"text": row} if isinstance(row, str) else row
+                journal.append((line(row["text"]), [resolve(x) for x in row.get("ids", [])]))
+            require(aliases or journal, "Bestandsimport ist leer.")
+            documents[self.main / "roadmap.md"] = roadmap
+            month = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m")
+            path = self.main / "journal" / (month + ".md")
+            text = read(path) if path.exists() else self.template("journal.md", monat=month)
+            stamp = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+            documents[path] = text + "".join(stamp + " " + " ".join(ids) + " " + value + "\n" for value, ids in journal)
+        except Exception:
+            self.state = original
+            raise
+        finally:
+            self._import_planning = False
+        # Erst alle Kennungen gemeinsam reservieren; bei Dateifehlern nie zurücknehmen.
+        self.save()
+        for path, text in documents.items():
+            atomic(path, text)
+        self.commit("gov", "Bestand importiert", cwd=self.main, paths=list(documents), operation="migrate")
+        return aliases
+
+    def new_id(self, args):
+        parents = args.parents + (args.parent or [])
+        if args.kind == "E":
+            require(args.role in ("produkt", "bau"), "Entscheidungen benötigen Rolle produkt oder bau.")
+            self.role_branch(args.role, self.root)
+        if args.kind == "T":
+            require(len(parents) == 1, "Ein Task benötigt genau ein Paket.")
+            self.ident(parents[0], "P", active=True)
+            fid = self.feature_of(parents[0])
+            require(self.root in (self.main, self.feature_worktree(fid)), "Task gehört zu einer anderen Feature-Arbeitskopie.")
+        ident = self.allocate(args.kind, parents, args.text, args.id)
+        if args.kind == "T":
+            fid = self.feature_of(ident)
+            cwd = self.feature_worktree(fid)
+            self.update_stand(fid, cwd)
+        if args.kind == "E":
+            require(args.role in ("produkt", "bau"), "Entscheidungen benötigen Rolle produkt oder bau.")
+            self.role_branch(args.role, self.root)
+            title = args.title or args.text or "Entscheidung"
+            p = self.root / "decisions" / (ident + "-" + slug(title) + ".md")
+            require(not p.exists(), "Entscheidungsdatei existiert bereits.")
+            atomic(p, self.template("decision.md", id=ident, titel=title, text=args.text,
+                                    bezug=", ".join(parents), grund=args.reason or "Noch zu begründen.",
+                                    alternativen=args.alternatives or "Keine festgehalten."))
+            self.commit(args.role, "Entscheidung " + ident, paths=[p])
+            self.journal("Entscheidung: " + title, [ident])
+        print(ident)
+
+    def replace(self, old, new):
+        item = self.ident(old, active=True)
+        self.ident(new, active=True)
+        require(old != new and old[0] == new[0], "Ersetzung benötigt eine andere Kennung gleicher Art.")
+        if old[0] in "APT":
+            require(self.feature_of(old) == self.feature_of(new), "Ersetzung muss im selben Feature liegen.")
+        item.update(state="ersetzt", replaced_by=new)
+        self.save()
+        self.journal("Ersetzt durch " + new, [old, new])
+        print(old + " ersetzt durch " + new)
+
+    def fixtask(self, fid, text, criterion=None, replaces=None):
+        require(self.status(fid) in ("zur Abnahme", "in Arbeit"), "Korrektur-Task erfordert in Arbeit oder zur Abnahme; fertige Features zuerst mit gov reopen öffnen und freigeben.")
+        cwd = self.feature_worktree(fid)
+        require(self.root in (self.main, cwd), "Korrektur gehört zu einer anderen Feature-Arbeitskopie.")
+        criteria = self.active_criteria(fid, cwd)
+        require(criterion or len(criteria) == 1, "Bei mehreren Kriterien --criterion angeben.")
+        criterion = criterion or next(iter(criteria))
+        require(criterion in criteria, "Korrektur benötigt ein vorhandenes aktives Kriterium.")
+        if replaces:
+            self.ident(replaces, "T", active=True)
+            require(self.feature_of(replaces) == fid, "Korrektur ersetzt nur Tasks desselben Features.")
+        if self.status(fid) == "zur Abnahme":
+            self.set_status(fid, "in Arbeit", "bau")
+        packages, _ = self.parse_plan(fid, cwd)
+        pid = next((p for p, item in packages.items() if criterion in item["refs"]), None)
+        require(pid, "Für das Kriterium fehlt ein Paket.")
+        tid = self.allocate("T", [pid], text)
+        p = self.feature_path(fid, cwd, "plan.md")
+        plan = read(p)
+        start = re.search(r"^### " + re.escape(pid) + r"\s", plan, re.M).start()
+        body_start = plan.index("\n", start) + 1
+        end = re.search(r"^### |^## |<!-- gov:stand -->", plan[body_start:], re.M)
+        offset = body_start + end.start() if end else len(plan)
+        addition = f"\n- {tid} {text}\n  Kriterium: {text}\n  Mechanisch: nein\n  Dateien: im Feinplan festlegen\n\n"
+        atomic(p, plan[:offset] + addition + plan[offset:])
+        if replaces:
+            self.replace(replaces, tid)
+        self.state["accepted"].setdefault(fid, {}).pop(criterion, None)
+        self.save()
+        self.update_stand(fid, cwd)
+        print(tid)
+
+    def show(self, ident, seen=None):
+        seen = set() if seen is None else seen
+        if ident in seen:
+            return
+        seen.add(ident)
+        if ident == "V":
+            print("V: vision.md")
+            return
+        item = self.ident(ident)
+        print(ident + ": " + item.get("text", "") + (" — ersetzt durch " + item["replaced_by"] if item.get("replaced_by") else ""))
+        for parent in item["parents"]:
+            self.show(parent, seen)
+
+
+def import_bestand(data):
+    """Bestand ohne CLI importieren; Kennungen und Dateien unter einer Sperre."""
+    gov = Gov()
+    require((gov.home / "state.json").exists(), "Projekt ist nicht eingerichtet; zuerst gov init.")
+    with gov.locked():
+        return gov.import_bestand(data)
+
+
+def claude_model(models, role):
+    """Quelle: Claude sub-agents#supported-models; Konzept-Modellnamen → Alias.
+
+    Annahme: Die Konzept-Anzeigenamen benennen eine Modellfamilie, keine API-ID.
+    Explizite Kennungen bleiben unverändert; es wird keine Version erfunden.
+    """
+    value = models[role]["claude"]
+    require(isinstance(value, str) and value.strip() and "\n" not in value,
+            "Ungültiges Claude-Modell für " + role)
+    match = re.fullmatch(r"(Opus|Sonnet|Haiku)(?:\s+\d+(?:\.\d+)*)?", value, re.I)
+    return match[1].lower() if match else value
+
+
+def merge_settings(existing, added):
+    """Listen vereinigen, fremde Schlüssel erhalten; Kit-Skalare setzen.
+
+    Quelle: Auftrag Phase 2 C. Kein Ersetzen ganzer hooks/permissions-Blöcke.
+    """
+    if isinstance(existing, dict) and isinstance(added, dict):
+        result = dict(existing)
+        for key, value in added.items():
+            result[key] = merge_settings(result[key], value) if key in result else value
+        return result
+    if isinstance(existing, list) and isinstance(added, list):
+        return existing + [x for x in added if x not in existing]
+    return added
+
+
+def markdown_parts(text):
+    """Nur das einfache Frontmatter unserer Claude-Vorlagen lesen (kein YAML-Parser)."""
+    header, body = text.split("---\n", 2)[1:]
+    fields = dict(line.split(": ", 1) for line in header.splitlines() if ": " in line)
+    return fields, body
+
+
+def codex_skill(kit, role):
+    fields, body = markdown_parts(read(Path(kit) / "claude/commands" / (role + ".md")))
+    # Bewusst ein Vorspann statt verwinkelter Ersetzungen; Ablauf bleibt dieselbe Quelle.
+    intro = ("Unter Codex gilt für den folgenden gemeinsamen Ablauf: Setze die Rolle mit `/" + role + "`. "
+             "Agent-Werkzeug/holen bedeutet Codex-Agenten nach Name holen: Grobplan `planner`, "
+             "Feinplan `planner_fein` (bei Eskalation `planner`), normale Tasks `worker`, "
+             "mechanische Tasks `worker_mechanisch`, Prüfung `reviewer`. "
+             "Alle Modellwahl-Anweisungen im gemeinsamen Text entfallen: Die Agentendateien legen "
+             "das Modell aus der Spalte codex in .gov/models.json fest; beim Holen kein Modell wählen. "
+             "`gov models apply` aktualisiert auch die Codex-Agentendateien. "
+             "Annahme: Die Rollenmarke steht wörtlich am Anfang des Nutzerprompts.\n\n")
+    if role == "migrate":
+        intro = ("Unter Codex startet `/migrate` (auch `$migrate`) diese einmalige Session. "
+                 "Verwende die Agentendateien leser (gpt-6.1-terra), schreiber (gpt-6.1-sol), "
+                 "pruefer (gpt-6-astra); beim Holen kein Modell überschreiben. "
+                 "Session: GPT-6 Astra. Vor finish sind keine Kit-Gates aktiv.\n\n")
+    return ("---\nname: " + role + "\ndescription: " + json.dumps(fields["description"], ensure_ascii=False) +
+            "\n---\n" + intro + body)
+
+
+def codex_agent(kit, role, models):
+    source_role = {"planner_fein": "planner", "worker_mechanisch": "worker"}.get(role, role)
+    fields, body = markdown_parts(read(Path(kit) / "claude/agents" / (source_role + ".md")))
+    model = models[role]["codex"]
+    require(isinstance(model, str) and model.strip() and "\n" not in model,
+            "Ungültiges Codex-Modell für " + role)
+    # Belegte Kennungen aus Auftrag/ENTWURF 7; explizite Kennungen bleiben erhalten.
+    model = {"GPT-6 Astra": "gpt-6-astra", "GPT-6.1 Sol": "gpt-6.1-sol",
+             "GPT-6.1 Terra": "gpt-6.1-terra"}.get(model, model)
+    body = ("Unter Codex legt diese Agentendatei das Modell fest; die Modellwahl beim Holen "
+            "im gemeinsamen Text entfällt.\n\n" + body)
+    if source_role in ('worker', 'planner'):
+        body = 'Ponytail full gilt immer; lade den Skill, ohne Sicherheit, Datenintegrität oder Pflichttests zu kürzen.\n' + body
+    if source_role in ('worker', 'planner', 'reviewer', 'leser'):
+        body = 'Graphify gilt vor dem Lesen unbekannten Codes und bei Strukturfragen; lade den Skill, prüfe am Code, Vollaufbau mit KI nur auf ausdrücklichen Wunsch.\n' + body
+    values = {"name": role, "description": fields["description"], "model": model,
+              "developer_instructions": body}
+    return "".join(key + " = " + json.dumps(value, ensure_ascii=False) + "\n" for key, value in values.items())
+
+
+def global_kit(home=None):
+    return Path(home or Path.home()).expanduser().resolve() / ".claude/gov-kit"
+
+
+def globally_installed():
+    kit = global_kit()
+    return (kit / "global-files.json").is_file() and (kit / "govhook-global").is_file()
+
+
+def kit_text(content, kit):
+    return content.replace("{{KIT_PATH}}", str(Path(kit).resolve()))
+
+
+def global_hooks(kit, adapter, source=None):
+    filename = "claude/settings.fragment.json" if adapter == "claude" else "codex/hooks.json"
+    result = json.loads(read((source or kit) / filename))["hooks"]
+    for event, rows in result.items():
+        for row in rows:
+            if event == "UserPromptExpansion":
+                row["matcher"] = "vision|build|migrate"
+            for hook in row["hooks"]:
+                hook["command"] = shlex.quote(str(kit / "govhook-global")) + " " + adapter + " " + event
+    result.setdefault('SessionStart', []).append({'hooks': [{'type': 'command',
+        'command': shlex.quote(str(kit / 'global/graph-aktuell'))}]})
+    return {"hooks": result}
+
+
+def renamed_entry(path):
+    """Nur frühere Kit-Einstiege entfernen, deren Besitz separat geprüft wird."""
+    return bool(re.search(r"(?:^|/)(?:commands/(?:produkt|bau|umbau)\.md|skills/(?:produkt|bau|umbau)/SKILL\.md)$", path))
+
+
+def retire_matcher(settings):
+    result = copy.deepcopy(settings)
+    rows = result.get("hooks", {}).get("UserPromptExpansion", [])
+    for row in rows:
+        if row.get("matcher") not in ("produkt|bau", "produkt|bau|umbau"):
+            continue
+        hooks = row.get("hooks", [])
+        # Nur unsere vollständig erkennbare lokale Hook-Zeile migrieren.
+        if len(hooks) == 1 and hooks[0].get("command") == '"$CLAUDE_PROJECT_DIR"/.gov/govhook claude UserPromptExpansion':
+            row["matcher"] = "vision|build|migrate"
+    return result
+
+
+def remove_global_hooks(value, added, original):
+    """Nur die bei Installation tatsächlich ergänzten Hook-Zeilen entfernen."""
+    result = copy.deepcopy(value)
+    for event, rows in added.items():
+        if not rows:
+            continue
+        hooks = result.get("hooks", {})
+        if not isinstance(hooks, dict) or not isinstance(hooks.get(event), list):
+            continue
+        hooks[event] = [row for row in hooks[event] if row not in rows]
+        if not hooks[event] and event not in original.get("hooks", {}):
+            del hooks[event]
+    if result.get("hooks") == {} and "hooks" not in original:
+        del result["hooks"]
+    return result
+
+
+def global_install(args, uninstall=False):
+    """Vollständige Vorprüfung; Hash-Besitz, Settings-Deltas und Rückrollen bei IO-Fehlern."""
+    home = Path(args.home or Path.home()).expanduser().resolve()
+    kit = global_kit(home)
+    manifest_path = kit / "global-files.json"
+    require(not manifest_path.is_symlink(), "Fremde Datei: " + str(manifest_path))
+    manifest = json.loads(read(manifest_path)) if manifest_path.exists() else {}
+    require(isinstance(manifest, dict), "Ungültige globale Hash-Liste.")
+    require(not manifest_path.exists() or (manifest.get("format") == "gov-global-v1" and
+            isinstance(manifest.get("files"), dict) and isinstance(manifest.get("settings"), dict)),
+            "Fremde oder ungültige globale Hash-Liste: " + str(manifest_path))
+    previous = manifest.get("files", {})
+    settings_meta = manifest.get("settings", {})
+    blocks_meta = manifest.get('blocks', {})
+    require(isinstance(blocks_meta, dict) and all(
+        rel in ('.claude/CLAUDE.md', '.codex/AGENTS.md') and isinstance(meta, dict) and
+        isinstance(meta.get('text'), str) and isinstance(meta.get('created'), bool) and
+        isinstance(meta.get('sha256'), str) and re.fullmatch(r'[0-9a-f]{64}', meta['sha256'])
+        for rel, meta in blocks_meta.items()), 'Ungültige globale Block-Hash-Liste.')
+    require(all(not Path(rel).is_absolute() and ".." not in Path(rel).parts and
+                isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest)
+                for rel, digest in previous.items()), "Ungültige globale Hash-Liste.")
+    if uninstall and not manifest:
+        print("Keine globale Kit-Installation vorhanden.")
+        return
+    planned, modes = {}, {}
+    conflicts = []
+
+    def safe(path):
+        # Auch Symlinks in Elternordnern dürfen nicht aus dem gewählten HOME schreiben.
+        return not path.is_symlink() and all(not p.is_symlink() and (not p.exists() or p.is_dir())
+                                            for p in path.parents if p != home.parent and p.is_relative_to(home))
+
+    def digest(data):
+        return hashlib.sha256(data).hexdigest()
+
+    if not uninstall:
+        source = Path(__file__).resolve().parent
+        for name in ("gov", "govhook", "govhook-global", "githooks", "templates", "claude", "codex", "global", "skills"):
+            origin = source / name
+            require(origin.exists(), "Unvollständige Kit-Quelle: " + str(origin))
+            for src in sorted(origin.rglob("*")) if origin.is_dir() else [origin]:
+                if src.is_file() and "__pycache__" not in src.parts:
+                    dest = kit / src.relative_to(source)
+                    planned[dest] = src.read_bytes()
+                    modes[dest] = src.stat().st_mode & 0o777
+        for folder, roles in (("commands", tuple(COMMAND_ROLES)),
+                              ("agents", ("planner", "worker", "reviewer", "leser", "schreiber", "pruefer"))):
+            for role in roles:
+                planned[home / ".claude" / folder / (role + ".md")] = kit_text(
+                    read(source / "claude" / folder / (role + ".md")), kit).encode()
+        for role in COMMAND_ROLES:
+            planned[home / ".agents/skills" / role / "SKILL.md"] = kit_text(codex_skill(source, role), kit).encode()
+        for src in sorted((source / "skills").rglob("*")):
+            if src.is_file() and "__pycache__" not in src.parts:
+                for base in (".claude/skills", ".agents/skills"):
+                    dest = home / base / src.relative_to(source / "skills")
+                    planned[dest] = src.read_bytes()
+                    modes[dest] = src.stat().st_mode & 0o777
+        for src in sorted((source / "codex/agents").glob("*.toml")):
+            planned[home / ".codex/agents" / src.name] = kit_text(read(src), kit).encode()
+        rules = "\n".join(line for line in read(source / "codex/gov.rules").splitlines()
+                          if "{{TEST_PATTERN}}" not in line) + "\n"
+        planned[home / ".codex/rules/gov.rules"] = rules.encode()
+    else:
+        planned = {home / rel: None for rel in previous}
+
+    if not uninstall:
+        for rel in previous:
+            if renamed_entry(rel):
+                planned[home / rel] = None
+
+    # Alle Konflikte sammeln; keine Verzeichnisse/Backups vor dieser Prüfung anlegen.
+    for path in planned:
+        rel = path.relative_to(home).as_posix()
+        if not safe(path) or (path.exists() and (not path.is_file() or rel not in previous or
+                                                digest(path.read_bytes()) != previous[rel])):
+            conflicts.append(str(path))
+    require(safe(manifest_path), "Unsicherer Installationspfad: " + str(manifest_path))
+    settings_changes = {}
+    new_meta = copy.deepcopy(settings_meta)
+    for adapter, rel in (("claude", ".claude/settings.json"), ("codex", ".codex/hooks.json")):
+        path = home / rel
+        if not safe(path) or (path.exists() and not path.is_file()):
+            conflicts.append(str(path))
+            continue
+        original = path.read_bytes() if path.exists() else None
+        existing = json.loads(original) if original is not None else {}
+        require(isinstance(existing, dict) and isinstance(existing.get("hooks", {}), dict),
+                rel + " muss ein JSON-Objekt mit hooks-Objekt sein.")
+        if uninstall:
+            if rel not in settings_meta or original is None:
+                continue
+            meta = settings_meta[rel]
+            result = remove_global_hooks(existing, meta["added"], json.loads(meta["before"]) if meta["before"] is not None else {})
+            # Vorbestehende leere Schlüssel/Formatierung bei unverändertem Stand exakt erhalten.
+            before = meta["before"]
+            before_value = json.loads(before) if before is not None else {}
+            expected = merge_settings(before_value, {"hooks": meta["added"]})
+            content = (before.encode() if before is not None else None) if existing == expected else (
+                json.dumps(result, ensure_ascii=False, indent=2) + "\n").encode()
+        else:
+            # Eigene alte globale Matcher aus dem Installationsdelta entfernen;
+            # fremde und schon vor Installation vorhandene Hooks bleiben erhalten.
+            if rel in settings_meta:
+                meta = settings_meta[rel]
+                existing = remove_global_hooks(existing, meta["added"],
+                    json.loads(meta["before"]) if meta["before"] is not None else {})
+            addition = global_hooks(kit, adapter, source)
+            for event in addition["hooks"]:
+                require(isinstance(existing.get("hooks", {}).get(event, []), list), rel + ": ungültige Hook-Liste " + event)
+            result = merge_settings(existing, addition)
+            added = {event: [row for row in rows if row not in existing.get("hooks", {}).get(event, [])]
+                     for event, rows in addition["hooks"].items()}
+            meta = new_meta.setdefault(rel, {"before": original.decode() if original is not None else None, "added": {}})
+            meta["added"] = added
+            content = (json.dumps(result, ensure_ascii=False, indent=2) + "\n").encode()
+        if original != content:
+            settings_changes[path] = content
+    # Gemischte Regeldateien gehören dem Nutzer; nur der markierte Block gehört dem Kit.
+    block_changes, new_blocks = {}, {}
+    for rel in ('.claude/CLAUDE.md', '.codex/AGENTS.md'):
+        path = home / rel
+        if not safe(path) or (path.exists() and not path.is_file()):
+            conflicts.append(str(path))
+            continue
+        original = path.read_bytes() if path.exists() else None
+        text = original.decode() if original is not None else ''
+        meta = blocks_meta.get(rel)
+        if meta:
+            owned = meta['text']
+            if digest(owned.encode()) != meta['sha256'] or text.count(owned) != 1:
+                conflicts.append(str(path) + ': Standardblock verändert')
+                continue
+            text = text.replace(owned, '', 1)
+        if '<!-- gov:standards -->' in text or '<!-- /gov:standards -->' in text:
+            conflicts.append(str(path) + ': fremder Standardblock')
+            continue
+        if not uninstall:
+            block = ('\n' if text and not text.endswith('\n') else '') + '<!-- gov:standards -->\n' + read(source / 'global/REGELN.md') + '<!-- /gov:standards -->\n'
+            new_blocks[rel] = {'text': block, 'sha256': digest(block.encode()),
+                               'created': meta['created'] if meta else original is None}
+            text += block
+        content = text.encode()
+        if uninstall and meta and meta['created'] and not text:
+            content = None
+        if original != content and (not uninstall or meta):
+            block_changes[path] = content
+    require(not conflicts, "Fremde oder veränderte Dateien; nichts installiert/geändert:\n" + "\n".join(conflicts))
+    changes = {p: data for p, data in planned.items() if (p.read_bytes() if p.exists() else None) != data}
+    changes.update(settings_changes)
+    changes.update(block_changes)
+    if uninstall:
+        changes[manifest_path] = None
+    else:
+        value = {"format": "gov-global-v1", "files": {p.relative_to(home).as_posix(): digest(data) for p, data in planned.items() if data is not None},
+                 "settings": new_meta, 'blocks': new_blocks}
+        content = (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
+        if not manifest_path.exists() or manifest_path.read_bytes() != content:
+            changes[manifest_path] = content
+    # Sicherung unmittelbar vor Änderungen; eigene Dateien sind zusätzlich per Hash belegt.
+    if settings_changes or block_changes:
+        backup = kit / "sicherung" / dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        require(safe(backup), "Unsicherer Sicherungspfad: " + str(backup))
+        for path in {*settings_changes, *block_changes}:
+            if path.exists():
+                target = backup / path.relative_to(home)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+    before = {p: (p.read_bytes(), p.stat().st_mode & 0o777) if p.exists() else None for p in changes}
+    created_dirs = set()
+    try:
+        for path, data in changes.items():
+            if data is None:
+                path.unlink(missing_ok=True)
+            else:
+                created_dirs.update(p for p in path.parents if not p.exists())
+                atomic(path, data.decode())
+                path.chmod(modes.get(path, before[path][1] if before[path] else 0o644))
+    except OSError:
+        for path, old in before.items():
+            if old is None:
+                path.unlink(missing_ok=True)
+            else:
+                atomic(path, old[0].decode())
+                path.chmod(old[1])
+        for folder in sorted(created_dirs, key=lambda p: len(p.parts), reverse=True):
+            if folder.exists() and not any(folder.iterdir()):
+                folder.rmdir()
+        raise
+    if uninstall:
+        # Nur leere Installationsordner entfernen; Sicherungen und fremde Dateien bleiben.
+        folders = {p for target in planned for p in target.parents if p != home and p.is_relative_to(home)}
+        for folder in sorted(folders, key=lambda p: len(p.parts), reverse=True):
+            if folder.is_dir() and not any(folder.iterdir()):
+                folder.rmdir()
+    print("Globales Kit " + ("deinstalliert: " if uninstall else "installiert: ") + str(kit))
+
+
+def install_agents(project, kit, models_only=False, project_hooks=False, update=False):
+    """Plant alle Dateien vor dem Schreiben; liefert eigene Commit-Pfade.
+
+    Eigene gleichnamige Dateien werden nie überschrieben. Die Hash-Liste ist
+    ausschließlich Installationsbesitz, keine Laufzeit-/Hook-Lebenszeichenprüfung.
+    Bei update nur den Änderungsplan liefern; eigene Änderungen melden/überspringen.
+    """
+    project, kit = Path(project), Path(kit)
+    # Bereits lokal installierte Modelle weiter lokal pflegen, auch nach globaler Installation.
+    use_global = globally_installed() and not project_hooks and not (
+        models_only and (project / ".claude/commands/vision.md").exists())
+    # Dateiname aus Phase 2 bleibt kompatibel; Besitzliste umfasst nun beide Adapter.
+    manifest_path = project / ".gov/claude-files.json"
+    manifest = json.loads(read(manifest_path)) if manifest_path.exists() else {}
+    models = json.loads(read(project / ".gov/models.json"))
+    pending = {}
+    managed = dict(manifest)
+    retired = []
+
+    def digest(content):
+        return hashlib.sha256(content.encode()).hexdigest()
+
+    def owned(dest, content):
+        relative = dest.relative_to(project).as_posix()
+        if update and relative != ".gov/govhook" and dest.exists() and (
+                relative not in manifest or digest(read(dest)) != manifest[relative]):
+            print("Eigene oder veränderte Datei bleibt erhalten: " + relative, file=sys.stderr)
+            return
+        if dest.exists():
+            require((update and relative == ".gov/govhook") or
+                    (relative in manifest and digest(read(dest)) == manifest[relative]),
+                    "Eigene oder veränderte Datei wird nicht überschrieben: " + relative +
+                    ". Bitte umbenennen oder vor der Installation selbst abgleichen.")
+        managed[relative] = digest(content)
+        if not dest.exists() or read(dest) != content:
+            pending[dest] = content
+
+    for relative, expected in manifest.items():
+        if renamed_entry(relative) or (update and use_global and relative.startswith(
+                (".claude/commands/", ".claude/agents/", ".agents/skills/", ".codex/agents/"))):
+            dest = project / relative
+            if update and dest.exists() and digest(read(dest)) != expected:
+                print("Eigene oder veränderte Datei bleibt erhalten: " + relative, file=sys.stderr)
+                continue
+            require(not dest.is_symlink() and (not dest.exists() or digest(read(dest)) == expected),
+                    "Eigene oder veränderte Datei wird nicht überschrieben: " + relative)
+            require(dest.resolve().is_relative_to(project.resolve()), "Unsicherer Installationspfad.")
+            if dest.exists():
+                retired.append(dest)
+            managed.pop(relative, None)
+
+    # Erst Eigentum aller Ziele prüfen, dann schreiben (kein halber Agentensatz).
+    for folder, roles in (("commands", tuple(COMMAND_ROLES)), ("agents", ("planner", "worker", "reviewer", "leser", "schreiber", "pruefer"))):
+        for role in (() if use_global else roles):
+            dest = project / ".claude" / folder / (role + ".md")
+            source = kit / "claude" / folder / (role + ".md")
+            content = read(dest) if models_only and dest.exists() else kit_text(read(source), project / ".gov")
+            content, count = re.subn(r"(?m)^model: .*?$", "model: " + claude_model(models, COMMAND_ROLES.get(role, role)), content, count=1)
+            require(count == 1, "Modellzeile fehlt: " + str(source))
+            owned(dest, content)
+    for role in (() if use_global else COMMAND_ROLES):
+        owned(project / ".agents/skills" / role / "SKILL.md", kit_text(codex_skill(kit, role), project / ".gov"))
+    for role in (() if use_global else ("planner", "planner_fein", "worker", "worker_mechanisch", "reviewer", "leser", "schreiber", "pruefer")):
+        owned(project / ".codex/agents" / (role + ".toml"), kit_text(codex_agent(kit, role, models), project / ".gov"))
+    if not models_only:
+        owned(project / ".gov/govhook", read(kit / "govhook"))
+        # Installierte Distribution bleibt für erneutes gov init vollständig.
+        for adapter in ("claude", "codex"):
+            for source in sorted((kit / adapter).rglob("*")):
+                if source.is_file():
+                    owned(project / ".gov" / adapter / source.relative_to(kit / adapter), read(source))
+        config = json.loads(read(project / ".gov/config.json"))
+        fragment = json.loads(read(kit / "claude/settings.fragment.json"))
+        fragment["permissions"]["allow"] = [x.replace("{{TEST_COMMAND}}", config["test_cmd"])
+                                               for x in fragment["permissions"]["allow"]]
+        if use_global:
+            fragment.pop("hooks", None)
+        settings = project / ".claude/settings.json"
+        existing = json.loads(read(settings)) if settings.exists() else {}
+        require(isinstance(existing, dict), ".claude/settings.json muss ein JSON-Objekt sein.")
+        if update and use_global:
+            existing = remove_project_hooks(existing, kit, "claude")
+        merged = json.dumps(merge_settings(retire_matcher(existing), fragment), ensure_ascii=False, indent=2) + "\n"
+        if not settings.exists() or read(settings) != merged:
+            pending[settings] = merged
+        hooks = project / ".codex/hooks.json"
+        # Wie Claude: fremde Hook-Einträge erhalten, eigene Einträge nur einmal ergänzen.
+        existing = json.loads(read(hooks)) if hooks.exists() else {}
+        require(isinstance(existing, dict), ".codex/hooks.json muss ein JSON-Objekt sein.")
+        if update and use_global and hooks.exists():
+            cleaned = remove_project_hooks(existing, kit, "codex")
+            if cleaned != existing:
+                pending[hooks] = json.dumps(cleaned, ensure_ascii=False, indent=2) + "\n"
+        merged = json.dumps(merge_settings(existing, json.loads(read(kit / "codex/hooks.json"))),
+                            ensure_ascii=False, indent=2) + "\n"
+        if not use_global and (not hooks.exists() or read(hooks) != merged):
+            pending[hooks] = merged
+        rules = read(kit / "codex/gov.rules").replace(
+            "{{TEST_PATTERN}}", json.dumps(shlex.split(config["test_cmd"]), ensure_ascii=False))
+        owned(project / ".codex/rules/gov.rules", rules)
+        for adapter, filename in (("claude", "CLAUDE.md"), ("codex", "AGENTS.md")):
+            snippet = read(kit / adapter / filename.replace(".md", ".snippet.md"))
+            target = project / filename
+            previous = read(target) if target.exists() else ""
+            if "<!-- project-governance-kit:start -->" not in previous:
+                pending[target] = previous + ("\n\n" if previous else "") + snippet
+            else:
+                def rename_snippet(match):
+                    value = match[0]
+                    for name, role in COMMAND_ROLES.items():
+                        value = value.replace("/" + role, "/" + name)
+                    return value
+                updated = re.sub(r"<!-- project-governance-kit:start -->.*?<!-- project-governance-kit:end -->",
+                                 rename_snippet, previous, flags=re.S)
+                if updated != previous:
+                    pending[target] = updated
+    manifest_text = json.dumps(managed, ensure_ascii=False, indent=2) + "\n"
+    if not manifest_path.exists() or read(manifest_path) != manifest_text:
+        pending[manifest_path] = manifest_text
+    if update:
+        return {**pending, **{path: None for path in retired}}
+    for path, content in pending.items():
+        atomic(path, content)
+    for path in retired:
+        path.unlink()
+    if not models_only:
+        (project / ".gov/govhook").chmod(0o755)
+    return list(pending) + retired
+
+
+def remove_project_hooks(settings, kit, adapter):
+    """Erkennbare Kit-Kommandos auch aus gemischten Hook-Zeilen entfernen."""
+    filename = "claude/settings.fragment.json" if adapter == "claude" else "codex/hooks.json"
+    own = json.loads(read(kit / filename))["hooks"]
+    result = copy.deepcopy(settings)
+    for event, rows in list(result.get("hooks", {}).items()):
+        commands = {hook["command"] for row in own.get(event, []) for hook in row["hooks"]}
+        kept = []
+        for row in rows:
+            hooks = [hook for hook in row.get("hooks", []) if hook.get("command") not in commands]
+            if hooks == row.get("hooks", []):
+                kept.append(row)
+            elif hooks:
+                kept.append({**row, "hooks": hooks})
+        if kept or not rows:
+            result["hooks"][event] = kept
+        else:
+            del result["hooks"][event]
+    if result.get("hooks") == {} and settings.get("hooks"):
+        del result["hooks"]
+    return result
+
+
+def update_project():
+    source = Path(__file__).resolve().parent
+    gov = Gov()
+    require((gov.main / ".gov/config.json").is_file() and (gov.home / "state.json").is_file(),
+            "Projekt ist nicht eingerichtet; zuerst gov init.")
+    require(gov.root == gov.main, "Update nur in der Hauptarbeitskopie.")
+    with gov.locked(persist=False):
+        gov.main_ready()
+        require(not gov.git("status", "--porcelain", "--untracked-files=all", cwd=gov.main).strip(),
+                "Hauptarbeitskopie ist nicht sauber.")
+        # Vor Planung/Schreiben keine Symlinks in Installationszielen verfolgen.
+        for name in (".gov", ".claude", ".codex", ".agents"):
+            root = gov.main / name
+            require(not root.is_symlink() and not any(p.is_symlink() for p in root.rglob("*")),
+                    "Unsicherer Installationspfad: " + str(root))
+        manifest = json.loads(read(gov.main / ".gov/claude-files.json"))
+        require(isinstance(manifest, dict) and all(
+            not Path(rel).is_absolute() and ".." not in Path(rel).parts and
+            rel.startswith((".gov/", ".claude/", ".codex/", ".agents/"))
+            for rel in manifest), "Ungültige Projekt-Hash-Liste.")
+        pending, modes = {}, {}
+        for name in ("gov", "govhook", "templates", "githooks", "global"):
+            origin = source / name
+            require(origin.exists(), "Unvollständige Kit-Quelle: " + str(origin))
+            for src in sorted(origin.rglob("*")) if origin.is_dir() else [origin]:
+                if src.is_file():
+                    dest = gov.main / ".gov" / src.relative_to(source)
+                    pending[dest] = read(src)
+                    modes[dest] = src.stat().st_mode & 0o777
+            if origin.is_dir():
+                for dest in (gov.main / ".gov" / name).rglob("*"):
+                    if dest.is_file() and dest not in pending:
+                        pending[dest] = None
+        for name in HOOKS:
+            dest = gov.common / "gov-hooks" / name
+            require(not dest.is_symlink() and not dest.parent.is_symlink(), "Unsicherer Hook-Pfad: " + str(dest))
+            pending[dest] = read(source / "githooks" / name)
+            modes[dest] = 0o755
+        pending.update(install_agents(gov.main, source, update=True))
+        changed = []
+        for path, content in pending.items():
+            mode = modes.get(path, path.stat().st_mode & 0o777 if path.exists() else 0o644)
+            if content is None:
+                path.unlink(missing_ok=True)
+            elif not path.exists() or read(path) != content or path.stat().st_mode & 0o777 != mode:
+                atomic(path, content)
+                path.chmod(mode)
+            else:
+                continue
+            if path.is_relative_to(gov.main) and not path.is_relative_to(gov.common):
+                changed.append(path)
+        hooks = gov.common / "gov-hooks"
+        if gov.git("config", "--get", "core.hooksPath", check=False).strip() != str(hooks):
+            gov.git("config", "core.hooksPath", hooks)
+        if changed:
+            gov.commit("gov", "Governance-Kit aktualisiert", cwd=gov.main, paths=changed, persist=False)
+        print("Governance-Kit aktuell: " + str(gov.main))
+
+
+def initialize(args):
+    source = Path(__file__).resolve().parent
+    cwd = Path.cwd().resolve()
+    # Schutz des Distributions-Repos, ohne globale Governance wieder zu aktivieren.
+    require(not (cwd / "KONZEPT.md").exists() or not (cwd / "Auftrag.md").exists(),
+            "Gates werden nicht im Kit-Repo installiert. Zielprojekt verwenden.")
+    if run(["git", "rev-parse", "--show-toplevel"], env=clean_env(), check=False).returncode:
+        run(["git", "init", "-b", "main"], env=clean_env())
+    gov = Gov()
+    require(not ((gov.main / "KONZEPT.md").exists() and (gov.main / "Auftrag.md").exists()),
+            "Gates werden nicht im Kit-Repo installiert. Zielprojekt verwenden.")
+    gov.check_spelling()
+    with gov.locked():
+        require(gov.root == gov.main, "Installation nur in der Hauptarbeitskopie.")
+        if not (gov.home / "state.json").exists() and not (gov.main / ".gov/register.json").exists():
+            # Vor allen Kit-Dateien und Kit-Commits messen; erneutes init öffnet nie wieder.
+            gov.state["bestand_offen"] = bool(
+                gov.result("rev-parse", "--verify", "HEAD").returncode == 0 or
+                any(p.is_file() or p.is_symlink() for p in gov.main.rglob("*")
+                    if ".git" not in p.relative_to(gov.main).parts))
+        if not (gov.main / ".gov/config.json").exists():
+            gov.branch = gov.git("branch", "--show-current", cwd=gov.main).strip()
+            require(gov.branch, "Installation benötigt einen ausgecheckten Hauptzweig.")
+        gov.main_ready()
+        files = []
+        for directory in ("features", "decisions", "journal", ".gov", ".gov/templates", ".gov/githooks"):
+            (gov.main / directory).mkdir(parents=True, exist_ok=True)
+        for src in [source / "gov", *sorted((source / "templates").glob("*")), *sorted((source / "githooks").glob("*")), *sorted((source / 'global').glob('*'))]:
+            relative = Path("gov") if src.name == "gov" else src.relative_to(source)
+            dest = gov.main / ".gov" / relative
+            if not dest.exists():
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dest)
+                files.append(dest)
+        (gov.main / ".gov/gov").chmod(0o755)
+        for name in ("config.json", "models.json"):
+            dest = gov.main / ".gov" / name
+            if not dest.exists():
+                shutil.copy2(source / "templates" / name, dest)
+                files.append(dest)
+                if name == "config.json":
+                    data = json.loads(read(dest))
+                    data["main_branch"] = gov.branch
+                    if args.test_cmd:
+                        data["test_cmd"] = args.test_cmd
+                    json_write(dest, data)
+        gov.config = json.loads(read(gov.main / ".gov/config.json"))
+        gov.branch = gov.config["main_branch"]
+        ignore = gov.main / ".gitignore"
+        old = read(ignore) if ignore.exists() else ""
+        if ".worktrees/" not in old.splitlines():
+            atomic(ignore, old + ("\n" if old and not old.endswith("\n") else "") + ".worktrees/\n")
+            files.append(ignore)
+        roadmap = gov.main / "roadmap.md"
+        if not roadmap.exists():
+            atomic(roadmap, gov.template("roadmap.md"))
+            files.append(roadmap)
+        hooks = gov.common / "gov-hooks"
+        hooks.mkdir(exist_ok=True)
+        for name in HOOKS:
+            shutil.copy2(source / "githooks" / name, hooks / name)
+            (hooks / name).chmod(0o755)
+        gov.git("config", "core.hooksPath", hooks)
+        gov.save()
+        if files:
+            gov.commit("gov", "Governance-Kit eingerichtet", paths=files, operation="init")
+        product = []
+        for name in ("START.md", "vision.md"):
+            dest = gov.main / name
+            if not dest.exists():
+                atomic(dest, gov.template(name, projekt=gov.main.name))
+                product.append(dest)
+        if product:
+            gov.commit("produkt", "Projekteinstieg angelegt", paths=product)
+        agent_files = install_agents(gov.main, source, project_hooks=getattr(args, "project_hooks", False))
+        if agent_files:
+            gov.commit("gov", "Claude-/Codex-Dateien eingerichtet", paths=agent_files, operation="init")
+        if not args.no_github and not gov.git("remote").strip() and shutil.which("gh"):
+            if run(["gh", "auth", "status"], env=clean_env(), check=False).returncode == 0:
+                with gov.token(gov.main, "gov", operation="push", main=True) as env:
+                    run(["gh", "repo", "create", "--private", "--source", ".", "--push"], cwd=gov.main, env={**clean_env(), **env})
+        elif not args.no_github and gov.git("remote").strip():
+            # Erneutes init holt einen abgebrochenen Erst-Push nach.
+            remotes = gov.git("remote").splitlines()
+            remote = "origin" if "origin" in remotes else remotes[0]
+            if not gov.git("ls-remote", "--heads", remote, gov.branch).strip():
+                with gov.token(gov.main, "gov", operation="push", main=True) as env:
+                    gov.git("push", "-u", remote, gov.branch, env=env)
+        print("Governance-Kit eingerichtet: " + str(gov.main))
+
+
+# Umbau ist absichtlich vor Gov()/locked() geroutet: auch ohne Git und .gov nutzbar.
+MIGRATION_CLASSES = {'Code', 'Fachdoku', 'Beleg', 'Wissen alt', 'Governance alt', 'Streugut', 'Nicht anfassen'}
+MIGRATION_ARCHIVE = 'archiv/governance-alt/'
+
+
+def graph_debris(path):
+    return 'graphify-out' in Path(path).parts
+
+
+def secret_path(path):
+    return any(part.lower().startswith('.env') or part.lower().endswith(('.pem', '.key')) or
+               'credentials' in part.lower() or 'secret' in part.lower() or
+               part.lower() in ('settings.local.json', '.mcp.json') for part in Path(path).parts)
+
+
+@contextlib.contextmanager
+def working_directory(path):
+    before = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(before)
+
+
+class Migrate:
+    def __init__(self, root=None):
+        self.root = Path(root or Path.cwd()).resolve()
+        found = self.git('rev-parse', '--show-toplevel', check=False)
+        if found.returncode == 0:
+            self.root = Path(found.stdout.strip()).resolve()
+        self.folder = self.root / '_umbau'
+        self.kit = Path(__file__).resolve().parent
+
+    def git(self, *args, check=True, cwd=None, env=None, data=None, gates=False):
+        return run(['git', *([] if gates else ['-c', 'core.hooksPath=/dev/null']), *map(str, args)],
+                   cwd=cwd or self.root, env={**clean_env(), **(env or {})}, check=check, data=data)
+
+    def output(self, *args):
+        return self.git(*args).stdout.strip()
+
+    def document(self, name):
+        return json.loads(read(self.folder / name))
+
+    def safe(self, name):
+        p = Path(name)
+        require(isinstance(name, str) and name and not p.is_absolute() and
+                '..' not in p.parts and '.git' not in p.parts and
+                (self.root / p).resolve().is_relative_to(self.root), 'Unsicherer Pfad: ' + str(name))
+        require(not any((self.root / Path(*p.parts[:n])).is_symlink()
+                        for n in range(1, len(p.parts))), 'Symlink im Elternpfad: ' + name)
+        return self.root / p
+
+    def files(self, root=None):
+        root = Path(root or self.root)
+        found = []
+        for base, dirs, names in os.walk(root, followlinks=False):
+            dirs[:] = sorted(d for d in dirs if d not in ('.git', '.worktrees', 'graphify-out') and
+                              not (Path(base) / d).is_symlink())
+            for name in sorted(names):
+                relative = (Path(base) / name).relative_to(root).as_posix()
+                if not graph_debris(relative):
+                    found.append(relative)
+        return found
+
+    def tracked(self, ref=None):
+        if ref:
+            rows = self.git('ls-tree', '-rz', ref).stdout.split('\0')
+            return {row.split('\t', 1)[1]: row.split('\t', 1)[0].split()[2]
+                    for row in rows if row and not graph_debris(row.split('\t', 1)[1])}
+        return [p for p in self.git('ls-files', '-z').stdout.split('\0') if p and not graph_debris(p)]
+
+    @staticmethod
+    def legacy(path):
+        p = Path(path)
+        low = path.casefold()
+        return (p.name.casefold() in {'status.md', 'roadmap.md', 'decisions.md', 'decisions.json',
+                                     'vision.md', 'worklog.md', 'agents.md', 'claude.md', 'state.md'} or
+                any(x.casefold() in ('.governance', 'funktionen', 'wissen', 'knowledge') for x in p.parts) or
+                bool(re.search(r'governance|(?:check|pruef)[-_].*(?:gov|rules)|skills/', low)))
+
+    @staticmethod
+    def old_reference(text):
+        return bool(re.search(r'(?i)\.governance\b|project[- ]governance|governance[-_/]|check[-_]governance|check[-_]rules|(?:^|[ /])(?:funktionen|wissen)/|\bai:(?:checkpoint|handoff)\b', text))
+
+    def old_automation(self, path):
+        if secret_path(path) or not (path.startswith(('.github/workflows/', '.claude/skills/', '.agents/skills/')) or
+                                     path in ('.claude/settings.json', '.codex/hooks.json')):
+            return False
+        source = self.root / path
+        if not source.is_file() or source.is_symlink():
+            return False
+        content = read(source)
+        if path in ('.claude/settings.json', '.codex/hooks.json'):
+            content = json.dumps(json.loads(content).get('hooks', {}))
+        return self.old_reference(path + '\n' + content)
+
+    @staticmethod
+    def without_old_hooks(data):
+        result = copy.deepcopy(data)
+        for event, groups in result.get('hooks', {}).items():
+            kept = []
+            for group in groups:
+                if 'hooks' not in group:
+                    kept.append(group)
+                    continue
+                group['hooks'] = [hook for hook in group['hooks']
+                                  if not Migrate.old_reference(hook.get('command', ''))]
+                if group['hooks']:
+                    kept.append(group)
+            result['hooks'][event] = kept
+        return result
+
+    def scan(self):
+        paths = [p for p in self.files() if not p.startswith('_umbau/')]
+        git_root = self.git('rev-parse', '--show-toplevel', check=False)
+        is_git = git_root.returncode == 0
+        repos, retained_repos = [], []
+        worktrees = {line[9:] for line in self.output('worktree', 'list', '--porcelain').splitlines()
+                     if line.startswith('worktree ')} if is_git else set()
+        swift_checkouts = set()
+        lock = self.root / 'Package.resolved'
+        if is_git and lock.is_file() and not lock.is_symlink() and (self.root / 'Package.swift').is_file():
+            try:
+                pins = json.loads(read(lock)).get('pins', [])
+                swift_checkouts = {str(self.root / '.build/checkouts' / pin['identity']) for pin in pins
+                                   if isinstance(pin.get('identity'), str) and
+                                   re.fullmatch(r'[A-Za-z0-9_.-]+', pin['identity'])}
+            except (ValueError, KeyError, TypeError):
+                pass  # Unbekannte Lockformate befreien kein Unter-Repo von B1.
+        for base, dirs, names in os.walk(self.root, followlinks=False):
+            dirs[:] = sorted(d for d in dirs if d not in ('.worktrees', '_umbau', 'graphify-out') and
+                              not (Path(base) / d).is_symlink())
+            if '.git' in dirs or '.git' in names:
+                location = Path(base)
+                if location != self.root:
+                    remote = self.git('remote', '-v', cwd=location, check=False)
+                    repo = {'pfad': str(location), 'remote': remote.stdout.splitlines()}
+                    if str(location) in worktrees:
+                        repo['grund'] = 'Registrierte Git-Arbeitskopie; bleibt unberührt.'
+                        retained_repos.append(repo)
+                        dirs[:] = []
+                        continue
+                    ignored = is_git and self.git('check-ignore', '-q', '--', str(location), check=False).returncode == 0
+                    if ignored and str(location) in swift_checkouts:
+                        repo['grund'] = 'Ignorierte SwiftPM-Abhängigkeit aus Package.resolved; bleibt unberührt.'
+                        retained_repos.append(repo)
+                        dirs[:] = []
+                        continue
+                    repos.append(repo)
+                dirs[:] = [d for d in dirs if d != '.git']
+        tracked = self.tracked() if is_git else []
+        branches = self.output('for-each-ref', '--format=%(refname:short)', 'refs/heads').splitlines() if is_git else []
+        remote_head = self.git('symbolic-ref', '--short', 'refs/remotes/origin/HEAD', check=False) if is_git else None
+        main = (remote_head.stdout.strip().removeprefix('origin/') if remote_head and not remote_head.returncode
+                else 'main' if 'main' in branches else 'master' if 'master' in branches else None)
+        active = self.output('branch', '--show-current') if is_git else None
+        comparisons = {}
+        for branch in branches:
+            if main:
+                counts = self.output('rev-list', '--left-right', '--count', main + '...' + branch).split()
+                comparisons[branch] = {'ahead': int(counts[1]), 'behind': int(counts[0])}
+            else:
+                comparisons[branch] = 'unbekannt'
+        changed = self.git('status', '--porcelain=v1', '-z').stdout.split('\0') if is_git else []
+        changed = [p for p in changed if p and not p[3:].startswith('_umbau/') and not graph_debris(p[3:])]
+        folded = {}
+        for p in set(paths + tracked):
+            folded.setdefault(p.casefold(), []).append(p)
+        collisions = [v for v in folded.values() if len(v) > 1]
+        collisions += [[p, wanted] for p in tracked for wanted in ('START.md', 'vision.md', 'roadmap.md')
+                       if p.casefold() == wanted.casefold() and p != wanted]
+        candidates, technology = [], []
+        for marker, tech, cmd in [('package.json', 'Node', 'npm test'), ('pyproject.toml', 'Python', 'python3 -m pytest'),
+                                  ('Package.swift', 'Swift', 'swift test'), ('Cargo.toml', 'Rust', 'cargo test'),
+                                  ('go.mod', 'Go', 'go test ./...'), ('Makefile', 'Make', 'make test')]:
+            if marker in paths:
+                technology.append(tech)
+                candidates.append(cmd)
+        if any(p.endswith('.py') for p in paths):
+            technology.append('Python')
+        if any(p.startswith('tests/') for p in paths):
+            candidates.append('python3 -m unittest discover -s tests')
+        hooks = self.git('config', '--get', 'core.hooksPath', check=False, gates=True).stdout.strip() if is_git else ''
+        hook_names = []
+        if is_git:
+            common = Path(self.output('rev-parse', '--git-common-dir'))
+            common = (self.root / common).resolve()
+            hook_names = [str(p) for p in (common / 'hooks').glob('*') if not p.name.endswith('.sample')]
+        remote_repos = [r for r in repos if r['remote']]
+        ahead = [b for b, c in comparisons.items() if isinstance(c, dict) and c['ahead']]
+        blockers = [
+            ('B1', not is_git and bool(repos), 'Repo mit Remote als Wurzel; externe Pfade kopieren.', len(remote_repos) != 1),
+            ('B2', not is_git and not repos, 'git init und Erstcommit; privates Remote durch Session.', False),
+            ('B3', bool(changed), 'umbau-sicherung/<datum>; ohne Geheimnisse sichern und Ausgangsstand wiederherstellen.', False),
+            ('B4', bool(ahead), 'Aktiven Zweig nur nach grünen Tests zusammenführen.', len(ahead) > 1),
+            ('B5', True, 'Testbasis messen; rot/fehlend als offene Roadmap-Punkte, grünen Teil oder Build verwenden.', False)]
+        result = {'git_wurzel': str(self.root) if is_git else None, 'verschachtelte_repos': repos,
+                  'erhaltene_repos': retained_repos,
+                  'code_ausserhalb_git': [p for p in paths if p not in tracked and Path(p).suffix in
+                                         ('.py', '.js', '.ts', '.tsx', '.swift', '.rs', '.go', '.sql', '.sh') and
+                                         not any((self.root / p).is_relative_to(r['pfad']) for r in repos)],
+                  'zweige': comparisons, 'hauptzweig': main, 'aktiv': active,
+                  'arbeitskopien': self.output('worktree', 'list', '--porcelain') if is_git else '',
+                  'offene_aenderungen': changed, 'governance_spuren': [p for p in paths if self.legacy(p) or self.old_automation(p)],
+                  'core_hooksPath': hooks, 'alte_hooks': hook_names, 'schreibweise_kollisionen': collisions,
+                  'technik': sorted(set(technology)) or ['unbekannt'], 'test_kandidaten': sorted(set(candidates)),
+                  'testzustand': 'unbekannt', 'groesse_bytes': sum((self.root / p).lstat().st_size for p in paths),
+                  'geheimnis_pfade': [p for p in paths if secret_path(p)],
+                  'unbekannt': ([] if main or not is_git else ['Hauptzweig unbekannt']) +
+                               (['Testbefehl unbekannt'] if not candidates else []),
+                  'blocker': {key: {'aktiv': bool(on), 'standardregel': rule, 'frage_noetig': bool(on and question)}
+                              for key, on, rule, question in blockers}}
+        # Nur dieser Bericht wird geschrieben; kein Git-Zustand oder Projektinhalt verändert.
+        json_write(self.folder / 'befund.json', result)
+        print('Git-Wurzel: ' + str(result['git_wurzel'] or 'keine') + '; Dateien: ' + str(len(paths)) +
+              '; Repos: ' + str(len(repos)) + '; Geheimnis-Pfade: ' + str(len(result['geheimnis_pfade'])))
+        print('Blocker: ' + ', '.join(k + (' (Frage nötig)' if v['frage_noetig'] else '')
+                                    for k, v in result['blocker'].items() if v['aktiv']))
+        return result
+
+    def config(self):
+        cfg = self.document('config.json')
+        require(isinstance(cfg.get('test_cmd'), str) and cfg['test_cmd'].strip(), 'B5: test_cmd fehlt; grünen Teil/Build bestimmen.')
+        dirs = cfg.get('tests_dir')
+        require(isinstance(dirs, (str, list)) and bool(dirs), 'B5: tests_dir fehlt.')
+        for p in ([dirs] if isinstance(dirs, str) else dirs):
+            self.safe(p)
+        return cfg
+
+    def commit(self, message):
+        paths = sorted(set(self.tracked()) | {p for p in self.files() if p.startswith('_umbau/')})
+        require(not any(secret_path(p) for p in paths), 'Geheimnis-Datei darf nicht versioniert werden.')
+        if paths:
+            self.git('add', '-A', '--', *paths)
+        if self.git('diff', '--cached', '--quiet', check=False).returncode:
+            self.git('commit', '-m', message)
+
+    def execute(self, command, cwd):
+        start = time.monotonic()
+        if not command:
+            return {'befehl': None, 'exit': None, 'zeit': 0, 'zustand': 'fehlend'}
+        # Annahme: Die Session hat diesen lokalen Projektbefehl bewusst ausgewählt.
+        p = subprocess.run(command, shell=True, cwd=cwd, env=clean_env(),
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return {'befehl': command, 'exit': p.returncode, 'zeit': round(time.monotonic() - start, 3)}
+
+    @contextlib.contextmanager
+    def tag_copy(self, ref):
+        with tempfile.TemporaryDirectory(prefix='gov Umbau Testbasis ') as folder:
+            dest = Path(folder) / 'projekt'
+            commit = self.output('rev-parse', ref + '^{commit}')
+            # Kein clone: Ein Ref wie „main 2“ erscheint dort als Null-Objekt und bricht ihn ab.
+            refs = self.output('for-each-ref', '--format=+%(refname):refs/quelle/%(refname:lstrip=2)', 'refs/heads')
+            tags = self.output('for-each-ref', '--format=+%(refname):%(refname)', 'refs/tags')
+            self.git('init', '--quiet', str(dest))
+            self.git('fetch', '--quiet', '--no-tags', '--stdin', str(self.root), cwd=dest, data=refs + '\n' + tags + '\n')
+            self.git('checkout', '--quiet', '--detach', commit, cwd=dest)
+            yield dest
+
+    def checkout_main(self, main):
+        # Ohne core.ignorecase hält Git auf Mac-Dateisystemen vision.md für eine fremde VISION.md.
+        if (self.root / '.GIT').exists():
+            self.git('config', '--local', 'core.ignorecase', 'true')
+        self.git('checkout', main)
+
+    def start(self, args):
+        origin = self.root
+        require(not ((self.root / 'KONZEPT.md').exists() and (self.root / 'Auftrag.md').exists()),
+                'Kein Umbau im Kit-Repo.')
+        scan = self.scan()
+        if not scan['git_wurzel'] and not args.wurzel:
+            remotes = [r for r in scan['verschachtelte_repos'] if r['remote']]
+            if len(remotes) == 1:
+                args.wurzel = Path(remotes[0]['pfad'])
+        if args.wurzel:
+            selected = args.wurzel.resolve()
+            require(selected.is_dir(), 'Gewählte Wurzel fehlt.')
+            other = Migrate(selected)
+            require(other.root == selected and other.git('rev-parse', '--git-dir', check=False).returncode == 0,
+                    '--wurzel muss eine Git-Wurzel sein.')
+            if selected != origin and self.folder.exists():
+                for name in self.files(self.folder):
+                    dest = selected / '_umbau' / name
+                    require(not secret_path(name), 'Geheimnis im Umbau-Eingabeordner.')
+                    require(not dest.exists() or name == 'befund.json' or
+                            self.digest(dest) == self.digest(self.folder / name), 'Abweichende Umbau-Eingabe am Ziel: ' + name)
+                shutil.copytree(self.folder, selected / '_umbau', dirs_exist_ok=True)
+            self.root, self.folder = selected, selected / '_umbau'
+            scan = self.scan()
+        require(not scan['verschachtelte_repos'], 'B1: Verschachtelte Repos: --wurzel wählen; Repos nicht verschachtelt übernehmen.')
+        require(not (self.root / '.gov/register.json').exists(), 'Projekt besitzt bereits das Kit.')
+        require(not (self.folder / 'zustand.json').exists(), 'Umbau bereits gestartet.')
+        copied = []
+        for source in args.zuziehen:
+            source = source.resolve()
+            require(source.exists() and not source.is_relative_to(self.root) and not self.root.is_relative_to(source),
+                    '--zuziehen benötigt einen externen, getrennten Pfad.')
+            dest = self.root / source.name
+            require(not dest.exists(), 'Kopierziel existiert: ' + str(dest))
+            require(not source.is_symlink() and not secret_path(source.name), 'Geheimnis-/Symlink-Pfad nicht zuziehen.')
+            members = self.files(source) if source.is_dir() else []
+            require(not any(secret_path(p) or (source / p).is_symlink() for p in members),
+                    'Zuziehen enthält Geheimnisse oder Symlinks; Pfade enger wählen.')
+            require(not (source / '.git').exists(), 'Repo nicht als Code kopieren.')
+            shutil.copytree(source, dest) if source.is_dir() else shutil.copy2(source, dest)
+            copied.append(dest.name)
+        if not scan['git_wurzel']:
+            self.git('init', '-b', 'main')
+            paths = [p for p in self.files() if not secret_path(p) and not p.startswith('_umbau/')]
+            if paths:
+                self.git('add', '--', *paths)
+            self.git('commit', '--allow-empty', '-m', 'Ausgangsstand vor Governance-Umbau')
+            scan = self.scan()
+        exclude = (self.root / self.output('rev-parse', '--git-common-dir')).resolve() / 'info/exclude'
+        old = read(exclude) if exclude.exists() else ''
+        if 'graphify-out/' not in old.splitlines():
+            atomic(exclude, old + ('\n' if old and not old.endswith('\n') else '') + 'graphify-out/\n')
+        require(not any(secret_path(p) for p in self.tracked()), 'Geheimnis-Datei ist versioniert; B3/U-23 zuerst klären.')
+        require(scan['hauptzweig'] and scan['aktiv'], 'Hauptzweig oder aktueller Stand unbekannt; echte Lücke klären.')
+        main, active = scan['hauptzweig'], scan['aktiv']
+        stamp = dt.datetime.now().strftime('%Y%m%d')
+        tag = 'vor-umbau-' + stamp
+        require(self.git('rev-parse', '--verify', 'refs/tags/' + tag, check=False).returncode != 0 and
+                self.git('rev-parse', '--verify', 'refs/heads/gov/umbau', check=False).returncode != 0,
+                'Tag oder gov/umbau existiert bereits; nichts wird überschrieben.')
+        before = self.output('rev-parse', main)
+        # Separater Index: staged/unstaged Änderungen sichern, ohne Geheimnisse zu öffnen.
+        dirty = self.git('status', '--porcelain', '-z').stdout
+        backup = None
+        if any(p and not p[3:].startswith('_umbau/') and not secret_path(p[3:]) and not graph_debris(p[3:]) for p in dirty.split('\0')):
+            backup = 'umbau-sicherung/' + stamp + '-' + dt.datetime.now().strftime('%H%M%S%f')
+            candidates = (self.output('diff', '--name-only', '--no-renames', '-z', 'HEAD') + '\0' +
+                          self.output('ls-files', '--others', '--exclude-standard', '-z')).split('\0')
+            paths = [p for p in candidates if p and not secret_path(p) and not p.startswith('_umbau/') and not graph_debris(p)]
+            with tempfile.TemporaryDirectory(prefix='gov Index ') as folder:
+                env = {'GIT_INDEX_FILE': str(Path(folder) / 'index')}
+                self.git('read-tree', 'HEAD', env=env)
+                if paths:
+                    self.git('add', '-A', '--', *paths, env=env)
+                tree = self.git('write-tree', env=env).stdout.strip()
+                commit = self.git('commit-tree', tree, '-p', 'HEAD', data='Umbau-Sicherung ohne Geheimnisse\n').stdout.strip()
+                self.git('branch', backup, commit)
+            paths = [p for p in self.tracked() if not p.startswith('_umbau/')]
+            if paths:
+                self.git('restore', '--source=HEAD', '--staged', '--worktree', '--', *paths)
+        ahead = scan['zweige'].get(active, {}).get('ahead', 0)
+        if active != main and ahead:
+            require(sum(isinstance(v, dict) and v['ahead'] > 0 for v in scan['zweige'].values()) == 1,
+                    'B4: Mehrere Zweige konkurrieren; Frage nötig.')
+            cfg = self.config()
+            with self.tag_copy('HEAD') as copy_root:
+                result = self.execute(cfg['test_cmd'], copy_root)
+            require(result['exit'] == 0, 'B4: Tests rot; Frage nötig. Hauptzweig bleibt unverändert.')
+            # Erst Zusammenführung in Wegwerf-Kopie prüfen, auch bei divergiertem main.
+            with self.tag_copy('HEAD') as copy_root:
+                self.git('merge', '--no-edit', before, cwd=copy_root)
+                require(self.execute(cfg['test_cmd'], copy_root)['exit'] == 0, 'B4: Zusammengeführte Tests rot; Frage nötig.')
+            self.git('checkout', main)
+            self.git('merge', '--no-ff', '--no-edit', active)
+        elif active != main:
+            self.git('checkout', main)
+        if copied:
+            self.git('add', '--', *copied)
+            self.git('commit', '-m', 'Außenbestand kopiert; Originale erhalten')
+        self.git('tag', tag)
+        self.git('checkout', '-b', 'gov/umbau')
+        state = {'tag': tag, 'main': main, 'main_vor_start': before, 'main_vor_merge': self.output('rev-parse', main),
+                 'sicherung': backup, 'datum': stamp, 'phase': 'gestartet', 'dateien': self.tracked(tag),
+                 'modi': {line.split('\t', 1)[1]: line.split()[0]
+                          for line in self.git('ls-tree', '-rz', tag).stdout.split('\0') if line},
+                 'annahmen': ['Annahme: Testbefehl und Klassifikation werden durch die Session bestimmt.']}
+        json_write(self.folder / 'zustand.json', state)
+        self.commit('Umbau: Befund und Sicherung')
+        graph_update(self.root)
+        print('Umbau gestartet: ' + str(self.root) + '; Tag: ' + tag)
+
+    def baseline(self):
+        state, cfg = self.document('zustand.json'), self.config()
+        with self.tag_copy(state['tag']) as root:
+            result = self.execute(cfg.get('baseline_cmd', cfg['test_cmd']), root)
+            green = self.execute(cfg['test_cmd'], root) if result['befehl'] != cfg['test_cmd'] else result
+        result['gruener_teil'] = dict(green)
+        json_write(self.folder / 'testbasis.json', result)
+        require(green['exit'] == 0, 'B5: Kein grüner Test-/Build-Befehl; Frage nötig.')
+        require(result['exit'] == 0 or cfg.get('offen'), 'B5: Rote/fehlende Tests als offene Roadmap-Punkte festhalten.')
+        self.commit('Umbau: Testbasis')
+        print('Testbasis: ' + str(result['exit']) + '; grüner Teil: ' + str(green['exit']))
+
+    def mapping(self):
+        state = self.document('zustand.json')
+        rows = self.document('umzug.json')['dateien']
+        require(isinstance(rows, list), 'umzug.dateien muss eine Liste sein.')
+        rows = [r for r in rows if not graph_debris(r['pfad'])]  # Immer Streugut, kein Umzugsauftrag.
+        require(state['dateien'] == self.tracked(state['tag']), 'U-06: Ausgangsinventar stimmt nicht mit dem Tag überein.')
+        names = [r['pfad'] for r in rows]
+        require(len(names) == len(set(names)) and set(names) == set(state['dateien']), 'U-06: Abdeckung muss genau 100 % sein.')
+        for row in rows:
+            self.safe(row['pfad'])
+            require(row['klasse'] in MIGRATION_CLASSES, 'Unbekannte Klasse: ' + str(row['klasse']))
+            require(not secret_path(row['pfad']) or row['klasse'] == 'Nicht anfassen', 'Geheimnis gehört zu Nicht anfassen.')
+            target = MIGRATION_ARCHIVE + row['pfad'] if row['klasse'] in ('Wissen alt', 'Governance alt') else row['pfad']
+            require(row.get('ziel', target) == target, 'Ziel weicht von der Klassentabelle ab: ' + row['pfad'])
+        return rows
+
+    def target(self, row):
+        return MIGRATION_ARCHIVE + row['pfad'] if row['klasse'] in ('Wissen alt', 'Governance alt') else row['pfad']
+
+    def original_bytes(self, path):
+        state = self.document('zustand.json')
+        result = subprocess.run(['git', 'cat-file', 'blob', state['tag'] + ':' + path],
+                                cwd=self.root, env=clean_env(), capture_output=True)
+        require(result.returncode == 0, "Originaldatei im Ausgangs-Tag fehlt: " + path)
+        return result.stdout
+
+    def reference_changes(self, rows):
+        """Exakte Löschungen am Tag; nur JSON-Trennkommas dürfen zusätzlich entfallen."""
+        entries = self.document('umzug.json').get('verweise', [])
+        require(isinstance(entries, list), 'umzug.verweise muss eine Liste sein.')
+        classes = {r['pfad']: r['klasse'] for r in rows}
+        changes = {}
+        for entry in entries:
+            require(isinstance(entry, dict) and isinstance(entry.get('pfad'), str) and 'zeilen' in entry,
+                    'Verweis benötigt pfad und zeilen.')
+            path, lines = entry['pfad'], entry['zeilen']
+            target = self.safe(path)
+            require(classes.get(path) == 'Code' and not secret_path(path) and not target.is_symlink(),
+                    'Verweise nur in regulären Code-Dateien: ' + path)
+            require(path not in changes and isinstance(lines, list) and lines and
+                    all(isinstance(line, str) and line.strip() and '\n' not in line and '\r' not in line for line in lines)
+                    and len(lines) == len(set(lines)), 'Verweise benötigen eindeutige Pfade und genaue Zeilen.')
+            original = self.original_bytes(path).decode('utf-8')
+            parts = original.splitlines(keepends=True)
+            for line in lines:
+                matches = [i for i, part in enumerate(parts) if part.rstrip('\r\n') == line]
+                require(len(matches) == 1, 'Verweiszeile fehlt oder ist mehrdeutig in ' + path + ': ' + line)
+                del parts[matches[0]]
+            changed = ''.join(parts)
+            if path.lower().endswith('.json'):
+                # Kein Neuformatieren: nur überflüssiges Trennkomma vor einer schließenden Zeile.
+                changed = re.sub(r',([ \t]*\r?\n[ \t]*[}\]])', r'\1', changed)
+                try:
+                    json.loads(changed)
+                except ValueError as exc:
+                    raise Fehler('Verweis-Löschung ergibt ungültiges JSON in ' + path + ': ' + str(exc))
+            changes[path] = changed.encode('utf-8')
+        return changes
+
+    def reference_exceptions(self):
+        """Begründete U-15-Fehlalarme: pfad:zeile aus umzug.json, sichtbar im Bericht."""
+        entries = self.document('umzug.json').get('verweise_ok', [])
+        require(isinstance(entries, list), 'umzug.verweise_ok muss eine Liste sein.')
+        report = read(self.folder / 'bericht.md') if entries else ''
+        allowed = set()
+        for entry in entries:
+            require(isinstance(entry, dict) and isinstance(entry.get('pfad'), str) and isinstance(entry.get('zeile'), int)
+                    and isinstance(entry.get('grund'), str) and entry['grund'].strip(),
+                    'verweise_ok benötigt pfad, zeile und grund.')
+            key = f"{entry['pfad']}:{entry['zeile']}"
+            require(key in report, 'U-15: Ausnahme fehlt im Bericht: ' + key)
+            allowed.add(key)
+        return allowed
+
+    def code_references(self, rows, root, allowed=()):
+        """Statische Pfad- und npm-run-Verweise einschließlich transitiv toter Skripte."""
+        # Am Ort neu angelegte Dateien wie AGENTS.md sind trotz Archivierung erreichbar.
+        archived = {r['pfad'] for r in rows if self.target(r) != r['pfad'] and not (root / r['pfad']).exists()}
+        code = [r['pfad'] for r in rows if r['klasse'] == 'Code']
+        texts = {}
+        for name in code:
+            path = root / name
+            if path.is_symlink() or secret_path(name) or not path.is_file():
+                continue
+            try:
+                texts[name] = path.read_bytes().decode('utf-8')
+            except UnicodeDecodeError:
+                continue  # Binärdateien enthalten keine statisch lesbaren Befehle.
+        patterns = {}
+        def hits(text, name):
+            if name not in patterns:
+                variants = {value for archived_path in archived for value in
+                            (archived_path, os.path.relpath(archived_path, str(Path(name).parent)),
+                             str(self.root / archived_path))}
+                patterns[name] = [re.compile(r'(?<![\w./-])(?:\./)?' + re.escape(value) + r'(?![\w./-])')
+                                  for value in variants]
+            return any(pattern.search(text) for pattern in patterns[name])
+        def calls(text):
+            return re.findall(r"\bnpm\s+(?:(?:--[\w-]+|-[a-zA-Z]+)\s+)*(?:run|run-script)\s+"
+                              r"(?:(?:--[\w-]+|-[a-zA-Z]+)\s+)*['\"]?([\w:.-]+)", text)
+        packages = {}
+        for name, text in texts.items():
+            if Path(name).name != 'package.json':
+                continue
+            current = json.loads(text).get('scripts', {})
+            original = json.loads(self.original_bytes(name)).get('scripts', {})
+            dead = {key for key, value in original.items() if hits(value, name)}
+            # Auch Wrapper im Original werden durch die Archivierung unbrauchbar.
+            while True:
+                more = {key for key, value in original.items()
+                        if set(calls(value)) & dead or 'pre' + key in dead or 'post' + key in dead}
+                if more <= dead:
+                    break
+                dead |= more
+            # Ein ersetzter, nun lebender Befehl ist kein toter Verweis.
+            broken = {key for key in dead if key not in current or hits(current[key], name)}
+            while True:
+                more = {key for key, value in current.items()
+                        if set(calls(value)) & broken or
+                        any(hook in current and hook in broken for hook in ('pre' + key, 'post' + key))}
+                if more <= broken:
+                    break
+                broken |= more
+            packages[Path(name).parent] = broken
+        findings = []
+        for name, text in texts.items():
+            parent = Path(name).parent
+            candidates = [p for p in packages if parent == p or p in parent.parents]
+            dead = packages[max(candidates, key=lambda p: len(p.parts))] if candidates else set()
+            for number, line in enumerate(text.splitlines(), 1):
+                if f'{name}:{number}' not in allowed and (hits(line, name) or set(calls(line)) & dead):
+                    findings.append(f'{name}:{number}: {line.strip()}')
+        require(not findings, 'U-15: Verweise auf archivierte Pfade/tote npm-Befehle: ' + '; '.join(findings))
+        return True
+
+    def valid_inventory(self):
+        folder = self.folder / 'inventar'
+        require(not folder.is_symlink(), 'Inventar darf kein Symlink sein.')
+        for path in sorted(folder.rglob('*')):
+            require(not path.is_symlink(), 'Inventar darf kein Symlink sein: ' + str(path))
+            if path.is_file():
+                require(path.suffix == '.json' and not secret_path(path.name),
+                        'Inventar benötigt JSON ohne Geheimnis-Pfad: ' + str(path))
+                try:
+                    json.loads(read(path))
+                except ValueError as exc:
+                    raise Fehler('Ungültiges Inventar-JSON ' + str(path) + ': ' + str(exc))
+        return True
+
+    def old_decisions(self, rows):
+        decisions, unknown = [], []
+        for row in rows:
+            path = row['pfad']
+            if Path(path).name.casefold() not in ('decisions.json', 'decisions.md'):
+                continue
+            original = self.root / self.target(row)
+            if not original.exists() and not original.is_symlink():
+                original = self.root / path
+            if original.is_symlink() and row['klasse'] == 'Governance alt':
+                # Alte Governance-Aliasdateien sind keine zweite Entscheidungssammlung.
+                # Nur Link-Metadaten lesen; der eigenständig inventarisierte Text zählt einmal.
+                link = Path(os.readlink(original))
+                alias = os.path.normpath(str(Path(path).parent / link))
+                canonical = next((r for r in rows if r['pfad'] == alias), None)
+                if (not link.is_absolute() and canonical and not secret_path(alias) and
+                        self.file_mode(self.root / self.target(canonical)) != '120000' and
+                        self.file_mode(self.root / alias) != '120000' and
+                        Path(alias).name.casefold() in ('decisions.md', 'decisions.json')):
+                    continue
+            if original.is_symlink() or secret_path(path):
+                unknown.append(path)
+                continue
+            text = read(original)
+            if path.lower().endswith('.json'):
+                data = json.loads(text)
+                entries = data.get('decisions', data.get('entscheidungen')) if isinstance(data, dict) else data
+                if isinstance(entries, dict):
+                    entries = list(entries.values())
+                if not isinstance(entries, list):
+                    unknown.append(path)
+                    continue
+                decisions += [path + '#' + str(i + 1) for i in range(len(entries))]
+            else:
+                headings = [(i, s) for i, s in enumerate(text.splitlines(), 1)
+                            if re.match(r'^#{2,3}\s+(?:E[- ]?\d+|\d{4}-\d{2}-\d{2}|Entscheidung\b)', s)]
+                lines = text.splitlines()
+                if not headings and not any(s.startswith('##') for s in lines):
+                    # Zeilenformat: jede Textzeile zählt. Zu viel blockiert, verloren geht nichts.
+                    headings = [(i, s) for i, s in enumerate(lines, 1) if s.strip() and not s.startswith('#')]
+                if not headings and text.strip():
+                    unknown.append(path)
+                decisions += [path + ':' + str(i) for i, _ in headings]
+        return decisions, unknown
+
+    def neutralize(self):
+        saved = self.folder / 'hooks'
+        saved.mkdir(parents=True, exist_ok=True)
+        old = self.git('config', '--get', 'core.hooksPath', check=False, gates=True).stdout.strip()
+        # Auch geerbte Hooks werden nur lokal deaktiviert; fremde Verzeichnisse bleiben erhalten.
+        common = (self.root / self.output('rev-parse', '--git-common-dir')).resolve()
+        locations = [('git-hooks', common / 'hooks')]
+        if old and old != '/dev/null':
+            locations.append(('hooksPath', (self.root / old).resolve()))
+        for label, directory in locations:
+            if directory.is_dir():
+                for p in directory.iterdir():
+                    if p.is_file() and not p.is_symlink() and not secret_path(p.name):
+                        dest = saved / label / p.name
+                        dest.parent.mkdir(parents=True, exist_ok=True)
+                        if not dest.exists():
+                            shutil.copy2(p, dest)
+                        if label == 'git-hooks' and os.access(p, os.X_OK) and not p.name.endswith('.sample'):
+                            p.chmod(p.stat().st_mode & ~0o111)
+        if not (saved / 'config.json').exists():
+            json_write(saved / 'config.json', {'core.hooksPath': old, 'lokal':
+                self.git('config', '--local', '--get', 'core.hooksPath', check=False, gates=True).stdout.strip() or None})
+        self.git('config', '--local', 'core.hooksPath', '/dev/null')
+        for name in ('.claude/settings.json', '.codex/hooks.json'):
+            path = self.root / name
+            if path.is_file():
+                require(not path.is_symlink(), 'Hook-Einstellungen dürfen kein Symlink sein.')
+                original = json.loads(read(path))
+                cleaned = self.without_old_hooks(original)
+                if cleaned != original:
+                    dest = self.folder / 'originale' / name
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    if not dest.exists():
+                        shutil.copy2(path, dest)
+                    json_write(path, cleaned)
+
+    def repair_links(self, rows, knowledge=False):
+        moved = {r['pfad']: self.target(r) for r in rows if self.target(r) != r['pfad']}
+        sources = rows if not knowledge else [{'pfad': p, 'klasse': 'Fachdoku'} for p in ('START.md', 'vision.md')]
+        for row in sources:
+            if row['klasse'] != 'Fachdoku' or not row['pfad'].endswith('.md'):
+                continue
+            path = self.safe(row['pfad'])
+            require(not path.is_symlink(), 'Fachdoku-Symlink wird nicht bearbeitet.')
+            text = read(path)
+            def replace(match):
+                dest = match[2]
+                bare, sep, anchor = dest.partition('#')
+                resolved = os.path.normpath(str(Path(row['pfad']).parent / unquote(bare)))
+                if resolved not in moved:
+                    return match[0]
+                target = os.path.relpath(moved[resolved], Path(row['pfad']).parent).replace(' ', '%20')
+                return match[1] + target + (sep + anchor if sep else '') + match[3]
+            new = re.sub(r'(\]\(<?)([^\s)>]+)(>?\))', replace, text)
+            new = re.sub(r'(?m)^(\[[^\]]+\]:\s*<?)([^\s>]+)(>?)', replace, new)
+            if new != text:
+                # U-07: Auch bei reparierten Links bleibt das ursprüngliche Bytebild erhalten.
+                dest = self.folder / 'originale' / row['pfad']
+                if not dest.exists():
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(path, dest)
+                atomic(path, new)
+
+    def apply(self):
+        rows = self.mapping()
+        self.config()
+        state = self.document('zustand.json')
+        require(state['phase'] == 'gestartet', 'apply ist nur einmal pro Umbau erlaubt.')
+        require(self.git('diff', '--name-only', state['tag'], '--', *state['dateien']).stdout == '',
+                'Ausgangsdateien wurden vor apply geändert; zuerst zuordnen und sichern.')
+        decisions, unknown = self.old_decisions(rows)
+        require(not unknown, 'U-11: Entscheidungsformat unbekannt; Inventar mit eindeutigen Quellen nötig: ' + ', '.join(unknown))
+        # Zielkonflikte vor dem ersten mv prüfen; alte Schreibweisen immer zuerst wegnehmen.
+        for row in rows:
+            if self.target(row) != row['pfad']:
+                require(not self.safe(self.target(row)).exists(), 'Archivziel existiert: ' + self.target(row))
+        for name in ('START.md', 'vision.md'):
+            source = self.folder / 'wissen' / name
+            require(source.is_file() and not source.is_symlink(), 'Neue Wissensdatei fehlt: ' + name)
+            existing = next((r for r in rows if r['pfad'].casefold() == name.casefold()), None)
+            require(not existing or existing['klasse'] == 'Wissen alt', 'Wissensziel muss als Wissen alt archiviert werden: ' + name)
+        for name in ('AGENTS.md', 'CLAUDE.md'):
+            existing = next((r for r in rows if r['pfad'].casefold() == name.casefold()), None)
+            require(not existing or existing['klasse'] in ('Wissen alt', 'Governance alt'), 'Kit-Verweis benötigt archiviertes Original: ' + name)
+        require(isinstance(self.document('bestand.json'), dict), 'Bestandsimport fehlt.')
+        for row in rows:
+            if row['klasse'] == 'Code' and row['pfad'] in ('.gitignore', '.gov/config.json'):
+                require(row['pfad'] == '.gitignore' and '.worktrees/' in read(self.root / row['pfad']).splitlines(),
+                        'Klasse Code darf nicht für Kit-Konfiguration verändert werden: ' + row['pfad'])
+        for row in rows:
+            if row['klasse'] == 'Code' and row['pfad'] in ('.claude/settings.json', '.codex/hooks.json'):
+                data = json.loads(read(self.root / row['pfad']))
+                require(self.without_old_hooks(data) == data, 'Code-Klasse enthält alte Hook-Konfiguration; zuerst einordnen.')
+        changes = self.reference_changes(rows)  # vollständig prüfen, bevor Dateien verschoben werden
+        self.neutralize()
+        for path, content in changes.items():
+            original = self.folder / 'originale' / path
+            original.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.root / path, original)
+            (self.root / path).write_bytes(content)
+        for row in sorted(rows, key=lambda r: len(Path(r['pfad']).parts), reverse=True):
+            target = self.target(row)
+            if target != row['pfad']:
+                self.safe(target).parent.mkdir(parents=True, exist_ok=True)
+                self.git('mv', '--', row['pfad'], target)
+        self.repair_links(rows)
+        for name in ('START.md', 'vision.md'):
+            shutil.copy2(self.folder / 'wissen' / name, self.root / name)
+        self.repair_links(rows, knowledge=True)
+        hints = self.folder / 'wissen/hinweise.md'
+        require(not hints.is_symlink(), 'Hinweise dürfen kein Symlink sein.')
+        for adapter, name in (('claude', 'CLAUDE.md'), ('codex', 'AGENTS.md')):
+            atomic(self.root / name, read(self.kit / adapter / name.replace('.md', '.snippet.md')) +
+                   ('\n\n' + read(hints) if hints.exists() else ''))
+        # Gates bleiben aus. Diese Konfiguration wird erst im finish durch init installiert.
+        (self.root / '.gov').mkdir(exist_ok=True)
+        cfg = self.config()
+        json_write(self.root / '.gov/config.json', {'main_branch': state['main'], 'test_cmd': cfg['test_cmd'], 'tests_dir': cfg['tests_dir']})
+        handoff = []
+        if globally_installed():
+            # Der globale Router sieht ab hier .gov. Die Pending-Rolle umbau muss
+            # schon zwischen apply und finish an den lokalen Hook weiterreichen können.
+            hook = self.root / '.gov/govhook'
+            ownership = self.root / '.gov/claude-files.json'
+            require(not hook.exists() and not hook.is_symlink() and not ownership.exists() and not ownership.is_symlink(),
+                    'Alte .gov-Hook-Dateien zuerst als Governance alt zuordnen.')
+            atomic(hook, read(self.kit / 'govhook'))
+            hook.chmod(0o755)
+            json_write(ownership, {'.gov/govhook': hashlib.sha256(hook.read_bytes()).hexdigest()})
+            handoff = ['.gov/govhook', '.gov/claude-files.json']
+        for name in ('features', 'decisions', 'journal', MIGRATION_ARCHIVE):
+            (self.root / name).mkdir(parents=True, exist_ok=True)
+        ignore = self.root / '.gitignore'
+        if ignore.exists():
+            original = self.folder / 'originale/.gitignore'
+            original.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ignore, original)
+        old = read(ignore) if ignore.exists() else ''
+        if '.worktrees/' not in old.splitlines():
+            atomic(ignore, old + ('\n' if old and not old.endswith('\n') else '') + '.worktrees/\n')
+        state.update(phase='angewendet', entscheidungen=decisions)
+        json_write(self.folder / 'zustand.json', state)
+        self.git('add', '--', 'START.md', 'vision.md', 'AGENTS.md', 'CLAUDE.md', '.gov/config.json', '.gitignore', *handoff)
+        self.commit('Umbau: Wissen und Automatik umgezogen')
+        print('Umzug angewendet; Gates bleiben bis finish inaktiv.')
+
+    def fingerprint(self):
+        # Prüf-/Review-Dateien sind Ausgaben; sämtliche übrigen Eingaben binden die Freigabe.
+        paths = sorted(set(self.tracked()) | {p for p in self.files() if p.startswith('_umbau/')})
+        state = self.document('zustand.json')
+        hashes = [('tag', self.output('rev-parse', state['tag'])),
+                  ('hooksPath', self.git('config', '--get', 'core.hooksPath', check=False, gates=True).stdout)]
+        for path in paths:
+            if secret_path(path):
+                hashes.append((path, 'nicht gelesen'))
+                continue
+            if path.startswith(('_umbau/berichte/', '_umbau/kit-fehler')) or path in ('_umbau/check.json', '_umbau/pruefung.json', '_umbau/testergebnis.json'):
+                continue
+            hashes.append((path, self.digest(self.root / path), self.file_mode(self.root / path)))
+        return hashlib.sha256(json.dumps(hashes, ensure_ascii=False).encode()).hexdigest()
+
+    @staticmethod
+    def file_mode(path):
+        if path.is_symlink():
+            return '120000'
+        if not path.is_file():
+            return None
+        return '100755' if path.stat().st_mode & 0o111 else '100644'
+
+    @staticmethod
+    def digest(path):
+        if secret_path(str(path)):
+            return 'nicht gelesen'
+        if path.is_symlink():
+            data = os.readlink(path).encode()
+        elif path.is_file():
+            data = path.read_bytes()
+        else:
+            return None
+        return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+    def finish_steps(self):
+        state, cfg = self.document('zustand.json'), self.config()
+        # Vorhandene Konfiguration bleibt belegbar, auch wenn init Hooks ergänzt.
+        for path in ('.claude/settings.json', '.codex/config.toml', '.codex/hooks.json'):
+            p = self.root / path
+            if p.is_file():
+                dest = self.folder / 'originale' / path
+                if not dest.exists():
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(p, dest)
+        with working_directory(self.root):
+            initialize(argparse.Namespace(test_cmd=cfg['test_cmd'], no_github=True))
+            gov = Gov()
+            with gov.locked():
+                data = self.document('bestand.json')
+                gov.import_bestand(data)
+                # B5/offene Pläne sind Ideen, keine erfundenen fertigen Features.
+                for text in cfg.get('offen', []):
+                    gov.idea('Offener Punkt', text)
+                gov.state['bestand_offen'] = False
+                # Leiter-Festlegung F1: ausschließlich Abschluss des Umbaus,
+                # keine erfundene Nutzerbestätigung. candidate prüft dies im Klon.
+                gov.state['vision'] = {'tragfaehig': True, 'quelle': 'Umbau'}
+                gov.save()
+        report = self.folder / 'bericht.md'
+        notice = 'Vision tragfähig; Quelle: Umbau. Ohne Nutzerbestätigung durch gov migrate finish.'
+        if notice not in read(report):
+            atomic(report, read(report) + '\n' + notice + '\n')
+        destination = self.root / MIGRATION_ARCHIVE / ('umbau-' + state['datum'])
+        require(not destination.exists(), 'Umbau-Archivziel existiert bereits.')
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        self.git('add', '--', '_umbau')
+        self.git('mv', '--', '_umbau', str(destination.relative_to(self.root)))
+        json_write(self.root / '.gov/migration.json', {'abgeschlossen': True, 'tag': state['tag'], 'main': state['main'],
+                                                     'archiv': str(destination.relative_to(self.root))})
+        with working_directory(self.root):
+            gov = Gov()
+            with gov.locked():
+                # Nur der interne migrate-Token darf diesen abgeschlossenen Archivstand schreiben.
+                paths = ['.gov/migration.json', str(destination.relative_to(self.root))]
+                with gov.token(gov.root, 'gov', operation='migrate', main=True) as env:
+                    gov.git('add', '-A', '--', *paths)
+                    gov.git('commit', '-m', 'Umbau abgeschlossen', env=env)
+        return destination
+
+    @contextlib.contextmanager
+    def candidate(self):
+        state = self.document('zustand.json')
+        with self.tag_copy('gov/umbau') as root:
+            # Klon + Arbeitsstand: auch uncommittete Schäden müssen den Check rot machen.
+            indexed = set(self.tracked())
+            for path in indexed | {p for p in self.files() if p.startswith('_umbau/')}:
+                if secret_path(path):
+                    continue
+                src, dest = self.safe(path), root / path
+                if src.is_symlink():
+                    if dest.exists() or dest.is_symlink():
+                        dest.unlink()
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.symlink_to(os.readlink(src))
+                elif src.is_file():
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dest)
+                elif dest.exists():
+                    dest.unlink()  # Ausschließlich Wegwerf-Kopie, bildet absichtliche Testschäden ab.
+            self.git('checkout', '-B', state['main'], cwd=root)
+            self.git('add', '-A', cwd=root)
+            self.git('commit', '--allow-empty', '-m', 'Umbau-Prüfstand', cwd=root)
+            instance = Migrate(root)
+            archive = instance.finish_steps()
+            yield instance, archive
+
+    @staticmethod
+    def contains_settings(old, new):
+        if isinstance(old, dict):
+            return isinstance(new, dict) and all(k in new and Migrate.contains_settings(v, new[k]) for k, v in old.items())
+        if isinstance(old, list):
+            return isinstance(new, list) and all(x in new for x in old)
+        return old == new
+
+    def criteria(self, finished=None, archive=None):
+        """Alle S-Kriterien einzeln. finished ist die installierte Wegwerf-Kopie."""
+        state = self.document('zustand.json')
+        root = finished.root if finished else self.root
+        checks = {}
+        def criterion(n, fn):
+            try:
+                ok = bool(fn())
+                checks[f'U-{n:02d}'] = {'bestanden': ok, 'detail': 'bestanden' if ok else 'nicht bestanden'}
+            except (Fehler, OSError, ValueError, KeyError, TypeError, IndexError) as exc:
+                checks[f'U-{n:02d}'] = {'bestanden': False, 'detail': str(exc)}
+        rows = [r for r in self.document('umzug.json').get('dateien', []) if not graph_debris(r['pfad'])]
+        tracked = (finished or self).tracked()
+        criterion(1, lambda: all([p for p in tracked if p.casefold() == name.casefold()] == [name]
+                                 and (root / name).is_file() for name in ('START.md', 'vision.md', 'roadmap.md')))
+        criterion(2, lambda: all((root / p).is_dir() for p in ('features', 'decisions', 'journal', '.gov', MIGRATION_ARCHIVE)))
+        def feature_structure():
+            roadmap = read(root / 'roadmap.md')
+            ids = re.findall(r'^\| (F-\d+) \|', roadmap, re.M)
+            folders = list((root / 'features').glob('F-*/feature.md'))
+            return (len(ids) == len(set(ids)) == len(folders) and
+                    set(ids) == {re.match(r'F-\d+', p.parent.name)[0] for p in folders})
+        criterion(3, feature_structure)
+        criterion(4, lambda: all(list((root / folder).glob(pattern)) for folder, pattern in
+                                [('features', 'F-*/feature.md'), ('decisions', 'E-*.md'), ('journal', '*.md')]))
+        criterion(5, lambda: not any(Path(p).name.casefold() in ('status.md', 'roadmap.md', 'decisions.md', 'decisions.json', 'state.md', 'worklog.md')
+                                    and p != 'roadmap.md' and not p.startswith((MIGRATION_ARCHIVE, '_umbau/', '.gov/')) for p in tracked))
+        criterion(6, lambda: self.valid_inventory() and (bool(self.mapping()) or not state['dateien']))
+        def preserved():
+            for path, digest in state['dateien'].items():
+                if secret_path(path):
+                    return False  # Inhalt wird nie gelesen; U-23 verbietet versionierte Geheimnisse.
+                candidates = [root / path, root / MIGRATION_ARCHIVE / path,
+                              (archive or self.folder) / 'originale' / path]
+                if not any(self.digest(p) == digest for p in candidates):
+                    return False
+            return True
+        criterion(7, preserved)
+        def unchanged(classes):
+            return all(self.digest(self.root / r['pfad']) == state['dateien'].get(r['pfad']) and
+                       self.digest(root / r['pfad']) == state['dateien'].get(r['pfad']) and
+                       self.file_mode(self.root / r['pfad']) == state['modi'].get(r['pfad']) and
+                       self.file_mode(root / r['pfad']) == state['modi'].get(r['pfad'])
+                       for r in rows if r['klasse'] in classes)
+        def code_unchanged():
+            changes = self.reference_changes(rows)
+            for row in rows:
+                if row['klasse'] != 'Code':
+                    continue
+                name = row['pfad']
+                for base in (self.root, root):
+                    path = base / name
+                    if self.file_mode(path) != state['modi'].get(name):
+                        return False
+                    if name in changes:
+                        if path.read_bytes() != changes[name]:
+                            return False
+                    elif self.digest(path) != state['dateien'].get(name):
+                        return False
+            return True
+        criterion(8, code_unchanged)
+        criterion(9, lambda: unchanged({'Nicht anfassen', 'Streugut'}))
+        criterion(10, lambda: self.git('merge-base', '--is-ancestor', state['tag'], state['main'], check=False).returncode == 0)
+        def decisions_complete():
+            old, unknown = self.old_decisions(rows)
+            imported = self.document('bestand.json').get('decisions', [])
+            sources = [x.get('source', '') for x in imported]
+            new = list((root / 'decisions').glob('E-*.md'))
+            return (not unknown and len(new) == len(imported) and
+                    all(sources.count(source) == 1 for source in old) and
+                    all('Quelle: ' in read(p) for p in new))
+        criterion(11, decisions_complete)
+        def verify():
+            require(finished is not None, 'Wegwerf-Installation fehlt.')
+            with working_directory(root):
+                gov = Gov()
+                gov.load()
+                gov.verify(tests=False)
+                for fid in gov.state['features']:
+                    # verify prüft bewusst nur Features mit Plan; Bestand zusätzlich prüfen.
+                    text = without_comments(read(gov.feature_path(fid)))
+                    for ident in ID.findall(text):
+                        gov.ident(ident)
+                        require(ident.startswith(('F-', 'A-', 'E-')), 'Verweis nach unten im Bestand.')
+                    if gov.status(fid) == 'fertig':
+                        require(gov.active_criteria(fid), 'Bestandsfeature ohne Abnahmekriterium.')
+            return True
+        criterion(12, verify)
+        def sourced():
+            for path in [root / 'vision.md', *sorted((root / 'features').glob('*/feature.md'))]:
+                text = without_comments(read(path))
+                # Syntaxnachweis je Inhaltszeile; ob die Quelle die Aussage trägt, prüft P.
+                for line in text.splitlines():
+                    if not line.strip() or line.startswith(('#', 'Bezug:', 'Quelle:')):
+                        continue
+                    if not re.search(r'Quelle:\s*\S|\bAnnahme\b', line):
+                        return False
+            return True
+        criterion(13, sourced)
+        def journal_dates():
+            first = self.git('log', '--format=%aI', state['tag']).stdout.splitlines()
+            lower = min(x[:10] for x in first)
+            upper = dt.datetime.now(dt.timezone.utc).date().isoformat()
+            dates = []
+            for path in sorted((root / 'journal').glob('*.md')):
+                dates.extend(re.findall(r'(?m)^(\d{4}-\d{2}-\d{2})', read(path)))
+            historical = [date for path in sorted((root / 'journal').glob('*.md'))
+                          for date in re.findall(r'\b(\d{4}-\d{2}-\d{2})\b', read(path))]
+            return bool(dates) and dates == sorted(dates) and all(lower <= x <= upper for x in historical)
+        criterion(14, journal_dates)
+        def links():
+            paths = {root / 'START.md', root / 'vision.md', root / 'roadmap.md'}
+            paths |= {p for folder in ('features', 'decisions', 'journal') for p in (root / folder).rglob('*.md')}
+            paths |= {root / self.target(r) for r in rows if r['klasse'] == 'Fachdoku'}
+            paths |= {p for p in (root / '.github/workflows').glob('*') if p.is_file()}
+            for path in paths:
+                if path.is_symlink() or secret_path(str(path.relative_to(root))):
+                    return False
+                text = read(path)
+                targets = re.findall(r'\]\(<?([^\s)>]+)>?\)', text)
+                targets += re.findall(r'(?m)^\[[^\]]+\]:\s*<?([^\s>]+)', text)
+                if path.parent == root / '.github/workflows':
+                    targets += re.findall(r'(?m)\buses:\s*[\'"]?(\./[^\s\'"#]+)', text)
+                for target in targets:
+                    if re.match(r'[a-zA-Z][\w+.-]*:', target) or target.startswith('#'):
+                        continue
+                    base = root if path.parent == root / '.github/workflows' else path.parent
+                    dest = (base / unquote(target.split('#')[0])).resolve()
+                    if not dest.is_relative_to(root) or not dest.exists():
+                        return False
+            return True
+        criterion(15, lambda: self.code_references(rows, self.root, self.reference_exceptions()) and
+                  self.code_references(rows, root, self.reference_exceptions()) and links())
+        def automation():
+            if self.git('config', '--get', 'core.hooksPath', check=False, gates=True).stdout.strip() != '/dev/null':
+                return False
+            for r in rows:
+                if r['klasse'] == 'Governance alt' and (self.root / r['pfad']).exists():
+                    # Kit-Verweise sind erlaubte neue Nachfolger.
+                    if r['pfad'] not in ('AGENTS.md', 'CLAUDE.md'):
+                        return False
+                if self.old_automation(r['pfad']):
+                    return False
+            common = (self.root / self.output('rev-parse', '--git-common-dir')).resolve()
+            return not any(p.is_file() and not p.name.endswith('.sample') and os.access(p, os.X_OK)
+                           for p in (common / 'hooks').glob('*'))
+        criterion(19, automation)
+        criterion(20, lambda: all(self.digest(root / r['pfad']) == state['dateien'][r['pfad']]
+                                  for r in rows if r['pfad'].startswith('.github/workflows/') and r['klasse'] != 'Governance alt')
+                  and (self.document('testbasis.json')['gruener_teil']['exit'] == 0))
+        def settings():
+            for name in ('.claude/settings.json', '.codex/config.toml', '.mcp.json'):
+                if name not in state['dateien']:
+                    continue
+                if name == '.mcp.json':
+                    return False  # Kein Inhaltszugriff, versioniertes Geheimnis scheitert an U-23.
+                old_path = (archive or self.folder) / 'originale' / name
+                old = read(old_path) if old_path.exists() else read(self.root / name)
+                new = read(root / name)
+                if name.endswith('.json'):
+                    if not self.contains_settings(self.without_old_hooks(json.loads(old)), json.loads(new)):
+                        return False
+                elif old != new:
+                    return False
+            return finished is not None and (root / '.claude/settings.json').exists() and (
+                (root / '.codex/hooks.json').exists() or globally_installed())
+        criterion(21, settings)
+        def tests_equal():
+            cfg = self.config()
+            basis = self.document('testbasis.json')
+            require(basis['gruener_teil']['befehl'] == cfg['test_cmd'], 'Testbefehl nach Testbasis geändert.')
+            current = self.execute(cfg['test_cmd'], root)
+            json_write(self.folder / 'testergebnis.json', current)
+            return current['exit'] == basis['gruener_teil']['exit'] == 0 and (basis['exit'] == 0 or bool(cfg.get('offen')))
+        criterion(22, tests_equal)
+        if 'U-20' in checks:
+            checks['U-20']['bestanden'] = checks['U-20']['bestanden'] and checks['U-22']['bestanden']
+            checks['U-20']['detail'] = ('CI-Dateien unverändert; lokaler Testlauf ' +
+                                      ('grün' if checks['U-20']['bestanden'] else 'nicht bestanden') +
+                                      '; Providerlauf nicht belegt.')
+        criterion(23, lambda: '.worktrees/' in read(root / '.gitignore').splitlines() and
+                  not any(secret_path(p) for p in set(self.tracked()) | set(tracked)))
+        def report():
+            text = read(self.folder / 'bericht.md')
+            cfg = self.config()
+            required = set(state.get('annahmen', []) + cfg.get('annahmen', []) + cfg.get('offen', []))
+            def assumptions(value):
+                if isinstance(value, str):
+                    for line in value.splitlines():
+                        found = re.search(r'Annahme:\s*.+', line)
+                        if found:
+                            required.add(found[0].strip())
+                elif isinstance(value, dict):
+                    for item in value.values():
+                        assumptions(item)
+                elif isinstance(value, list):
+                    for item in value:
+                        assumptions(item)
+            assumptions(self.document('bestand.json'))
+            for path in [root / 'vision.md', root / 'START.md', *sorted((root / 'features').glob('*/feature.md'))]:
+                assumptions(without_comments(read(path)))
+            for path in (self.folder / 'inventar').glob('*.json'):
+                if not secret_path(path.name) and not path.is_symlink():
+                    inventory = json.loads(read(path))
+                    assumptions(inventory)
+                    for item in (inventory.get('offene_punkte', []) if isinstance(inventory, dict) else []):
+                        required.add(item if isinstance(item, str) else item['text'])
+            required.update(row['pfad'] for row in rows if row['klasse'] == 'Streugut')
+            scan = self.document('befund.json')
+            required.update(line[9:] for line in scan['arbeitskopien'].splitlines()
+                            if line.startswith('worktree ') and Path(line[9:]).resolve() != self.root)
+            required.update(branch for branch, status in scan['zweige'].items()
+                            if isinstance(status, dict) and status['ahead'] and branch != scan['aktiv'])
+            return (all(section(text, title).strip() for title in ('Vision', 'Features', 'Annahmen', 'Archiv', 'Offen')) and
+                    all(x in text for x in required))
+        criterion(28, report)
+        return checks
+
+    def probe_gates(self, only=None):
+        """Echte Git- und govhook-Prozesse; ausschließlich im bereits fertigen Klon."""
+        results = {}
+        def probe(n, fn):
+            try:
+                fn()
+                results[f'U-{n:02d}'] = {'bestanden': True, 'detail': 'Wegwerf-Kopie: bestanden'}
+            except (Fehler, OSError, ValueError, KeyError) as exc:
+                results[f'U-{n:02d}'] = {'bestanden': False, 'detail': str(exc)}
+        def denied():
+            head = self.output('rev-parse', 'HEAD')
+            p = self.git('commit', '--allow-empty', '-m', 'Direkt', check=False, gates=True)
+            require(p.returncode != 0, 'Direkter Commit erlaubt.')
+            for path, role in [('roadmap.md', 'produkt'),
+                               (str(next((self.root / 'decisions').glob('*.md')).relative_to(self.root)), 'produkt'),
+                               (str(next(p for p in (self.root / MIGRATION_ARCHIVE).rglob('*') if p.is_file()).relative_to(self.root)), 'produkt')]:
+                atomic(self.root / path, read(self.root / path) + '\nVerbotene Änderung\n')
+                self.git('add', '--', path)
+                with working_directory(self.root):
+                    gov = Gov()
+                    gov.load()
+                    with gov.token(self.root, role, main=True) as env:
+                        result = self.git('commit', '-m', 'Verboten', env=env, gates=True, check=False)
+                require(result.returncode != 0, 'Gate erlaubt Änderung: ' + path)
+                self.git('restore', '--source=' + head, '--staged', '--worktree', '--', path)
+            remote = self.root.parent / 'probe-remote.git'
+            self.git('init', '--bare', str(remote))
+            require(self.git('push', str(remote), 'HEAD:refs/heads/' + self.document_finished()['main'],
+                             gates=True, check=False).returncode != 0, 'Direkter Push erlaubt.')
+        def allowed():
+            with working_directory(self.root):
+                gov = Gov()
+                with gov.locked():
+                    gov.idea('Gate Probe', 'Annahme: isolierte Gate-Probe')
+                    fid = next(reversed(gov.state['features']))
+                    aid = gov.allocate('A', [fid], 'Probe sichtbar')
+                    path = gov.feature_path(fid)
+                    atomic(path, read(path).replace('## Recherche\n', '## Recherche\nQuelle: Gate-Probe\n').replace(
+                        '## Abnahme\n', '## Abnahme\n- ' + aid + ': Probe sichtbar\n'))
+                    gov.commit('produkt', 'Probe ausgearbeitet', paths=[path])
+                    gov.set_status(fid, 'ausgearbeitet', 'produkt')
+                    gov.set_status(fid, 'freigegeben', 'produkt')
+                    gov.worktree(fid)
+                    wt = gov.feature_worktree(fid)
+                    pid = gov.allocate('P', [aid])
+                    tid = gov.allocate('T', [pid])
+                    plan = gov.feature_path(fid, wt, 'plan.md')
+                    atomic(plan, f'# Plan {fid}\n## Ansatz\nBereiche: gate-probe\n## Offene Fragen an Gleb\n\n'
+                           f'## Änderung 1\n### {pid} Probe\nBezug: {aid}\nRiskant: nein\n'
+                           f'- {tid} Probe schreiben\n  Kriterium: Probe sichtbar\n  Mechanisch: ja\n  Dateien: gate-probe.txt\n\n' + gov.stand(fid) + '\n')
+                    gov.commit('bau', 'Probe geplant', cwd=wt, paths=[plan])
+                    gov.set_status(fid, 'in Arbeit', 'bau')
+                    gov.task_action('start', tid)
+                    atomic(wt / 'gate-probe.txt', 'Probe\n')
+                    gov.commit('task', 'Erlaubte Probe', tid, cwd=wt, paths=[wt / 'gate-probe.txt'])
+        def adapters():
+            for command_name, role in (('vision', 'produkt'), ('build', 'bau')):
+                entry_home = Path.home() if globally_installed() else self.root
+                require((entry_home / '.claude/commands' / (command_name + '.md')).is_file() and
+                        (entry_home / '.agents/skills' / command_name / 'SKILL.md').is_file(), 'Rollen-Einstieg fehlt: ' + command_name)
+                for adapter in ('claude', 'codex'):
+                    sid = 'migrate-' + role + '-' + adapter
+                    data = {'cwd': str(self.root), 'session_id': sid, 'prompt': '/' + command_name, 'command_name': command_name}
+                    event = 'UserPromptExpansion' if adapter == 'claude' else 'UserPromptSubmit'
+                    command = [sys.executable, str(self.root / '.gov/govhook'), adapter]
+                    run([*command, event], cwd=self.root, env=clean_env(), data=json.dumps(data))
+                    common = (self.root / self.output('rev-parse', '--git-common-dir')).resolve()
+                    require(json.loads(read(common / 'gov/sessions' / (sid + '.json')))['role'] == role, 'Rollenmarke fehlt.')
+                    for path, blocked in [('roadmap.md', True), ('vision.md', role == 'bau'), ('probe.py', False)]:
+                        request = {**data, 'tool_name': 'Write', 'tool_input': {'file_path': str(self.root / path), 'content': 'Probe'}}
+                        response = run([*command, 'PreToolUse'], cwd=self.root, env=clean_env(), data=json.dumps(request), check=False)
+                        require((response.returncode != 0) == blocked, 'PreToolUse reagiert falsch: ' + role + '/' + path)
+        for number, action in ((24, denied), (26, adapters), (25, allowed)):
+            if only is None or only == number:
+                probe(number, action)
+        return results
+
+    def document_finished(self):
+        return json.loads(read(self.root / '.gov/migration.json'))
+
+    def check(self):
+        state = self.document('zustand.json')
+        require(state['phase'] == 'angewendet', 'Zuerst migrate apply.')
+        # Ohne commit am Quellprojekt. Defekte Vorbedingungen werden je Kriterium gemeldet.
+        checks = {}
+        try:
+            with self.candidate() as (candidate, archive):
+                checks = self.criteria(candidate, archive)
+                checks.update(candidate.probe_gates())
+        except (Fehler, OSError, ValueError, KeyError) as exc:
+            checks = self.criteria()
+            for n in (12, 24, 25, 26):
+                checks[f'U-{n:02d}'] = {'bestanden': False, 'detail': 'Wegwerf-Installation: ' + str(exc)}
+        review = self.document('pruefung.json') if (self.folder / 'pruefung.json').exists() else {}
+        for n in (16, 17, 18, 27):
+            checks[f'U-{n:02d}'] = {'bestanden': bool(review.get('frei')), 'art': 'P', 'detail': 'Prüfer-Protokoll; kein Skripturteil'}
+        good = all(v['bestanden'] for v in checks.values() if v.get('art') != 'P')
+        json_write(self.folder / 'check.json', {'gruen': good, 'fingerprint': self.fingerprint(), 'kriterien': checks})
+        for key, value in sorted(checks.items()):
+            print(key + ': ' + ('bestanden' if value['bestanden'] else 'nicht bestanden') + ' — ' + value['detail'])
+        require(good, 'Umbau-Check nicht grün.')
+        return checks
+
+    def review(self, args):
+        previous = self.document('pruefung.json') if (self.folder / 'pruefung.json').exists() else {'runden': []}
+        require(len(previous['runden']) < 2, 'Höchstens zwei Prüfrunden; Umbau bleibt auf dem Zweig.')
+        check = self.document('check.json')
+        require(check['gruen'] and check['fingerprint'] == self.fingerprint(), 'Prüfung benötigt aktuellen grünen Check.')
+        findings = read(args.befunde) if args.befunde else ''
+        require(args.frei or findings.strip(), 'Befunddatei ist leer.')
+        # Annahme: Der Eintrag erfolgt durch die Session nach einem frischen Prüfer.
+        previous['runden'].append({'frei': args.frei, 'befunde': findings, 'zeit': dt.datetime.now(dt.timezone.utc).isoformat()})
+        previous.update(frei=args.frei, fingerprint=self.fingerprint(),
+                        annahme='Annahme: Der Eintrag erfolgt durch die Session nach einem frischen Prüfer.')
+        json_write(self.folder / 'pruefung.json', previous)
+        for n in (16, 17, 18, 27):
+            check['kriterien'][f'U-{n:02d}'] = {'bestanden': args.frei, 'art': 'P', 'detail': 'Ergebnis laut Session-Protokoll'}
+        json_write(self.folder / 'check.json', check)
+        print('Prüfung protokolliert: ' + ('frei' if args.frei else 'blockierende Befunde'))
+
+    def finish(self):
+        state = self.document('zustand.json')
+        check, review = self.document('check.json'), self.document('pruefung.json')
+        fingerprint = self.fingerprint()
+        require(check['gruen'] and check['fingerprint'] == fingerprint, 'Aktueller grüner Check fehlt.')
+        require(review['frei'] and review['fingerprint'] == fingerprint, 'Aktuelle Prüfung frei fehlt.')
+        require((self.folder / 'bericht.md').is_file(), 'Abschlussbericht fehlt.')
+        require(self.output('rev-parse', state['main']) == state['main_vor_merge'], 'Hauptzweig wurde parallel geändert.')
+        # Der Check hat sämtliche finish-Schritte in einer Kopie dieses Fingerprints
+        # durchgeführt. Kein zweiter Modell-/Testlauf zwischen Freigabe und Merge.
+        self.commit('Umbau: geprüfter Abschluss')
+        self.checkout_main(state['main'])
+        self.git('merge', '--no-ff', '--no-edit', 'gov/umbau')
+        self.finish_steps()
+        graph_update(self.root)
+        print('Umbau abgeschlossen; Gates aktiv. Kein Push ausgeführt.')
+
+    def abort(self):
+        state = self.document('zustand.json')
+        require(self.output('rev-parse', state['main']) == state['main_vor_merge'],
+                'Hauptzweig wurde anderweitig verändert; kein automatischer Rücksprung.')
+        self.commit('Umbau: abgebrochener Arbeitsstand erhalten')
+        # Gemeinsame lokale Hook-Konfiguration wird nicht durch checkout zurückgesetzt.
+        config = self.folder / 'hooks/config.json'
+        if config.exists():
+            old = json.loads(read(config)).get('lokal')
+            common = (self.root / self.output('rev-parse', '--git-common-dir')).resolve()
+            for saved in (self.folder / 'hooks/git-hooks').glob('*'):
+                original = common / 'hooks' / saved.name
+                if original.exists() and self.digest(original) == self.digest(saved):
+                    original.chmod(saved.stat().st_mode)
+            if old:
+                self.git('config', '--local', 'core.hooksPath', old)
+            else:
+                self.git('config', '--local', '--unset-all', 'core.hooksPath', check=False)
+        self.checkout_main(state['main'])
+        print('Umbau abgebrochen; gov/umbau und Sicherung bleiben erhalten.')
+
+    def push(self):
+        done = self.document_finished()
+        require(done['abgeschlossen'], 'Umbau nicht abgeschlossen.')
+        with working_directory(self.root):
+            gov = Gov()
+            gov.main_ready()
+            remotes = gov.git('remote').splitlines()
+            if not remotes:
+                print('Kein Remote vorhanden; nichts gepusht.')
+                return
+            remote = 'origin' if 'origin' in remotes else remotes[0]
+            with gov.token(gov.root, 'gov', operation='push', main=True) as env:
+                gov.git('push', '--atomic', remote, done['main'], 'refs/tags/' + done['tag'], env=env)
+        print('Hauptzweig und Ausgangs-Tag gepusht.')
+
+    def dispatch(self, args):
+        done = self.root / '.gov/migration.json'
+        if args.action == 'push':
+            require(done.is_file(), 'Zuerst Umbau abschließen.')
+            self.push()
+            return
+        cfg = self.root / '.gov/config.json'
+        completed_on_main = False
+        if cfg.exists():
+            main = json.loads(read(cfg)).get('main_branch', 'main')
+            completed_on_main = self.git('cat-file', '-e', 'refs/heads/' + main + ':.gov/migration.json', check=False).returncode == 0
+        require(not done.exists() and not completed_on_main, 'Umbau bereits abgeschlossen; migrate ist gesperrt.')
+        require(not (self.root / '.gov/register.json').exists(), 'Projekt besitzt bereits das Kit; migrate ist einmalig.')
+        if args.action == 'bericht':
+            require(not self.folder.is_symlink(), 'Umbauordner darf kein Symlink sein.')
+            bericht(self.folder / 'berichte', args)
+            return
+        if args.action == 'scan':
+            self.scan()
+            return
+        if args.action == 'start':
+            self.start(args)
+            return
+        state = self.document('zustand.json')
+        require(self.output('branch', '--show-current') == 'gov/umbau', 'Umbau benötigt den Zweig gov/umbau.')
+        require(self.root == Path(self.output('worktree', 'list', '--porcelain').splitlines()[0][9:]).resolve(),
+                'Umbau nur in der Hauptarbeitskopie.')
+        lock = (self.root / self.output('rev-parse', '--git-common-dir')).resolve() / 'umbau.lock'
+        with lock.open('a') as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            if args.action == 'review':
+                self.review(args)
+            elif args.action == 'abbrechen':
+                self.abort()
+            else:
+                getattr(self, args.action)()
+
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise Fehler("Ungültiger Aufruf: Argument fehlt oder ist nicht erlaubt. Hilfe: gov " +
+                     (sys.argv[1] + " " if len(sys.argv) > 1 else "") + "--help")
+
+
+def parser():
+    p = Parser(description="Projektwissen, Bau und Abnahme mit Git-Gates verwalten.")
+    sub = p.add_subparsers(dest="command", required=True, title="Befehle")
+    for name in ("install-global", "uninstall-global"):
+        global_parser = sub.add_parser(name)
+        global_parser.add_argument("--home", type=Path)
+    migrate = sub.add_parser("migrate", help="Bestehendes Projekt ohne aktive Kit-Gates umbauen")
+    migrations = migrate.add_subparsers(dest="action", required=True)
+    for action in ("scan", "baseline", "apply", "check", "finish", "abbrechen", "push"):
+        migrations.add_parser(action)
+    for commands in (sub, migrations):
+        report = commands.add_parser("bericht", help="Helferbericht von stdin speichern oder Pfade auflisten")
+        report.add_argument("id")
+        choice = report.add_mutually_exclusive_group(required=True)
+        choice.add_argument("--status", choices=("fertig", "blockiert", "frage"))
+        choice.add_argument("--liste", action="store_true")
+    start = migrations.add_parser("start")
+    start.add_argument("--wurzel", type=Path)
+    start.add_argument("--zuziehen", type=Path, nargs="+", default=[])
+    review = migrations.add_parser("review")
+    result = review.add_mutually_exclusive_group(required=True)
+    result.add_argument("--frei", action="store_true")
+    result.add_argument("--befunde", type=Path)
+    init = sub.add_parser("init", help="Zielprojekt einrichten")
+    init.add_argument("--no-github", action="store_true")
+    init.add_argument("--test-cmd")
+    init.add_argument("--project-hooks", action="store_true")
+    sub.add_parser("update", help="Installiertes Projekt auf den Kit-Stand aktualisieren")
+    idea = sub.add_parser("idea", help="Idee auf dem Hauptzweig anlegen")
+    idea.add_argument("--bestand", action="store_true", help="Vorhandenes Feature während der Bestandsaufnahme als fertig erfassen")
+    idea.add_argument("name")
+    idea.add_argument("sentence")
+    sub.add_parser("roadmap")
+    status = sub.add_parser("status")
+    status.add_argument("feature", nargs="?")
+    show = sub.add_parser("show")
+    show.add_argument("id")
+    status = sub.add_parser("set-status")
+    status.add_argument("feature")
+    status.add_argument("status")
+    status.add_argument("--role", required=True, choices=("produkt", "bau"))
+    status.add_argument("--force-reopen", action="store_true", help="Kompatibilitätsoption; umgeht keine Vorbedingung")
+    ids = sub.add_parser("id")
+    ids.add_argument("action", choices=("next",))
+    ids.add_argument("kind", choices=("A", "P", "T", "E"))
+    ids.add_argument("parents", nargs="*")
+    ids.add_argument("--parent", action="append")
+    ids.add_argument("--id", help="Optional erwartete nächste Kennung; keine Wiederverwendung")
+    ids.add_argument("--text", default="")
+    ids.add_argument("--title")
+    ids.add_argument("--reason")
+    ids.add_argument("--alternatives")
+    ids.add_argument("--role", choices=("produkt", "bau"))
+    replace = sub.add_parser("replace")
+    replace.add_argument("id")
+    replace.add_argument("--by", required=True)
+    verify = sub.add_parser("verify")
+    verify.add_argument("--task")
+    verify.add_argument("--feature")
+    task = sub.add_parser("task")
+    task.add_argument("action", choices=("start", "done", "fail", "park"))
+    task.add_argument("id")
+    task.add_argument("--reviewed", action="store_true", help="Reviewer nach zwei Fehlschlägen hat geprüft")
+    review = sub.add_parser("package-review", help="Reviewer-Ergebnis für ein riskantes Paket eintragen")
+    review.add_argument("id")
+    outcome = review.add_mutually_exclusive_group(required=True)
+    outcome.add_argument("--frei", action="store_true")
+    outcome.add_argument("--befunde")
+    next_ = sub.add_parser("next")
+    next_.add_argument("id")
+    lock = sub.add_parser("lock")
+    lock.add_argument("action", choices=("take", "release", "list"))
+    lock.add_argument("id", nargs="?")
+    lock.add_argument("--holder")
+    lock.add_argument("--minutes", type=float, default=90)
+    area = sub.add_parser("areas")
+    area.add_argument("action", choices=("check",))
+    area.add_argument("feature")
+    for command in ("worktree", "sync", "merge", "reopen", "guide", "accept"):
+        child = sub.add_parser(command)
+        child.add_argument("feature")
+    fix = sub.add_parser("fixtask")
+    fix.add_argument("feature")
+    fix.add_argument("text")
+    fix.add_argument("--criterion")
+    fix.add_argument("--replaces")
+    commit = sub.add_parser("commit")
+    commit.add_argument("--role", required=True, choices=ROLES)
+    commit.add_argument("--task")
+    commit.add_argument("-m", "--message", required=True)
+    journal = sub.add_parser("journal")
+    journal.add_argument("text")
+    journal.add_argument("ids", nargs="*")
+    start_info = sub.add_parser("start-info")
+    start_info.add_argument("--role", choices=("produkt", "bau"), default="bau")
+    sub.add_parser("vision-confirm", help="Vision anhand des Produkt-Protokolls einmalig bestätigen")
+    models = sub.add_parser("models", help="Agentenmodelle aus models.json übernehmen")
+    models.add_argument("action", choices=("apply",))
+    hook = sub.add_parser("hook")
+    hook.add_argument("name", choices=HOOKS)
+    hook.add_argument("args", nargs=argparse.REMAINDER)
+    return p
+
+
+def main():
+    args = parser().parse_args()
+    if args.command in ("install-global", "uninstall-global"):
+        global_install(args, uninstall=args.command == "uninstall-global")
+        return
+    if args.command == "migrate":
+        Migrate().dispatch(args)
+        return
+    if args.command == "init":
+        initialize(args)
+        return
+    if args.command == "update":
+        update_project()
+        return
+    gov = Gov()
+    require(args.command == "hook" or (gov.home / "state.json").exists(), "Projekt ist nicht eingerichtet; zuerst gov init.")
+    if args.command == "hook":
+        # Hooks lesen atomaren Stand; kein erneutes flock im Kindprozess des
+        # bereits gesperrten gov commit/merge (sonst Selbstblockade).
+        gov.hook(args.name, args.args)
+        return
+    with gov.locked():
+        c = args.command
+        if c == "bericht":
+            require(re.fullmatch(r'(?:F-\d{3,}|P-\d{3,}-\d+|T-\d{3,}-\d+-\d+)', args.id),
+                    "Bericht benötigt eine Task-, Paket- oder Feature-Kennung.")
+            gov.ident(args.id)
+            bericht(gov.home / "berichte", args)
+        elif c == "idea":
+            gov.idea(args.name, args.sentence, args.bestand)
+        elif c in ("roadmap", "status"):
+            print(gov.status(args.feature) if c == "status" and args.feature else read(gov.main / "roadmap.md"))
+        elif c == "show":
+            gov.show(args.id)
+        elif c == "set-status":
+            gov.set_status(args.feature, args.status, args.role)
+        elif c == "id":
+            gov.new_id(args)
+        elif c == "replace":
+            gov.replace(args.id, args.by)
+        elif c == "verify":
+            gov.verify(args.feature, args.task)
+            print("Prüfung grün: Kennungen, Richtung, Abdeckung, ersetzte Kriterien und Projekttests.")
+        elif c == "task":
+            gov.task_action(args.action, args.id, args.reviewed)
+        elif c == "package-review":
+            gov.package_review(args.id, args.frei, args.befunde)
+        elif c == "next":
+            print(gov.next_action(args.id))
+        elif c == "commit":
+            if args.role == "gov":
+                require(gov.git("branch", "--show-current").strip() != gov.branch and
+                        gov.result("rev-parse", "-q", "--verify", "MERGE_HEAD").returncode == 0,
+                        "gov commit --role gov ist nur zur Konfliktauflösung nach gov sync auf einem Neben-Zweig erlaubt.")
+            gov.commit(args.role, args.message, args.task)
+        elif c == "journal":
+            gov.journal(args.text, args.ids)
+        elif c == "areas":
+            print("Bereiche frei: " + ", ".join(gov.areas_check(args.feature, gov.feature_worktree(args.feature))))
+        elif c == "lock":
+            holder = args.holder or os.environ.get("GOV_SESSION_ID", str(gov.root))
+            if args.action == "list":
+                print(json.dumps(gov.state["locks"], ensure_ascii=False, indent=2))
+            else:
+                require(args.id, "Sperrziel fehlt.")
+                if args.action == "take":
+                    gov.take_lock(args.id, holder, args.minutes)
+                else:
+                    lock = gov.state["locks"].get(args.id)
+                    require(not lock or lock["holder"] == holder or lock["expires"] <= time.time(), "Nur der Halter darf diese Sperre freigeben.")
+                    gov.state["locks"].pop(args.id, None)
+                gov.save()
+        elif c == "reopen":
+            gov.set_status(args.feature, "ausgearbeitet", "produkt")
+        elif c == "fixtask":
+            gov.fixtask(args.feature, args.text, args.criterion, args.replaces)
+        elif c == "start-info":
+            gov.start_info(role=args.role)
+        elif c == "vision-confirm":
+            gov.vision_confirm()
+        elif c == "models":
+            require(gov.root == gov.main, "Modelle nur in der Hauptarbeitskopie anwenden.")
+            gov.main_ready()
+            files = install_agents(gov.main, Path(__file__).resolve().parent, models_only=True)
+            # Auch die auslösende Modell-Konfiguration gehört in diesen Commit.
+            if gov.git("status", "--porcelain", "--", ".gov/models.json").strip():
+                files.append(gov.main / ".gov/models.json")
+            if files:
+                gov.commit("gov", "Claude-/Codex-Modelle angewendet", paths=files)
+            print("Claude-/Codex-Modelle angewendet.")
+        else:
+            getattr(gov, c)(args.feature)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (Fehler, OSError, ValueError, KeyError) as exc:
+        print("Fehler: " + str(exc), file=sys.stderr)
+        sys.exit(1)
