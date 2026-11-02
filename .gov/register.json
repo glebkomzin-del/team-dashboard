@@ -665,10 +665,17 @@
       ],
       "state": "aktiv",
       "text": "Die historischen Bereinigungsvorschläge für Todos, Blocker und offene Punkte gegen den heutigen Arbeitsgedächtnisstand einordnen; der damalige Auftrag wird nicht erneut ausgeführt. Quelle: archiv/governance-alt/PROMPT_datenbereinigung_items.md:17."
+    },
+    "F-033": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Den historischen Auftrag für Abschluss- und Dublettenvorschläge der alten Inbox gegen die inzwischen geänderte Anwendung einordnen; keine heutige Implementierung oder neue Ausführungsfreigabe behaupten. Quelle: archiv/governance-alt/PROMPT_resolution_vorschlaege_inbox.md:12."
     }
   },
   "counters": {
-    "F": 32,
+    "F": 33,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
