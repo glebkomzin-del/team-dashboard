@@ -1,0 +1,5 @@
+{
+  "befehl": "node --test tests/notes-chat-context.test.mjs tests/processing-status.test.mjs tests/snapshot-cache.test.mjs && cd working-memory && python3 -m unittest test_access test_backup_operations test_canonical_archive test_canonical_backup test_canonical_restore test_deletion_ledger test_durable_calls test_original_deletion test_restore_outboxes",
+  "exit": 0,
+  "zeit": 0.825
+}

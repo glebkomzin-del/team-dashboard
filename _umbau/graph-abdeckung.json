@@ -1,0 +1,9 @@
+{
+  "methode": "Deterministische AST-Extraktion ausschließlich der aktiven Code-Klasse, keine Modellaufrufe",
+  "eingaben": 415,
+  "knoten": 3449,
+  "kanten": 10760,
+  "sql_ohne_parser": 112,
+  "fehlende_kantenendpunkte": 0,
+  "grenze": "tree_sitter_sql ist im vorhandenen Graphify-Werkzeug nicht installiert; SQL-Originale wurden unverändert erhalten."
+}

@@ -1,0 +1,248 @@
+{
+  "zweck": "Quellengebundener Nachtrag zu den vier U-17-Befundgruppen; keine Aussage über aktuelle externe Umsetzung.",
+  "quelle_befund": "_umbau/berichte/unabhaengige-pruefung/1.md:7–10",
+  "funktionen": [],
+  "entscheidungen": [],
+  "regeln": [
+    {
+      "id": 1,
+      "gruppe": "target",
+      "quelle": "archiv/governance-alt/working-memory/docs/TARGET.md:7",
+      "originalwortlaut": "Korrigierte Quellen ersetzen die Historie nicht.",
+      "quellenkontext": "- **Quelle und Version:** stabile Drive-ID, unveränderlicher Inhalt, Hash, Ereigniszeit, getrennte Kenntnisnahmezeit. Korrigierte Quellen ersetzen die Historie nicht.",
+      "datum": {
+        "beschlussdatum": "nicht belegt",
+        "quellenstand": "nicht belegt",
+        "beleg": "archiv/governance-alt/working-memory/docs/TARGET.md:1–32 enthält kein Datum",
+        "auszug": "# Fachliches Ziel und Freigaberegeln"
+      },
+      "geltungsbereich": "Quellen und Versionen; korrigierte Originalquellen.",
+      "status": "Fachliches Ziel und Freigaberegeln; Datum und spätere Ablösung nicht belegt",
+      "ueberschneidung": "_umbau/wissen/vision.md:10 unterscheidet Versionen, nennt aber den Erhalt der Historie nicht."
+    },
+    {
+      "id": 2,
+      "gruppe": "target",
+      "quelle": "archiv/governance-alt/working-memory/docs/TARGET.md:10",
+      "originalwortlaut": "Eigene Arbeit, fremde Zusagen und Kalenderabsprachen getrennt darstellen.",
+      "quellenkontext": "- **Verpflichtung:** konkret übernommene Handlung oder zugesagtes Ergebnis, Verantwortlicher, gegebenenfalls belegte Frist. Eigene Arbeit, fremde Zusagen und Kalenderabsprachen getrennt darstellen.",
+      "datum": {
+        "beschlussdatum": "nicht belegt",
+        "quellenstand": "nicht belegt",
+        "beleg": "archiv/governance-alt/working-memory/docs/TARGET.md:1–32 enthält kein Datum",
+        "auszug": "# Fachliches Ziel und Freigaberegeln"
+      },
+      "geltungsbereich": "Darstellung von Verpflichtungen.",
+      "status": "Fachliches Ziel und Freigaberegeln; Datum und spätere Ablösung nicht belegt",
+      "ueberschneidung": "_umbau/wissen/vision.md:10 unterscheidet Verpflichtungen, nicht diese drei Kategorien."
+    },
+    {
+      "id": 3,
+      "gruppe": "target",
+      "quelle": "archiv/governance-alt/working-memory/docs/TARGET.md:15",
+      "originalwortlaut": "Keine starre Aufgabenobergrenze.",
+      "quellenkontext": "Neue Arbeit nur bei ausdrücklicher Zusage oder angenommener Bitte, identifizierbarem Verantwortlichen und tragfähigem Originalbeleg. Keine Aufgabe aus „ich brauche“, „sobald“, „wir könnten“ oder einer fremden Erwartung allein. Keine starre Aufgabenobergrenze. Wiederholungen aktualisieren die vorhandene Verpflichtung.",
+      "datum": {
+        "beschlussdatum": "nicht belegt",
+        "quellenstand": "nicht belegt",
+        "beleg": "archiv/governance-alt/working-memory/docs/TARGET.md:1–32 enthält kein Datum",
+        "auszug": "# Fachliches Ziel und Freigaberegeln"
+      },
+      "geltungsbereich": "Automatische Erzeugung und Aktualisierung von Verpflichtungen.",
+      "status": "Fachliches Ziel und Freigaberegeln; Datum und spätere Ablösung nicht belegt",
+      "ueberschneidung": "_umbau/wissen/vision.md:8 enthält Zusage- und Belegbedingungen, nicht die Obergrenze."
+    },
+    {
+      "id": 4,
+      "gruppe": "target",
+      "quelle": "archiv/governance-alt/working-memory/docs/TARGET.md:19",
+      "originalwortlaut": "Abgelehnte Vorschläge und verworfene Alternativen bleiben nachvollziehbar.",
+      "quellenkontext": "Nur handlungsrelevante Unsicherheit mit Konsequenz für eine aktuelle Verpflichtung erfordert eine knappe Entscheidung. Sonstige Unsicherheit bleibt direkt am Vorgang mit Originalpassage sichtbar. Technische Verarbeitungsfehler erscheinen im Betriebsstatus, nicht als persönliche Inbox-Aufgaben. Abgelehnte Vorschläge und verworfene Alternativen bleiben nachvollziehbar.",
+      "datum": {
+        "beschlussdatum": "nicht belegt",
+        "quellenstand": "nicht belegt",
+        "beleg": "archiv/governance-alt/working-memory/docs/TARGET.md:1–32 enthält kein Datum",
+        "auszug": "# Fachliches Ziel und Freigaberegeln"
+      },
+      "geltungsbereich": "Nachvollziehbarkeit von Vorschlägen und Alternativen im Arbeitskontext.",
+      "status": "Fachliches Ziel und Freigaberegeln; Datum und spätere Ablösung nicht belegt",
+      "ueberschneidung": "_umbau/wissen/vision.md:11 behandelt Unsicherheit und technische Fehler, nicht abgelehnte Alternativen."
+    },
+    {
+      "id": 5,
+      "gruppe": "target",
+      "quelle": "archiv/governance-alt/working-memory/docs/TARGET.md:25",
+      "originalwortlaut": "Zusammenfassungen dienen der Navigation; die Beweiskette endet im Original.",
+      "quellenkontext": "3. Neue Aussagen erst gegen diesen Stand abgleichen. Zusammenfassungen dienen der Navigation; die Beweiskette endet im Original.",
+      "datum": {
+        "beschlussdatum": "nicht belegt",
+        "quellenstand": "nicht belegt",
+        "beleg": "archiv/governance-alt/working-memory/docs/TARGET.md:1–32 enthält kein Datum",
+        "auszug": "# Fachliches Ziel und Freigaberegeln"
+      },
+      "geltungsbereich": "Abgleich neuer Aussagen und Belegführung.",
+      "status": "Fachliches Ziel und Freigaberegeln; Datum und spätere Ablösung nicht belegt",
+      "ueberschneidung": "_umbau/wissen/vision.md:12–13 und :24 betreffen Originale und Belege, nicht ausdrücklich die Navigationsfunktion und Beweiskette."
+    },
+    {
+      "id": 6,
+      "gruppe": "hellmodus",
+      "quelle": "archiv/governance-alt/working-memory/docs/CUTOVER-PLAN.md:7",
+      "originalwortlaut": "Nutzer verlangt ausschließlich Hellmodus.",
+      "quellenkontext": "> Navigation-/Einstellungsupdate 07.09.2026: Nutzer verlangt ausschließlich Hellmodus. Lokaler Entwurf auf8832 umfasst nun Übersicht, gegliederte Navigation (Arbeit/Wissen/Einstellungen), Bereichssuche Cmd/Ctrl+K, mobile Navigation, persistierte Gerätepräferenzen und Teamverwaltung via configure_team. Source-/Produktivfreigabe weiterhin nicht erfolgt, keine Automatik aktiviert. Neue Dateiübersicht und Prüfung in .design-workflow/reviews/2026-09-07-navigation-settings-light.md. Authentifizierter Produktions-/isolierter Supabase-Schreibtest der neuen Funktionen bleibt vor Umschaltung erforderlich; lokaler Browser-Test arbeitet ausschließlich auf Testkopie.",
+      "datum": {
+        "beschlussdatum": "2026-09-07",
+        "quellenstand": "2026-09-07",
+        "beleg": "archiv/governance-alt/working-memory/docs/CUTOVER-PLAN.md:7",
+        "auszug": "> Navigation-/Einstellungsupdate 07.09.2026: Nutzer verlangt ausschließlich Hellmodus. Lokaler Entwurf auf8832 umfasst nun Übersicht, gegliederte Navigation (Arbeit/Wissen/Einstellungen), Bereichssuche Cmd/Ctrl+K, mobile Navigation, persistierte Gerätepräferenzen und Teamverwaltung via configure_team. Source-/Produktivfreigabe weiterhin nicht erfolgt, keine Automatik aktiviert. Neue Dateiübersicht und Prüfung in .design-workflow/reviews/2026-09-07-navigation-settings-light.md. Authentifizierter Produktions-/isolierter Supabase-Schreibtest der neuen Funktionen bleibt vor Umschaltung erforderlich; lokaler Browser-Test arbeitet ausschließlich auf Testkopie."
+      },
+      "geltungsbereich": "Darstellung des Navigation-/Einstellungsentwurfs; keine daraus abgeleitete Produktivfreigabe.",
+      "status": "Historischer Nutzerwunsch; damaliger Entwurf lokal, Source-/Produktivfreigabe laut Quelle noch nicht erfolgt",
+      "ueberschneidung": "_umbau/wissen/vision.md:7–28 nennt den Hellmodus nicht."
+    },
+    {
+      "id": 7,
+      "gruppe": "betrieb",
+      "quelle": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:341",
+      "originalwortlaut": "Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert.",
+      "quellenkontext": "Gleb beauftragt am 06.10. ausdrücklich GPT-6.1 Sol für alle aktiven Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra. Ohne diesen Nachweis gilt Sol. Für das bekannte Aufgabenprofil ist Medium vorgesehen; der historische Vergleich mit Sol 6.0 rechtfertigt keine Terra-Ausnahme. Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert. Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt.",
+      "datum": {
+        "beschlussdatum": "2026-10-06",
+        "quellenstand": "Auftrag 2026-10-06T06:34:21.448898+00:00",
+        "beleg": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:339; archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:341",
+        "auszug": "## Neuer Auftrag: Sol-Standard und operativer Dauerbetrieb – 2026-10-06T06:34:21.448898+00:00 / Gleb beauftragt am 06.10. ausdrücklich GPT-6.1 Sol für alle aktiven Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra. Ohne diesen Nachweis gilt Sol. Für das bekannte Aufgabenprofil ist Medium vorgesehen; der historische Vergleich mit Sol 6.0 rechtfertigt keine Terra-Ausnahme. Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert. Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt."
+      },
+      "geltungsbereich": "Historische Daten im Auftrag zum Wechsel aktiver Terra-Einsatzstellen auf Sol.",
+      "status": "Historischer Betriebsauftrag; aktueller externer Vollzug nicht geprüft",
+      "ueberschneidung": "_umbau/bestand.json:433–436 dokumentiert den Modellstandard; _umbau/wissen/vision.md:14 die allgemeine Integrität."
+    },
+    {
+      "id": 8,
+      "gruppe": "betrieb",
+      "quelle": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:341",
+      "originalwortlaut": "Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt.",
+      "quellenkontext": "Gleb beauftragt am 06.10. ausdrücklich GPT-6.1 Sol für alle aktiven Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra. Ohne diesen Nachweis gilt Sol. Für das bekannte Aufgabenprofil ist Medium vorgesehen; der historische Vergleich mit Sol 6.0 rechtfertigt keine Terra-Ausnahme. Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert. Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt.",
+      "datum": {
+        "beschlussdatum": "2026-10-06",
+        "quellenstand": "Auftrag 2026-10-06T06:34:21.448898+00:00",
+        "beleg": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:339; archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:341",
+        "auszug": "## Neuer Auftrag: Sol-Standard und operativer Dauerbetrieb – 2026-10-06T06:34:21.448898+00:00 / Gleb beauftragt am 06.10. ausdrücklich GPT-6.1 Sol für alle aktiven Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra. Ohne diesen Nachweis gilt Sol. Für das bekannte Aufgabenprofil ist Medium vorgesehen; der historische Vergleich mit Sol 6.0 rechtfertigt keine Terra-Ausnahme. Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert. Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt."
+      },
+      "geltungsbereich": "Modellwechsel aktiver Terra-Einsatzstellen; Bild- und Embeddingmodelle sind von pauschalem Textmodellersatz ausgenommen.",
+      "status": "Historischer Betriebsauftrag; aktueller externer Vollzug nicht geprüft",
+      "ueberschneidung": "_umbau/bestand.json:433–436 enthält den Sol-Standard und die Terra-Ausnahme, nicht diese Ausnahme."
+    },
+    {
+      "id": 9,
+      "gruppe": "betrieb",
+      "quelle": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:345",
+      "originalwortlaut": "Kein stilles Löschen oder Archivieren",
+      "quellenkontext": "Beobachtbares Pflichtziel: eine aktive Sol-Kette und tatsächliche technische Verarbeitung der aktuell 59 wartenden Quellen. Ein einzelner unvollständiger oder fehlerhafter Fall darf die übrigen Quellen nicht unbemerkt anhalten. Fehlende fachliche Perfektion ist kein Releaseblocker. Technische Daten-, Original-, Hash-, Schema-, Berechtigungs-, Humanentscheidungs- und Kostenintegrität bleiben Pflicht. Fehlerhafte Ergebnisse gelten nicht als angewendet; problematische Quellen bleiben mit technischem Grund und Wiederaufnahmeweg sichtbar. Kein stilles Löschen oder Archivieren, keine künstliche persönliche Ownerfreigabe und kein automatisches Doppelzahlen einer unklaren Transportantwort. Fachliche Dashboardprüfungen bleiben vom technischen Betrieb getrennt.",
+      "datum": {
+        "beschlussdatum": "2026-10-06",
+        "quellenstand": "Auftrag 2026-10-06T06:34:21.448898+00:00",
+        "beleg": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:339; archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:341",
+        "auszug": "## Neuer Auftrag: Sol-Standard und operativer Dauerbetrieb – 2026-10-06T06:34:21.448898+00:00 / Gleb beauftragt am 06.10. ausdrücklich GPT-6.1 Sol für alle aktiven Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra. Ohne diesen Nachweis gilt Sol. Für das bekannte Aufgabenprofil ist Medium vorgesehen; der historische Vergleich mit Sol 6.0 rechtfertigt keine Terra-Ausnahme. Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert. Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt."
+      },
+      "geltungsbereich": "Technischer Dauerbetrieb, insbesondere fehlerhafte und problematische Quellen.",
+      "status": "Historischer Betriebsauftrag; aktueller externer Vollzug nicht geprüft",
+      "ueberschneidung": "_umbau/wissen/vision.md:14 fordert Integrität und Sichtbarkeit; stilles Löschen und Archivieren werden nicht ausdrücklich genannt."
+    },
+    {
+      "id": 10,
+      "gruppe": "betrieb",
+      "quelle": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:345",
+      "originalwortlaut": "keine künstliche persönliche Ownerfreigabe",
+      "quellenkontext": "Beobachtbares Pflichtziel: eine aktive Sol-Kette und tatsächliche technische Verarbeitung der aktuell 59 wartenden Quellen. Ein einzelner unvollständiger oder fehlerhafter Fall darf die übrigen Quellen nicht unbemerkt anhalten. Fehlende fachliche Perfektion ist kein Releaseblocker. Technische Daten-, Original-, Hash-, Schema-, Berechtigungs-, Humanentscheidungs- und Kostenintegrität bleiben Pflicht. Fehlerhafte Ergebnisse gelten nicht als angewendet; problematische Quellen bleiben mit technischem Grund und Wiederaufnahmeweg sichtbar. Kein stilles Löschen oder Archivieren, keine künstliche persönliche Ownerfreigabe und kein automatisches Doppelzahlen einer unklaren Transportantwort. Fachliche Dashboardprüfungen bleiben vom technischen Betrieb getrennt.",
+      "datum": {
+        "beschlussdatum": "2026-10-06",
+        "quellenstand": "Auftrag 2026-10-06T06:34:21.448898+00:00",
+        "beleg": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:339; archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:341",
+        "auszug": "## Neuer Auftrag: Sol-Standard und operativer Dauerbetrieb – 2026-10-06T06:34:21.448898+00:00 / Gleb beauftragt am 06.10. ausdrücklich GPT-6.1 Sol für alle aktiven Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra. Ohne diesen Nachweis gilt Sol. Für das bekannte Aufgabenprofil ist Medium vorgesehen; der historische Vergleich mit Sol 6.0 rechtfertigt keine Terra-Ausnahme. Historische Modelle, bezahlte Anfragen, Ergebnisse und Kosten bleiben unverändert. Andere Bild- und Embeddingmodelle werden nicht pauschal durch ein Textmodell ersetzt."
+      },
+      "geltungsbereich": "Technischer Dauerbetrieb und Behandlung problematischer Quellen.",
+      "status": "Historischer Betriebsauftrag; aktueller externer Vollzug nicht geprüft",
+      "ueberschneidung": "_umbau/wissen/vision.md:14–15 enthält Integrität und Trennung der Prüfungen, keine ausdrückliche Ownerfreigabe-Grenze."
+    },
+    {
+      "id": 11,
+      "gruppe": "betrieb",
+      "quelle": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:645",
+      "originalwortlaut": "Historische Quellen vor dem bestehenden Stichtag 08.09.2026 nicht erneut kostenpflichtig verarbeiten.",
+      "quellenkontext": "Der Nutzer hat am 21.09.2026 ausdrücklich die dauerhafte automatische Verarbeitung und Speicherung neu hinzukommender Notizen beauftragt. Der vorherige Idle-Stopp nach der Rückstandsverarbeitung ist dadurch aufgehoben. Die bestehende Terra-Freigabe ohne Kostenobergrenze bleibt maßgeblich; keine neue Budgetfreigabe verlangen. Historische Quellen vor dem bestehenden Stichtag 08.09.2026 nicht erneut kostenpflichtig verarbeiten.",
+      "datum": {
+        "beschlussdatum": "2026-09-21",
+        "quellenstand": "historischer Betriebsstand 21.09.2026",
+        "beleg": "archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:639; archiv/governance-alt/working-memory/docs/NEXT-OPERATIONS.md:645",
+        "auszug": "## Historischer Betriebsstand – 21.09.2026 / Der Nutzer hat am 21.09.2026 ausdrücklich die dauerhafte automatische Verarbeitung und Speicherung neu hinzukommender Notizen beauftragt. Der vorherige Idle-Stopp nach der Rückstandsverarbeitung ist dadurch aufgehoben. Die bestehende Terra-Freigabe ohne Kostenobergrenze bleibt maßgeblich; keine neue Budgetfreigabe verlangen. Historische Quellen vor dem bestehenden Stichtag 08.09.2026 nicht erneut kostenpflichtig verarbeiten.",
+        "zeitliche_regelgrenze": "vor 08.09.2026; kein Beschlussdatum"
+      },
+      "geltungsbereich": "Historische Quellen vor 08.09.2026 im Auftrag zur dauerhaften Verarbeitung neu hinzukommender Notizen.",
+      "status": "Historischer Betriebsauftrag; aktueller externer Vollzug nicht geprüft",
+      "ueberschneidung": "_umbau/bestand.json:400–403 erfasst den Dauerbetriebsauftrag, nicht diese Stichtagsgrenze."
+    },
+    {
+      "id": 12,
+      "gruppe": "phase1",
+      "quelle": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:22",
+      "originalwortlaut": "Wissensarchitektur: Dashboard = Arbeitskontext (was passiert bei mir); Obsidian-Vault auf der Arbeit = Modellwissen; getrennt, aber Aufgaben laufen dagegen",
+      "quellenkontext": "| R9 | Wissensarchitektur: Dashboard = Arbeitskontext (was passiert bei mir); Obsidian-Vault auf der Arbeit = Modellwissen; getrennt, aber Aufgaben laufen dagegen | \"semantisch trennen\" |",
+      "datum": {
+        "beschlussdatum": "nicht belegt; Anforderungen aus Chat-Export 08.–12.10.2026",
+        "quellenstand": "2026-10-13",
+        "beleg": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:2; archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:4",
+        "auszug": "Quellen: Chat-Export 08.–12.10.2026 (eingearbeitet) / Stand 13.10.2026. Quelle der Anforderungen: Aussagen von Gleb in dieser Sitzung. Status je Aussage: **belegt** (aus Daten/Code), **Annahme**, **offen**."
+      },
+      "geltungsbereich": "Geplante Wissensarchitektur der Arbeits-KI-Ausrichtung; Vault-Brücke und Ausführung Phase 2 (ZIELBILD-PHASE1.md:28).",
+      "status": "Zielbild; geplante Ausrichtung, Umsetzung und Wirksamkeit der Parallelbetriebsmaßnahme offen",
+      "ueberschneidung": "_umbau/wissen/vision.md:27 und _umbau/bestand.json:455–458 erfassen Phase und Kanäle, nicht die Wissenstrennung."
+    },
+    {
+      "id": 13,
+      "gruppe": "phase1",
+      "quelle": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:144",
+      "originalwortlaut": "der reguläre Worker veröffentlicht, echter Parallelbetrieb braucht getrennten Ledger/Outbox und Publikationssperre.",
+      "quellenkontext": "- Sicherheitsnetz vorgeschlagen: wöchentlicher Vollabgleich im Batch (50 % Tarifnachlass), mit Evidenzsammlung per Offline-Replay je neues Meeting. Umsetzung und Wirksamkeit sind offen; der reguläre Worker veröffentlicht, echter Parallelbetrieb braucht getrennten Ledger/Outbox und Publikationssperre. Hot-Set nicht ohne weiteres produktiv.",
+      "datum": {
+        "beschlussdatum": "nicht belegt; Anforderungen aus Chat-Export 08.–12.10.2026",
+        "quellenstand": "2026-10-13",
+        "beleg": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:2; archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:4",
+        "auszug": "Quellen: Chat-Export 08.–12.10.2026 (eingearbeitet) / Stand 13.10.2026. Quelle der Anforderungen: Aussagen von Gleb in dieser Sitzung. Status je Aussage: **belegt** (aus Daten/Code), **Annahme**, **offen**."
+      },
+      "geltungsbereich": "Bedingung für echten Parallelbetrieb des vorgeschlagenen Sicherheitsnetzes; Umsetzung und Wirksamkeit offen, Hot-Set nicht ohne weiteres produktiv.",
+      "status": "Zielbild; geplante Ausrichtung, Umsetzung und Wirksamkeit der Parallelbetriebsmaßnahme offen",
+      "ueberschneidung": "_umbau/inventar/fachwissen.json:220 nennt den offenen Hot-Set- und Vollabgleichsstand; die technische Parallelbetriebsbedingung fehlt in _umbau/wissen/vision.md:27–28."
+    },
+    {
+      "id": 14,
+      "gruppe": "phase1",
+      "quelle": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:145",
+      "originalwortlaut": "Verworfenes bleibt auffindbar, nicht gelöscht.",
+      "quellenkontext": "- Relevanzurteil kann echte Zusagen verwerfen: Verworfenes bleibt auffindbar, nicht gelöscht.",
+      "datum": {
+        "beschlussdatum": "nicht belegt; Anforderungen aus Chat-Export 08.–12.10.2026",
+        "quellenstand": "2026-10-13",
+        "beleg": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:2; archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:4",
+        "auszug": "Quellen: Chat-Export 08.–12.10.2026 (eingearbeitet) / Stand 13.10.2026. Quelle der Anforderungen: Aussagen von Gleb in dieser Sitzung. Status je Aussage: **belegt** (aus Daten/Code), **Annahme**, **offen**."
+      },
+      "geltungsbereich": "Durch Relevanzurteil verworfene Treffer einschließlich möglicher echter Zusagen.",
+      "status": "Zielbild; geplante Ausrichtung, Umsetzung und Wirksamkeit der Parallelbetriebsmaßnahme offen",
+      "ueberschneidung": "_umbau/wissen/vision.md:27–28 enthält diese Relevanzgrenze nicht; Kalibrierung offen: _umbau/inventar/fachwissen.json:200."
+    }
+  ],
+  "befehle": [],
+  "offene_punkte": [
+    {
+      "text": "TARGET: Beschlussdatum und Quellenstand nicht belegt.",
+      "quelle": "archiv/governance-alt/working-memory/docs/TARGET.md:1–32"
+    },
+    {
+      "text": "Phase-1-Zielbild: konkretes Beschlussdatum einzelner Anforderungen nicht belegt; dokumentierter Stand 13.10.2026.",
+      "quelle": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:2; archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:4"
+    },
+    {
+      "text": "Sicherheitsnetz: Umsetzung und Wirksamkeit offen; Hot-Set nicht ohne weiteres produktiv.",
+      "quelle": "archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md:144"
+    }
+  ]
+}
