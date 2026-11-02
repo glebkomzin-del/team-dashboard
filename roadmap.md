@@ -24,3 +24,4 @@ Der aktuelle Feature-Status wird ausschließlich von gov geschrieben.
 | F-019 | Offener Punkt | Idee | Zustellung von Erinnerungen und deren Compliance waren offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:43 |
 | F-020 | Offener Punkt | Idee | Die Abnahme der Auftragspakete und die Unterscheidung unbelegter Annahmen von unbekannten Angaben waren offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:47 |
 | F-021 | Offener Punkt | Idee | Lieferweg zur Arbeit und Zulässigkeit des Datenflusses Arbeitsmeetings → privates System → Arbeits-KI waren ungeklärt. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:129 |
+| F-022 | Offener Punkt | Idee | Das vorgeschlagene Hot-Set und ein wöchentlicher Vollabgleich waren zum 13.10.2026 weder produktiv freigegeben noch in ihrer Wirksamkeit ausreichend nachgewiesen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:91 |
