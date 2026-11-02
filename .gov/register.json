@@ -616,10 +616,17 @@
       ],
       "state": "aktiv",
       "text": "Der lokale Indexaufbau wurde im Zielbild mit etwa 100 Sekunden beschrieben; ein persistenter Cache fehlte damals. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:149"
+    },
+    "F-026": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Ein vollständiger Wiederaufbau nach physischem Serververlust wurde im Restore-Runbook vom 04.10.2026 nicht als durchgeführt ausgewiesen. Quelle: working-memory/docs/RESTORE-RUNBOOK.md:209"
     }
   },
   "counters": {
-    "F": 25,
+    "F": 26,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
