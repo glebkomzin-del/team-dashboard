@@ -658,10 +658,17 @@
       ],
       "state": "aktiv",
       "text": "Ein wiederholter identischer Frontend-Build endete nach 120 Sekunden ohne Abschluss. Der erste isolierte TypeScript-/Vite-Build ist mit 103 identischen Quellprüfsummen grün belegt; die Ursache der instabilen lokalen Laufzeit ist offen. Quelle: archiv/governance-alt/umbau-20261101/isolierter-build.json; archiv/governance-alt/umbau-20261101/build-quellen.json."
+    },
+    "F-032": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die historischen Bereinigungsvorschläge für Todos, Blocker und offene Punkte gegen den heutigen Arbeitsgedächtnisstand einordnen; der damalige Auftrag wird nicht erneut ausgeführt. Quelle: archiv/governance-alt/PROMPT_datenbereinigung_items.md:17."
     }
   },
   "counters": {
-    "F": 31,
+    "F": 32,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
