@@ -1,0 +1,55 @@
+{
+  "funktionen": [
+    {
+      "text": "Das Dockerfile bindet Arbeitsgedächtnis-Backendmodule in den Laufzeitcontainer ein.",
+      "quelle": "working-memory/Dockerfile:3"
+    },
+    {
+      "text": "Compose baut die Vorschau im eigenen Verzeichnis und bindet einen Datenträger für lokale Daten ein.",
+      "quelle": "working-memory/compose.yaml:4"
+    }
+  ],
+  "entscheidungen": [],
+  "regeln": [
+    {
+      "text": "Lokale Regressionsergebnisse enthalten private Originale und Zugänge und werden laut Dokumentation absichtlich nicht versioniert.",
+      "quelle": "working-memory/README.md:38"
+    },
+    {
+      "text": "Nutzerbestätigte Quellenkorrekturen überstimmen Modellurteile.",
+      "quelle": "working-memory/README.md:23"
+    }
+  ],
+  "befehle": [
+    {
+      "text": "python3 -m unittest discover -v; aus working-memory ausführen.",
+      "quelle": "working-memory/README.md:27"
+    },
+    {
+      "text": "Docker startet server.py.",
+      "quelle": "working-memory/Dockerfile:16"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "text": "Aktueller Git-Zweig ist codex/working-memory-redesign; HEAD allein belegt keinen vollständigen versionierten Produktstand.",
+      "quelle": ".git/HEAD:1"
+    },
+    {
+      "text": "Der ältere Strukturbericht bezeichnet supabase/ als Backend- und meeting-os/ als Frontend-Ort; ein Deploy über Vercel aus meeting-os/ wird dort beschrieben.",
+      "quelle": "PROJECT_STRUCTURE.md:3"
+    },
+    {
+      "text": "Ob bestehende Supabase-Deploy- und Restoreabläufe spezifisch den äußeren supabase/-Pfad benötigen und ob eine zusätzliche Kopie in meeting-os/ als Quelle gewählt würde, ist nicht belegt.",
+      "quelle": "PROJECT_STRUCTURE.md:9"
+    },
+    {
+      "text": "Die Dokumentation bezeichnet den Release-/Automatikstatus und zugehörige Unterlagen als Betriebsquelle; die Aktualität wurde nicht an der realen Anwendung geprüft.",
+      "quelle": "working-memory/README.md:5"
+    },
+    {
+      "text": "Die Dockerdatei erwartet Backenddateien relativ zum Buildkontext; ihre sichere Übernahme erfordert den vollständigen Satz und getrennte Erhaltung lokaler Daten.",
+      "quelle": "working-memory/Dockerfile:3"
+    }
+  ]
+}

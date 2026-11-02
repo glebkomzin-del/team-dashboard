@@ -1,0 +1,122 @@
+{
+  "gruen": false,
+  "fingerprint": "8884ff22841c543963b61a691bc1488e3f4e12cbee8569e3c41cbafcc6ae739b",
+  "kriterien": {
+    "U-01": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-02": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-03": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-04": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-05": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-06": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-07": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-08": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-09": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-10": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-11": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-12": {
+      "bestanden": false,
+      "detail": "Unbekannte Kennung: F-20261029"
+    },
+    "U-13": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-14": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-15": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-19": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-20": {
+      "bestanden": true,
+      "detail": "CI-Dateien unverändert; lokaler Testlauf grün; Providerlauf nicht belegt."
+    },
+    "U-21": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-22": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-23": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-28": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-24": {
+      "bestanden": true,
+      "detail": "Wegwerf-Kopie: bestanden"
+    },
+    "U-26": {
+      "bestanden": true,
+      "detail": "Wegwerf-Kopie: bestanden"
+    },
+    "U-25": {
+      "bestanden": true,
+      "detail": "Wegwerf-Kopie: bestanden"
+    },
+    "U-16": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    },
+    "U-17": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    },
+    "U-18": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    },
+    "U-27": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    }
+  }
+}

@@ -81,7 +81,7 @@ Nachweis übernommen. Eine allgemeine Zusage erzeugt keine Fertig-Bedingung.
 keine Live-Verifikation und keine menschliche Abnahme. `keine gefunden` ist nur
 bei einer ausgeführten Suche belegt; ein nicht bestimmbarer Zeitstand bleibt
 `unbekannt`. Zugriff und Eignung gefundener Artefakte werden nicht behauptet.
-Das Zielbild ist [M4/B7](../../docs/ZIELBILD-PHASE1.md).
+Das Zielbild ist [M4/B7](../../../archiv/governance-alt/working-memory/docs/ZIELBILD-PHASE1.md).
 
 ## Batch, Prüfung und Stand
 

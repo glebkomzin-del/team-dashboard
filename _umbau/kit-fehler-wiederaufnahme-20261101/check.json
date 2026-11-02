@@ -1,0 +1,122 @@
+{
+  "gruen": false,
+  "fingerprint": "58d7d2240688a6f3d5013d47805cac488e24110cf96261afb2eea6d466ec7d02",
+  "kriterien": {
+    "U-01": {
+      "bestanden": false,
+      "detail": "nicht bestanden"
+    },
+    "U-02": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-03": {
+      "bestanden": false,
+      "detail": "[Errno 2] No such file or directory: '/Users/glebkomzin/Documents/09_Tech_Appdaten_Code/Dashboard Job/meeting-os/roadmap.md'"
+    },
+    "U-04": {
+      "bestanden": false,
+      "detail": "nicht bestanden"
+    },
+    "U-05": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-06": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-07": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-08": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-09": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-10": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-11": {
+      "bestanden": false,
+      "detail": "nicht bestanden"
+    },
+    "U-12": {
+      "bestanden": false,
+      "detail": "Wegwerf-Installation: Befehl fehlgeschlagen: git -c core.hooksPath=/dev/null\nfatal: bad object 0000000000000000000000000000000000000000\nfatal: remote did not send all necessary objects\n"
+    },
+    "U-13": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-14": {
+      "bestanden": false,
+      "detail": "nicht bestanden"
+    },
+    "U-15": {
+      "bestanden": false,
+      "detail": "nicht bestanden"
+    },
+    "U-19": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-20": {
+      "bestanden": true,
+      "detail": "CI-Dateien unverändert; lokaler Testlauf grün; Providerlauf nicht belegt."
+    },
+    "U-21": {
+      "bestanden": false,
+      "detail": "nicht bestanden"
+    },
+    "U-22": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-23": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-28": {
+      "bestanden": true,
+      "detail": "bestanden"
+    },
+    "U-24": {
+      "bestanden": false,
+      "detail": "Wegwerf-Installation: Befehl fehlgeschlagen: git -c core.hooksPath=/dev/null\nfatal: bad object 0000000000000000000000000000000000000000\nfatal: remote did not send all necessary objects\n"
+    },
+    "U-25": {
+      "bestanden": false,
+      "detail": "Wegwerf-Installation: Befehl fehlgeschlagen: git -c core.hooksPath=/dev/null\nfatal: bad object 0000000000000000000000000000000000000000\nfatal: remote did not send all necessary objects\n"
+    },
+    "U-26": {
+      "bestanden": false,
+      "detail": "Wegwerf-Installation: Befehl fehlgeschlagen: git -c core.hooksPath=/dev/null\nfatal: bad object 0000000000000000000000000000000000000000\nfatal: remote did not send all necessary objects\n"
+    },
+    "U-16": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    },
+    "U-17": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    },
+    "U-18": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    },
+    "U-27": {
+      "bestanden": false,
+      "art": "P",
+      "detail": "Prüfer-Protokoll; kein Skripturteil"
+    }
+  }
+}

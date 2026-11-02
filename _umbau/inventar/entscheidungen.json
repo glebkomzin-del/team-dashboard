@@ -1,0 +1,402 @@
+{
+  "funktionen": [],
+  "entscheidungen": [
+    {
+      "titel": "Kostenanalyse ohne neue bezahlte OpenAI-Aufrufe",
+      "datum": "2026-10-12",
+      "originaltext": "- **Entscheidung:** Analyse und Planung nur anhand vorhandener Messdaten (Ledger, gespeicherte Requests); Delegation an lesende Sub-Agents mit komprimierter Rückgabe.\n- **Grund:** Das Testbudget aus dem Kostenpaket ist ausgeschöpft bzw. ohne neue Freigabe nicht nutzbar; Flex lieferte keine belastbaren Vergleiche.\n- **Verworfen:** Sofortige weitere Vergleichsläufe mit echten Meetings (Kosten, keine neue Freigabe).",
+      "quelle": "DECISIONS.md:5",
+      "status": "historisch; aktuelle Geltung nicht geprüft",
+      "grund": "Testbudget ausgeschöpft bzw. ohne neue Freigabe nicht nutzbar; Flex lieferte keine belastbaren Vergleiche.",
+      "alternative": "Sofortige weitere Vergleichsläufe mit echten Meetings verworfen.",
+      "ersetzt_durch": "unbekannt"
+    },
+    {
+      "id": "D-20261030-163100-6d91-governance-4-umstellung",
+      "titel": "D-20261030-163100-6d91-governance-4-umstellung",
+      "datum": "2026-10-30T16:31:00",
+      "status": "aktiv",
+      "urspruengliche_quelle": "Glebs Auftrag in dieser Sitzung vom 30.10.2026: Stelle dann das Projekt auf projekt Governance vier Punkt Null um.",
+      "originaltext": "Grund: Gleb beauftragte am 30.10.2026 ausdrücklich die lokale Umstellung auf Projekt-Governance 4.0. Ausgeführt mit dem vorhandenen Umstellungswerkzeug im Wurzelordner der installierten Version. Bisheriges Wissen bleibt unter wissen/ erhalten; knowledge/ verweist darauf. Frühere Übersichten sind unverändert unter .governance/alt-v3/ erhalten. Bestehende Produktarbeit und Produktionssysteme wurden nicht geändert. Historische Freigaben gelten nicht als neue Freigaben. Erhalt, Wiederholung und Rückbau wurden in einer getrennten Kopie geprüft. Nachweis: outputs/governance-4-umstellung-20261030.json.",
+      "quelle": "wissen/produkt/D-20261030-163100-6d91-governance-4-umstellung.md:13",
+      "ersetzt_durch": null,
+      "grund": " Gleb beauftragte am 30.10.2026 ausdrücklich die lokale Umstellung auf Projekt-Governance 4.0.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-002925-e233-regulaerer-22-quellen-auftrag",
+      "titel": "D-20261029-002925-e233-regulaerer-22-quellen-auftrag",
+      "datum": "2026-10-29T00:29:25",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Genau die 22 festgelegten Originale wurden auf Glebs ausdrückliche Anweisung vollständig mit der normalen KI-Pipeline ausgewertet; synthetische kostenpflichtige Proben blieben ausgeschlossen. Modelle, Tarife, Originale, bestehende Quellen und persönliche Entscheidungen waren zu erhalten. Grund: Die spätere Anweisung, die 22 Quellen ganz normal durch die Pipeline zu schicken, änderte den zuvor auf kostenfreie Diagnose begrenzten Umfang genau für diese realen Quellen. Belege: meeting-os/working-memory/evaluation/processing-repair-20261028/README.md und audit/reprocess22-final.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-002925-e233-regulaerer-22-quellen-auftrag.md:13",
+      "ersetzt_durch": null,
+      "grund": " Die spätere Anweisung, die 22 Quellen ganz normal durch die Pipeline zu schicken, änderte den zuvor auf kostenfreie Diagnose begrenzten Umfang genau für diese realen Quellen.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit",
+      "titel": "D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit",
+      "datum": "2026-10-29T00:31:33",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Nur die exakt per ursprünglichem Requesthash gebundene Extraktionsanfrage von Quelle16 durfte im geprüften zusätzlichen Versuch 48000 statt 24000 Ausgabetokens verwenden. Prompt, Schema, Modell, Tarif und Inhaltsprüfungen blieben unverändert; Budgetreservierung verwendete das höhere tatsächliche Limit. Grund: der bekannte vollständige Anbieterabschluss benannte max_output_tokens und war bereits korrekt mit 149115 Mikro-USD verbucht. Keine globale Erhöhung der Limits. Beleg: Reparaturkapsel reprocess/README.md.",
+      "quelle": "wissen/verarbeitung/D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit.md:13",
+      "ersetzt_durch": "D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge",
+      "grund": " der bekannte vollständige Anbieterabschluss benannte max_output_tokens und war bereits korrekt mit 149115 Mikro-USD verbucht.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003133-71d1-normaler-dauerhafter-kostenweg",
+      "titel": "D-20261029-003133-71d1-normaler-dauerhafter-kostenweg",
+      "datum": "2026-10-29T00:31:33",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Für die Vollpipeline wird der bestehende normale Reserve-/Empfangsweg mit unveränderlichen Einzelplätzen verwendet; alte Antworten, Reservierungen und Kosten bleiben erhalten. Ein Import bekannter Antworten und eine Wiederaufnahme lösen keinen erneuten Versand aus, ungeklärte Reservierungen sperren weitere Sends. Grund: der manuelle 32er-Weg ist zu klein und ein blindes Zurücksetzen würde Herkunft und Abrechnung beschädigen. Keine produktive Schemaänderung. Belege: Reparaturkapsel reprocess/README.md und audit/reprocess22-final.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-003133-71d1-normaler-dauerhafter-kostenweg.md:13",
+      "ersetzt_durch": null,
+      "grund": " der manuelle 32er-Weg ist zu klein und ein blindes Zurücksetzen würde Herkunft und Abrechnung beschädigen.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch",
+      "titel": "D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch",
+      "datum": "2026-10-29T00:31:33",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Nach konkreter Inhaltsprüfung wurde für Quelle15 genau ein weiterer vollständiger Normalversuch mit neuem auditiertem Befehl, getrennten Antworten und unveränderten Validatoren zugelassen. Der gesperrte Schnellretry wurde nicht als erlaubt ausgegeben. Grund: das erste Modell hatte Gesprächszeit und Aufgabenfrist widersprüchlich eingeordnet; die korrekte Datumsprüfung sollte erhalten bleiben. Beide Versuche sind getrennt und einmal abgerechnet. Beleg: Reparaturkapsel reprocess/README.md.",
+      "quelle": "wissen/verarbeitung/D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch.md:13",
+      "ersetzt_durch": null,
+      "grund": " das erste Modell hatte Gesprächszeit und Aufgabenfrist widersprüchlich eingeordnet; die korrekte Datumsprüfung sollte erhalten bleiben.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung",
+      "titel": "D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung",
+      "datum": "2026-10-29T00:31:33",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Quelle16 wurde nach dem belegten Kontextstopp im selben Versuch mit allen 123 Antworten der Plätze2–124 fortgesetzt. Nur die gebundenen normalen compact-Stufen durften den vorhandenen exakten Eingabetoken-Count statt der konservativen Byte-Schätzung nutzen; Count plus4096 plus vollem normalen Ausgabelimit musste weiterhin höchstens1050000 sein. Derselbe Count ging in die normale Kostenreservierung ein, kein neuer Vollversuch oder doppelter Kostenbereich entstand. Grund: genaue Zählung beseitigte den falschen Größenstopp ohne Datenkürzung oder gelockerte Inhaltsprüfung. Belege: Reparaturkapsel reprocess/context-report.md und audit/reprocess22-final.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung.md:13",
+      "ersetzt_durch": null,
+      "grund": " genaue Zählung beseitigte den falschen Größenstopp ohne Datenkürzung oder gelockerte Inhaltsprüfung.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003134-2610-normalbetrieb-nach-vollpruefung",
+      "titel": "D-20261029-003134-2610-normalbetrieb-nach-vollpruefung",
+      "datum": "2026-10-29T00:31:34",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Nach der vollständigen Prüfung aller22 Übernahmen und des echten Dashboardcaches wurden die ursprünglichen Betriebsflags und Ressourcen wiederhergestellt: Lesemodus aus, Automatik/Annahme/Fragen/Originallöschung an, eine CPU und1.5GiB RAM mit ursprünglichem Swaplimit. Grund: die höheren Ressourcen und Verarbeitungssperren waren vorübergehende Betriebshilfen; ein gestarteter Batch allein war kein Abschlussbeleg. Nach Neustart wurden Daten, Cache, Gesundheit und fehlende Neustartschleife geprüft. Belege: Reparaturkapsel audit/cache-final.json, runtime-restored.json und runtime-stability.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-003134-2610-normalbetrieb-nach-vollpruefung.md:13",
+      "ersetzt_durch": null,
+      "grund": " die höheren Ressourcen und Verarbeitungssperren waren vorübergehende Betriebshilfen; ein gestarteter Batch allein war kein Abschlussbeleg.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003134-276a-archivkopien-bis-loeschfreigabe",
+      "titel": "D-20261029-003134-276a-archivkopien-bis-loeschfreigabe",
+      "datum": "2026-10-29T00:31:34",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Die24 temporären archive.sqlite-Arbeitskopien mit1571074048Bytes bleiben bis zur ausdrücklichen Löschfreigabe erhalten. Eine mögliche Bereinigung ist auf die einzelnen manifestgebundenen Prüfsummen begrenzt und schließt Originale, Ergebnisse, Modellbelege und Sicherungen aus. Grund: Glebs Regel14 verlangt Freigabe für Löschungen außerhalb des Repos; seine Freigabe des Serverzugangs ist keine Löschfreigabe. Die aktuelle Aufforderung zur Wissenspflege erteilt ebenfalls keine solche Freigabe. Beleg: Reparaturkapsel audit/scratch-cleanup-plan.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-003134-276a-archivkopien-bis-loeschfreigabe.md:13",
+      "ersetzt_durch": "D-20261029-091358-2648-freigabe-nur-24-archivkopien",
+      "grund": " Glebs Regel14 verlangt Freigabe für Löschungen außerhalb des Repos; seine Freigabe des Serverzugangs ist keine Löschfreigabe.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung",
+      "titel": "D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung",
+      "datum": "2026-10-29T00:31:34",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Reparatur und Betriebswerkzeuge wurden in einer abgegrenzten Kapsel gehalten; fremde Hauptstandsdateien wurden nicht überschrieben und kein Push ausgeführt. Grund: zu Beginn war der Hauptstand bereits parallel verändert beziehungsweise teilweise unversioniert. Lokale Commits und vollständiges Rücklesen sichern die geprüfte Kapsel;979 fremde Indexdatensätze einschließlich6 vorgemerkter Änderungen blieben unverändert. Belege: Reparaturkapsel README.md und audit/private/local-save.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung.md:13",
+      "ersetzt_durch": null,
+      "grund": " zu Beginn war der Hauptstand bereits parallel verändert beziehungsweise teilweise unversioniert.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge",
+      "titel": "D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge",
+      "datum": "2026-10-29T00:35:17",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Quelle16 erhielt nach dem bekannten 24000-Token-Abschluss einen geprüften Vollversuch: Befehl e9a2a394-dab8-5585-b7ee-7570223ac4b8, Startplatz2. Ausschließlich die durch den ursprünglichen Requesthash gebundene Extraktionsanfrage durfte48000 Ausgabetokens verwenden; Prompt, Schema, Modell, Tarif und Inhaltsprüfungen blieben unverändert. Die spätere präzise Kontextprüfung setzte genau diesen Befehl fort und erzeugte keinen weiteren Vollversuch. Grund: der gespeicherte Abschluss benannte max_output_tokens und war bereits korrekt mit149115Mikro-USD verbucht; eine globale Limiterhöhung war unnötig. Präzisierung des älteren Eintrags zur Abgrenzung von neuem Vollversuch und späterer Fortsetzung. Beleg: Reparaturkapsel reprocess/README.md und audit/reprocess22-final.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge.md:13",
+      "ersetzt_durch": null,
+      "grund": " der gespeicherte Abschluss benannte max_output_tokens und war bereits korrekt mit149115Mikro-USD verbucht; eine globale Limiterhöhung war unnötig.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix",
+      "titel": "D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix",
+      "datum": "2026-10-29T00:39:47",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Der produktive Reparaturumfang blieb auf memory.py, openai_provider.py und die daraus abgeleitete Pipelinekennung begrenzt. Bereits vom Gate gesperrte Aufgabenänderungen werden als Wissen des ursprünglichen bekannten Bereichs erhalten und erzeugen kein Arbeitsereignis; wirksame bereichsfremde Änderungen bleiben abgewiesen. Der Provideradapter erhält ausschließlich begrenzte technische Streamdiagnosen, keine freien Fehlertexte oder Geheimnisse; automatische Wiederholungen und Modelle wurden nicht global erweitert. Grund: die doppelte Wirksamkeitsprüfung hatte zwei gesamte Quellen trotz bereits gesperrter Aufgabenwirkung abgewiesen, während sichere Diagnosen für die späteren Altfehler fehlten. Echte Vorher-Nachher-Wiederholungen und29 Tests bestätigten diese eng begrenzte Reparatur. Belege: Reparaturkapsel replay/README.md, replay/overlay/memory.py und provider/openai_provider.py.",
+      "quelle": "wissen/verarbeitung/D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix.md:13",
+      "ersetzt_durch": null,
+      "grund": " die doppelte Wirksamkeitsprüfung hatte zwei gesamte Quellen trotz bereits gesperrter Aufgabenwirkung abgewiesen, während sichere Diagnosen für die späteren Altfehler fehlten.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "D-20261029-091358-2648-freigabe-nur-24-archivkopien",
+      "titel": "D-20261029-091358-2648-freigabe-nur-24-archivkopien",
+      "datum": "2026-10-29T09:13:58",
+      "status": "erledigt",
+      "urspruengliche_quelle": "user:m-a9fff70ef9038d0c8f084cedc1827c8eeffff4bc;codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Gleb hat am29.10.2026 ausdrücklich freigegeben: Ja, nur diese Arbeitskopien entfernen. Die Freigabe gilt ausschließlich den24 im Manifest768be63bc2b40387a5e5ca07f9c8d3eb8bfdd6e043dc4a2931403dc8d8f38679 bezeichneten temporären archive.sqlite-Dateien mit1571074048Bytes. Vor dem Löschen sind Originalpfade, Prüfsummen, abgeschlossene Zielaufträge und die unveränderte geprüfte Sicherung zu kontrollieren; veränderte Dateien bleiben unangetastet. Ergebnisse, Originaldaten, Modellbelege, Sicherungen und andere Arbeitskopien sind ausgenommen. Bereits fehlende Dateien werden als bereits entfernt ausgewiesen. Grund: Die konkrete Löschfreigabe erfüllt jetzt Regel14; die frühere allgemeine Serverzugangsfreigabe allein hatte dafür nicht genügt. Beleg: aktuelle Nutzerantwort und Reparaturkapsel audit/scratch-cleanup-plan.json.",
+      "quelle": "wissen/verarbeitung/D-20261029-091358-2648-freigabe-nur-24-archivkopien.md:13",
+      "ersetzt_durch": null,
+      "grund": " Die konkrete Löschfreigabe erfüllt jetzt Regel14; die frühere allgemeine Serverzugangsfreigabe allein hatte dafür nicht genügt.",
+      "alternativen": "keine ausdrücklich genannt"
+    }
+  ],
+  "regeln": [
+    {
+      "text": "Quelle 15: Datumvalidator nicht lockern; dokumentierte Entscheidung gilt dem beschriebenen Fall.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-06e7-datumvalidator-lockern.md:13"
+    },
+    {
+      "text": "Die dokumentierte Pipeline erhält alte Antworten, Reservierungen und Kosten; ungeklärte Reservierungen sperren weitere Sends.",
+      "quelle": "wissen/verarbeitung/D-20261029-003133-71d1-normaler-dauerhafter-kostenweg.md:13"
+    },
+    {
+      "text": "Die Ablehnung verlustbehafteter Kürzung ist hier ausdrücklich auf Quelle 16 begrenzt.",
+      "quelle": "wissen/verarbeitung/V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung.md:13"
+    }
+  ],
+  "befehle": [],
+  "annahmen": [
+    {
+      "id": "A-20261029-002744-6796-exakter-eingabetoken-count",
+      "titel": "A-20261029-002744-6796-exakter-eingabetoken-count",
+      "datum": "2026-10-29T00:27:44",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Für Quelle 16 wurde die konservative Kontextschätzung nicht als tatsächlicher Promptumfang behandelt: providerfreier Replay rekonstruierte den unveränderten Prompt und zählte exakt 258657 Eingabetokens; mit 59736 Ausgabe und 4096 Reserve ergaben sich 322489 Tokens innerhalb der Grenze.",
+      "quelle": "wissen/verarbeitung/A-20261029-002744-6796-exakter-eingabetoken-count.md:13",
+      "ersetzt_durch": "A-20261029-003132-39f5-exaktcount-anfragegleichheit",
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "A-20261029-002744-b8c1-kosten-aus-nutzungsbelegen",
+      "titel": "A-20261029-002744-b8c1-kosten-aus-nutzungsbelegen",
+      "datum": "2026-10-29T00:27:44",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Die ausgewiesenen 5.812318 USD für die 22 Quellen wurden aus eindeutigen Nutzungsbelegen berechnet; ungeklärte historische Kosten sind nicht als null angesetzt. Eine Rechnungsabnahme ist damit nicht belegt.",
+      "quelle": "wissen/verarbeitung/A-20261029-002744-b8c1-kosten-aus-nutzungsbelegen.md:13",
+      "ersetzt_durch": "A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich",
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "A-20261029-003132-39f5-exaktcount-anfragegleichheit",
+      "titel": "A-20261029-003132-39f5-exaktcount-anfragegleichheit",
+      "datum": "2026-10-29T00:31:32",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Für die Freigabe wurde vorausgesetzt, dass der vorhandene Anbieter-Zähler denselben Prompt samt Schema und Framing wie die Generierung zählt. Der Offline-Replay maß nur Bytes und Hashes; erst die reale Fortsetzung zählte 258657 Eingabetokens. Dieser Wert stimmte mit der späteren Generierungsnutzung überein; mit 59736 Ausgabe und 4096 Reserve ergaben sich 322489 innerhalb 1050000. Die Übereinstimmung dieses Falls ist kein pauschaler Nachweis für andere Modelle oder Parameter. Belege: reprocess/context-report.md und audit/reprocess22-final.json in der Reparaturkapsel.",
+      "quelle": "wissen/verarbeitung/A-20261029-003132-39f5-exaktcount-anfragegleichheit.md:13",
+      "ersetzt_durch": null,
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich",
+      "titel": "A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich",
+      "datum": "2026-10-29T00:31:32",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Bei der Berechnung der neuen Kosten wurde vorausgesetzt, dass die hinterlegten call_budget-Preise und erfassten Tarifangaben zur jeweiligen Nutzung passen. Die 5.812318 USD sind aus eindeutigen Nutzungsbelegen berechnet; eine Anbieterrechnung wurde nicht abgeglichen. Ungeklärte historische Kosten wurden nicht als null angesetzt. Beleg: meeting-os/working-memory/evaluation/processing-repair-20261028/audit/reprocess22-final.json.",
+      "quelle": "wissen/verarbeitung/A-20261029-003132-4b3d-kostenpreise-nicht-rechnungsabgleich.md:13",
+      "ersetzt_durch": null,
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "id": "F-20261029-002744-0f73-angemeldete-browserabnahme",
+      "titel": "F-20261029-002744-0f73-angemeldete-browserabnahme",
+      "datum": "2026-10-29T00:27:44",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Ob das Dashboard im angemeldeten Browser erfolgreich lädt, bleibt unbekannt; es ist kein angemeldeter Browserabruf belegt und Zugangsdaten wurden dort nicht eingegeben.",
+      "quelle": "wissen/verarbeitung/F-20261029-002744-0f73-angemeldete-browserabnahme.md:13",
+      "ersetzt_durch": "F-20261029-003133-5c3b-browser-und-passwortabnahme",
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt",
+      "typ": "offene-frage",
+      "text": "Ob das Dashboard im angemeldeten Browser erfolgreich lädt, bleibt unbekannt; es ist kein angemeldeter Browserabruf belegt und Zugangsdaten wurden dort nicht eingegeben."
+    },
+    {
+      "id": "F-20261029-003133-2c14-historische-streamursachen-unbekannt",
+      "titel": "F-20261029-003133-2c14-historische-streamursachen-unbekannt",
+      "datum": "2026-10-29T00:31:33",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Welche konkreten Ursachen die 22 ursprünglichen ValueError-Streamabschlüsse hatten, bleibt ungeklärt: ihre eigentlichen Streamfehler wurden damals nicht ausreichend gespeichert. Der später bei Quelle16 nachgewiesene Tokenlimit-Abschluss belegt nicht die Ursachen aller alten Fehler. Die erfolgreiche erneute Verarbeitung ersetzt diesen historischen Ursachenbeleg nicht. Beleg: Reparaturkapsel README.md.",
+      "quelle": "wissen/verarbeitung/F-20261029-003133-2c14-historische-streamursachen-unbekannt.md:13",
+      "ersetzt_durch": null,
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt",
+      "typ": "offene-frage",
+      "text": "Welche konkreten Ursachen die 22 ursprünglichen ValueError-Streamabschlüsse hatten, bleibt ungeklärt: ihre eigentlichen Streamfehler wurden damals nicht ausreichend gespeichert. Der später bei Quelle16 nachgewiesene Tokenlimit-Abschluss belegt nicht die Ursachen aller alten Fehler. Die erfolgreiche erneute Verarbeitung ersetzt diesen historischen Ursachenbeleg nicht. Beleg: Reparaturkapsel README.md."
+    },
+    {
+      "id": "F-20261029-003133-5c3b-browser-und-passwortabnahme",
+      "titel": "F-20261029-003133-5c3b-browser-und-passwortabnahme",
+      "datum": "2026-10-29T00:31:33",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Der Agent hat nach der Reparatur weder einen Abruf mit angemeldeter Nutzersitzung noch die Passwort-Zurücksetzung technisch verifiziert. Belegt sind die 22 Übernahmen, der tatsächlich aktuelle Backendcache und öffentliches Health HTTP200; die angemeldete Browserabnahme bleibt davon getrennt offen. Der frühere Nutzerscreenshot ist kein nachträglicher Agententest. Beleg: Reparaturkapsel README.md.",
+      "quelle": "wissen/verarbeitung/F-20261029-003133-5c3b-browser-und-passwortabnahme.md:13",
+      "ersetzt_durch": null,
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt",
+      "typ": "offene-frage",
+      "text": "Der Agent hat nach der Reparatur weder einen Abruf mit angemeldeter Nutzersitzung noch die Passwort-Zurücksetzung technisch verifiziert. Belegt sind die 22 Übernahmen, der tatsächlich aktuelle Backendcache und öffentliches Health HTTP200; die angemeldete Browserabnahme bleibt davon getrennt offen. Der frühere Nutzerscreenshot ist kein nachträglicher Agententest. Beleg: Reparaturkapsel README.md."
+    },
+    {
+      "id": "H-20261029-002743-3643-urspruengliche-streamursache",
+      "titel": "H-20261029-002743-3643-urspruengliche-streamursache",
+      "datum": "2026-10-29T00:27:43",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Die genaue ursprüngliche Ursache der 22 alten ValueError-Streamabschlüsse ist weiterhin nicht belegt; die vorhandene Streamdiagnose belegt nur die sichere technische Korrektur, nicht die historische Ursache.",
+      "quelle": "wissen/verarbeitung/H-20261029-002743-3643-urspruengliche-streamursache.md:13",
+      "ersetzt_durch": "F-20261029-003133-2c14-historische-streamursachen-unbekannt",
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt",
+      "typ": "hypothese",
+      "text": "Die genaue ursprüngliche Ursache der 22 alten ValueError-Streamabschlüsse ist weiterhin nicht belegt; die vorhandene Streamdiagnose belegt nur die sichere technische Korrektur, nicht die historische Ursache."
+    },
+    {
+      "id": "H-20261029-002744-2619-sandbox-io-error",
+      "titel": "H-20261029-002744-2619-sandbox-io-error",
+      "datum": "2026-10-29T00:27:44",
+      "status": "aktiv",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Ein Zusammenhang zwischen Sandbox und IO_ERROR bleibt eine Hypothese; die vorliegenden Abschlussbelege stellen ihn nicht als nachgewiesene Ursache fest.",
+      "quelle": "wissen/verarbeitung/H-20261029-002744-2619-sandbox-io-error.md:13",
+      "ersetzt_durch": null,
+      "grund": "Grund nicht rekonstruierbar",
+      "alternativen": "keine ausdrücklich genannt",
+      "typ": "hypothese",
+      "text": "Ein Zusammenhang zwischen Sandbox und IO_ERROR bleibt eine Hypothese; die vorliegenden Abschlussbelege stellen ihn nicht als nachgewiesene Ursache fest."
+    }
+  ],
+  "verworfen": [
+    {
+      "id": "V-20261029-002744-06e7-datumvalidator-lockern",
+      "titel": "V-20261029-002744-06e7-datumvalidator-lockern",
+      "datum": "2026-10-29T00:27:44",
+      "status": "aktiv",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Eine Lockerung des Datumvalidators wurde verworfen. Grund: die korrekte Zurückweisung von Quelle 15 beruhte auf einer falsch als Frist behandelten Gesprächszeit; ein vollständiger geprüfter Normalversuch löste den Fall ohne Abschwächung der Validierung.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-06e7-datumvalidator-lockern.md:13",
+      "ersetzt_durch": null,
+      "grund": " die korrekte Zurückweisung von Quelle 15 beruhte auf einer falsch als Frist behandelten Gesprächszeit; ein vollständiger geprüfter Normalversuch löste den Fall ohne Abschwächung der Validierung.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-002744-3d64-verlustbehaftete-katalogkuerzung",
+      "titel": "V-20261029-002744-3d64-verlustbehaftete-katalogkuerzung",
+      "datum": "2026-10-29T00:27:44",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Eine verlustbehaftete Kürzung von Originalen oder Kandidaten zur Kontextbegrenzung wurde verworfen. Grund: providerfreier Replay zählte den unveränderten Prompt exakt und ermöglichte die Fortsetzung mit allen 123 bekannten Antworten innerhalb desselben Limits.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-3d64-verlustbehaftete-katalogkuerzung.md:13",
+      "ersetzt_durch": "V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung",
+      "grund": " providerfreier Replay zählte den unveränderten Prompt exakt und ermöglichte die Fortsetzung mit allen 123 bekannten Antworten innerhalb desselben Limits.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-002744-4365-32-beleg-importweg",
+      "titel": "V-20261029-002744-4365-32-beleg-importweg",
+      "datum": "2026-10-29T00:27:44",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Der anfängliche 32-Beleg-Importweg wurde verworfen. Grund: der vorhandene normale Kostenweg konnte die 32 bereits bezahlten Antworten ohne erneute Provideranfrage prüfen und übernehmen.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-4365-32-beleg-importweg.md:13",
+      "ersetzt_durch": "V-20261029-003132-3a0f-manueller-32er-vollpipelineweg",
+      "grund": " der vorhandene normale Kostenweg konnte die 32 bereits bezahlten Antworten ohne erneute Provideranfrage prüfen und übernehmen.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-002744-5f7f-blindes-reset-und-fastretry",
+      "titel": "V-20261029-002744-5f7f-blindes-reset-und-fastretry",
+      "datum": "2026-10-29T00:27:44",
+      "status": "aktiv",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Blindes Reset und gesperrter Fast-Retry wurden als Wiederholungswege verworfen. Grund: sie umgehen die nachgewiesene normale Wiederholungs- und Kostenlogik; die dokumentierte Wiederholung erfolgte vollständig geprüft über den normalen Weg.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-5f7f-blindes-reset-und-fastretry.md:13",
+      "ersetzt_durch": null,
+      "grund": " sie umgehen die nachgewiesene normale Wiederholungs- und Kostenlogik; die dokumentierte Wiederholung erfolgte vollständig geprüft über den normalen Weg.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-002744-a102-synthetische-providerprobe",
+      "titel": "V-20261029-002744-a102-synthetische-providerprobe",
+      "datum": "2026-10-29T00:27:44",
+      "status": "aktiv",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Synthetische kostenpflichtige Providerproben wurden verworfen. Grund: sie erzeugen unnötige reale Kosten und belegen nicht den historischen Lauf; die Kostenableitung stützt sich auf eindeutige Nutzungsbelege.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-a102-synthetische-providerprobe.md:13",
+      "ersetzt_durch": null,
+      "grund": " sie erzeugen unnötige reale Kosten und belegen nicht den historischen Lauf; die Kostenableitung stützt sich auf eindeutige Nutzungsbelege.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-002744-fc15-32-belegweg",
+      "titel": "V-20261029-002744-fc15-32-belegweg",
+      "datum": "2026-10-29T00:27:44",
+      "status": "ersetzt",
+      "urspruengliche_quelle": "extraktor:codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Der 32-Beleg-Weg wurde verworfen. Grund: er wurde durch den vorhandenen normalen Kostenweg ersetzt, der bereits bezahlte Antworten ohne erneute Provideranfrage prüfen und übernehmen konnte.",
+      "quelle": "wissen/verarbeitung/V-20261029-002744-fc15-32-belegweg.md:13",
+      "ersetzt_durch": "V-20261029-003132-3a0f-manueller-32er-vollpipelineweg",
+      "grund": " er wurde durch den vorhandenen normalen Kostenweg ersetzt, der bereits bezahlte Antworten ohne erneute Provideranfrage prüfen und übernehmen konnte.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-003132-3a0f-manueller-32er-vollpipelineweg",
+      "titel": "V-20261029-003132-3a0f-manueller-32er-vollpipelineweg",
+      "datum": "2026-10-29T00:31:32",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Der manuelle, auf 32 Belege begrenzte Wiederherstellungsweg wurde für vollständige Quellenläufe verworfen. Grund: ein realer Quellenlauf benötigte mehr als 32 Aufrufe; der bestehende normale Kostenweg unterstützt längere vollständige Läufe. Die bereits bezahlten 32 Antworten wurden dort unverändert importiert und nicht erneut angefordert; verworfen wurde nicht ihr Import. Belege: Reparaturkapsel reprocess/README.md und audit/reprocess32-import-readback.json.",
+      "quelle": "wissen/verarbeitung/V-20261029-003132-3a0f-manueller-32er-vollpipelineweg.md:13",
+      "ersetzt_durch": null,
+      "grund": " ein realer Quellenlauf benötigte mehr als 32 Aufrufe; der bestehende normale Kostenweg unterstützt längere vollständige Läufe.",
+      "alternativen": "keine ausdrücklich genannt"
+    },
+    {
+      "id": "V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung",
+      "titel": "V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung",
+      "datum": "2026-10-29T00:31:32",
+      "status": "aktiv",
+      "urspruengliche_quelle": "codex:01a18271-5360-7231-a80f-6b730726589a",
+      "originaltext": "Eine verlustbehaftete Kürzung von Originalen, Kandidaten oder Katalog wurde für Quelle16 verworfen. Grund: der providerfreie Replay belegte eine konservative Byte-Schätzung von 1062612; die spätere echte Eingabetokenzählung ergab 258657 und bewies die Zulässigkeit des unveränderten Kontexts unter derselben Grenze. Alle 123 vorhandenen Antworten wurden im selben Versuch wiederverwendet. Der Offline-Replay selbst führte keinen Anbieter-Tokenzähler aus. Belege: Reparaturkapsel reprocess/context-report.md und audit/reprocess22-final.json.",
+      "quelle": "wissen/verarbeitung/V-20261029-003132-8fb9-keine-verlustbehaftete-kontextkuerzung.md:13",
+      "ersetzt_durch": null,
+      "grund": " der providerfreie Replay belegte eine konservative Byte-Schätzung von 1062612; die spätere echte Eingabetokenzählung ergab 258657 und bewies die Zulässigkeit des unveränderten Kontexts unter derselben Grenze.",
+      "alternativen": "keine ausdrücklich genannt"
+    }
+  ],
+  "historische_duplikate": [
+    {
+      "quelle": ".governance/alt-v3/DECISIONS.md",
+      "ziel": "../../DECISIONS.md",
+      "text": "Symbolischer Link auf dieselbe bereits gezählte Entscheidungsdatei; eigene Entscheidungsquelle enthält keinen weiteren Inhalt.",
+      "bezug": "DECISIONS.md:5"
+    }
+  ]
+}

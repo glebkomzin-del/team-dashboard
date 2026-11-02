@@ -1,0 +1,11 @@
+{
+  "_umbau/python-portabel.log": "_umbau/python-portabel.txt",
+  "_umbau/python-basis.log": "_umbau/python-basis.txt",
+  "_umbau/start.log": "_umbau/start.txt",
+  "_umbau/gruene-vorpruefung.log": "_umbau/gruene-vorpruefung.txt",
+  "_umbau/git-ohne-mmap-build.log": "_umbau/git-ohne-mmap-build.txt",
+  "_umbau/node-gruener-teil.log": "_umbau/node-gruener-teil.txt",
+  "_umbau/isolierter-build.log": "_umbau/isolierter-build.txt",
+  "_umbau/snapshot-commit.log": "_umbau/snapshot-commit.txt",
+  "_umbau/isolierte-installation.log": "_umbau/isolierte-installation.txt"
+}

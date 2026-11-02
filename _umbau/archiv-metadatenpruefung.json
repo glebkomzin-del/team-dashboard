@@ -1,0 +1,7 @@
+{
+  "pfad": "meeting-os.tar.gz",
+  "anzahl": 32462,
+  "sensible_pfade": [
+    "meeting-os/node_modules/.pnpm/resolve@1.22.12/node_modules/resolve/.claude/settings.local.json"
+  ]
+}
