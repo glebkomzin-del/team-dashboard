@@ -1,0 +1,14 @@
+# Quelle: https://learn.chatgpt.com/docs/agent-configuration/rules
+# Annahme: Unter workspace-write ist .git schreibgeschützt; diese Freigaben
+# ermöglichen gov/Git und den Projekttest außerhalb der Sandbox.
+prefix_rule(pattern=[".gov/gov"], decision="allow")
+prefix_rule(pattern=["python3", ".gov/gov"], decision="allow")
+prefix_rule(pattern=["git"], decision="allow")
+prefix_rule(pattern=["node", "--test", "tests/notes-chat-context.test.mjs", "tests/processing-status.test.mjs", "tests/snapshot-cache.test.mjs", "&&", "cd", "working-memory", "&&", "python3", "-m", "unittest", "test_access", "test_backup_operations", "test_canonical_archive", "test_canonical_backup", "test_canonical_restore", "test_deletion_ledger", "test_durable_calls", "test_original_deletion", "test_restore_outboxes"], decision="allow")
+
+# Die restriktivste passende Entscheidung gewinnt. Prefix-Regeln erfassen nur
+# diese direkten Präfixe, keine beliebige Flag-Reihenfolge oder +Refspecs.
+# Weitere Varianten prüfen govhook und die Git-Gates.
+prefix_rule(pattern=["git", "push", ["--force", "-f", "--force-with-lease", "--force-if-includes", "--mirror", "--all"]], decision="forbidden")
+prefix_rule(pattern=["git", "commit", ["--no-verify", "-n"]], decision="forbidden")
+prefix_rule(pattern=["git", "update-ref"], decision="forbidden")
