@@ -26,3 +26,4 @@ Der aktuelle Feature-Status wird ausschließlich von gov geschrieben.
 | F-021 | Offener Punkt | Idee | Lieferweg zur Arbeit und Zulässigkeit des Datenflusses Arbeitsmeetings → privates System → Arbeits-KI waren ungeklärt. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:129 |
 | F-022 | Offener Punkt | Idee | Das vorgeschlagene Hot-Set und ein wöchentlicher Vollabgleich waren zum 13.10.2026 weder produktiv freigegeben noch in ihrer Wirksamkeit ausreichend nachgewiesen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:91 |
 | F-023 | Offener Punkt | Idee | Der verpflichtende Hot-Set-Fall Alter 25 Tage/Rang 12 und die Prüfung an neuen Meetings waren zum 13.10.2026 offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:143 |
+| F-024 | Offener Punkt | Idee | Das Zielbild nennt frühere, für die Optimierung relevante Gespräche außerhalb des damals zugänglichen Kontexts als fehlend. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:134 |
