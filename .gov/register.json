@@ -686,10 +686,17 @@
       ],
       "state": "aktiv",
       "text": "Der Code-Graph deckt 112 SQL-Dateien wegen eines fehlenden optionalen Parsers nicht ab; die SQL-Originale bleiben erhalten. Quelle: archiv/governance-alt/umbau-20261101/graph-abdeckung.json."
+    },
+    "F-036": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die neben Backendmodulen liegenden Python-Tests später in einen isolierten Testordner einordnen; dessen Kennungsprüfung muss private .local-Daten ausnehmen. Der aktuelle Prüfbefehl bleibt unverändert. Quelle: .gov/gov:554; archiv/governance-alt/working-memory/README.md:38."
     }
   },
   "counters": {
-    "F": 35,
+    "F": 36,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
