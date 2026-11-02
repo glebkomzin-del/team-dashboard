@@ -532,10 +532,17 @@
       ],
       "state": "aktiv",
       "text": "Eine aktuelle angemeldete Browserprüfung einschließlich Passwortwiederherstellung und Produktionsabnahme ist im Umbau nicht belegt. Quelle: archiv/governance-alt/umbau-20261101/vorpruefung.md."
+    },
+    "F-014": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Wiederherstellungswerkzeuge bestimmen den äußeren supabase/-Pfad über zwei Elternverzeichnisse; die unveränderten Originalpfade bleiben bestehen. Die Kopie im Repository ersetzt keinen geprüften Deploy-/Restoreweg. Quelle: working-memory/restore_schema.py:23."
     }
   },
   "counters": {
-    "F": 13,
+    "F": 14,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
