@@ -630,10 +630,17 @@
       ],
       "state": "aktiv",
       "text": "Die Fachvorgabe beschreibt einen unabhängigen Testsatz und Quellzuordnung als Qualitätsziele; die frühere Annahme perfekter Vergleichsfälle als Voraussetzung für den technischen Betrieb wurde später ausdrücklich geändert. Quelle: working-memory/docs/NEXT-OPERATIONS.md:343"
+    },
+    "F-028": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Historisch offen zum 2026-10-29T00:31:33: Welche konkreten Ursachen die 22 ursprünglichen ValueError-Streamabschlüsse hatten, bleibt ungeklärt: ihre eigentlichen Streamfehler wurden damals nicht ausreichend gespeichert. Der später bei Quelle16 nachgewiesene Tokenlimit-Abschluss belegt nicht die Ursachen aller alten Fehler. Die erfolgreiche erneute Verarbeitung ersetzt diesen historischen Ursachenbeleg nicht. Beleg: Reparaturkapsel README.md. Quelle: archiv/governance-alt/wissen/verarbeitung/F%2D20261029-003133-2c14-historische-streamursachen-unbekannt.md:13"
     }
   },
   "counters": {
-    "F": 27,
+    "F": 28,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
