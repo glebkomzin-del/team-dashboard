@@ -518,10 +518,17 @@
       ],
       "state": "aktiv",
       "text": "Der Betriebsroutentest tests/planning-route.test.mjs:9 ist rot: Erwartung einer eigenen Betriebsroute widerspricht der Weiterleitung nach Einstellungen. Quelle: tests/planning-route.test.mjs:7; src/features/working-memory/planning.ts:28."
+    },
+    "F-012": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die vollständige Python-Suite ist vor dem Umbau rot: erster Lauf 521 Tests mit sieben Fehlern, Wiederholung 521 Tests mit sechs Fehlern; Archiv-HTTP und kompakte Pipeline-Integration sind betroffen. Ursache und Stabilität sind gesondert zu prüfen. Quelle: archiv/governance-alt/umbau-20261101/python-basis.txt."
     }
   },
   "counters": {
-    "F": 11,
+    "F": 12,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
