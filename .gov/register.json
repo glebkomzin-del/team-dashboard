@@ -511,10 +511,17 @@
       "state": "aktiv",
       "text": "2026-10-13: Das damalige Zielbild sieht die vorbereitete Übergabe an die Arbeits-KI als Phase-1-Ziel vor; Ausführung und Vault-Zugriff liegen in Phase 2. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
       "source": "working-memory/docs/ZIELBILD-PHASE1.md:27"
+    },
+    "F-011": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Der Betriebsroutentest tests/planning-route.test.mjs:9 ist rot: Erwartung einer eigenen Betriebsroute widerspricht der Weiterleitung nach Einstellungen. Quelle: tests/planning-route.test.mjs:7; src/features/working-memory/planning.ts:28."
     }
   },
   "counters": {
-    "F": 10,
+    "F": 11,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
