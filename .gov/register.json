@@ -588,10 +588,17 @@
       ],
       "state": "aktiv",
       "text": "Lieferweg zur Arbeit und Zulässigkeit des Datenflusses Arbeitsmeetings → privates System → Arbeits-KI waren ungeklärt. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:129"
+    },
+    "F-022": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Das vorgeschlagene Hot-Set und ein wöchentlicher Vollabgleich waren zum 13.10.2026 weder produktiv freigegeben noch in ihrer Wirksamkeit ausreichend nachgewiesen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:91"
     }
   },
   "counters": {
-    "F": 21,
+    "F": 22,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
