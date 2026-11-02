@@ -771,7 +771,10 @@
       "A-010-6": "Einzelne Aufträge können über eine Betriebsroute eingesehen werden. Quelle: working-memory/server.py:135"
     }
   },
-  "vision": {},
+  "vision": {
+    "tragfaehig": true,
+    "quelle": "Umbau"
+  },
   "features": {
     "F-001": {
       "slug": "F-001-anmeldung-und-navigation",
