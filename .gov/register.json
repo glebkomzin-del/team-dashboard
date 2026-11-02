@@ -1,7 +1,645 @@
 {
-  "ids": {},
-  "counters": {},
-  "accepted": {},
+  "ids": {
+    "F-001": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Oberfläche bietet Anmeldung, Passwortwiederherstellung und Navigation durch die Arbeits- und Wissensbereiche. Quelle: src/pages/MemoryApp.tsx:57"
+    },
+    "A-001-1": {
+      "parents": [
+        "F-001"
+      ],
+      "state": "aktiv",
+      "text": "Die Anmeldemaske bietet Anmeldung und Anforderung eines Wiederherstellungslinks. Quelle: src/features/auth/AuthForms.tsx:11"
+    },
+    "A-001-2": {
+      "parents": [
+        "F-001"
+      ],
+      "state": "aktiv",
+      "text": "Nach Prüfung der Sitzung zeigt die Anwendung entweder Anmeldemaske, Passwortwiederherstellung oder die Arbeitsoberfläche. Quelle: src/pages/MemoryApp.tsx:83"
+    },
+    "A-001-3": {
+      "parents": [
+        "F-001"
+      ],
+      "state": "aktiv",
+      "text": "Die Navigation bietet Übersicht, Todos, Team, Fragen, Prüfungen, Meetings, Wissen und Einstellungen. Quelle: src/pages/MemoryApp.tsx:17"
+    },
+    "F-002": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Oberfläche zeigt den Arbeitsstand und bietet Wochenplanung, Aufgabenbearbeitung und Statuswechsel. Quelle: src/pages/ProductivityPage.tsx:53"
+    },
+    "A-002-1": {
+      "parents": [
+        "F-002"
+      ],
+      "state": "aktiv",
+      "text": "Die Übersicht zeigt für heute geplante und überfällige Aufgaben und führt zur Wochenplanung. Quelle: src/features/working-memory/WorkspaceOverview.tsx:15"
+    },
+    "A-002-2": {
+      "parents": [
+        "F-002"
+      ],
+      "state": "aktiv",
+      "text": "Die Aufgabenansicht bietet Wochenwechsel, Suche und Filter. Quelle: src/pages/ProductivityPage.tsx:213"
+    },
+    "A-002-3": {
+      "parents": [
+        "F-002"
+      ],
+      "state": "aktiv",
+      "text": "Ein Todo kann mit Titel, Zuständigkeit, Plantag, Frist, Priorität und Notiz angelegt oder geplant werden. Quelle: src/features/working-memory/PlannerEditor.tsx:25"
+    },
+    "A-002-4": {
+      "parents": [
+        "F-002"
+      ],
+      "state": "aktiv",
+      "text": "Ein Statuswechsel sendet einen revisionsgebundenen Änderungsauftrag. Quelle: src/pages/ProductivityPage.tsx:182"
+    },
+    "A-002-5": {
+      "parents": [
+        "F-002"
+      ],
+      "state": "aktiv",
+      "text": "Die Übersicht wird aus der revisionsgebundenen Arbeitsprojektion geliefert. Quelle: working-memory/server.py:177"
+    },
+    "F-003": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Oberfläche zeigt Aufgaben nach Teamumfang und bietet eine Verwaltung des direkten Teams. Quelle: src/pages/ProductivityPage.tsx:215"
+    },
+    "A-003-1": {
+      "parents": [
+        "F-003"
+      ],
+      "state": "aktiv",
+      "text": "Die Teamansicht bietet die Auswahl zwischen aktivem Team, ehemaligen Personen und weiteren Kontakten. Quelle: src/pages/ProductivityPage.tsx:215"
+    },
+    "A-003-2": {
+      "parents": [
+        "F-003"
+      ],
+      "state": "aktiv",
+      "text": "Unter Einstellungen kann das direkte Team verwaltet werden. Quelle: src/pages/SettingsPage.tsx:81"
+    },
+    "A-003-3": {
+      "parents": [
+        "F-003"
+      ],
+      "state": "aktiv",
+      "text": "Die Teamverwaltung erklärt, dass frühere Namen und Schreibweisen die Zuordnung bestehender Todos unterstützen. Quelle: src/pages/SettingsPage.tsx:65"
+    },
+    "F-004": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Oberfläche zeigt Aussagen und erlaubt bei bearbeitbarem aktuellem Stand, Vorschläge zu übernehmen, zu verwerfen oder zu korrigieren. Quelle: src/pages/ProductivityPage.tsx:186"
+    },
+    "A-004-1": {
+      "parents": [
+        "F-004"
+      ],
+      "state": "aktiv",
+      "text": "Wissen und Prüfungen lassen sich nach Suchtext, Person, Thema und Art filtern. Quelle: src/pages/ProductivityPage.tsx:217"
+    },
+    "A-004-2": {
+      "parents": [
+        "F-004"
+      ],
+      "state": "aktiv",
+      "text": "Ein geöffnetes Wissenselement zeigt Inhalt und Belegbewertung und kann zum Original führen. Quelle: src/pages/ProductivityPage.tsx:230"
+    },
+    "A-004-3": {
+      "parents": [
+        "F-004"
+      ],
+      "state": "aktiv",
+      "text": "Prüfung erlaubt Übernehmen oder Bestätigen; beim Verwerfen öffnet sich ein Bearbeitungsdialog. Quelle: src/pages/ProductivityPage.tsx:186"
+    },
+    "A-004-4": {
+      "parents": [
+        "F-004"
+      ],
+      "state": "aktiv",
+      "text": "Gültige persönliche Entscheidungen werden dem Journal hinzugefügt. Quelle: working-memory/journal_service.py:224"
+    },
+    "A-004-5": {
+      "parents": [
+        "F-004"
+      ],
+      "state": "aktiv",
+      "text": "Die Originalbearbeitung zeigt einen vorbereiteten Vergleich und bietet eine ausdrückliche Übernahme. Quelle: src/features/working-memory/SourceEditor.tsx:114"
+    },
+    "F-005": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Der Dienst kann Drive-Originale mit Version archivieren; die Oberfläche bietet Originale und gespeicherte Zusammenfassungen. Quelle: working-memory/drive_intake.py:52; src/pages/ArchivePage.tsx:29"
+    },
+    "A-005-1": {
+      "parents": [
+        "F-005"
+      ],
+      "state": "aktiv",
+      "text": "Die Annahme prüft Dokumentformat, Quellidentität und vollständigen Transkripttext. Quelle: working-memory/drive_intake.py:12"
+    },
+    "A-005-2": {
+      "parents": [
+        "F-005"
+      ],
+      "state": "aktiv",
+      "text": "Vorhandene identische Versionen werden wiederverwendet; abweichende Identität wird zurückgewiesen. Quelle: working-memory/drive_intake.py:54"
+    },
+    "A-005-3": {
+      "parents": [
+        "F-005"
+      ],
+      "state": "aktiv",
+      "text": "Die Meetingdetails laden das angeforderte Archivoriginal. Quelle: src/pages/ArchivePage.tsx:44"
+    },
+    "A-005-4": {
+      "parents": [
+        "F-005"
+      ],
+      "state": "aktiv",
+      "text": "Wo Zusammenfassungen vorhanden sind, kann zwischen Zusammenfassung und Original gewechselt werden. Quelle: src/pages/ArchivePage.tsx:85"
+    },
+    "A-005-5": {
+      "parents": [
+        "F-005"
+      ],
+      "state": "aktiv",
+      "text": "Das Archiv kann nach Suchbegriff und zeitlichen Parametern abgefragt werden. Quelle: working-memory/server.py:145"
+    },
+    "F-006": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Oberfläche bietet Gespräche über Notizen und ordnet Antworten ihrer Anfrage und ihrem Gespräch zu. Quelle: src/features/working-memory/NotesChat.tsx:121"
+    },
+    "A-006-1": {
+      "parents": [
+        "F-006"
+      ],
+      "state": "aktiv",
+      "text": "Ein Gespräch kann angelegt und aus der Gesprächsliste ausgewählt werden. Quelle: src/features/working-memory/NotesChat.tsx:185"
+    },
+    "A-006-2": {
+      "parents": [
+        "F-006"
+      ],
+      "state": "aktiv",
+      "text": "Eine Frage wird über die Fragen-Schnittstelle gesendet. Quelle: src/features/working-memory/NotesChat.tsx:224"
+    },
+    "A-006-3": {
+      "parents": [
+        "F-006"
+      ],
+      "state": "aktiv",
+      "text": "Bei einer nicht zuordenbaren Antwort oder unterbrochenen Verbindung erscheint ein Fehler mit Wiederholungsmöglichkeit. Quelle: src/features/working-memory/NotesChat.tsx:254"
+    },
+    "A-006-4": {
+      "parents": [
+        "F-006"
+      ],
+      "state": "aktiv",
+      "text": "Gespräche lassen sich erstellen, auflisten und anhand ihrer Kennung abrufen. Quelle: working-memory/memory_chat.py:28"
+    },
+    "A-006-5": {
+      "parents": [
+        "F-006"
+      ],
+      "state": "aktiv",
+      "text": "Fragen werden bei aktivierter Funktion über einen Frageauftrag eingereicht. Quelle: working-memory/server.py:298"
+    },
+    "F-007": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Hinterlegte Quellaufträge werden verarbeitet; Providerabrufe werden mit Reservierung und Beleg geführt. Quelle: working-memory/canonical_worker.py:58"
+    },
+    "A-007-1": {
+      "parents": [
+        "F-007"
+      ],
+      "state": "aktiv",
+      "text": "Vor einem Providerabruf werden Kosten reserviert und die Anfrageidentität anhand des Hashes geprüft. Quelle: working-memory/durable_calls.py:49"
+    },
+    "A-007-2": {
+      "parents": [
+        "F-007"
+      ],
+      "state": "aktiv",
+      "text": "Eine bereits gespeicherte Antwort wird wiederverwendet. Quelle: working-memory/durable_calls.py:68"
+    },
+    "F-008": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Ein angemeldeter Eigentümer kann bei aktivierter Funktion die Löschung eines Originalquelltexts beantragen und den Status abfragen. Quelle: working-memory/server.py:219"
+    },
+    "A-008-1": {
+      "parents": [
+        "F-008"
+      ],
+      "state": "aktiv",
+      "text": "Der Löschvorgang startet erst nach Bestätigung und kann nach Unterbrechung fortgesetzt werden. Quelle: src/pages/ArchivePage.tsx:63"
+    },
+    "A-008-2": {
+      "parents": [
+        "F-008"
+      ],
+      "state": "aktiv",
+      "text": "Der Auftrag wird für die Eigentümerrolle angenommen und kann bei längerer Ausführung einen Zwischenstatus liefern. Quelle: working-memory/server.py:319"
+    },
+    "A-008-3": {
+      "parents": [
+        "F-008"
+      ],
+      "state": "aktiv",
+      "text": "Die Löschung erstellt einen vorbereiteten, quellbezogenen Bereinigungsplan und verarbeitet Kandidaten seitenweise. Quelle: working-memory/original_deletion_service.py:36"
+    },
+    "A-008-4": {
+      "parents": [
+        "F-008"
+      ],
+      "state": "aktiv",
+      "text": "Die Ausführung prüft den Projektionsstand vor dem Löschaufruf. Quelle: working-memory/original_deletion_service.py:66"
+    },
+    "F-009": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Der Sicherungslauf kann Journal, Archiv und zugehörige Aufträge an einer festen Grenze exportieren und prüfen. Quelle: working-memory/canonical_backup.py:232"
+    },
+    "A-009-1": {
+      "parents": [
+        "F-009"
+      ],
+      "state": "aktiv",
+      "text": "Der Export bindet sich an eine Snapshot-Kennung und prüft die Seitenfolge. Quelle: working-memory/canonical_backup.py:232"
+    },
+    "A-009-2": {
+      "parents": [
+        "F-009"
+      ],
+      "state": "aktiv",
+      "text": "Das Manifest enthält Dateigrößen und SHA-256-Prüfsummen; anschließend wird der Export verifiziert. Quelle: working-memory/canonical_backup.py:251"
+    },
+    "F-010": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Oberfläche bietet Geräteeinstellungen und zeigt Informationen über Verarbeitung, Budget und Sicherungen. Quelle: src/pages/SettingsPage.tsx:68"
+    },
+    "A-010-1": {
+      "parents": [
+        "F-010"
+      ],
+      "state": "aktiv",
+      "text": "Startseite und Darstellung können für das Gerät eingestellt werden. Quelle: src/pages/SettingsPage.tsx:77"
+    },
+    "A-010-2": {
+      "parents": [
+        "F-010"
+      ],
+      "state": "aktiv",
+      "text": "Der Bereich Verarbeitung zeigt den vom Dienst gelieferten Status und behandelt nicht erreichbare Daten als Fehler. Quelle: src/features/working-memory/ProcessingPanel.tsx:26"
+    },
+    "A-010-3": {
+      "parents": [
+        "F-010"
+      ],
+      "state": "aktiv",
+      "text": "Sicherungszustände und gegebenenfalls veraltete Sicherungen werden angezeigt. Quelle: src/features/working-memory/ProcessingPanel.tsx:51"
+    },
+    "A-010-4": {
+      "parents": [
+        "F-010"
+      ],
+      "state": "aktiv",
+      "text": "Kostenreservierung, Budget und gegebenenfalls wartende Quellen werden dargestellt. Quelle: src/features/working-memory/ProcessingPanel.tsx:69"
+    },
+    "A-010-5": {
+      "parents": [
+        "F-010"
+      ],
+      "state": "aktiv",
+      "text": "Die Statusantwort enthält Betriebsmodus, Verarbeitungsstatus und Sicherungsstatus. Quelle: working-memory/server.py:139"
+    },
+    "A-010-6": {
+      "parents": [
+        "F-010"
+      ],
+      "state": "aktiv",
+      "text": "Einzelne Aufträge können über eine Betriebsroute eingesehen werden. Quelle: working-memory/server.py:135"
+    },
+    "E-001": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-12: - **Entscheidung:** Analyse und Planung nur anhand vorhandener Messdaten (Ledger, gespeicherte Requests); Delegation an lesende Sub-Agents mit komprimierter Rückgabe. - **Grund:** Das Testbudget aus dem Kostenpaket ist ausgeschöpft bzw. ohne neue Freigabe nicht nutzbar; Flex lieferte keine belastbaren Vergleiche. - **Verworfen:** Sofortige weitere Vergleichsläufe mit echten Meetings (Kosten, keine neue Freigabe). Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "DECISIONS.md:5"
+    },
+    "E-002": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-30T16:31:00: Grund: Gleb beauftragte am 30.10.2026 ausdrücklich die lokale Umstellung auf Projekt-Governance 4.0. Ausgeführt mit dem vorhandenen Umstellungswerkzeug im Wurzelordner der installierten Version. Bisheriges Wissen bleibt unter wissen/ erhalten; knowledge/ verweist darauf. Frühere Übersichten sind unverändert unter .governance/alt-v3/ erhalten. Bestehende Produktarbeit und Produktionssysteme wurden nicht geändert. Historische Freigaben gelten nicht als neue Freigaben. Erhalt, Wiederholung und Rückbau wurden in einer getrennten Kopie geprüft. Nachweis: outputs/governance-4-umstellung-20261030.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/produkt/D-20261030-163100-6d91-governance-4-umstellung.md:13"
+    },
+    "E-003": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:29:25: Genau die 22 festgelegten Originale wurden auf Glebs ausdrückliche Anweisung vollständig mit der normalen KI-Pipeline ausgewertet; synthetische kostenpflichtige Proben blieben ausgeschlossen. Modelle, Tarife, Originale, bestehende Quellen und persönliche Entscheidungen waren zu erhalten. Grund: Die spätere Anweisung, die 22 Quellen ganz normal durch die Pipeline zu schicken, änderte den zuvor auf kostenfreie Diagnose begrenzten Umfang genau für diese realen Quellen. Belege: meeting-os/working-memory/evaluation/processing-repair-20261028/README.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-002925-e233-regulaerer-22-quellen-auftrag.md:13"
+    },
+    "E-004": {
+      "parents": [
+        "V"
+      ],
+      "state": "ersetzt",
+      "text": "2026-10-29T00:31:33: Nur die exakt per ursprünglichem Requesthash gebundene Extraktionsanfrage von Quelle16 durfte im geprüften zusätzlichen Versuch 48000 statt 24000 Ausgabetokens verwenden. Prompt, Schema, Modell, Tarif und Inhaltsprüfungen blieben unverändert; Budgetreservierung verwendete das höhere tatsächliche Limit. Grund: der bekannte vollständige Anbieterabschluss benannte max_output_tokens und war bereits korrekt mit 149115 Mikro-USD verbucht. Keine globale Erhöhung der Limits. Beleg: Reparaturkapsel reprocess/README.md. Historischer Eintrag mit dokumentierter Ablösung.",
+      "source": "wissen/verarbeitung/D-20261029-003133-6694-quelle16-gebundenes-ausgabelimit.md:13",
+      "replaced_by": "E-011"
+    },
+    "E-005": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:31:33: Für die Vollpipeline wird der bestehende normale Reserve-/Empfangsweg mit unveränderlichen Einzelplätzen verwendet; alte Antworten, Reservierungen und Kosten bleiben erhalten. Ein Import bekannter Antworten und eine Wiederaufnahme lösen keinen erneuten Versand aus, ungeklärte Reservierungen sperren weitere Sends. Grund: der manuelle 32er-Weg ist zu klein und ein blindes Zurücksetzen würde Herkunft und Abrechnung beschädigen. Keine produktive Schemaänderung. Belege: Reparaturkapsel reprocess/README.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003133-71d1-normaler-dauerhafter-kostenweg.md:13"
+    },
+    "E-006": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:31:33: Nach konkreter Inhaltsprüfung wurde für Quelle15 genau ein weiterer vollständiger Normalversuch mit neuem auditiertem Befehl, getrennten Antworten und unveränderten Validatoren zugelassen. Der gesperrte Schnellretry wurde nicht als erlaubt ausgegeben. Grund: das erste Modell hatte Gesprächszeit und Aufgabenfrist widersprüchlich eingeordnet; die korrekte Datumsprüfung sollte erhalten bleiben. Beide Versuche sind getrennt und einmal abgerechnet. Beleg: Reparaturkapsel reprocess/README.md. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003133-d0b4-quelle15-ein-gepruefter-normalversuch.md:13"
+    },
+    "E-007": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:31:33: Quelle16 wurde nach dem belegten Kontextstopp im selben Versuch mit allen 123 Antworten der Plätze2–124 fortgesetzt. Nur die gebundenen normalen compact-Stufen durften den vorhandenen exakten Eingabetoken-Count statt der konservativen Byte-Schätzung nutzen; Count plus4096 plus vollem normalen Ausgabelimit musste weiterhin höchstens1050000 sein. Derselbe Count ging in die normale Kostenreservierung ein, kein neuer Vollversuch oder doppelter Kostenbereich entstand. Grund: genaue Zählung beseitigte den falschen Größenstopp ohne Datenkürzung oder gelockerte Inhaltsprüfung. Belege: Reparaturkapsel reprocess/context-report.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003133-e101-quelle16-praezise-kontextfortsetzung.md:13"
+    },
+    "E-008": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:31:34: Nach der vollständigen Prüfung aller22 Übernahmen und des echten Dashboardcaches wurden die ursprünglichen Betriebsflags und Ressourcen wiederhergestellt: Lesemodus aus, Automatik/Annahme/Fragen/Originallöschung an, eine CPU und1.5GiB RAM mit ursprünglichem Swaplimit. Grund: die höheren Ressourcen und Verarbeitungssperren waren vorübergehende Betriebshilfen; ein gestarteter Batch allein war kein Abschlussbeleg. Nach Neustart wurden Daten, Cache, Gesundheit und fehlende Neustartschleife geprüft. Belege: Reparaturkapsel audit/cache-final.json, runtime-restored.json und runtime-stability.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003134-2610-normalbetrieb-nach-vollpruefung.md:13"
+    },
+    "E-009": {
+      "parents": [
+        "V"
+      ],
+      "state": "ersetzt",
+      "text": "2026-10-29T00:31:34: Die24 temporären archive.sqlite-Arbeitskopien mit1571074048Bytes bleiben bis zur ausdrücklichen Löschfreigabe erhalten. Eine mögliche Bereinigung ist auf die einzelnen manifestgebundenen Prüfsummen begrenzt und schließt Originale, Ergebnisse, Modellbelege und Sicherungen aus. Grund: Glebs Regel14 verlangt Freigabe für Löschungen außerhalb des Repos; seine Freigabe des Serverzugangs ist keine Löschfreigabe. Die aktuelle Aufforderung zur Wissenspflege erteilt ebenfalls keine solche Freigabe. Beleg: Reparaturkapsel audit/scratch-cleanup-plan.json. Historischer Eintrag mit dokumentierter Ablösung.",
+      "source": "wissen/verarbeitung/D-20261029-003134-276a-archivkopien-bis-loeschfreigabe.md:13",
+      "replaced_by": "E-013"
+    },
+    "E-010": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:31:34: Reparatur und Betriebswerkzeuge wurden in einer abgegrenzten Kapsel gehalten; fremde Hauptstandsdateien wurden nicht überschrieben und kein Push ausgeführt. Grund: zu Beginn war der Hauptstand bereits parallel verändert beziehungsweise teilweise unversioniert. Lokale Commits und vollständiges Rücklesen sichern die geprüfte Kapsel;979 fremde Indexdatensätze einschließlich6 vorgemerkter Änderungen blieben unverändert. Belege: Reparaturkapsel README.md und audit/private/local-save.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003134-b55b-abgegrenzte-kapsel-und-lokale-sicherung.md:13"
+    },
+    "E-011": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:35:17: Quelle16 erhielt nach dem bekannten 24000-Token-Abschluss einen geprüften Vollversuch: Befehl e9a2a394-dab8-5585-b7ee-7570223ac4b8, Startplatz2. Ausschließlich die durch den ursprünglichen Requesthash gebundene Extraktionsanfrage durfte48000 Ausgabetokens verwenden; Prompt, Schema, Modell, Tarif und Inhaltsprüfungen blieben unverändert. Die spätere präzise Kontextprüfung setzte genau diesen Befehl fort und erzeugte keinen weiteren Vollversuch. Grund: der gespeicherte Abschluss benannte max_output_tokens und war bereits korrekt mit149115Mikro-USD verbucht; eine globale Limiterhöhung war unnötig. Präzisierung des älteren Eintrags zur Abgrenzung von neuem Vollversuch und späterer Fortsetzung. Beleg: Reparaturkapsel reprocess/README.md und audit/reprocess22-final.json. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003517-8140-quelle16-ausgabe-und-versuchsfolge.md:13"
+    },
+    "E-012": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T00:39:47: Der produktive Reparaturumfang blieb auf memory.py, openai_provider.py und die daraus abgeleitete Pipelinekennung begrenzt. Bereits vom Gate gesperrte Aufgabenänderungen werden als Wissen des ursprünglichen bekannten Bereichs erhalten und erzeugen kein Arbeitsereignis; wirksame bereichsfremde Änderungen bleiben abgewiesen. Der Provideradapter erhält ausschließlich begrenzte technische Streamdiagnosen, keine freien Fehlertexte oder Geheimnisse; automatische Wiederholungen und Modelle wurden nicht global erweitert. Grund: die doppelte Wirksamkeitsprüfung hatte zwei gesamte Quellen trotz bereits gesperrter Aufgabenwirkung abgewiesen, während sichere Diagnosen für die späteren Altfehler fehlten. Echte Vorher-Nachher-Wiederholungen und29 Tests bestätigten diese eng begrenzte Reparatur. Belege: Reparaturkapsel replay/README.md, replay/overlay/memory.py und provider/openai_provider.py. Historischer Einzelauftrag; keine neue oder allgemeine Freigabe.",
+      "source": "wissen/verarbeitung/D-20261029-003947-10c1-minimaler-speicher-und-diagnosefix.md:13"
+    },
+    "E-013": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-29T09:13:58: Gleb hat am29.10.2026 ausdrücklich freigegeben: Ja, nur diese Arbeitskopien entfernen. Die Freigabe gilt ausschließlich den24 im Manifest768be63bc2b40387a5e5ca07f9c8d3eb8bfdd6e043dc4a2931403dc8d8f38679 bezeichneten temporären archive.sqlite-Dateien mit1571074048Bytes. Vor dem Löschen sind Originalpfade, Prüfsummen, abgeschlossene Zielaufträge und die unveränderte geprüfte Sicherung zu kontrollieren; veränderte Dateien bleiben unangetastet. Ergebnisse, Originaldaten, Modellbelege, Sicherungen und andere Arbeitskopien sind ausgenommen. Bereits fehlende Dateien werden als bereits entfernt ausgewiesen. Grund: Die konkrete Löschfreigabe erfüllt jetzt Regel14; die frühere allgemeine Serverzugangsfreigabe allein hatte dafür nicht genügt. Beleg: aktuelle Nutzerantwort und Reparaturkapsel audit/scratch-cleanup-plan.json. Historisch abgeschlossener Einzelauftrag.",
+      "source": "wissen/verarbeitung/D-20261029-091358-2648-freigabe-nur-24-archivkopien.md:13"
+    },
+    "E-014": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-09-07: Die Quelle dokumentiert eine ausdrücklich bestätigte Übernahme samt finalen Korrekturen und Abschaltung der Altlogik sowie eine historische zunächst pausierte neue Automatik. Historische Fortschreibung: Die dauerhafte Verarbeitung neuer Notizen wurde laut späterem Auftrag vom 21.09.2026 angeordnet. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/CUTOVER-PLAN.md:3"
+    },
+    "E-015": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-09-21: Der Nutzer beauftragte die dauerhafte automatische Verarbeitung und Speicherung neu hinzukommender Notizen; der frühere Idle-Stopp nach Rückstandsverarbeitung wurde aufgehoben. Historische Fortschreibung: Die dort genannte Terra-Standardannahme wurde laut Auftrag vom 06.10.2026 durch Sol mit begründeter Ausnahme ersetzt. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:645"
+    },
+    "E-016": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-04: Nach der Writer-Öffnung darf das frühere Source-Supabase nicht als aktueller Datenstand verbunden oder durch den historischen Rückweg reaktiviert werden; der dokumentierte Rückweg verwendet einen Target-Backup. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/RESTORE-RUNBOOK.md:201"
+    },
+    "E-017": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-05: Der Nutzer verlangte, den Fehler, der die Verarbeitung blockierte, sowie ähnliche Fälle zukünftig zu verhindern; die Quelle behauptet damit keine erreichte Fehlerfreiheit. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:387"
+    },
+    "E-018": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-06: Gleb beauftragte GPT-6.1 Sol für aktive Terra-Einsatzstellen, außer ein konkreter relevanter Nachweis spricht für Terra; für das bekannte Aufgabenprofil ist Medium vorgesehen. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:341"
+    },
+    "E-019": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-06: Gleb änderte die Produktabnahme: Verarbeitung und Rückstandsabbau sollen funktionieren; weitere Lead-Modellbenchmarks sind laut damaligem Auftrag kein Betriebsfreigabetor. Integrität und Sichtbarkeit fehlerhafter Quellen bleiben Pflicht. Historische Fortschreibung: Ersetzt die frühere Annahme, vor Öffnung der Verarbeitung sechs perfekte fachliche Vergleichsfälle zu verlangen. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/NEXT-OPERATIONS.md:343"
+    },
+    "E-020": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "2026-10-13: Das damalige Zielbild sieht die vorbereitete Übergabe an die Arbeits-KI als Phase-1-Ziel vor; Ausführung und Vault-Zugriff liegen in Phase 2. Historischer Auftrag; aktuelle externe Umsetzung ist damit nicht erneut geprüft.",
+      "source": "working-memory/docs/ZIELBILD-PHASE1.md:27"
+    }
+  },
+  "counters": {
+    "F": 10,
+    "A-001": 3,
+    "A-002": 5,
+    "A-003": 3,
+    "A-004": 5,
+    "A-005": 5,
+    "A-006": 5,
+    "A-007": 2,
+    "A-008": 4,
+    "A-009": 2,
+    "A-010": 6,
+    "E": 20
+  },
+  "accepted": {
+    "F-001": {
+      "A-001-1": "Die Anmeldemaske bietet Anmeldung und Anforderung eines Wiederherstellungslinks. Quelle: src/features/auth/AuthForms.tsx:11",
+      "A-001-2": "Nach Prüfung der Sitzung zeigt die Anwendung entweder Anmeldemaske, Passwortwiederherstellung oder die Arbeitsoberfläche. Quelle: src/pages/MemoryApp.tsx:83",
+      "A-001-3": "Die Navigation bietet Übersicht, Todos, Team, Fragen, Prüfungen, Meetings, Wissen und Einstellungen. Quelle: src/pages/MemoryApp.tsx:17"
+    },
+    "F-002": {
+      "A-002-1": "Die Übersicht zeigt für heute geplante und überfällige Aufgaben und führt zur Wochenplanung. Quelle: src/features/working-memory/WorkspaceOverview.tsx:15",
+      "A-002-2": "Die Aufgabenansicht bietet Wochenwechsel, Suche und Filter. Quelle: src/pages/ProductivityPage.tsx:213",
+      "A-002-3": "Ein Todo kann mit Titel, Zuständigkeit, Plantag, Frist, Priorität und Notiz angelegt oder geplant werden. Quelle: src/features/working-memory/PlannerEditor.tsx:25",
+      "A-002-4": "Ein Statuswechsel sendet einen revisionsgebundenen Änderungsauftrag. Quelle: src/pages/ProductivityPage.tsx:182",
+      "A-002-5": "Die Übersicht wird aus der revisionsgebundenen Arbeitsprojektion geliefert. Quelle: working-memory/server.py:177"
+    },
+    "F-003": {
+      "A-003-1": "Die Teamansicht bietet die Auswahl zwischen aktivem Team, ehemaligen Personen und weiteren Kontakten. Quelle: src/pages/ProductivityPage.tsx:215",
+      "A-003-2": "Unter Einstellungen kann das direkte Team verwaltet werden. Quelle: src/pages/SettingsPage.tsx:81",
+      "A-003-3": "Die Teamverwaltung erklärt, dass frühere Namen und Schreibweisen die Zuordnung bestehender Todos unterstützen. Quelle: src/pages/SettingsPage.tsx:65"
+    },
+    "F-004": {
+      "A-004-1": "Wissen und Prüfungen lassen sich nach Suchtext, Person, Thema und Art filtern. Quelle: src/pages/ProductivityPage.tsx:217",
+      "A-004-2": "Ein geöffnetes Wissenselement zeigt Inhalt und Belegbewertung und kann zum Original führen. Quelle: src/pages/ProductivityPage.tsx:230",
+      "A-004-3": "Prüfung erlaubt Übernehmen oder Bestätigen; beim Verwerfen öffnet sich ein Bearbeitungsdialog. Quelle: src/pages/ProductivityPage.tsx:186",
+      "A-004-4": "Gültige persönliche Entscheidungen werden dem Journal hinzugefügt. Quelle: working-memory/journal_service.py:224",
+      "A-004-5": "Die Originalbearbeitung zeigt einen vorbereiteten Vergleich und bietet eine ausdrückliche Übernahme. Quelle: src/features/working-memory/SourceEditor.tsx:114"
+    },
+    "F-005": {
+      "A-005-1": "Die Annahme prüft Dokumentformat, Quellidentität und vollständigen Transkripttext. Quelle: working-memory/drive_intake.py:12",
+      "A-005-2": "Vorhandene identische Versionen werden wiederverwendet; abweichende Identität wird zurückgewiesen. Quelle: working-memory/drive_intake.py:54",
+      "A-005-3": "Die Meetingdetails laden das angeforderte Archivoriginal. Quelle: src/pages/ArchivePage.tsx:44",
+      "A-005-4": "Wo Zusammenfassungen vorhanden sind, kann zwischen Zusammenfassung und Original gewechselt werden. Quelle: src/pages/ArchivePage.tsx:85",
+      "A-005-5": "Das Archiv kann nach Suchbegriff und zeitlichen Parametern abgefragt werden. Quelle: working-memory/server.py:145"
+    },
+    "F-006": {
+      "A-006-1": "Ein Gespräch kann angelegt und aus der Gesprächsliste ausgewählt werden. Quelle: src/features/working-memory/NotesChat.tsx:185",
+      "A-006-2": "Eine Frage wird über die Fragen-Schnittstelle gesendet. Quelle: src/features/working-memory/NotesChat.tsx:224",
+      "A-006-3": "Bei einer nicht zuordenbaren Antwort oder unterbrochenen Verbindung erscheint ein Fehler mit Wiederholungsmöglichkeit. Quelle: src/features/working-memory/NotesChat.tsx:254",
+      "A-006-4": "Gespräche lassen sich erstellen, auflisten und anhand ihrer Kennung abrufen. Quelle: working-memory/memory_chat.py:28",
+      "A-006-5": "Fragen werden bei aktivierter Funktion über einen Frageauftrag eingereicht. Quelle: working-memory/server.py:298"
+    },
+    "F-007": {
+      "A-007-1": "Vor einem Providerabruf werden Kosten reserviert und die Anfrageidentität anhand des Hashes geprüft. Quelle: working-memory/durable_calls.py:49",
+      "A-007-2": "Eine bereits gespeicherte Antwort wird wiederverwendet. Quelle: working-memory/durable_calls.py:68"
+    },
+    "F-008": {
+      "A-008-1": "Der Löschvorgang startet erst nach Bestätigung und kann nach Unterbrechung fortgesetzt werden. Quelle: src/pages/ArchivePage.tsx:63",
+      "A-008-2": "Der Auftrag wird für die Eigentümerrolle angenommen und kann bei längerer Ausführung einen Zwischenstatus liefern. Quelle: working-memory/server.py:319",
+      "A-008-3": "Die Löschung erstellt einen vorbereiteten, quellbezogenen Bereinigungsplan und verarbeitet Kandidaten seitenweise. Quelle: working-memory/original_deletion_service.py:36",
+      "A-008-4": "Die Ausführung prüft den Projektionsstand vor dem Löschaufruf. Quelle: working-memory/original_deletion_service.py:66"
+    },
+    "F-009": {
+      "A-009-1": "Der Export bindet sich an eine Snapshot-Kennung und prüft die Seitenfolge. Quelle: working-memory/canonical_backup.py:232",
+      "A-009-2": "Das Manifest enthält Dateigrößen und SHA-256-Prüfsummen; anschließend wird der Export verifiziert. Quelle: working-memory/canonical_backup.py:251"
+    },
+    "F-010": {
+      "A-010-1": "Startseite und Darstellung können für das Gerät eingestellt werden. Quelle: src/pages/SettingsPage.tsx:77",
+      "A-010-2": "Der Bereich Verarbeitung zeigt den vom Dienst gelieferten Status und behandelt nicht erreichbare Daten als Fehler. Quelle: src/features/working-memory/ProcessingPanel.tsx:26",
+      "A-010-3": "Sicherungszustände und gegebenenfalls veraltete Sicherungen werden angezeigt. Quelle: src/features/working-memory/ProcessingPanel.tsx:51",
+      "A-010-4": "Kostenreservierung, Budget und gegebenenfalls wartende Quellen werden dargestellt. Quelle: src/features/working-memory/ProcessingPanel.tsx:69",
+      "A-010-5": "Die Statusantwort enthält Betriebsmodus, Verarbeitungsstatus und Sicherungsstatus. Quelle: working-memory/server.py:139",
+      "A-010-6": "Einzelne Aufträge können über eine Betriebsroute eingesehen werden. Quelle: working-memory/server.py:135"
+    }
+  },
   "vision": {},
-  "features": {}
+  "features": {
+    "F-001": {
+      "slug": "F-001-anmeldung-und-navigation",
+      "name": "Anmeldung und Navigation",
+      "cycle": 1
+    },
+    "F-002": {
+      "slug": "F-002-arbeits-bersicht-und-aufgabenplanung",
+      "name": "Arbeitsübersicht und Aufgabenplanung",
+      "cycle": 1
+    },
+    "F-003": {
+      "slug": "F-003-teamansicht-und-teamverwaltung",
+      "name": "Teamansicht und Teamverwaltung",
+      "cycle": 1
+    },
+    "F-004": {
+      "slug": "F-004-wissen-pr-fen-und-korrigieren",
+      "name": "Wissen prüfen und korrigieren",
+      "cycle": 1
+    },
+    "F-005": {
+      "slug": "F-005-originale-aufnehmen-und-einsehen",
+      "name": "Originale aufnehmen und einsehen",
+      "cycle": 1
+    },
+    "F-006": {
+      "slug": "F-006-notizen-fragen",
+      "name": "Notizen fragen",
+      "cycle": 1
+    },
+    "F-007": {
+      "slug": "F-007-verarbeitung-und-kostenbelege",
+      "name": "Verarbeitung und Kostenbelege",
+      "cycle": 1
+    },
+    "F-008": {
+      "slug": "F-008-originalquelltext-l-schen",
+      "name": "Originalquelltext löschen",
+      "cycle": 1
+    },
+    "F-009": {
+      "slug": "F-009-sicherung-exportieren-und-pr-fen",
+      "name": "Sicherung exportieren und prüfen",
+      "cycle": 1
+    },
+    "F-010": {
+      "slug": "F-010-ger-teeinstellungen-und-betriebs-bersicht",
+      "name": "Geräteeinstellungen und Betriebsübersicht",
+      "cycle": 1
+    }
+  }
 }
