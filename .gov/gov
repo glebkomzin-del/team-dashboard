@@ -823,7 +823,8 @@ class Gov:
     def merge(self, fid):
         require(self.status(fid) == "fertig", "Zusammenführen nur bei Feature-Status fertig.")
         self.main_ready()
-        require(not self.git("status", "--porcelain", cwd=self.main).strip(), "Hauptarbeitskopie ist nicht sauber.")
+        # Unversioniertes überschreibt Git beim Merge nie; liegengebliebene Kopien sperren den Bau nicht.
+        require(not self.git("status", "--porcelain", "--untracked-files=no", cwd=self.main).strip(), "Hauptarbeitskopie ist nicht sauber.")
         self.sync(fid)
         cwd = self.feature_worktree(fid)
         item = self.state["features"][fid]
@@ -971,6 +972,8 @@ class Gov:
             "gov": {"roadmap.md", "journal", ".gov", ".claude", ".codex", ".agents", "AGENTS.md", "CLAUDE.md", ".gitignore", "plan"},
         }
         for status, path in changes:
+            if status == "D" and graph_debris(path):
+                continue  # Der Graph ist Streugut und darf den Index jederzeit verlassen.
             kind = self.category(path)
             require(kind != "schreibweise", "Falsche Schreibweise im Projekt: " + path)
             migrating = role == "gov" and token.get("operation") == "migrate" and branch == self.branch
@@ -2547,6 +2550,8 @@ class Migrate:
 
     def repair_links(self, rows, knowledge=False):
         moved = {r['pfad']: self.target(r) for r in rows if self.target(r) != r['pfad']}
+        if knowledge:  # apply legt beide neu an; das neue Wissen meint die aktiven Dateien.
+            moved = {k: v for k, v in moved.items() if k not in ('AGENTS.md', 'CLAUDE.md')}
         sources = rows if not knowledge else [{'pfad': p, 'klasse': 'Fachdoku'} for p in ('START.md', 'vision.md')]
         for row in sources:
             if row['klasse'] != 'Fachdoku' or not row['pfad'].endswith('.md'):
@@ -2620,9 +2625,11 @@ class Migrate:
         self.repair_links(rows, knowledge=True)
         hints = self.folder / 'wissen/hinweise.md'
         require(not hints.is_symlink(), 'Hinweise dürfen kein Symlink sein.')
-        for adapter, name in (('claude', 'CLAUDE.md'), ('codex', 'AGENTS.md')):
+        # U-18: Die Hinweise haben genau einen Pflegeort.
+        for adapter, name, extra in (('claude', 'CLAUDE.md', 'Technische Hinweise und Befehle: [AGENTS.md](AGENTS.md).\n'),
+                                     ('codex', 'AGENTS.md', read(hints) if hints.exists() else '')):
             atomic(self.root / name, read(self.kit / adapter / name.replace('.md', '.snippet.md')) +
-                   ('\n\n' + read(hints) if hints.exists() else ''))
+                   ('\n\n' + extra if hints.exists() else ''))
         # Gates bleiben aus. Diese Konfiguration wird erst im finish durch init installiert.
         (self.root / '.gov').mkdir(exist_ok=True)
         cfg = self.config()
@@ -2732,8 +2739,23 @@ class Migrate:
                 paths = ['.gov/migration.json', str(destination.relative_to(self.root))]
                 with gov.token(gov.root, 'gov', operation='migrate', main=True) as env:
                     gov.git('add', '-A', '--', *paths)
+                    # Erst nach dem Merge: Der Graph bleibt liegen, wird aber nie wieder als Änderung sichtbar.
+                    gov.git('rm', '-r', '--cached', '--quiet', '--ignore-unmatch', '--', 'graphify-out')
                     gov.git('commit', '-m', 'Umbau abgeschlossen', env=env)
         return destination
+
+    def quarantine_refs(self):
+        """iCloud-Kopien wie „main 2“ legen fetch und log --all lahm. Nur belegbar Entbehrliches wird verschoben."""
+        common = (self.root / self.output('rev-parse', '--git-common-dir')).resolve()
+        for path in sorted(p for p in (common / 'refs').rglob('* *') if p.is_file()):
+            relative = path.relative_to(common)
+            value = read(path).strip()
+            if path.suffix != '.lock' and not self.git('for-each-ref', '--contains', value, '--count=1', check=False).stdout.strip():
+                print('Ungültiger Ref bleibt liegen, sein Commit ist sonst nicht erreichbar: ' + str(relative))
+                continue
+            dest = common / 'gov/ref-quarantaene' / relative
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(path, dest)
 
     @contextlib.contextmanager
     def candidate(self):
@@ -3122,6 +3144,7 @@ class Migrate:
         self.checkout_main(state['main'])
         self.git('merge', '--no-ff', '--no-edit', 'gov/umbau')
         self.finish_steps()
+        self.quarantine_refs()
         graph_update(self.root)
         print('Umbau abgeschlossen; Gates aktiv. Kein Push ausgeführt.')
 

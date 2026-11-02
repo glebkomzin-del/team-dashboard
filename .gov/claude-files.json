@@ -8,7 +8,7 @@
   ".gov/claude/agents/schreiber.md": "469b94b58c8e38f5af1b123fcd00ff2b21efcfb9532174195da7a8568e95cf68",
   ".gov/claude/agents/worker.md": "1a706d06e91a652e1e509a01b95bb9b84a1787e4d69f7c8675aed3c9d29467f9",
   ".gov/claude/commands/build.md": "f5ec5d18f9d408bfef800991584d7c91cb6598380ff0abc6e6c6ff0a01d41335",
-  ".gov/claude/commands/migrate.md": "6547eb63005062493e2d95dbf33b5f96cf3ce2d46d97e5ed478774cc4a7a2617",
+  ".gov/claude/commands/migrate.md": "7a9b1e17105422a56658c6a957fc6dfca05f1fff9b49e33d53950b71a7f2a25c",
   ".gov/claude/commands/vision.md": "bd6830a6ea20656725c01a9f8de9a799705f19444b934d67d4b672ca339dbf63",
   ".gov/claude/settings.fragment.json": "c97b0f525a14bfe1703c07a0081f059fef04a43c6c9fd43d4c0e27d78d123f74",
   ".gov/codex/AGENTS.snippet.md": "b0d8963c9b9459167c1daf05c76953ceaac4cb227e9b3ba9664d82acd9945d28",
@@ -23,7 +23,7 @@
   ".gov/codex/gov.rules": "1ccb493c9707e0410a27b902a548dbfdaeb6391349b0bd16275b4a10da6dcfab",
   ".gov/codex/hooks.json": "f5c4db39e11e1f606f4930cec969c525307f7d234f7acbb75531306778e2965b",
   ".gov/codex/skills/build/SKILL.md": "141653571de122a4158e13c6c560d1f2dc9113d24f0575057919be63d77e7bf3",
-  ".gov/codex/skills/migrate/SKILL.md": "b9e71879ae7e2a0afba5f04a47825babc97326da80bf462cefd94db121974267",
+  ".gov/codex/skills/migrate/SKILL.md": "2a766114b238392de249b466bb365d0ca79fe26f2d18563637b9e99162754911",
   ".gov/codex/skills/vision/SKILL.md": "e2da6f63061e578221176717b110fda897879578804be79a868daf134437325a",
   ".codex/rules/gov.rules": "84d70425a9513f9d7d990096c812012cf9195e85d3fdeb36dfc67b320febcbab"
 }
