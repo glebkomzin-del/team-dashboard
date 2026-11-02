@@ -21,3 +21,4 @@ Der aktuelle Feature-Status wird ausschließlich von gov geschrieben.
 | F-016 | Offener Punkt | Idee | Den eingebetteten Zugangswert der alten Edge Function ingest-transcript gesondert bereinigen und seine Gültigkeit beziehungsweise erforderliche Rotation klären; keine Änderung externer Zugänge im Umbau. Quelle: archiv/governance-alt/umbau-20261101/geheimnis-vorpruefung.json. |
 | F-017 | Offener Punkt | Idee | Die Kalibrierung des Relevanz-Gates anhand von Nutzerbewertungen war im Zielbild vom 13.10.2026 offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:41 |
 | F-018 | Offener Punkt | Idee | Für das Memory waren eine fachliche Goldfragen-Abnahme und der Nachweis des Abrufs aus VS Code offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:44 |
+| F-019 | Offener Punkt | Idee | Zustellung von Erinnerungen und deren Compliance waren offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:43 |
