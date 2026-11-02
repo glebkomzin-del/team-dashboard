@@ -560,10 +560,17 @@
       ],
       "state": "aktiv",
       "text": "Die Kalibrierung des Relevanz-Gates anhand von Nutzerbewertungen war im Zielbild vom 13.10.2026 offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:41"
+    },
+    "F-018": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Für das Memory waren eine fachliche Goldfragen-Abnahme und der Nachweis des Abrufs aus VS Code offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:44"
     }
   },
   "counters": {
-    "F": 17,
+    "F": 18,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
