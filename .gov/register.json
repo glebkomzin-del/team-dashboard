@@ -679,10 +679,17 @@
       ],
       "state": "aktiv",
       "text": "Die Betriebssystemursache der langen lokalen Git-Dateizugriffe bleibt ungeklärt; auch der gepufferte Lesepfad zeigte zunächst eine Wartezeit. Quelle: archiv/governance-alt/umbau-20261101/git-ohne-mmap-pruefung.json; archiv/governance-alt/umbau-20261101/dashboard-migrate-no-mmap-sample.txt."
+    },
+    "F-035": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Der Code-Graph deckt 112 SQL-Dateien wegen eines fehlenden optionalen Parsers nicht ab; die SQL-Originale bleiben erhalten. Quelle: archiv/governance-alt/umbau-20261101/graph-abdeckung.json."
     }
   },
   "counters": {
-    "F": 34,
+    "F": 35,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
