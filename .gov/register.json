@@ -623,10 +623,17 @@
       ],
       "state": "aktiv",
       "text": "Ein vollständiger Wiederaufbau nach physischem Serververlust wurde im Restore-Runbook vom 04.10.2026 nicht als durchgeführt ausgewiesen. Quelle: working-memory/docs/RESTORE-RUNBOOK.md:209"
+    },
+    "F-027": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Die Fachvorgabe beschreibt einen unabhängigen Testsatz und Quellzuordnung als Qualitätsziele; die frühere Annahme perfekter Vergleichsfälle als Voraussetzung für den technischen Betrieb wurde später ausdrücklich geändert. Quelle: working-memory/docs/NEXT-OPERATIONS.md:343"
     }
   },
   "counters": {
-    "F": 26,
+    "F": 27,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
