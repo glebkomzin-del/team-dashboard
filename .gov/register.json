@@ -595,10 +595,17 @@
       ],
       "state": "aktiv",
       "text": "Das vorgeschlagene Hot-Set und ein wöchentlicher Vollabgleich waren zum 13.10.2026 weder produktiv freigegeben noch in ihrer Wirksamkeit ausreichend nachgewiesen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:91"
+    },
+    "F-023": {
+      "parents": [
+        "V"
+      ],
+      "state": "aktiv",
+      "text": "Der verpflichtende Hot-Set-Fall Alter 25 Tage/Rang 12 und die Prüfung an neuen Meetings waren zum 13.10.2026 offen. Quelle: working-memory/docs/ZIELBILD-PHASE1.md:143"
     }
   },
   "counters": {
-    "F": 22,
+    "F": 23,
     "A-001": 3,
     "A-002": 5,
     "A-003": 3,
